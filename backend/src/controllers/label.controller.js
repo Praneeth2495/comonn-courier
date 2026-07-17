@@ -10,7 +10,7 @@ async function generateLabel(req, res, next) {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.orderId },
-      include: { service: true, senderAddress: true, receiverAddress: true, label: true },
+      include: { service: true, senderAddress: true, receiverAddress: true, label: true, items: true },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
     if (order.status === 'DRAFT' || order.status === 'PENDING_PAYMENT') {

@@ -158,16 +158,14 @@ model Order {
   receiverAddressId String
   receiverAddress   Address  @relation("ReceiverAddress", fields: [receiverAddressId], references: [id])
 
-  // parcel physical details
+  // parcel physical details — totals across all OrderItem lines (a shipment
+  // can have multiple items; per-item dims/weight live on OrderItem)
   actualWeightKg    Decimal  @db.Decimal(10, 3)
-  lengthCm          Decimal  @db.Decimal(10, 2)
-  widthCm           Decimal  @db.Decimal(10, 2)
-  heightCm          Decimal  @db.Decimal(10, 2)
   volumetricWeightKg Decimal @db.Decimal(10, 3)
-  chargeableWeightKg Decimal @db.Decimal(10, 3) // max(actual, volumetric)
+  chargeableWeightKg Decimal @db.Decimal(10, 3) // sum of each item's max(actual, volumetric) * quantity
   declaredValue      Decimal @db.Decimal(10, 2) @default(0)
   contentsDescription String?
-  quantity            Int    @default(1)
+  items               OrderItem[]
 
   // pricing snapshot (never recompute historical orders off live rate cards)
   zoneCode        String
@@ -190,6 +188,24 @@ model Order {
 
   @@index([status])
   @@index([userId])
+}
+
+// One physical package within a (possibly multi-item) shipment.
+model OrderItem {
+  id                 String  @id @default(uuid())
+  orderId            String
+  order              Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemType           String  // "Box" | "Pallet"
+  actualWeightKg     Decimal @db.Decimal(10, 3) // per single unit
+  lengthCm           Decimal @db.Decimal(10, 2)
+  widthCm            Decimal @db.Decimal(10, 2)
+  heightCm           Decimal @db.Decimal(10, 2)
+  quantity           Int     @default(1)
+  volumetricWeightKg Decimal @db.Decimal(10, 3) // per single unit
+  chargeableWeightKg Decimal @db.Decimal(10, 3) // max(actual, volumetric) * quantity, this line's total
+  createdAt          DateTime @default(now())
+
+  @@index([orderId])
 }
 
 // ------------------------------------------------------------

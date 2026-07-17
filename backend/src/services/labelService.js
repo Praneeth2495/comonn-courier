@@ -55,9 +55,13 @@ async function generateLabelPdf(order) {
 
     // Parcel details
     doc.font('Helvetica').fontSize(8).text(
-      `Weight: ${order.chargeableWeightKg} kg (chargeable)  |  Dims: ${order.lengthCm}x${order.widthCm}x${order.heightCm} cm`
+      `Weight: ${order.chargeableWeightKg} kg (chargeable)  |  Zone: ${order.zoneCode}`
     );
-    doc.text(`Zone: ${order.zoneCode}  |  Qty: ${order.quantity}`);
+    const itemCount = order.items.reduce((sum, it) => sum + it.quantity, 0);
+    doc.text(`Items: ${itemCount}`);
+    for (const it of order.items) {
+      doc.text(`  • ${it.itemType} x${it.quantity}: ${it.lengthCm}x${it.widthCm}x${it.heightCm}cm, ${it.actualWeightKg}kg each`);
+    }
     if (order.contentsDescription) doc.text(`Contents: ${order.contentsDescription}`);
     doc.moveDown(0.6);
 

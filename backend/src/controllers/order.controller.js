@@ -19,18 +19,14 @@ async function createOrder(req, res, next) {
       serviceCode,
       sender,   // { contactName, phone, line1, line2, city, state, postcode, countryCode }
       receiver, // same shape
-      actualWeightKg,
-      lengthCm,
-      widthCm,
-      heightCm,
-      quantity = 1,
+      items,    // [{ itemType, actualWeightKg, lengthCm, widthCm, heightCm, quantity }]
       declaredValue = 0,
       contentsDescription,
       taxRate = 0,
     } = req.body;
 
-    if (!serviceCode || !sender || !receiver) {
-      return res.status(400).json({ error: 'serviceCode, sender and receiver are required' });
+    if (!serviceCode || !sender || !receiver || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'serviceCode, sender, receiver and at least one item are required' });
     }
     for (const [label, addr] of [['sender', sender], ['receiver', receiver]]) {
       for (const f of ['contactName', 'phone', 'line1', 'city', 'postcode', 'countryCode']) {
@@ -41,13 +37,8 @@ async function createOrder(req, res, next) {
     // Re-price authoritatively on the server.
     const quote = await generateQuote({
       serviceCode,
-      originCountryCode: sender.countryCode,
       destinationCountryCode: receiver.countryCode,
-      actualWeightKg,
-      lengthCm,
-      widthCm,
-      heightCm,
-      quantity,
+      items,
       declaredValue,
       taxRate,
     });
@@ -70,15 +61,23 @@ async function createOrder(req, res, next) {
         serviceId: service.id,
         senderAddressId: senderAddress.id,
         receiverAddressId: receiverAddress.id,
-        actualWeightKg,
-        lengthCm,
-        widthCm,
-        heightCm,
+        actualWeightKg: quote.weight.actualWeightKg,
         volumetricWeightKg: quote.weight.volumetricWeightKg,
         chargeableWeightKg: quote.weight.chargeableWeightKg,
         declaredValue,
         contentsDescription,
-        quantity,
+        items: {
+          create: quote.items.map((it) => ({
+            itemType: it.itemType,
+            actualWeightKg: it.actualWeightKg,
+            lengthCm: it.lengthCm,
+            widthCm: it.widthCm,
+            heightCm: it.heightCm,
+            quantity: it.quantity,
+            volumetricWeightKg: it.volumetricWeightKg,
+            chargeableWeightKg: it.chargeableWeightKg,
+          })),
+        },
         zoneCode: quote.zone.code,
         baseFreight: quote.pricing.baseFreight,
         surchargesTotal: quote.pricing.surchargesTotal,
@@ -88,7 +87,7 @@ async function createOrder(req, res, next) {
         pricingBreakdown: quote,
         status: 'PENDING_PAYMENT',
       },
-      include: { service: true, senderAddress: true, receiverAddress: true },
+      include: { service: true, senderAddress: true, receiverAddress: true, items: true },
     });
 
     res.status(201).json({ order });
@@ -115,7 +114,7 @@ async function listOrders(req, res, next) {
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where,
-        include: { service: true, senderAddress: true, receiverAddress: true, payment: true },
+        include: { service: true, senderAddress: true, receiverAddress: true, payment: true, items: true },
         orderBy: { createdAt: 'desc' },
         skip: (Number(page) - 1) * Number(pageSize),
         take: Number(pageSize),
@@ -140,6 +139,7 @@ async function getOrder(req, res, next) {
         receiverAddress: true,
         payment: true,
         label: true,
+        items: true,
         trackingEvents: { orderBy: { occurredAt: 'asc' } },
       },
     });

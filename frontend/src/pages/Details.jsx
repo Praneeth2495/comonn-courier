@@ -9,7 +9,7 @@ const emptyAddress = { contactName: '', phone: '', line1: '', line2: '', city: '
 export default function Details() {
   const { quoteInput, selectedQuote, setBooking } = useBooking();
   const navigate = useNavigate();
-  const [sender, setSender] = useState({ ...emptyAddress, countryCode: quoteInput?.originCountryCode || '' });
+  const [sender, setSender] = useState({ ...emptyAddress, countryCode: 'IN' });
   const [receiver, setReceiver] = useState({ ...emptyAddress, countryCode: quoteInput?.destinationCountryCode || '' });
   const [contentsDescription, setContentsDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,11 +39,7 @@ export default function Details() {
         serviceCode: selectedQuote.service.code,
         sender,
         receiver,
-        actualWeightKg: quoteInput.actualWeightKg,
-        lengthCm: quoteInput.lengthCm,
-        widthCm: quoteInput.widthCm,
-        heightCm: quoteInput.heightCm,
-        quantity: Number(quoteInput.quantity) || 1,
+        items: quoteInput.items,
         declaredValue: Number(quoteInput.declaredValue) || 0,
         contentsDescription,
       });
@@ -62,7 +58,7 @@ export default function Details() {
       <div className="wrap" style={{ maxWidth: 860, padding: '20px 32px 80px' }}>
         <h1 className="h-lg">Add shipment details</h1>
         <p className="lead" style={{ marginBottom: 24 }}>
-          {selectedQuote.service.name} · ${Number(selectedQuote.pricing.grandTotal).toFixed(2)} {selectedQuote.pricing.currency}
+          {selectedQuote.service.name} · ₹{Number(selectedQuote.pricing.grandTotal).toFixed(2)} {selectedQuote.pricing.currency}
         </p>
 
         <form onSubmit={submit}>

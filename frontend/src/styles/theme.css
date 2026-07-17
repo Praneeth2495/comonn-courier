@@ -283,3 +283,27 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @media(max-width:640px){
   .why-row{grid-template-columns:1fr!important;}
 }
+
+/* ============================================================
+   Redesign additions — Quote (rate-card price breakdown)
+   ============================================================ */
+.rate-left{display:flex;align-items:center;gap:16px;}
+.rate-icon{width:48px;height:48px;border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:center;flex:none;}
+.rate-name{font-size:16px;font-weight:700;color:var(--navy);}
+.rate-meta{font-size:12.5px;color:var(--slate);margin-top:2px;}
+.rate-price{display:flex;align-items:center;gap:18px;}
+.rate-price .unit-price{text-align:right;}
+.rate-price .amt{font-family:'IBM Plex Mono';font-size:19px;font-weight:600;color:var(--navy);}
+.rate-price .per{font-size:11px;color:var(--slate-light);}
+.rate-price .divider{width:1px;align-self:stretch;background:var(--line);}
+.rate-price .rate-total{text-align:right;font-size:12.5px;font-weight:700;color:var(--navy);white-space:nowrap;}
+.rate-price .rate-total .amt2{font-family:'IBM Plex Mono';font-size:16px;font-weight:700;color:var(--navy);display:block;}
+.rate-price .rate-total .unit-note{font-weight:400;color:var(--slate-light);font-size:11px;}
+@media(max-width:860px){
+  .rate-card{flex-wrap:wrap;}
+  .rate-price{width:100%;justify-content:space-between;}
+}
+@media(max-width:640px){
+  .rate-price{flex-direction:column;align-items:flex-start;gap:10px;}
+  .rate-price .divider{display:none;}
+}

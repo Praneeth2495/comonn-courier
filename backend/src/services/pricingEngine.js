@@ -106,16 +106,39 @@ async function applySurcharges({ serviceId, baseFreight }) {
 }
 
 /**
- * Main entry point: produce a full, itemised quote.
+ * Prices one OrderItem line (per-unit dims/weight * quantity).
+ * Returns per-unit volumetric/chargeable plus this line's totals.
+ */
+function priceItem(item, divisor) {
+  const { itemType = 'Box', actualWeightKg, lengthCm, widthCm, heightCm, quantity = 1 } = item;
+  const volumetricWeightKg = calcVolumetricWeightKg({ lengthCm, widthCm, heightCm, divisor });
+  const chargeableWeightKgPerUnit = calcChargeableWeightKg({ actualWeightKg, volumetricWeightKg });
+  return {
+    itemType,
+    actualWeightKg: Number(actualWeightKg),
+    lengthCm: Number(lengthCm),
+    widthCm: Number(widthCm),
+    heightCm: Number(heightCm),
+    quantity: Number(quantity),
+    volumetricWeightKg: round2(volumetricWeightKg),
+    chargeableWeightKg: round2(chargeableWeightKgPerUnit * Number(quantity)),
+    actualWeightKgTotal: round2(Number(actualWeightKg) * Number(quantity)),
+    volumetricWeightKgTotal: round2(volumetricWeightKg * Number(quantity)),
+  };
+}
+
+/**
+ * Main entry point: produce a full, itemised quote for a (possibly
+ * multi-item) shipment. Each item in `items` is priced individually
+ * (chargeable weight = max(actual, volumetric) per unit * quantity), then
+ * summed into a single total chargeable weight for the whole shipment,
+ * which is what determines the rate bracket — matching how couriers
+ * actually bill multi-package shipments as one consignment.
+ *
  * @param {Object} input
  * @param {string} input.serviceCode  e.g. "EXPRESS"
- * @param {string} input.originCountryCode
  * @param {string} input.destinationCountryCode
- * @param {number} input.actualWeightKg
- * @param {number} input.lengthCm
- * @param {number} input.widthCm
- * @param {number} input.heightCm
- * @param {number} [input.quantity=1]
+ * @param {Array<{itemType?:string, actualWeightKg:number, lengthCm:number, widthCm:number, heightCm:number, quantity?:number}>} input.items
  * @param {number} [input.declaredValue=0]
  * @param {number} [input.taxRate=0] fractional, e.g. 0.10 for 10% GST
  */
@@ -123,14 +146,17 @@ async function generateQuote(input) {
   const {
     serviceCode,
     destinationCountryCode,
-    actualWeightKg,
-    lengthCm,
-    widthCm,
-    heightCm,
-    quantity = 1,
+    items,
     declaredValue = 0,
     taxRate = 0,
   } = input;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    const err = new Error('At least one item is required');
+    err.status = 400;
+    err.code = 'ITEMS_REQUIRED';
+    throw err;
+  }
 
   const service = await prisma.service.findUnique({ where: { code: serviceCode } });
   if (!service || !service.isActive) {
@@ -142,14 +168,11 @@ async function generateQuote(input) {
 
   const zone = await resolveZoneForCountry(destinationCountryCode);
 
-  const volumetricWeightKg = calcVolumetricWeightKg({
-    lengthCm,
-    widthCm,
-    heightCm,
-    divisor: service.volumetricDivisor,
-  });
-  const chargeableWeightKgSingle = calcChargeableWeightKg({ actualWeightKg, volumetricWeightKg });
-  const chargeableWeightKg = round2(chargeableWeightKgSingle * quantity);
+  const pricedItems = items.map((it) => priceItem(it, service.volumetricDivisor));
+
+  const actualWeightKg = round2(pricedItems.reduce((sum, it) => sum + it.actualWeightKgTotal, 0));
+  const volumetricWeightKg = round2(pricedItems.reduce((sum, it) => sum + it.volumetricWeightKgTotal, 0));
+  const chargeableWeightKg = round2(pricedItems.reduce((sum, it) => sum + it.chargeableWeightKg, 0));
 
   const { bracket, extrapolated } = await findRateBracket({
     serviceId: service.id,
@@ -176,14 +199,16 @@ async function generateQuote(input) {
   return {
     service: { code: service.code, name: service.name, transitDays: `${service.transitDaysMin}-${service.transitDaysMax}` },
     zone: { code: zone.code, name: zone.name },
+    items: pricedItems.map(({ actualWeightKgTotal, volumetricWeightKgTotal, ...rest }) => rest),
     weight: {
-      actualWeightKg: Number(actualWeightKg),
-      volumetricWeightKg: round2(volumetricWeightKg),
+      actualWeightKg,
+      volumetricWeightKg,
       chargeableWeightKg,
       divisorUsed: service.volumetricDivisor,
     },
     pricing: {
       baseFreight,
+      unitPrice: round2(baseFreight / chargeableWeightKg),
       surcharges: surchargeItems,
       surchargesTotal,
       taxRate,
