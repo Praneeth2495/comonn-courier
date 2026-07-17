@@ -4,14 +4,29 @@ import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import Stepper from '../components/Stepper';
 
-const emptyAddress = { contactName: '', phone: '', line1: '', line2: '', city: '', state: '', postcode: '', countryCode: '' };
+const COUNTRY_CODES = ['🇮🇳 +91', '🇦🇺 +61', '🇨🇦 +1', '🇳🇿 +64', '🇬🇧 +44', '🇺🇸 +1', '🇪🇺 +32'];
+
+const emptyAddress = (countryCode) => ({
+  contactName: '',
+  dialCode: COUNTRY_CODES[0],
+  phoneNumber: '',
+  email: '',
+  instructions: '',
+  line1: '',
+  line2: '',
+  city: '',
+  state: '',
+  postcode: '',
+  countryCode,
+});
 
 export default function Details() {
-  const { quoteInput, selectedQuote, setBooking } = useBooking();
+  const { quoteInput, selectedQuote, setBooking, clearBooking } = useBooking();
   const navigate = useNavigate();
-  const [sender, setSender] = useState({ ...emptyAddress, countryCode: 'IN' });
-  const [receiver, setReceiver] = useState({ ...emptyAddress, countryCode: quoteInput?.destinationCountryCode || '' });
+  const [sender, setSender] = useState(() => emptyAddress('IN'));
+  const [receiver, setReceiver] = useState(() => emptyAddress(quoteInput?.destinationCountryCode || ''));
   const [contentsDescription, setContentsDescription] = useState('');
+  const [declaredValue, setDeclaredValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -30,6 +45,26 @@ export default function Details() {
   const updateSender = updateField(setSender);
   const updateReceiver = updateField(setReceiver);
 
+  function toAddressPayload(addr) {
+    return {
+      contactName: addr.contactName,
+      phone: `${addr.dialCode.split(' ')[1]} ${addr.phoneNumber}`.trim(),
+      email: addr.email,
+      instructions: addr.instructions,
+      line1: addr.line1,
+      line2: addr.line2,
+      city: addr.city,
+      state: addr.state,
+      postcode: addr.postcode,
+      countryCode: addr.countryCode,
+    };
+  }
+
+  function newBooking() {
+    clearBooking();
+    navigate('/quote');
+  }
+
   async function submit(e) {
     e.preventDefault();
     setError('');
@@ -37,10 +72,10 @@ export default function Details() {
     try {
       const { data } = await client.post('/orders', {
         serviceCode: selectedQuote.service.code,
-        sender,
-        receiver,
+        sender: toAddressPayload(sender),
+        receiver: toAddressPayload(receiver),
         items: quoteInput.items,
-        declaredValue: Number(quoteInput.declaredValue) || 0,
+        declaredValue: Number(declaredValue) || 0,
         contentsDescription,
       });
       setBooking({ order: data.order });
@@ -55,76 +90,120 @@ export default function Details() {
   return (
     <div>
       <div id="stepper-details"><Stepper activeKey="details" /></div>
-      <div className="wrap" style={{ maxWidth: 860, padding: '20px 32px 80px' }}>
-        <h1 className="h-lg">Add shipment details</h1>
-        <p className="lead" style={{ marginBottom: 24 }}>
-          {selectedQuote.service.name} · ₹{Number(selectedQuote.pricing.grandTotal).toFixed(2)} {selectedQuote.pricing.currency}
-        </p>
-
+      <div className="section" style={{ paddingTop: 20, maxWidth: 900, margin: '0 auto' }}>
         <form onSubmit={submit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            <AddressCard title="Sender" value={sender} onChange={updateSender} />
-            <AddressCard title="Receiver" value={receiver} onChange={updateReceiver} />
+          <div className="card summary-card">
+            <div className="summary-top"><h3>Booking summary</h3></div>
+            <div className="addr-grid">
+              <div className="addr-block"><div className="lbl">Origin</div><p>India</p></div>
+              <div className="addr-block"><div className="lbl">Destination</div><p>{selectedQuote.zone.name}</p></div>
+            </div>
+
+            {quoteInput.items.map((it, idx) => (
+              <div className="item-line" key={idx}>
+                <div className="tag-group">
+                  <span><b style={{ color: 'var(--ink)' }}>Item {idx + 1}</b> · {it.itemType}</span>
+                  <span>Weight: {it.actualWeightKg} kg</span>
+                  <span>Qty: {String(it.quantity).padStart(2, '0')}</span>
+                </div>
+              </div>
+            ))}
+            <div className="item-line" style={{ borderTop: '1px dashed var(--line)', marginTop: 10, paddingTop: 14 }}>
+              <div className="tag-group"><span>{selectedQuote.service.name} · {selectedQuote.weight.chargeableWeightKg} kg billed</span></div>
+              <div className="price">₹{selectedQuote.pricing.grandTotal.toFixed(2)}</div>
+            </div>
+
+            <div className="grid-2" style={{ marginTop: 18 }}>
+              <div className="field">
+                <label>Goods description</label>
+                <input className="input" placeholder="Documents, clothes, decorative items" value={contentsDescription} onChange={(e) => setContentsDescription(e.target.value)} />
+              </div>
+              <div className="field">
+                <label>Value of goods</label>
+                <input className="input" type="number" min="0" placeholder="₹5,000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="form-section-title inline"><div className="badge">1</div><h4>Receiver details</h4></div>
+            <AddressFields value={receiver} onChange={updateReceiver} instructionsLabel="Delivery instructions" autoFillNote="Country auto-filled from your quote's destination" />
           </div>
 
-          <div className="field card" style={{ padding: 20, marginTop: 20 }}>
-            <label>Contents description</label>
-            <input className="input" value={contentsDescription} onChange={(e) => setContentsDescription(e.target.value)} placeholder="e.g. Clothing, gifts, documents" />
+          <div className="form-section-title"><div className="badge">2</div><h4>Sender details</h4></div>
+          <div className="card" style={{ padding: 26 }}>
+            <AddressFields value={sender} onChange={updateSender} instructionsLabel="Instructions" autoFillNote="Country auto-filled from your quote's origin" />
           </div>
 
           {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
-          <button className="btn btn-primary block" style={{ marginTop: 20 }} disabled={loading}>
-            {loading ? 'Creating order…' : 'Continue to payment'}
-          </button>
+          <div style={{ display: 'flex', gap: 14, marginTop: 26 }}>
+            <button type="button" className="btn btn-outline" style={{ flex: 1, padding: 13 }} onClick={newBooking}>New booking</button>
+            <button className="btn btn-primary" style={{ flex: 1, padding: 13 }} disabled={loading}>
+              {loading ? 'Booking…' : 'Book now →'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
 
-function AddressCard({ title, value, onChange }) {
+function AddressFields({ value, onChange, instructionsLabel, autoFillNote }) {
   return (
-    <div className="card" style={{ padding: 20 }}>
-      <h4 style={{ marginBottom: 14, color: 'var(--navy)' }}>{title}</h4>
-      <div className="form-stack">
+    <>
+      <div className="grid-2">
         <div className="field">
-          <label>Full name</label>
-          <input className="input" required value={value.contactName} onChange={(e) => onChange('contactName', e.target.value)} />
+          <label>Name</label>
+          <input className="input" placeholder="Enter full name" required value={value.contactName} onChange={(e) => onChange('contactName', e.target.value)} />
         </div>
         <div className="field">
           <label>Phone</label>
-          <input className="input" required value={value.phone} onChange={(e) => onChange('phone', e.target.value)} />
+          <div className="input-group">
+            <select className="flag" value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
+              {COUNTRY_CODES.map((c) => <option key={c}>{c}</option>)}
+            </select>
+            <input placeholder="00000 00000" required value={value.phoneNumber} onChange={(e) => onChange('phoneNumber', e.target.value)} />
+          </div>
         </div>
         <div className="field">
-          <label>Address line 1</label>
-          <input className="input" required value={value.line1} onChange={(e) => onChange('line1', e.target.value)} />
+          <label>Email</label>
+          <input className="input" type="email" placeholder="example@gmail.com" value={value.email} onChange={(e) => onChange('email', e.target.value)} />
         </div>
         <div className="field">
-          <label>Address line 2 (optional)</label>
-          <input className="input" value={value.line2} onChange={(e) => onChange('line2', e.target.value)} />
-        </div>
-        <div className="grid-2">
-          <div className="field">
-            <label>City</label>
-            <input className="input" required value={value.city} onChange={(e) => onChange('city', e.target.value)} />
-          </div>
-          <div className="field">
-            <label>State / region</label>
-            <input className="input" value={value.state} onChange={(e) => onChange('state', e.target.value)} />
-          </div>
-        </div>
-        <div className="grid-2">
-          <div className="field">
-            <label>Postcode</label>
-            <input className="input" required value={value.postcode} onChange={(e) => onChange('postcode', e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Country code</label>
-            <input className="input" required maxLength={2} value={value.countryCode} onChange={(e) => onChange('countryCode', e.target.value.toUpperCase())} />
-          </div>
+          <label>{instructionsLabel}</label>
+          <input className="input" placeholder="Optional" value={value.instructions} onChange={(e) => onChange('instructions', e.target.value)} />
         </div>
       </div>
-    </div>
+      <div className="grid-2" style={{ marginTop: 14 }}>
+        <div className="field">
+          <label>Address Line 1</label>
+          <input className="input" placeholder="House / street" required value={value.line1} onChange={(e) => onChange('line1', e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Address Line 2</label>
+          <input className="input" placeholder="Apartment, suite (optional)" value={value.line2} onChange={(e) => onChange('line2', e.target.value)} />
+        </div>
+      </div>
+      <div className="grid-2" style={{ marginTop: 14 }}>
+        <div className="field">
+          <label>City / Town</label>
+          <input className="input" placeholder="Hyderabad" required value={value.city} onChange={(e) => onChange('city', e.target.value)} />
+        </div>
+        <div className="field">
+          <label>State</label>
+          <input className="input" placeholder="Telangana" value={value.state} onChange={(e) => onChange('state', e.target.value)} />
+        </div>
+      </div>
+      <div className="grid-2" style={{ marginTop: 14 }}>
+        <div className="field" style={{ maxWidth: 220 }}>
+          <label>Pin code</label>
+          <input className="input" required value={value.postcode} onChange={(e) => onChange('postcode', e.target.value)} />
+        </div>
+        <div className="field" style={{ maxWidth: 220 }}>
+          <label>Country code</label>
+          <input className="input" required maxLength={2} value={value.countryCode} onChange={(e) => onChange('countryCode', e.target.value.toUpperCase())} />
+        </div>
+      </div>
+      <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>✓ {autoFillNote}</p>
+    </>
   );
 }

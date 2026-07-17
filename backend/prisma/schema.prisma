@@ -45,6 +45,8 @@ model Address {
   label      String? // "Home", "Warehouse", etc.
   contactName String
   phone      String
+  email      String?
+  instructions String? // pickup instructions (sender) or delivery instructions (receiver)
   line1      String
   line2      String?
   city       String
