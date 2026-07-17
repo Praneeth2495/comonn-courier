@@ -1,25 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 
 export default function Track() {
-  const [trackingNumber, setTrackingNumber] = useState('');
+  const [searchParams] = useSearchParams();
+  const [trackingNumber, setTrackingNumber] = useState(searchParams.get('id') || '');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function submit(e) {
-    e.preventDefault();
+  async function runTrack(number) {
     setError('');
     setResult(null);
     setLoading(true);
     try {
-      const { data } = await client.get(`/track/${encodeURIComponent(trackingNumber.trim())}`);
+      const { data } = await client.get(`/track/${encodeURIComponent(number.trim())}`);
       setResult(data);
     } catch (err) {
       setError(err.response?.data?.error || 'Shipment not found');
     } finally {
       setLoading(false);
     }
+  }
+
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if (id) runTrack(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function submit(e) {
+    e.preventDefault();
+    runTrack(trackingNumber);
   }
 
   return (
