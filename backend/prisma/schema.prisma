@@ -197,6 +197,7 @@ model Order {
 
   payment         Payment?
   labels          Label[]
+  invoice         Invoice?
   trackingEvents  TrackingEvent[]
 
   createdAt DateTime @default(now())
@@ -296,6 +297,14 @@ model Label {
   generatedAt  DateTime @default(now())
 
   @@index([orderId])
+}
+
+model Invoice {
+  id          String   @id @default(uuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id])
+  fileUrl     String
+  generatedAt DateTime @default(now())
 }
 
 // ------------------------------------------------------------

@@ -8,6 +8,7 @@ export default function Labels() {
   const { order, clearBooking } = useBooking();
   const navigate = useNavigate();
   const [labels, setLabels] = useState(null);
+  const [invoice, setInvoice] = useState(null);
   const [emailedTo, setEmailedTo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,6 +21,7 @@ export default function Labels() {
       .post(`/labels/${order.id}/generate`)
       .then(({ data }) => {
         setLabels(data.labels);
+        setInvoice(data.invoice);
         setEmailedTo(data.emailedTo);
       })
       .catch((err) => setError(err.response?.data?.error || 'Could not generate your labels.'))
@@ -73,11 +75,24 @@ export default function Labels() {
               ))}
             </div>
 
+            {invoice && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                <a
+                  className="btn btn-outline btn-sm"
+                  href={`${import.meta.env.VITE_API_BASE_URL || '/api'}${invoice.downloadUrl}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  ⬇ Download invoice
+                </a>
+              </div>
+            )}
+
             {emailedTo && (
               <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: 'var(--success-bg)', borderRadius: 12, padding: '16px 18px', marginTop: 22 }}>
                 <span style={{ fontSize: 18, lineHeight: 1 }}>✉️</span>
                 <p style={{ fontSize: 13.5, color: 'var(--success)' }}>
-                  These labels have also been emailed to your verified address — <b>{emailedTo}</b>.
+                  These labels and your invoice have also been emailed to your verified address — <b>{emailedTo}</b>.
                 </p>
               </div>
             )}
