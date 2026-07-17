@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
+import ChangePassword from '../components/ChangePassword';
 
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
@@ -20,6 +21,7 @@ export default function UserDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [showAccount, setShowAccount] = useState(false);
 
   useEffect(() => {
     client.get('/orders').then(({ data }) => setOrders(data.orders)).finally(() => setLoading(false));
@@ -33,8 +35,17 @@ export default function UserDashboard() {
 
   return (
     <div className="wrap section">
-      <h1 className="h-lg">Welcome back, {user?.fullName?.split(' ')[0]}</h1>
-      <p className="lead" style={{ marginBottom: 24 }}>Here's everything you've shipped with Comonn.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 className="h-lg">Welcome back, {user?.fullName?.split(' ')[0]}</h1>
+          <p className="lead" style={{ marginBottom: 24 }}>Here's everything you've shipped with Comonn.</p>
+        </div>
+        <button className="btn btn-outline btn-sm" onClick={() => setShowAccount((v) => !v)}>
+          {showAccount ? 'Hide account settings' : 'Account settings'}
+        </button>
+      </div>
+
+      {showAccount && <div style={{ marginBottom: 24 }}><ChangePassword /></div>}
 
       {loading && <p className="lead">Loading orders…</p>}
       {!loading && orders.length === 0 && (

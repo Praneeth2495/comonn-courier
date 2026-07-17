@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
+import ChangePassword from '../components/ChangePassword';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('overview');
@@ -12,6 +13,7 @@ export default function AdminDashboard() {
     ['orders', 'Orders'],
     ['rates', 'Zones & Rates'],
     ['users', 'Users'],
+    ['account', 'Account'],
   ];
 
   return (
@@ -31,6 +33,7 @@ export default function AdminDashboard() {
         {tab === 'orders' && <OrdersPanel />}
         {tab === 'rates' && <RatesPanel />}
         {tab === 'users' && <UsersPanel />}
+        {tab === 'account' && <ChangePassword />}
       </main>
     </div>
   );
