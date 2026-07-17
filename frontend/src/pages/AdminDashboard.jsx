@@ -55,7 +55,7 @@ function Overview() {
         <Stat label="Paid" value={totals.paid} />
         <Stat label="In transit" value={totals.inTransit} />
         <Stat label="Delivered" value={totals.delivered} />
-        <Stat label="Total revenue" value={`$${Number(totals.totalRevenue).toFixed(2)}`} />
+        <Stat label="Total revenue" value={`₹${Number(totals.totalRevenue).toFixed(2)}`} />
       </div>
 
       <h3 className="h-md" style={{ margin: '24px 0 12px' }}>Recent orders</h3>
@@ -122,7 +122,7 @@ function OrdersPanel() {
                 <td>{o.senderAddress?.contactName}</td>
                 <td>{o.service.name}</td>
                 <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
-                <td>${Number(o.grandTotal).toFixed(2)}</td>
+                <td>₹{Number(o.grandTotal).toFixed(2)}</td>
                 <td>{o.status.replace(/_/g, ' ')}</td>
                 <td>
                   <select className="select" style={{ padding: '6px 8px', fontSize: 12.5 }} defaultValue="" onChange={(e) => { if (e.target.value) updateStatus(o.id, e.target.value); e.target.value = ''; }}>
@@ -200,21 +200,21 @@ function RatesPanel() {
           <div className="field"><label>From kg</label><input className="input" type="number" step="0.01" required value={form.weightFromKg} onChange={(e) => setForm({ ...form, weightFromKg: e.target.value })} /></div>
           <div className="field"><label>To kg</label><input className="input" type="number" step="0.01" required value={form.weightToKg} onChange={(e) => setForm({ ...form, weightToKg: e.target.value })} /></div>
           <div className="field"><label>Base price</label><input className="input" type="number" step="0.01" required value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} /></div>
-          <div className="field"><label>$/kg overage</label><input className="input" type="number" step="0.01" required value={form.perKgOverage} onChange={(e) => setForm({ ...form, perKgOverage: e.target.value })} /></div>
+          <div className="field"><label>₹/kg overage</label><input className="input" type="number" step="0.01" required value={form.perKgOverage} onChange={(e) => setForm({ ...form, perKgOverage: e.target.value })} /></div>
           <button className="btn btn-primary btn-sm" style={{ gridColumn: '1 / -1' }}>Add bracket</button>
         </form>
       </div>
 
       <table className="data-table">
-        <thead><tr><th>Service</th><th>Zone</th><th>Weight range</th><th>Base price</th><th>Overage $/kg</th><th></th></tr></thead>
+        <thead><tr><th>Service</th><th>Zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th></th></tr></thead>
         <tbody>
           {rateCards.map((r) => (
             <tr key={r.id}>
               <td>{r.service.name}</td>
               <td>{r.zone.code}</td>
               <td>{r.weightFromKg} – {r.weightToKg} kg</td>
-              <td>${Number(r.basePrice).toFixed(2)}</td>
-              <td>${Number(r.perKgOverage).toFixed(2)}</td>
+              <td>₹{Number(r.basePrice).toFixed(2)}</td>
+              <td>₹{Number(r.perKgOverage).toFixed(2)}</td>
               <td><button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button></td>
             </tr>
           ))}

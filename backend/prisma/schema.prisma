@@ -107,9 +107,9 @@ model RateCard {
   zone           Zone     @relation(fields: [zoneId], references: [id])
   weightFromKg   Decimal  @db.Decimal(10, 3) // inclusive lower bound
   weightToKg     Decimal  @db.Decimal(10, 3) // inclusive upper bound
-  basePrice      Decimal  @db.Decimal(10, 2) // AUD
+  basePrice      Decimal  @db.Decimal(10, 2) // INR
   perKgOverage   Decimal  @db.Decimal(10, 2) // price per kg once weight exceeds weightToKg of the last bracket
-  currency       String   @default("AUD")
+  currency       String   @default("INR")
   effectiveFrom  DateTime @default(now())
   effectiveTo    DateTime?
   isActive       Boolean  @default(true)
@@ -175,7 +175,7 @@ model Order {
   surchargesTotal Decimal @db.Decimal(10, 2) @default(0)
   taxTotal        Decimal @db.Decimal(10, 2) @default(0)
   grandTotal      Decimal @db.Decimal(10, 2)
-  currency        String  @default("AUD")
+  currency        String  @default("INR")
   pricingBreakdown Json?  // full itemised breakdown for transparency/audit
 
   status          OrderStatus @default(DRAFT)
@@ -211,7 +211,7 @@ model Payment {
   providerOrderId       String?  // Razorpay Order id (order_xxx)
   providerPaymentId     String?  // Razorpay Payment id (pay_xxx), set once captured
   amount                Decimal  @db.Decimal(10, 2)
-  currency              String   @default("AUD")
+  currency              String   @default("INR")
   status                PaymentStatus @default(REQUIRES_PAYMENT)
   method                String?  // "card" | "paypal" | ...
   rawWebhookPayload     Json?

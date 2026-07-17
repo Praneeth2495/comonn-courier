@@ -11,7 +11,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 // ---------------------------------------------------------------
-// EXAMPLE data — origin assumed Australia. Replace with your real
+// EXAMPLE data — origin assumed India. Replace with your real
 // zone map and rate cards.
 // ---------------------------------------------------------------
 const ZONES = [
@@ -40,24 +40,24 @@ const SERVICES = [
   { code: 'DOCUMENTS', name: 'Document Express', description: 'For envelopes and paperwork under 0.5kg', transitDaysMin: 2, transitDaysMax: 5, volumetricDivisor: 5000 },
 ];
 
-// Example weight-break pricing (AUD). basePrice = price for the whole
-// bracket; perKgOverage = $/kg once weight exceeds the TOP bracket.
+// Example weight-break pricing (INR). basePrice = price for the whole
+// bracket; perKgOverage = ₹/kg once weight exceeds the TOP bracket.
 // !! Replace with your real published rate card. !!
 function bracketsFor(zoneMultiplier) {
   const base = [
-    { from: 0, to: 0.5, price: 18 },
-    { from: 0.5, to: 1, price: 24 },
-    { from: 1, to: 2.5, price: 34 },
-    { from: 2.5, to: 5, price: 52 },
-    { from: 5, to: 10, price: 78 },
-    { from: 10, to: 20, price: 128 },
-    { from: 20, to: 30, price: 178 },
+    { from: 0, to: 0.5, price: 1000 },
+    { from: 0.5, to: 1, price: 1350 },
+    { from: 1, to: 2.5, price: 1900 },
+    { from: 2.5, to: 5, price: 2900 },
+    { from: 5, to: 10, price: 4350 },
+    { from: 10, to: 20, price: 7150 },
+    { from: 20, to: 30, price: 9950 },
   ];
   return base.map((b) => ({
     weightFromKg: b.from,
     weightToKg: b.to,
     basePrice: Math.round(b.price * zoneMultiplier * 100) / 100,
-    perKgOverage: Math.round(zoneMultiplier * 9.5 * 100) / 100,
+    perKgOverage: Math.round(zoneMultiplier * 530 * 100) / 100,
   }));
 }
 
@@ -66,7 +66,7 @@ const SERVICE_MULTIPLIER = { EXPRESS: 1, ECONOMY: 0.7, DOCUMENTS: 0.55 };
 
 const SURCHARGES = [
   { code: 'FUEL', name: 'Fuel surcharge', type: 'PERCENT', value: 0.145, appliesToServiceId: null },
-  { code: 'REMOTE_AREA', name: 'Remote area delivery fee', type: 'FLAT', value: 12.5, appliesToServiceId: null },
+  { code: 'REMOTE_AREA', name: 'Remote area delivery fee', type: 'FLAT', value: 700, appliesToServiceId: null },
 ];
 
 async function main() {
@@ -128,7 +128,7 @@ async function main() {
             weightToKg: b.weightToKg,
             basePrice: b.basePrice,
             perKgOverage: b.perKgOverage,
-            currency: 'AUD',
+            currency: 'INR',
           },
         });
       }

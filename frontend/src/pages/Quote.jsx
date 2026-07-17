@@ -135,7 +135,7 @@ export default function Quote() {
                   <div className="transit">Chargeable weight: {q.weight.chargeableWeightKg} kg (actual {q.weight.actualWeightKg}kg / volumetric {q.weight.volumetricWeightKg}kg)</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div className="price">${q.pricing.grandTotal.toFixed ? q.pricing.grandTotal.toFixed(2) : q.pricing.grandTotal} {q.pricing.currency}</div>
+                  <div className="price">₹{q.pricing.grandTotal.toFixed ? q.pricing.grandTotal.toFixed(2) : q.pricing.grandTotal} {q.pricing.currency}</div>
                   <button type="button" className={selected?.service.code === q.service.code ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'} style={{ marginTop: 8 }}>
                     {selected?.service.code === q.service.code ? 'Selected' : 'Select'}
                   </button>

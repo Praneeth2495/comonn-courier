@@ -91,7 +91,7 @@ export default function Payment() {
       <div className="wrap" style={{ maxWidth: 560, padding: '20px 32px 80px' }}>
         <h1 className="h-lg">Payment</h1>
         <p className="lead" style={{ marginBottom: 20 }}>
-          Order {order.orderNumber} · Total due: <b>${Number(order.grandTotal).toFixed(2)} {order.currency}</b>
+          Order {order.orderNumber} · Total due: <b>₹{Number(order.grandTotal).toFixed(2)} {order.currency}</b>
         </p>
 
         {error && <div className="error-text" style={{ marginBottom: 16 }}>{error}</div>}
@@ -102,7 +102,7 @@ export default function Payment() {
             disabled={!ready || submitting}
             onClick={handlePay}
           >
-            {submitting ? 'Processing…' : `Pay $${Number(order.grandTotal).toFixed(2)} ${order.currency}`}
+            {submitting ? 'Processing…' : `Pay ₹${Number(order.grandTotal).toFixed(2)} ${order.currency}`}
           </button>
           <p style={{ fontSize: 13, color: 'var(--slate-light)', marginTop: 12 }}>
             Pay by UPI, card, or netbanking. International cards and PayPal are also supported.

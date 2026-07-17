@@ -62,7 +62,7 @@ export default function UserDashboard() {
                 <td>{o.service.name}</td>
                 <td>{o.receiverAddress.city}, {o.receiverAddress.countryCode}</td>
                 <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span></td>
-                <td>${Number(o.grandTotal).toFixed(2)} {o.currency}</td>
+                <td>₹{Number(o.grandTotal).toFixed(2)} {o.currency}</td>
                 <td style={{ display: 'flex', gap: 8 }}>
                   <button className="btn btn-outline btn-sm" onClick={() => setSelected(o)}>View</button>
                   {['DRAFT', 'PENDING_PAYMENT', 'PAID'].includes(o.status) && (
@@ -93,10 +93,10 @@ function OrderDetailModal({ order, onClose }) {
         <Row label="Service" value={order.service.name} />
         <Row label="Chargeable weight" value={`${order.chargeableWeightKg} kg`} />
         <Row label="Zone" value={order.zoneCode} />
-        <Row label="Base freight" value={`$${Number(order.baseFreight).toFixed(2)}`} />
-        <Row label="Surcharges" value={`$${Number(order.surchargesTotal).toFixed(2)}`} />
-        <Row label="Tax" value={`$${Number(order.taxTotal).toFixed(2)}`} />
-        <Row label="Grand total" value={`$${Number(order.grandTotal).toFixed(2)} ${order.currency}`} bold />
+        <Row label="Base freight" value={`₹${Number(order.baseFreight).toFixed(2)}`} />
+        <Row label="Surcharges" value={`₹${Number(order.surchargesTotal).toFixed(2)}`} />
+        <Row label="Tax" value={`₹${Number(order.taxTotal).toFixed(2)}`} />
+        <Row label="Grand total" value={`₹${Number(order.grandTotal).toFixed(2)} ${order.currency}`} bold />
 
         <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--line-2)' }}>
           <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Sender</p>
