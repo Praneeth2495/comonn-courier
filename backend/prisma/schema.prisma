@@ -1,0 +1,259 @@
+// ============================================================
+// Comonn International Courier — Database Schema
+// ============================================================
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// Auth / Users
+// ------------------------------------------------------------
+enum Role {
+  CUSTOMER
+  ADMIN
+  STAFF
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  phone        String?
+  company      String?
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+  auditLogs AuditLog[]
+
+  @@index([email])
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String? // "Home", "Warehouse", etc.
+  contactName String
+  phone      String
+  line1      String
+  line2      String?
+  city       String
+  state      String?
+  postcode   String
+  countryCode String  // ISO 3166-1 alpha-2, e.g. "AU"
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  ordersAsSender   Order[] @relation("SenderAddress")
+  ordersAsReceiver Order[] @relation("ReceiverAddress")
+}
+
+// ------------------------------------------------------------
+// Pricing: Zones, Countries, Rate Cards
+// ------------------------------------------------------------
+// A Zone groups destination countries that share the same rate table
+// (typical for international courier pricing: Zone A = neighbouring
+// region, Zone B = wider region, Zone C = rest of world, etc).
+model Zone {
+  id          String   @id @default(uuid())
+  code        String   @unique // "ZONE_A"
+  name        String            // "Zone A — Asia Pacific"
+  countries   CountryZone[]
+  rateCards   RateCard[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CountryZone {
+  id          String @id @default(uuid())
+  countryCode String @unique // ISO alpha-2
+  countryName String
+  zoneId      String
+  zone        Zone   @relation(fields: [zoneId], references: [id])
+}
+
+// A Service is a product line: Express, Economy, Freight, Documents...
+model Service {
+  id            String   @id @default(uuid())
+  code          String   @unique // "EXPRESS"
+  name          String            // "Express Worldwide"
+  description   String?
+  transitDaysMin Int
+  transitDaysMax Int
+  volumetricDivisor Int  @default(5000) // cm3 per kg, industry-standard default
+  isActive      Boolean  @default(true)
+  rateCards     RateCard[]
+  orders        Order[]
+}
+
+// RateCard = one weight-break price for a given service + zone.
+// e.g. Service=EXPRESS, Zone=ZONE_A, 0-0.5kg => $18.50 base,
+// then perKgAbove for weight beyond the bracket ceiling.
+model RateCard {
+  id             String   @id @default(uuid())
+  serviceId      String
+  service        Service  @relation(fields: [serviceId], references: [id])
+  zoneId         String
+  zone           Zone     @relation(fields: [zoneId], references: [id])
+  weightFromKg   Decimal  @db.Decimal(10, 3) // inclusive lower bound
+  weightToKg     Decimal  @db.Decimal(10, 3) // inclusive upper bound
+  basePrice      Decimal  @db.Decimal(10, 2) // AUD
+  perKgOverage   Decimal  @db.Decimal(10, 2) // price per kg once weight exceeds weightToKg of the last bracket
+  currency       String   @default("AUD")
+  effectiveFrom  DateTime @default(now())
+  effectiveTo    DateTime?
+  isActive       Boolean  @default(true)
+
+  @@index([serviceId, zoneId, weightFromKg, weightToKg])
+}
+
+// Optional extra fees layered on top of the base rate card lookup
+model Surcharge {
+  id          String   @id @default(uuid())
+  code        String   @unique // "FUEL", "REMOTE_AREA", "OVERSIZE"
+  name        String
+  type        String   // "PERCENT" | "FLAT"
+  value       Decimal  @db.Decimal(10, 4)
+  appliesToServiceId String?
+  isActive    Boolean  @default(true)
+}
+
+// ------------------------------------------------------------
+// Orders / Shipments
+// ------------------------------------------------------------
+enum OrderStatus {
+  DRAFT           // quote created, not yet booked
+  PENDING_PAYMENT
+  PAID
+  LABEL_GENERATED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  EXCEPTION
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  orderNumber    String      @unique // human-friendly e.g. CMN-2026-000123
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id])
+
+  serviceId      String
+  service        Service     @relation(fields: [serviceId], references: [id])
+
+  senderAddressId   String
+  senderAddress     Address  @relation("SenderAddress", fields: [senderAddressId], references: [id])
+  receiverAddressId String
+  receiverAddress   Address  @relation("ReceiverAddress", fields: [receiverAddressId], references: [id])
+
+  // parcel physical details
+  actualWeightKg    Decimal  @db.Decimal(10, 3)
+  lengthCm          Decimal  @db.Decimal(10, 2)
+  widthCm           Decimal  @db.Decimal(10, 2)
+  heightCm          Decimal  @db.Decimal(10, 2)
+  volumetricWeightKg Decimal @db.Decimal(10, 3)
+  chargeableWeightKg Decimal @db.Decimal(10, 3) // max(actual, volumetric)
+  declaredValue      Decimal @db.Decimal(10, 2) @default(0)
+  contentsDescription String?
+  quantity            Int    @default(1)
+
+  // pricing snapshot (never recompute historical orders off live rate cards)
+  zoneCode        String
+  baseFreight     Decimal @db.Decimal(10, 2)
+  surchargesTotal Decimal @db.Decimal(10, 2) @default(0)
+  taxTotal        Decimal @db.Decimal(10, 2) @default(0)
+  grandTotal      Decimal @db.Decimal(10, 2)
+  currency        String  @default("AUD")
+  pricingBreakdown Json?  // full itemised breakdown for transparency/audit
+
+  status          OrderStatus @default(DRAFT)
+  trackingNumber  String?     @unique
+
+  payment         Payment?
+  label           Label?
+  trackingEvents  TrackingEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([userId])
+}
+
+// ------------------------------------------------------------
+// Payments (Razorpay Orders — provider-agnostic schema)
+// ------------------------------------------------------------
+enum PaymentStatus {
+  REQUIRES_PAYMENT
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id                    String   @id @default(uuid())
+  orderId               String   @unique
+  order                 Order    @relation(fields: [orderId], references: [id])
+  provider              String   @default("razorpay")
+  providerOrderId       String?  // Razorpay Order id (order_xxx)
+  providerPaymentId     String?  // Razorpay Payment id (pay_xxx), set once captured
+  amount                Decimal  @db.Decimal(10, 2)
+  currency              String   @default("AUD")
+  status                PaymentStatus @default(REQUIRES_PAYMENT)
+  method                String?  // "card" | "paypal" | ...
+  rawWebhookPayload     Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// Labels
+// ------------------------------------------------------------
+model Label {
+  id           String   @id @default(uuid())
+  orderId      String   @unique
+  order        Order    @relation(fields: [orderId], references: [id])
+  fileUrl      String   // path/URL to generated PDF
+  barcodeValue String
+  generatedAt  DateTime @default(now())
+}
+
+// ------------------------------------------------------------
+// Tracking
+// ------------------------------------------------------------
+model TrackingEvent {
+  id        String      @id @default(uuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id])
+  status    OrderStatus
+  location  String?
+  note      String?
+  occurredAt DateTime   @default(now())
+}
+
+// ------------------------------------------------------------
+// Audit log (admin actions)
+// ------------------------------------------------------------
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  meta      Json?
+  createdAt DateTime @default(now())
+}
