@@ -6,20 +6,30 @@ const {
 } = require('../services/paymentService');
 const { generateTrackingNumber } = require('../utils/orderNumber');
 
+/**
+ * Idempotent: Razorpay retries webhooks at-least-once, and the client-side
+ * /confirm call can race with (or duplicate) the webhook. The PENDING_PAYMENT
+ * condition on the order update is checked and applied atomically by
+ * Postgres, so only the first caller — webhook or confirm — actually
+ * transitions the order and writes a tracking event/number; later callers
+ * just keep the payment record in sync.
+ */
 async function markOrderPaid(orderId, extra = {}) {
   await prisma.payment.update({
     where: { orderId },
     data: { status: 'SUCCEEDED', ...extra },
   });
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      status: 'PAID',
-      trackingNumber: generateTrackingNumber(),
-      trackingEvents: { create: { status: 'PAID', note: 'Payment confirmed' } },
-    },
+  const { count } = await prisma.order.updateMany({
+    where: { id: orderId, status: 'PENDING_PAYMENT' },
+    data: { status: 'PAID', trackingNumber: generateTrackingNumber() },
   });
+
+  if (count > 0) {
+    await prisma.trackingEvent.create({
+      data: { orderId, status: 'PAID', note: 'Payment confirmed' },
+    });
+  }
 }
 
 /**
