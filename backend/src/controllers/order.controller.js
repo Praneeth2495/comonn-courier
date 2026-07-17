@@ -265,6 +265,7 @@ async function sendOtp(req, res, next) {
 
     await sendEmail({
       to: email,
+      from: process.env.EMAIL_FROM_VERIFY || 'Comonn Verification <verify@comonn.in>',
       subject: 'Your Comonn verification code',
       html: `<div style="font-family:sans-serif;"><p>Your Comonn verification code is:</p><p style="font-size:28px;font-weight:700;letter-spacing:4px;">${code}</p><p style="color:#8A93A6;font-size:13px;">This code expires in 10 minutes.</p></div>`,
     });

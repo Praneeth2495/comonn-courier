@@ -1,6 +1,6 @@
 const RESEND_API_URL = 'https://api.resend.com/emails';
 
-async function sendEmail({ to, subject, html }) {
+async function sendEmail({ to, subject, html, from }) {
   const res = await fetch(RESEND_API_URL, {
     method: 'POST',
     headers: {
@@ -8,7 +8,7 @@ async function sendEmail({ to, subject, html }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM || 'Comonn <quotes@comonn.in>',
+      from: from || process.env.EMAIL_FROM || 'Comonn <quotes@comonn.in>',
       to: [to],
       subject,
       html,
