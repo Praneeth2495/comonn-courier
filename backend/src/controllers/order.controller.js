@@ -142,7 +142,7 @@ async function getOrder(req, res, next) {
         senderAddress: true,
         receiverAddress: true,
         payment: true,
-        label: true,
+        labels: true,
         items: true,
         trackingEvents: { orderBy: { occurredAt: 'asc' } },
       },

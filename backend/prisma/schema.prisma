@@ -196,7 +196,7 @@ model Order {
   trackingNumber  String?     @unique
 
   payment         Payment?
-  label           Label?
+  labels          Label[]
   trackingEvents  TrackingEvent[]
 
   createdAt DateTime @default(now())
@@ -282,13 +282,20 @@ model Payment {
 // ------------------------------------------------------------
 // Labels
 // ------------------------------------------------------------
+// One physical package's shipping label. A multi-item order (e.g. 3 boxes)
+// gets one Label per package, each independently barcoded but linked back
+// to the same order/tracking number.
 model Label {
   id           String   @id @default(uuid())
-  orderId      String   @unique
+  orderId      String
   order        Order    @relation(fields: [orderId], references: [id])
+  packageIndex Int
+  itemType     String
   fileUrl      String   // path/URL to generated PDF
-  barcodeValue String
+  barcodeValue String   @unique
   generatedAt  DateTime @default(now())
+
+  @@index([orderId])
 }
 
 // ------------------------------------------------------------

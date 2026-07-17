@@ -3,6 +3,6 @@ const { optionalAuth } = require('../middleware/auth');
 const { generateLabel, downloadLabel } = require('../controllers/label.controller');
 
 router.post('/:orderId/generate', optionalAuth, generateLabel);
-router.get('/:orderId/download', optionalAuth, downloadLabel);
+router.get('/download/:labelId', optionalAuth, downloadLabel);
 
 module.exports = router;

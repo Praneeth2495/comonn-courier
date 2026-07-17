@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
@@ -7,16 +7,22 @@ import Stepper from '../components/Stepper';
 export default function Labels() {
   const { order, clearBooking } = useBooking();
   const navigate = useNavigate();
-  const [label, setLabel] = useState(null);
+  const [labels, setLabels] = useState(null);
+  const [emailedTo, setEmailedTo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const didGenerate = useRef(false);
 
   useEffect(() => {
-    if (!order) return;
+    if (!order || didGenerate.current) return;
+    didGenerate.current = true;
     client
       .post(`/labels/${order.id}/generate`)
-      .then(({ data }) => setLabel(data))
-      .catch((err) => setError(err.response?.data?.error || 'Could not generate the label.'))
+      .then(({ data }) => {
+        setLabels(data.labels);
+        setEmailedTo(data.emailedTo);
+      })
+      .catch((err) => setError(err.response?.data?.error || 'Could not generate your labels.'))
       .finally(() => setLoading(false));
   }, [order]);
 
@@ -32,33 +38,58 @@ export default function Labels() {
   return (
     <div>
       <div id="stepper-labels"><Stepper activeKey="labels" /></div>
-      <div className="wrap section-narrow" style={{ textAlign: 'center' }}>
-        <div className="pill pill-success" style={{ marginBottom: 12 }}>Payment confirmed</div>
-        <h1 className="h-lg">Your label is ready</h1>
-        <p className="lead" style={{ margin: '10px 0 26px' }}>Order {order.orderNumber} · Tracking number {order.trackingNumber || 'assigned after payment'}</p>
+      <div className="section" style={{ paddingTop: 20, maxWidth: 960, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+          <span className="pill pill-success" style={{ marginBottom: 14 }}>✓ Booking confirmed</span>
+          <h2 className="h-lg" style={{ marginTop: 10 }}>Download your shipping labels</h2>
+          <p className="lead" style={{ marginTop: 8 }}>Print and attach these to each package before pickup.</p>
+        </div>
 
-        {loading && <p className="lead">Generating your label…</p>}
-        {error && <div className="error-text">{error}</div>}
+        {loading && <p className="lead" style={{ textAlign: 'center' }}>Generating your labels…</p>}
+        {error && <div className="error-text" style={{ textAlign: 'center' }}>{error}</div>}
 
-        {label && (
-          <div className="card" style={{ padding: 28 }}>
-            <p style={{ marginBottom: 16 }}>Barcode: <b className="mono">{label.label.barcodeValue}</b></p>
-            <a
-              className="btn btn-primary block"
-              href={`${import.meta.env.VITE_API_BASE_URL || '/api'}${label.downloadUrl}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Download label (PDF)
-            </a>
+        {labels && (
+          <>
+            <div className="table-wrap" style={{ marginTop: 30 }}>
+              <div className="label-row" style={{ background: 'var(--paper)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--slate-light)', fontWeight: 700 }}>
+                <div>Order ID</div><div>Origin</div><div>Destination</div><div>Label</div>
+              </div>
+              {labels.map((l) => (
+                <div className="label-row" key={l.id}>
+                  <div className="oid">{order.orderNumber}{labels.length > 1 ? ` (${l.packageIndex}/${labels.length})` : ''}</div>
+                  <div className="addr"><b>Pickup</b>{order.senderAddress?.city}, {order.senderAddress?.countryCode}</div>
+                  <div className="addr"><b>Delivery</b>{order.receiverAddress?.city}, {order.receiverAddress?.countryCode}</div>
+                  <div>
+                    <a
+                      className="btn btn-dark btn-sm"
+                      href={`${import.meta.env.VITE_API_BASE_URL || '/api'}${l.downloadUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      ⬇ Download
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {emailedTo && (
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: 'var(--success-bg)', borderRadius: 12, padding: '16px 18px', marginTop: 22 }}>
+                <span style={{ fontSize: 18, lineHeight: 1 }}>✉️</span>
+                <p style={{ fontSize: 13.5, color: 'var(--success)' }}>
+                  These labels have also been emailed to your verified address — <b>{emailedTo}</b>.
+                </p>
+              </div>
+            )}
+
             <button
               className="btn btn-outline block"
-              style={{ marginTop: 10 }}
+              style={{ marginTop: 22 }}
               onClick={() => { clearBooking(); navigate('/dashboard'); }}
             >
               Go to my orders
             </button>
-          </div>
+          </>
         )}
       </div>
     </div>

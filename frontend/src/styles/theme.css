@@ -370,3 +370,17 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @media(max-width:640px){
   .pay-method-row{flex-direction:column;}
 }
+
+/* ============================================================
+   Redesign additions — Labels
+   ============================================================ */
+.table-wrap{background:#fff;border-radius:16px;border:1px solid var(--line-2);overflow:hidden;}
+.label-row{display:grid;grid-template-columns:1.1fr 1.6fr 1.6fr .9fr;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line-2);}
+.label-row:last-child{border-bottom:none;}
+.label-row .oid{font-family:'IBM Plex Mono';font-weight:600;color:var(--navy);font-size:13.5px;}
+.label-row .addr{font-size:12.5px;color:var(--slate);line-height:1.5;}
+.label-row .addr b{color:var(--ink);display:block;font-size:13px;margin-bottom:2px;}
+@media(max-width:640px){
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .label-row{min-width:640px;}
+}
