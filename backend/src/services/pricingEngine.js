@@ -222,6 +222,44 @@ async function generateQuote(input) {
   };
 }
 
+/**
+ * Recomputes an order's addonsTotal/discountTotal/taxTotal/grandTotal from
+ * its current baseFreight/surchargesTotal (fixed at booking time), its live
+ * OrderAddon rows, and its applied promo code (if any). Called whenever
+ * add-ons or a promo code change on the Payment page, before the order is
+ * paid.
+ */
+async function recomputeOrderTotals(orderId) {
+  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { addons: true } });
+  if (!order) {
+    const err = new Error('Order not found');
+    err.status = 404;
+    throw err;
+  }
+
+  const addonsTotal = round2(order.addons.reduce((sum, a) => sum + Number(a.amount), 0));
+  const subtotal = Number(order.baseFreight) + Number(order.surchargesTotal) + addonsTotal;
+
+  let discountTotal = 0;
+  if (order.promoCode) {
+    const promo = await prisma.promoCode.findUnique({ where: { code: order.promoCode } });
+    if (promo && promo.isActive) {
+      discountTotal = promo.type === 'PERCENT' ? subtotal * Number(promo.value) : Number(promo.value);
+      discountTotal = Math.min(round2(discountTotal), subtotal);
+    }
+  }
+
+  const taxable = subtotal - discountTotal;
+  const taxTotal = round2(taxable * Number(order.taxRate));
+  const grandTotal = round2(taxable + taxTotal);
+
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { addonsTotal, discountTotal: round2(discountTotal), taxTotal, grandTotal },
+    include: { addons: true, items: true, service: true, senderAddress: true, receiverAddress: true },
+  });
+}
+
 module.exports = {
   round2,
   calcVolumetricWeightKg,
@@ -230,4 +268,5 @@ module.exports = {
   findRateBracket,
   applySurcharges,
   generateQuote,
+  recomputeOrderTotals,
 };

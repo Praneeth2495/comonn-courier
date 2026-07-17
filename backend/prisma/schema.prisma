@@ -173,10 +173,24 @@ model Order {
   zoneCode        String
   baseFreight     Decimal @db.Decimal(10, 2)
   surchargesTotal Decimal @db.Decimal(10, 2) @default(0)
+  addonsTotal     Decimal @db.Decimal(10, 2) @default(0)
+  discountTotal   Decimal @db.Decimal(10, 2) @default(0)
+  taxRate         Decimal @db.Decimal(6, 4) @default(0)
   taxTotal        Decimal @db.Decimal(10, 2) @default(0)
   grandTotal      Decimal @db.Decimal(10, 2)
   currency        String  @default("INR")
   pricingBreakdown Json?  // full itemised breakdown for transparency/audit
+
+  addons          OrderAddon[]
+  promoCode       String?
+
+  // pre-payment gates (Payment page)
+  dgAcknowledged  Boolean   @default(false) // dangerous-goods declaration
+  pickupDate      String?
+  otpEmail        String?
+  otpCode         String?   // never returned to the client
+  otpExpiresAt    DateTime?
+  otpVerifiedAt   DateTime?
 
   status          OrderStatus @default(DRAFT)
   trackingNumber  String?     @unique
@@ -208,6 +222,34 @@ model OrderItem {
   createdAt          DateTime @default(now())
 
   @@index([orderId])
+}
+
+// Extra-protection add-on selected on the Payment page (transit warranty
+// tier, heavy-duty cardboard, packing/wrapping service).
+model OrderAddon {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  code      String  // "WARRANTY" | "CARDBOARD" | "PACKING" | "WRAPPING"
+  label     String
+  quantity  Int     @default(1)
+  unitPrice Decimal @db.Decimal(10, 2)
+  amount    Decimal @db.Decimal(10, 2) // unitPrice * quantity
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model PromoCode {
+  id             String    @id @default(uuid())
+  code           String    @unique
+  type           String    // "PERCENT" | "FLAT"
+  value          Decimal   @db.Decimal(10, 4)
+  isActive       Boolean   @default(true)
+  expiresAt      DateTime?
+  maxRedemptions Int?
+  timesRedeemed  Int       @default(0)
+  createdAt      DateTime  @default(now())
 }
 
 // ------------------------------------------------------------

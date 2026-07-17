@@ -1,6 +1,9 @@
+const crypto = require('crypto');
 const { prisma } = require('../config/db');
-const { generateQuote, round2 } = require('../services/pricingEngine');
+const { generateQuote, round2, recomputeOrderTotals } = require('../services/pricingEngine');
 const { generateOrderNumber } = require('../utils/orderNumber');
+const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addonCatalog');
+const { sendEmail } = require('../services/emailService');
 
 /**
  * POST /api/orders
@@ -81,6 +84,7 @@ async function createOrder(req, res, next) {
         zoneCode: quote.zone.code,
         baseFreight: quote.pricing.baseFreight,
         surchargesTotal: quote.pricing.surchargesTotal,
+        taxRate: quote.pricing.taxRate,
         taxTotal: quote.pricing.taxTotal,
         grandTotal: quote.pricing.grandTotal,
         currency: quote.pricing.currency,
@@ -191,4 +195,149 @@ async function cancelOrder(req, res, next) {
   }
 }
 
-module.exports = { createOrder, listOrders, getOrder, updateOrderStatus, cancelOrder, round2 };
+/**
+ * PATCH /api/orders/:id/addons
+ * Payment page: selects transit-warranty tier + flat add-ons (heavy-duty
+ * cardboard/packing/wrapping), pickup date, and the dangerous-goods
+ * acknowledgment. Replaces the order's add-on selection wholesale each
+ * call (simplest way to handle toggling) and recomputes totals.
+ */
+async function updateAddons(req, res, next) {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: req.params.id }, include: { items: true } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (order.status !== 'PENDING_PAYMENT') {
+      return res.status(409).json({ error: 'Order is no longer awaiting payment' });
+    }
+
+    const { warrantyCoverage, addons = [], pickupDate, dgAcknowledged } = req.body;
+    const totalBoxQty = order.items.reduce((sum, it) => sum + it.quantity, 0) || 1;
+
+    const rows = [];
+    if (warrantyCoverage !== undefined && warrantyCoverage !== null) {
+      const tier = WARRANTY_TIERS.find((t) => t.coverage === Number(warrantyCoverage));
+      if (!tier) return res.status(400).json({ error: 'Unknown warranty tier' });
+      rows.push({ orderId: order.id, code: 'WARRANTY', label: warrantyLabel(tier.coverage), quantity: 1, unitPrice: tier.price, amount: tier.price });
+    }
+    for (const code of addons) {
+      const def = FLAT_ADDONS[code];
+      if (!def) return res.status(400).json({ error: `Unknown addon "${code}"` });
+      const quantity = def.perBox ? totalBoxQty : 1;
+      rows.push({ orderId: order.id, code, label: def.label, quantity, unitPrice: def.unitPrice, amount: round2(def.unitPrice * quantity) });
+    }
+
+    await prisma.$transaction([
+      prisma.orderAddon.deleteMany({ where: { orderId: order.id } }),
+      ...(rows.length ? [prisma.orderAddon.createMany({ data: rows })] : []),
+    ]);
+
+    const dataUpdate = {};
+    if (pickupDate !== undefined) dataUpdate.pickupDate = pickupDate;
+    if (dgAcknowledged !== undefined) dataUpdate.dgAcknowledged = Boolean(dgAcknowledged);
+    if (Object.keys(dataUpdate).length) await prisma.order.update({ where: { id: order.id }, data: dataUpdate });
+
+    const updated = await recomputeOrderTotals(order.id);
+    res.json({ order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** POST /api/orders/:id/send-otp — emails a 6-digit code, valid for 10 minutes */
+async function sendOtp(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'email is required' });
+
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (order.status !== 'PENDING_PAYMENT') {
+      return res.status(409).json({ error: 'Order is no longer awaiting payment' });
+    }
+
+    const code = String(crypto.randomInt(100000, 1000000));
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { otpEmail: email, otpCode: code, otpExpiresAt, otpVerifiedAt: null },
+    });
+
+    await sendEmail({
+      to: email,
+      subject: 'Your Comonn verification code',
+      html: `<div style="font-family:sans-serif;"><p>Your Comonn verification code is:</p><p style="font-size:28px;font-weight:700;letter-spacing:4px;">${code}</p><p style="color:#8A93A6;font-size:13px;">This code expires in 10 minutes.</p></div>`,
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** POST /api/orders/:id/verify-otp */
+async function verifyOtp(req, res, next) {
+  try {
+    const { code } = req.body;
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (!order.otpCode || !order.otpExpiresAt) {
+      return res.status(400).json({ error: 'No verification code was sent for this order' });
+    }
+    if (order.otpExpiresAt < new Date()) {
+      return res.status(400).json({ error: 'Verification code expired — please resend' });
+    }
+    if (order.otpCode !== String(code)) {
+      return res.status(400).json({ error: 'Incorrect verification code' });
+    }
+
+    await prisma.order.update({ where: { id: order.id }, data: { otpVerifiedAt: new Date(), otpCode: null } });
+    res.json({ ok: true, verified: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** POST /api/orders/:id/promo */
+async function applyPromo(req, res, next) {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: 'code is required' });
+
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (order.status !== 'PENDING_PAYMENT') {
+      return res.status(409).json({ error: 'Order is no longer awaiting payment' });
+    }
+
+    const promo = await prisma.promoCode.findUnique({ where: { code: code.toUpperCase() } });
+    if (!promo || !promo.isActive) return res.status(404).json({ error: 'Invalid promo code' });
+    if (promo.expiresAt && promo.expiresAt < new Date()) return res.status(400).json({ error: 'Promo code has expired' });
+    if (promo.maxRedemptions && promo.timesRedeemed >= promo.maxRedemptions) {
+      return res.status(400).json({ error: 'Promo code has reached its redemption limit' });
+    }
+
+    if (order.promoCode !== promo.code) {
+      await prisma.promoCode.update({ where: { id: promo.id }, data: { timesRedeemed: { increment: 1 } } });
+    }
+    await prisma.order.update({ where: { id: order.id }, data: { promoCode: promo.code } });
+
+    const updated = await recomputeOrderTotals(order.id);
+    res.json({ order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  createOrder,
+  listOrders,
+  getOrder,
+  updateOrderStatus,
+  cancelOrder,
+  updateAddons,
+  sendOtp,
+  verifyOtp,
+  applyPromo,
+  round2,
+};

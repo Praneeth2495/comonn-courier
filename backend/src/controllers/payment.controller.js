@@ -47,9 +47,21 @@ async function createOrder(req, res, next) {
     if (order.status !== 'PENDING_PAYMENT') {
       return res.status(409).json({ error: `Order is not awaiting payment (status: ${order.status})` });
     }
+    if (!order.dgAcknowledged) {
+      return res.status(409).json({ error: 'Please acknowledge the dangerous goods declaration first' });
+    }
+    if (!order.otpVerifiedAt) {
+      return res.status(409).json({ error: 'Please verify your email before proceeding to payment' });
+    }
 
     // Reuse an existing unpaid Razorpay order rather than creating duplicates
-    if (order.payment?.providerOrderId && order.payment.status === 'REQUIRES_PAYMENT') {
+    // — but only if the amount still matches (add-ons/promo can change the
+    // total after an order was first created).
+    if (
+      order.payment?.providerOrderId &&
+      order.payment.status === 'REQUIRES_PAYMENT' &&
+      Number(order.payment.amount) === Number(order.grandTotal)
+    ) {
       return res.json({ payment: order.payment, keyId: process.env.RAZORPAY_KEY_ID });
     }
 

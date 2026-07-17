@@ -144,6 +144,15 @@ async function main() {
     });
   }
 
+  // Example promo codes — replace/add more via a future admin UI.
+  const PROMO_CODES = [
+    { code: 'WELCOME10', type: 'PERCENT', value: 0.10 },
+    { code: 'FLAT500', type: 'FLAT', value: 500 },
+  ];
+  for (const p of PROMO_CODES) {
+    await prisma.promoCode.upsert({ where: { code: p.code }, update: p, create: p });
+  }
+
   console.log('Seed complete. Admin login: admin@comonn.com / ChangeMe123!');
 }
 
