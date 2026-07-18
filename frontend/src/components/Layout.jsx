@@ -1,5 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
+import logoFull from '../assets/logo-full.png';
+import logoFooter from '../assets/logo-footer.png';
 
 export function SiteHeader() {
   const { pathname } = useLocation();
@@ -13,10 +15,9 @@ export function SiteHeader() {
   ];
   return (
     <header className="site-header">
-      <div className="airmail-edge" />
       <div className="row">
         <Link to="/" className="brand">
-          Comonn<span className="dot">.</span>
+          <img className="logo-img lg" src={logoFull} alt="Comonn" />
         </Link>
         <nav className="nav-links">
           {links.map(([to, label]) => (
@@ -61,8 +62,8 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="footer-top">
         <div className="footer-brand">
-          <div className="brand" style={{ color: '#fff' }}>Comonn.</div>
-          <p style={{ marginTop: 10, color: '#93A0C4', maxWidth: 320, fontSize: 13.5 }}>
+          <img className="logo-img lg" src={logoFooter} alt="Comonn" />
+          <p style={{ marginTop: 12, color: '#93A0C4', maxWidth: 320, fontSize: 13.5 }}>
             International courier, priced instantly by zone, weight and volume.
           </p>
         </div>

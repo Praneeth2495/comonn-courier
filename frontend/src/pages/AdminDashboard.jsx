@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import ChangePassword from '../components/ChangePassword';
+import logoFooter from '../assets/logo-footer.png';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('overview');
@@ -19,7 +20,7 @@ export default function AdminDashboard() {
   return (
     <div className="app-shell">
       <aside className="app-sidebar">
-        <div className="brand">Comonn<span style={{ color: 'var(--coral)' }}>.</span> Admin</div>
+        <div className="brand"><img className="logo-img lg" src={logoFooter} alt="Comonn" /><span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>Admin</span></div>
         {TABS.map(([key, label]) => (
           <button key={key} className={`app-navlink ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>{label}</button>
         ))}

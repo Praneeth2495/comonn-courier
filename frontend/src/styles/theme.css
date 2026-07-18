@@ -25,10 +25,14 @@ input,select,textarea{font-family:inherit;}
 .airmail-edge.dark{background:repeating-linear-gradient(-45deg,var(--coral) 0 10px, var(--navy) 10px 16px, var(--cobalt) 16px 26px, var(--navy) 26px 32px);}
 
 /* header */
-.site-header{background:#fff;position:sticky;top:0;z-index:40;box-shadow:0 1px 0 var(--line);}
+.site-header{background:#fff;position:sticky;top:0;z-index:40;}
+.site-header::after{content:"";display:block;height:3px;width:100%;background:linear-gradient(90deg, transparent 0%, var(--coral) 15%, var(--coral) 85%, transparent 100%);}
 .site-header .row{max-width:1240px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
-.brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:19px;color:var(--navy);}
-.brand .dot{color:var(--coral);}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo-img{height:30px;width:auto;max-width:100%;display:block;}
+.logo-img.lg{height:36px;}
+.logo-img.on-dark{filter:brightness(0) invert(1);}
+.app-sidebar .logo-img.lg{height:28px;}
 .nav-links{display:flex;gap:6px;align-items:center;}
 .nav-links a{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--slate);}
 .nav-links a:hover{background:var(--paper);color:var(--ink);}
@@ -110,7 +114,7 @@ input,select,textarea{font-family:inherit;}
 /* app shell (dashboards) */
 .app-shell{display:flex;min-height:100vh;}
 .app-sidebar{width:230px;flex:none;background:var(--navy);color:#fff;padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
-.app-sidebar .brand{color:#fff;padding:4px 8px 18px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px;}
+.app-sidebar .brand{color:#fff;padding:4px 8px 18px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px;flex-direction:column;align-items:flex-start;gap:6px;}
 .app-navlink{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:none;color:#C7CEE3;padding:10px 12px;border-radius:9px;font-size:13.5px;font-weight:500;margin-bottom:2px;}
 .app-navlink:hover{background:rgba(255,255,255,.06);color:#fff;}
 .app-navlink.active{background:var(--coral);color:#fff;}
