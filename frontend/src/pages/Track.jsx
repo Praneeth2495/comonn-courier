@@ -2,6 +2,21 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 
+const SHIP_STAGES = ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered' };
+const STATUS_PILL = {
+  DRAFT: 'pill-warn',
+  PENDING_PAYMENT: 'pill-warn',
+  PAID: 'pill-cobalt',
+  LABEL_GENERATED: 'pill-cobalt',
+  PICKED_UP: 'pill-cobalt',
+  IN_TRANSIT: 'pill-cobalt',
+  OUT_FOR_DELIVERY: 'pill-cobalt',
+  DELIVERED: 'pill-success',
+  CANCELLED: 'pill-danger',
+  EXCEPTION: 'pill-danger',
+};
+
 export default function Track() {
   const [searchParams] = useSearchParams();
   const [trackingNumber, setTrackingNumber] = useState(searchParams.get('id') || '');
@@ -34,42 +49,66 @@ export default function Track() {
     runTrack(trackingNumber);
   }
 
+  const stageIndex = result ? SHIP_STAGES.indexOf(result.status) : -1;
+  const isFinal = result && (result.status === 'DELIVERED' || result.status === 'CANCELLED' || result.status === 'EXCEPTION');
+  const progressPct = stageIndex >= 0 ? ((stageIndex + 1) / SHIP_STAGES.length) * 100 : 0;
+  const nextStage = !isFinal && stageIndex < SHIP_STAGES.length - 1 ? SHIP_STAGES[stageIndex + 1] : null;
+
   return (
-    <div className="wrap section-narrow">
-      <h1 className="h-lg" style={{ marginBottom: 6 }}>Track your shipment</h1>
-      <p className="lead" style={{ marginBottom: 24 }}>Enter the tracking number from your shipping label.</p>
+    <div>
+      <div className="track-hero">
+        <h1>Track your order</h1>
+        <p style={{ color: '#AEB6D2', marginTop: 8 }}>Enter your order ID for live status and delivery ETA.</p>
+        <form className="track-box" onSubmit={submit}>
+          <input placeholder="e.g. CN1234567890" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} required />
+          <button className="btn btn-primary" disabled={loading}>{loading ? 'Searching…' : 'Track'}</button>
+        </form>
+      </div>
 
-      <form onSubmit={submit} style={{ display: 'flex', gap: 10 }}>
-        <input className="input" placeholder="e.g. CN1234567890" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} required />
-        <button className="btn btn-primary" disabled={loading}>{loading ? 'Searching…' : 'Track'}</button>
-      </form>
-
-      {error && <div className="error-text" style={{ marginTop: 16 }}>{error}</div>}
+      {error && <div className="wrap" style={{ maxWidth: 760, margin: '20px auto 0', textAlign: 'center' }}><div className="error-text">{error}</div></div>}
 
       {result && (
-        <div className="card" style={{ padding: 24, marginTop: 24 }}>
-          <div className="pill pill-cobalt">{result.status.replace(/_/g, ' ')}</div>
-          <h3 className="h-md" style={{ margin: '12px 0 4px' }}>{result.orderNumber}</h3>
-          <p style={{ color: 'var(--slate)', fontSize: 13.5 }}>
-            {result.service} to {result.destination.city}, {result.destination.countryCode}
-          </p>
+        <>
+          <div className="card track-status-card">
+            <div className="track-status-top">
+              <div>
+                <h3>Destination: {result.destination.city}{result.destination.state ? `, ${result.destination.state}` : ''}</h3>
+                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>
+                  Order ID: <span className="mono">{result.orderNumber}</span>
+                </p>
+              </div>
+              <span className={`pill ${STATUS_PILL[result.status] || 'pill-navy'}`}>{result.status.replace(/_/g, ' ')}</span>
+            </div>
+            <div className="progress-bar"><div className="fill" style={{ width: `${progressPct}%` }} /></div>
+            <div className="progress-labels">
+              {SHIP_STAGES.map((s, i) => (
+                <span key={s} className={i <= stageIndex ? 'on' : ''}>{STAGE_LABELS[s]}</span>
+              ))}
+            </div>
+          </div>
 
-          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="timeline">
             {result.events.map((ev, i) => (
-              <div key={i} style={{ display: 'flex', gap: 12 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--coral)', marginTop: 5, flex: 'none' }} />
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 13.5 }}>{ev.status.replace(/_/g, ' ')}</div>
-                  <div style={{ fontSize: 12, color: 'var(--slate-light)' }}>
+              <div className="tl-item" key={i}>
+                <div className="tl-dot">✓</div>
+                <div className="tl-body">
+                  <b>{ev.status.replace(/_/g, ' ')}</b>
+                  <span>
                     {new Date(ev.occurredAt).toLocaleString()} {ev.location ? `· ${ev.location}` : ''}
-                  </div>
-                  {ev.note && <div style={{ fontSize: 12.5, color: 'var(--slate)' }}>{ev.note}</div>}
+                  </span>
+                  {ev.note && <div style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 2 }}>{ev.note}</div>}
                 </div>
               </div>
             ))}
             {result.events.length === 0 && <p style={{ fontSize: 13, color: 'var(--slate-light)' }}>No tracking events yet.</p>}
+            {nextStage && (
+              <div className="tl-item">
+                <div className="tl-dot pending">●</div>
+                <div className="tl-body"><b>{STAGE_LABELS[nextStage]}</b><span>Pending</span></div>
+              </div>
+            )}
           </div>
-        </div>
+        </>
       )}
     </div>
   );

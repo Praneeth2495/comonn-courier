@@ -384,3 +384,34 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .label-row{min-width:640px;}
 }
+
+/* ============================================================
+   Redesign additions — Track
+   ============================================================ */
+.track-hero{background:var(--navy);padding:70px 32px 60px;text-align:center;}
+.track-hero h1{color:#fff;}
+.track-box{max-width:520px;margin:26px auto 0;display:flex;gap:10px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:6px;}
+.track-box input{flex:1;background:transparent;border:none;color:#fff;padding:11px 14px;font-size:14px;outline:none;}
+.track-box input::placeholder{color:#8C97BA;}
+
+.track-status-card{max-width:760px;margin:-40px auto 0;padding:30px 34px;position:relative;z-index:5;}
+.track-status-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:22px;}
+.progress-bar{height:6px;border-radius:99px;background:var(--line-2);position:relative;overflow:hidden;margin-bottom:8px;}
+.progress-bar .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--cobalt),var(--coral));border-radius:99px;transition:width .3s ease;}
+.progress-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--slate-light);font-weight:600;}
+.progress-labels .on{color:var(--navy);}
+
+.timeline{max-width:760px;margin:20px auto 0;padding:6px 34px 10px;}
+.tl-item{display:flex;gap:18px;position:relative;padding-bottom:30px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-item::before{content:"";position:absolute;left:11px;top:26px;bottom:0;width:2px;background:var(--line);}
+.tl-item:last-child::before{display:none;}
+.tl-dot{width:24px;height:24px;border-radius:50%;background:var(--success);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;z-index:1;}
+.tl-dot.pending{background:var(--line);color:var(--slate-light);}
+.tl-body b{font-size:14px;color:var(--navy);display:block;}
+.tl-body span{font-size:12.5px;color:var(--slate-light);}
+
+@media(max-width:640px){
+  .track-status-card{margin-top:-24px;padding:22px 20px;}
+  .timeline{padding:6px 20px 10px;}
+}
