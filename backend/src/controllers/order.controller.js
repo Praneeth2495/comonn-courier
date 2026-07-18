@@ -161,6 +161,14 @@ async function listOrders(req, res, next) {
     if (zoneCode) where.zoneCode = zoneCode;
     if (hasUser === 'true') where.userId = { not: null };
     if (hasUser === 'false') where.userId = null;
+
+    // Admin-controlled zone visibility: STAFF only ever see orders in zones
+    // marked visibleToStaff, regardless of what zoneCode filter is requested.
+    if (req.user.role === 'STAFF') {
+      const visibleZones = await prisma.zone.findMany({ where: { visibleToStaff: true }, select: { code: true } });
+      const visibleCodes = visibleZones.map((z) => z.code);
+      where.zoneCode = zoneCode && visibleCodes.includes(zoneCode) ? zoneCode : { in: visibleCodes };
+    }
     if (q) {
       where.OR = [
         { orderNumber: { contains: q, mode: 'insensitive' } },

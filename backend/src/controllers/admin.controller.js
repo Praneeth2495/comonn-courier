@@ -40,7 +40,8 @@ async function dashboardStats(req, res, next) {
 // ---------------- Zones & Countries ----------------
 async function listZones(req, res, next) {
   try {
-    const zones = await prisma.zone.findMany({ include: { countries: true } });
+    const where = req.user.role === 'STAFF' ? { visibleToStaff: true } : {};
+    const zones = await prisma.zone.findMany({ where, include: { countries: true } });
     res.json({ zones });
   } catch (err) {
     next(err);
@@ -52,6 +53,20 @@ async function createZone(req, res, next) {
     const { code, name } = req.body;
     const zone = await prisma.zone.create({ data: { code, name } });
     res.status(201).json({ zone });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** PATCH /api/admin/zones/:id — ADMIN only: toggle whether STAFF can see this zone's orders */
+async function setZoneStaffVisibility(req, res, next) {
+  try {
+    const { visibleToStaff } = req.body;
+    const zone = await prisma.zone.update({
+      where: { id: req.params.id },
+      data: { visibleToStaff: Boolean(visibleToStaff) },
+    });
+    res.json({ zone });
   } catch (err) {
     next(err);
   }
@@ -197,6 +212,7 @@ module.exports = {
   dashboardStats,
   listZones,
   createZone,
+  setZoneStaffVisibility,
   upsertCountryMapping,
   listServicesAdmin,
   upsertService,

@@ -7,22 +7,35 @@ import logoFooter from '../assets/logo-footer.png';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('overview');
-  const { logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const TABS = [
     ['overview', 'Overview'],
     ['orders', 'Orders'],
-    ['rates', 'Zones & Rates'],
-    ['users', 'Users'],
+    ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
+    ...(isAdmin ? [['users', 'Users']] : []),
     ['account', 'Account'],
   ];
 
+  function selectTab(key) {
+    setTab(key);
+    setSidebarOpen(false);
+  }
+
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
+      <div className="app-mobile-bar">
+        <button className="app-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">☰</button>
+        <img className="logo-img" src={logoFooter} alt="Comonn" style={{ filter: 'invert(1) brightness(0.2)' }} />
+      </div>
+      {sidebarOpen && <div className="app-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+      <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <button className="app-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close menu">✕</button>
         <div className="brand"><img className="logo-img lg" src={logoFooter} alt="Comonn" /><span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>Admin</span></div>
         {TABS.map(([key, label]) => (
-          <button key={key} className={`app-navlink ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>{label}</button>
+          <button key={key} className={`app-navlink ${tab === key ? 'active' : ''}`} onClick={() => selectTab(key)}>{label}</button>
         ))}
         <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,.1)' }}>
           <Link to="/" className="app-navlink">← Back to site</Link>
@@ -32,8 +45,8 @@ export default function AdminDashboard() {
       <main className="app-main">
         {tab === 'overview' && <Overview />}
         {tab === 'orders' && <OrdersPanel />}
-        {tab === 'rates' && <RatesPanel />}
-        {tab === 'users' && <UsersPanel />}
+        {tab === 'rates' && isAdmin && <RatesPanel />}
+        {tab === 'users' && isAdmin && <UsersPanel />}
         {tab === 'account' && <ChangePassword />}
       </main>
     </div>
@@ -340,17 +353,31 @@ function RatesPanel() {
     load();
   }
 
+  async function toggleStaffVisibility(zone) {
+    const { data } = await client.patch(`/admin/zones/${zone.id}`, { visibleToStaff: !zone.visibleToStaff });
+    setZones((prev) => prev.map((z) => (z.id === zone.id ? { ...z, visibleToStaff: data.zone.visibleToStaff } : z)));
+  }
+
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Zones &amp; Rate Cards</h1>
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Zones</h4>
+        <h4 style={{ marginBottom: 4, color: 'var(--navy)' }}>Zones</h4>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 12 }}>
+          Toggle which zones staff accounts can see and filter by in Pickup/Delivery orders.
+        </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {zones.map((z) => (
-            <span key={z.id} className="pill pill-navy" title={z.countries.map((c) => c.countryName).join(', ')}>
+            <label
+              key={z.id}
+              className="pill pill-navy"
+              title={z.countries.map((c) => c.countryName).join(', ')}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', opacity: z.visibleToStaff ? 1 : 0.5 }}
+            >
+              <input type="checkbox" checked={z.visibleToStaff} onChange={() => toggleStaffVisibility(z)} style={{ margin: 0 }} />
               {z.name} · {z.countries.length} countries
-            </span>
+            </label>
           ))}
         </div>
       </div>

@@ -8,6 +8,7 @@ router.get('/dashboard', admin.dashboardStats);
 
 router.get('/zones', admin.listZones);
 router.post('/zones', requireRole('ADMIN'), admin.createZone);
+router.patch('/zones/:id', requireRole('ADMIN'), admin.setZoneStaffVisibility);
 router.post('/zones/countries', requireRole('ADMIN'), admin.upsertCountryMapping);
 
 router.get('/services', admin.listServicesAdmin);

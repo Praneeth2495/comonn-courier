@@ -22,6 +22,7 @@ export default function Quote() {
   const [error, setError] = useState('');
   const [emailAddress, setEmailAddress] = useState(user?.email || '');
   const [emailStatus, setEmailStatus] = useState('');
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const { setBooking } = useBooking();
   const navigate = useNavigate();
 
@@ -112,7 +113,13 @@ export default function Quote() {
     navigate('/details');
   }
 
-  async function emailQuote() {
+  function openEmailModal() {
+    setEmailStatus('');
+    setShowEmailModal(true);
+  }
+
+  async function emailQuote(e) {
+    e.preventDefault();
     if (!selected || !emailAddress) return;
     const parsedItems = buildItemsPayload();
     setEmailStatus('sending');
@@ -248,28 +255,51 @@ export default function Quote() {
                   <div style={{ fontSize: 12, color: 'var(--slate-light)' }}>{selected.weight.chargeableWeightKg.toFixed(2)} kg billed</div>
 
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 14, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                    <input
-                      className="input"
-                      type="email"
-                      placeholder="you@email.com"
-                      value={emailAddress}
-                      onChange={(e) => setEmailAddress(e.target.value)}
-                      style={{ width: 200 }}
-                    />
-                    <button type="button" className="btn btn-outline" disabled={!emailAddress || emailStatus === 'sending'} onClick={emailQuote}>
-                      ✉️ {emailStatus === 'sending' ? 'Sending…' : 'Email quote'}
+                    <button type="button" className="btn btn-outline" onClick={openEmailModal}>
+                      ✉️ Email quote
                     </button>
                     <button type="button" className="btn btn-primary" style={{ padding: '14px 32px' }} onClick={continueToDetails}>
                       Continue to details →
                     </button>
                   </div>
-                  {emailStatus === 'sent' && <div style={{ fontSize: 12.5, color: 'var(--success)', marginTop: 8 }}>Quote emailed to {emailAddress}.</div>}
-                  {emailStatus && emailStatus !== 'sent' && emailStatus !== 'sending' && <div className="error-text" style={{ marginTop: 8 }}>{emailStatus}</div>}
                 </div>
               </div>
             )}
           </div>
         )}
+      </div>
+
+      <div className={`modal-overlay ${showEmailModal ? 'open' : ''}`} onClick={() => setShowEmailModal(false)}>
+        <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <h3 style={{ fontSize: 17 }}>Email this quote</h3>
+            <button onClick={() => setShowEmailModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 30, height: 30, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 18 }}>We'll send the price breakdown to this address.</p>
+          <form onSubmit={emailQuote}>
+            <div className="field">
+              <label>Email address</label>
+              <input
+                className="input"
+                type="email"
+                required
+                placeholder="you@email.com"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+                disabled={emailStatus === 'sent'}
+                autoFocus
+              />
+            </div>
+            {emailStatus === 'sent' ? (
+              <div style={{ fontSize: 13, color: 'var(--success)', marginTop: 14 }}>✓ Quote emailed to {emailAddress}.</div>
+            ) : (
+              <button type="submit" className="btn btn-primary block" style={{ marginTop: 16, padding: 12 }} disabled={!emailAddress || emailStatus === 'sending'}>
+                {emailStatus === 'sending' ? 'Sending…' : 'Send'}
+              </button>
+            )}
+            {emailStatus && emailStatus !== 'sent' && emailStatus !== 'sending' && <div className="error-text" style={{ marginTop: 10 }}>{emailStatus}</div>}
+          </form>
+        </div>
       </div>
     </div>
   );

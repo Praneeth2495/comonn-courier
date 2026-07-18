@@ -78,13 +78,14 @@ model Address {
 // (typical for international courier pricing: Zone A = neighbouring
 // region, Zone B = wider region, Zone C = rest of world, etc).
 model Zone {
-  id          String   @id @default(uuid())
-  code        String   @unique // "ZONE_A"
-  name        String            // "Zone A — Asia Pacific"
-  countries   CountryZone[]
-  rateCards   RateCard[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(uuid())
+  code           String   @unique // "ZONE_A"
+  name           String            // "Zone A — Asia Pacific"
+  visibleToStaff Boolean  @default(true) // admin-controlled: whether STAFF can see/filter orders in this zone
+  countries      CountryZone[]
+  rateCards      RateCard[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model CountryZone {
