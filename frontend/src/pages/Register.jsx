@@ -52,7 +52,7 @@ export default function Register() {
   return (
     <div className="center-card-wrap">
       <form className="card center-card" onSubmit={submit}>
-        <div className="airmail-edge" style={{ borderRadius: '18px 18px 0 0', margin: '-44px -44px 30px' }} />
+        <div className="airmail-edge card-top-stripe" />
         <h2 className="h-lg" style={{ marginBottom: 6 }}>Create your account</h2>
         <p className="lead" style={{ marginBottom: 26 }}>Takes less than a minute — no credit card required.</p>
 

@@ -23,15 +23,17 @@ export default function About() {
         <div className="card about-stat-card"><b>24/7</b><span>Customer support</span></div>
       </div>
 
-      <div className="section about-split">
-        <div>
-          <div className="eyebrow">Our story</div>
-          <h2 className="h-lg" style={{ marginBottom: 16 }}>Shipping shouldn't need a logistics degree.</h2>
-          <p className="lead">Comonn was built around a simple idea: international courier services should be transparent, fairly priced, and trackable in real time — whether you're sending a single gift box or running a growing export business from India.</p>
-          <p className="lead" style={{ marginTop: 14 }}>Today we move personal, commercial and project cargo out of India to Australia, Canada, New Zealand, the UK and the USA, backed by a price-beat guarantee and up to ₹1,50,000 in transit warranty on every shipment.</p>
-        </div>
-        <div className="visual">
-          <div className="airmail-edge dark" style={{ position: 'absolute', top: '50%', left: '-10%', width: '120%', transform: 'rotate(-8deg)' }} />
+      <div className="section">
+        <div className="wrap about-split">
+          <div>
+            <div className="eyebrow">Our story</div>
+            <h2 className="h-lg" style={{ marginBottom: 16 }}>Shipping shouldn't need a logistics degree.</h2>
+            <p className="lead">Comonn was built around a simple idea: international courier services should be transparent, fairly priced, and trackable in real time — whether you're sending a single gift box or running a growing export business from India.</p>
+            <p className="lead" style={{ marginTop: 14 }}>Today we move personal, commercial and project cargo out of India to Australia, Canada, New Zealand, the UK and the USA, backed by a price-beat guarantee and up to ₹1,50,000 in transit warranty on every shipment.</p>
+          </div>
+          <div className="visual">
+            <div className="airmail-edge dark" style={{ position: 'absolute', top: '50%', left: '-10%', width: '120%', transform: 'rotate(-8deg)' }} />
+          </div>
         </div>
       </div>
 

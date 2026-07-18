@@ -103,6 +103,11 @@ input,select,textarea{font-family:inherit;}
 .step.active .label,.step.done .label{color:var(--navy);}
 .step .track{flex:1;height:2px;background:var(--line);margin:0 4px;}
 .step.done .track{background:var(--success);}
+@media(max-width:640px){
+  .stepper{padding:20px 12px 4px;}
+  .step .label{font-size:11px;}
+  .step .num{width:24px;height:24px;font-size:11px;}
+}
 
 /* rate cards (quote comparison) */
 .rate-card{border:1.5px solid var(--line);border-radius:14px;padding:18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color .12s,box-shadow .12s;margin-bottom:12px;background:#fff;}
@@ -260,6 +265,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 /* create account centered */
 .center-card-wrap{display:flex;justify-content:center;padding:60px 32px 80px;}
 .center-card{width:100%;max-width:560px;padding:44px;}
+.card-top-stripe{border-radius:18px 18px 0 0;margin:-44px -44px 30px;width:calc(100% + 88px);}
 
 @media(max-width:1000px){
   .auth-row{grid-template-columns:1fr!important;}
@@ -268,6 +274,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .auth-row{padding-left:16px;padding-right:16px;gap:28px;}
   .auth-side{padding:32px 24px;min-height:auto;}
   .auth-card,.center-card{padding:26px 20px;}
+  .card-top-stripe{margin:-26px -20px 24px;width:calc(100% + 40px);}
 }
 
 /* ============================================================
