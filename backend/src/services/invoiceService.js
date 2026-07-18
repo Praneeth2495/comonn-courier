@@ -64,38 +64,50 @@ async function generateInvoicePdf(order) {
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
     doc.moveDown(0.5);
 
-    line(doc, 'Description', 'Amount', { bold: true });
-    doc.moveDown(0.3);
-    line(doc, `Freight — ${order.service.name}`, money(order.baseFreight));
+    if (order.pricingPending) {
+      doc.font('Helvetica').fontSize(9).text(
+        'Weight, dimensions and price will be assessed by our courier at the time of pickup. A final invoice will be issued after collection.',
+        50, doc.y, { width: 495 }
+      );
+      doc.moveDown(1.5);
+    } else {
+      line(doc, 'Description', 'Amount', { bold: true });
+      doc.moveDown(0.3);
+      line(doc, `Freight — ${order.service.name}`, money(order.baseFreight));
 
-    const surcharges = order.pricingBreakdown?.pricing?.surcharges || [];
-    for (const s of surcharges) {
-      line(doc, s.name, money(s.amount));
-    }
+      const surcharges = order.pricingBreakdown?.pricing?.surcharges || [];
+      for (const s of surcharges) {
+        line(doc, s.name, money(s.amount));
+      }
 
-    for (const a of order.addons || []) {
-      line(doc, a.label, Number(a.amount) > 0 ? money(a.amount) : 'Free');
-    }
+      for (const a of order.addons || []) {
+        line(doc, a.label, Number(a.amount) > 0 ? money(a.amount) : 'Free');
+      }
 
-    if (Number(order.discountTotal) > 0) {
-      line(doc, `Discount (${order.promoCode || ''})`, `-${money(order.discountTotal)}`);
-    }
-    if (Number(order.taxTotal) > 0) {
-      line(doc, `Tax (${(Number(order.taxRate) * 100).toFixed(0)}%)`, money(order.taxTotal));
-    }
+      if (Number(order.discountTotal) > 0) {
+        line(doc, `Discount (${order.promoCode || ''})`, `-${money(order.discountTotal)}`);
+      }
+      if (Number(order.taxTotal) > 0) {
+        line(doc, `Tax (${(Number(order.taxRate) * 100).toFixed(0)}%)`, money(order.taxTotal));
+      }
 
-    doc.moveDown(0.5);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-    doc.moveDown(0.5);
-    line(doc, 'Total', `${money(order.grandTotal)} ${order.currency}`, { bold: true, size: 12 });
-    doc.moveDown(2);
+      doc.moveDown(0.5);
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+      doc.moveDown(0.5);
+      line(doc, 'Total', `${money(order.grandTotal)} ${order.currency}`, { bold: true, size: 12 });
+      doc.moveDown(2);
+    }
 
     doc.font('Helvetica-Bold').fontSize(10).text('Payment', 50, doc.y);
     doc.moveDown(0.3);
     doc.font('Helvetica').fontSize(9);
-    doc.text(`Status: ${order.payment?.status === 'SUCCEEDED' ? 'Paid' : order.payment?.status || 'Pending'}`);
+    const paymentStatusLabel =
+      order.payment?.method === 'cash'
+        ? 'Cash — to be collected at pickup'
+        : order.payment?.status === 'SUCCEEDED' ? 'Paid' : order.payment?.status || 'Pending';
+    doc.text(`Status: ${paymentStatusLabel}`);
     if (order.payment?.method) doc.text(`Method: ${order.payment.method}`);
-    if (order.payment?.updatedAt) doc.text(`Paid on: ${new Date(order.payment.updatedAt).toLocaleString('en-IN')}`);
+    if (order.payment?.method !== 'cash' && order.payment?.updatedAt) doc.text(`Paid on: ${new Date(order.payment.updatedAt).toLocaleString('en-IN')}`);
 
     doc.end();
     stream.on('finish', resolve);

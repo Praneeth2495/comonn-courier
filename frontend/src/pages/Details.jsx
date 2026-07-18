@@ -55,7 +55,9 @@ export default function Details() {
     if (user) client.get('/addresses').then(({ data }) => setSavedAddresses(data.addresses)).catch(() => {});
   }, [user]);
 
-  if (!quoteInput || !selectedQuote) {
+  const pricingPending = Boolean(quoteInput?.pricingPending);
+
+  if (!quoteInput || (!selectedQuote && !pricingPending)) {
     return (
       <div className="wrap section-narrow" style={{ textAlign: 'center' }}>
         <p className="lead">Start by getting an instant quote first.</p>
@@ -96,12 +98,13 @@ export default function Details() {
     setLoading(true);
     try {
       const { data } = await client.post('/orders', {
-        serviceCode: selectedQuote.service.code,
+        serviceCode: pricingPending ? undefined : selectedQuote.service.code,
         sender: toAddressPayload(sender),
         receiver: toAddressPayload(receiver),
         items: quoteInput.items,
         declaredValue: Number(declaredValue) || 0,
         contentsDescription,
+        pricingPending,
       });
       setBooking({ order: data.order });
       navigate('/payment');
@@ -121,22 +124,29 @@ export default function Details() {
             <div className="summary-top"><h3>Booking summary</h3></div>
             <div className="addr-grid">
               <div className="addr-block"><div className="lbl">Origin</div><p>India</p></div>
-              <div className="addr-block"><div className="lbl">Destination</div><p>{selectedQuote.zone.name}</p></div>
+              <div className="addr-block"><div className="lbl">Destination</div><p>{pricingPending ? quoteInput.destinationCountryName : selectedQuote.zone.name}</p></div>
             </div>
 
             {quoteInput.items.map((it, idx) => (
               <div className="item-line" key={idx}>
                 <div className="tag-group">
                   <span><b style={{ color: 'var(--ink)' }}>Item {idx + 1}</b> · {it.itemType}</span>
-                  <span>Weight: {it.actualWeightKg} kg</span>
+                  {!pricingPending && <span>Weight: {it.actualWeightKg} kg</span>}
                   <span>Qty: {String(it.quantity).padStart(2, '0')}</span>
                 </div>
               </div>
             ))}
-            <div className="item-line" style={{ borderTop: '1px dashed var(--line)', marginTop: 10, paddingTop: 14 }}>
-              <div className="tag-group"><span>{selectedQuote.service.name} · {selectedQuote.weight.chargeableWeightKg} kg billed</span></div>
-              <div className="price">₹{selectedQuote.pricing.grandTotal.toFixed(2)}</div>
-            </div>
+            {pricingPending ? (
+              <div className="item-line" style={{ borderTop: '1px dashed var(--line)', marginTop: 10, paddingTop: 14 }}>
+                <div className="tag-group"><span>Pickup booking — weight &amp; price assessed at pickup</span></div>
+                <div className="price" style={{ fontSize: 14 }}>Pay cash on collection</div>
+              </div>
+            ) : (
+              <div className="item-line" style={{ borderTop: '1px dashed var(--line)', marginTop: 10, paddingTop: 14 }}>
+                <div className="tag-group"><span>{selectedQuote.service.name} · {selectedQuote.weight.chargeableWeightKg} kg billed</span></div>
+                <div className="price">₹{selectedQuote.pricing.grandTotal.toFixed(2)}</div>
+              </div>
+            )}
 
             <div className="grid-2" style={{ marginTop: 18 }}>
               <div className="field">

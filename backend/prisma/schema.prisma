@@ -195,6 +195,10 @@ model Order {
   addons          OrderAddon[]
   promoCode       String?
 
+  // "Not sure, book pickup": weight/dimensions unknown at booking time, so
+  // no price is computed — courier assesses and collects cash at pickup.
+  pricingPending  Boolean   @default(false)
+
   // pre-payment gates (Payment page)
   dgAcknowledged  Boolean   @default(false) // dangerous-goods declaration
   pickupDate      String?
@@ -273,6 +277,7 @@ enum PaymentStatus {
   SUCCEEDED
   FAILED
   REFUNDED
+  CASH_PENDING // cash booking confirmed, amount to be collected at pickup
 }
 
 model Payment {

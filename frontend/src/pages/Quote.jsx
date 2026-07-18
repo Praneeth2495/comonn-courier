@@ -41,10 +41,12 @@ export default function Quote() {
     setItems((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  const isPickupOnly = items.some((it) => it.weightPreset === 'NOT_SURE');
+
   function buildItemsPayload() {
     const parsed = [];
     for (const it of items) {
-      if (!it.weightPreset) return null;
+      if (!it.weightPreset || it.weightPreset === 'NOT_SURE') return null;
       parsed.push({
         itemType: it.itemType,
         actualWeightKg: Number(it.weightPreset.replace(' kg', '')),
@@ -66,6 +68,24 @@ export default function Quote() {
       setError('Please choose a destination.');
       return;
     }
+
+    if (isPickupOnly) {
+      const pickupItems = items.map((it) => ({ itemType: it.itemType, quantity: Number(it.quantity) || 1 }));
+      const countryObj = countries.find((c) => c.countryCode === destinationCountryCode);
+      setBooking({
+        quoteInput: {
+          destinationCountryCode,
+          destinationCountryName: countryObj?.countryName || destinationCountryCode,
+          items: pickupItems,
+          pricingPending: true,
+        },
+        selectedQuote: null,
+        order: null,
+      });
+      navigate('/details');
+      return;
+    }
+
     const parsedItems = buildItemsPayload();
     if (!parsedItems) {
       setError('Please select a weight for every item.');
@@ -146,6 +166,7 @@ export default function Quote() {
                 </select>
                 <select className="select" value={it.weightPreset} onChange={(e) => updateItem(idx, 'weightPreset', e.target.value)}>
                   <option value="">Weight (kg)</option>
+                  <option value="NOT_SURE">Not sure, book pickup</option>
                   {WEIGHT_OPTIONS.map((w) => <option key={w}>{w}</option>)}
                 </select>
                 <div className="qty-stepper">
@@ -155,7 +176,11 @@ export default function Quote() {
                 </div>
               </div>
 
-              {it.showDims ? (
+              {it.weightPreset === 'NOT_SURE' ? (
+                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
+                  We'll weigh and measure this at pickup, then collect payment in cash.
+                </p>
+              ) : it.showDims ? (
                 <div className="item-row equal" style={{ marginTop: 8 }}>
                   <input className="input" type="number" min="1" placeholder="Length (cm)" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
                   <input className="input" type="number" min="1" placeholder="Width (cm)" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
@@ -174,14 +199,16 @@ export default function Quote() {
             </div>
           ))}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18 }}>
-            <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={(e) => { e.preventDefault(); addItem(); }}>+ Add another item</a>
-          </div>
+          {!isPickupOnly && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18 }}>
+              <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={(e) => { e.preventDefault(); addItem(); }}>+ Add another item</a>
+            </div>
+          )}
 
           {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
           <button className="btn btn-primary block" style={{ marginTop: 20 }} disabled={loading}>
-            {loading ? 'Calculating…' : 'Get instant quote'}
+            {isPickupOnly ? 'Book pickup →' : loading ? 'Calculating…' : 'Get instant quote'}
           </button>
         </form>
 

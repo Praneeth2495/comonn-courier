@@ -232,6 +232,31 @@ export default function Payment() {
     rzp.open();
   }
 
+  async function handleConfirmCashBooking() {
+    setError('');
+    if (!dgAcknowledged) {
+      setError('Please acknowledge the dangerous goods declaration.');
+      return;
+    }
+    if (!otpVerified) {
+      setError('Please verify your email before confirming.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Mirrors the Razorpay success handler: keep the full order (with
+      // senderAddress/receiverAddress) already in context from Details.jsx's
+      // creation response rather than overwriting it with this endpoint's
+      // response, which only includes `payment`.
+      await client.post(`/payments/${order.id}/cash`);
+      setBooking({});
+      navigate('/labels');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not confirm the booking.');
+      setSubmitting(false);
+    }
+  }
+
   if (!order) {
     return (
       <div className="wrap section-narrow" style={{ textAlign: 'center' }}>
@@ -244,6 +269,7 @@ export default function Payment() {
   const totalBoxQty = order.items?.reduce((sum, it) => sum + it.quantity, 0) || 1;
   const addonAmount = (code) => order.addons?.find((a) => a.code === code)?.amount;
   const canPay = dgAcknowledged && otpVerified;
+  const pricingPending = Boolean(order.pricingPending);
 
   return (
     <div>
@@ -263,48 +289,50 @@ export default function Payment() {
               </div>
             </div>
 
-            <div className="card" style={{ padding: 26, marginTop: 22 }}>
-              <h3 style={{ marginBottom: 6 }}>Add extra protection</h3>
-              <div className="addon-row">
-                <div className="txt">
-                  <h4>Transit warranty</h4>
-                  <select className="select" style={{ marginTop: 8, maxWidth: 260 }} value={warrantyCoverage} onChange={(e) => changeWarranty(Number(e.target.value))}>
-                    {WARRANTY_TIERS.map((t) => <option key={t.coverage} value={t.coverage}>{t.label}</option>)}
-                  </select>
+            {!pricingPending && (
+              <div className="card" style={{ padding: 26, marginTop: 22 }}>
+                <h3 style={{ marginBottom: 6 }}>Add extra protection</h3>
+                <div className="addon-row">
+                  <div className="txt">
+                    <h4>Transit warranty</h4>
+                    <select className="select" style={{ marginTop: 8, maxWidth: 260 }} value={warrantyCoverage} onChange={(e) => changeWarranty(Number(e.target.value))}>
+                      {WARRANTY_TIERS.map((t) => <option key={t.coverage} value={t.coverage}>{t.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="right">
+                    <span className="price-tag" style={{ color: 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span>
+                    <button type="button" className="btn btn-outline btn-sm" disabled>Added ✓</button>
+                  </div>
                 </div>
-                <div className="right">
-                  <span className="price-tag" style={{ color: 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span>
-                  <button type="button" className="btn btn-outline btn-sm" disabled>Added ✓</button>
+                <div className="addon-row">
+                  <div className="txt"><h4>Heavy-duty cardboard</h4><p>₹100 per box × Qty {totalBoxQty}</p></div>
+                  <div className="right">
+                    <span className="price-tag">₹{Number(addonAmount('CARDBOARD') || 0).toFixed(2)}</span>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => toggleAddon('CARDBOARD')}>
+                      {selectedAddons.includes('CARDBOARD') ? 'Added ✓' : 'Add'}
+                    </button>
+                  </div>
+                </div>
+                <div className="addon-row">
+                  <div className="txt"><h4>Packing service</h4><p>₹300 per order × Qty 1</p></div>
+                  <div className="right">
+                    <span className="price-tag">₹{Number(addonAmount('PACKING') || 0).toFixed(2)}</span>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => toggleAddon('PACKING')}>
+                      {selectedAddons.includes('PACKING') ? 'Added ✓' : 'Add'}
+                    </button>
+                  </div>
+                </div>
+                <div className="addon-row">
+                  <div className="txt"><h4>Wrapping service</h4><p>₹100 per box × Qty {totalBoxQty}</p></div>
+                  <div className="right">
+                    <span className="price-tag">₹{Number(addonAmount('WRAPPING') || 0).toFixed(2)}</span>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => toggleAddon('WRAPPING')}>
+                      {selectedAddons.includes('WRAPPING') ? 'Added ✓' : 'Add'}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="addon-row">
-                <div className="txt"><h4>Heavy-duty cardboard</h4><p>₹100 per box × Qty {totalBoxQty}</p></div>
-                <div className="right">
-                  <span className="price-tag">₹{Number(addonAmount('CARDBOARD') || 0).toFixed(2)}</span>
-                  <button type="button" className="btn btn-outline btn-sm" onClick={() => toggleAddon('CARDBOARD')}>
-                    {selectedAddons.includes('CARDBOARD') ? 'Added ✓' : 'Add'}
-                  </button>
-                </div>
-              </div>
-              <div className="addon-row">
-                <div className="txt"><h4>Packing service</h4><p>₹300 per order × Qty 1</p></div>
-                <div className="right">
-                  <span className="price-tag">₹{Number(addonAmount('PACKING') || 0).toFixed(2)}</span>
-                  <button type="button" className="btn btn-outline btn-sm" onClick={() => toggleAddon('PACKING')}>
-                    {selectedAddons.includes('PACKING') ? 'Added ✓' : 'Add'}
-                  </button>
-                </div>
-              </div>
-              <div className="addon-row">
-                <div className="txt"><h4>Wrapping service</h4><p>₹100 per box × Qty {totalBoxQty}</p></div>
-                <div className="right">
-                  <span className="price-tag">₹{Number(addonAmount('WRAPPING') || 0).toFixed(2)}</span>
-                  <button type="button" className="btn btn-outline btn-sm" onClick={() => toggleAddon('WRAPPING')}>
-                    {selectedAddons.includes('WRAPPING') ? 'Added ✓' : 'Add'}
-                  </button>
-                </div>
-              </div>
-            </div>
+            )}
 
             <div className="card" style={{ padding: 26, marginTop: 22 }}>
               <h3 style={{ marginBottom: 16 }}>Pickup &amp; verification</h3>
@@ -348,44 +376,75 @@ export default function Payment() {
 
             <div className="card" style={{ padding: 26, marginTop: 22 }}>
               <h3 style={{ marginBottom: 16 }}>Payment method</h3>
-              <div className="pay-method-row">
-                <div className={`pay-method ${payMethodTab === 'card' ? 'active' : ''}`} onClick={() => setPayMethodTab('card')}>💳 Credit Card</div>
-                <div className={`pay-method ${payMethodTab === 'upi' ? 'active' : ''}`} onClick={() => setPayMethodTab('upi')}>📱 UPI</div>
-              </div>
-              <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
-                You'll enter your {payMethodTab === 'card' ? 'card' : 'UPI'} details securely in Razorpay's checkout window — Comonn never stores your payment details.
-              </p>
+              {pricingPending ? (
+                <>
+                  <div className="pay-method-row">
+                    <div className="pay-method active">💵 Cash</div>
+                  </div>
+                  <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
+                    Weight and price aren't known yet, so online payment isn't available for this booking — pay in cash to our courier once your shipment is weighed and priced at pickup.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="pay-method-row">
+                    <div className={`pay-method ${payMethodTab === 'card' ? 'active' : ''}`} onClick={() => setPayMethodTab('card')}>💳 Credit Card</div>
+                    <div className={`pay-method ${payMethodTab === 'upi' ? 'active' : ''}`} onClick={() => setPayMethodTab('upi')}>📱 UPI</div>
+                  </div>
+                  <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
+                    You'll enter your {payMethodTab === 'card' ? 'card' : 'UPI'} details securely in Razorpay's checkout window — Comonn never stores your payment details.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
           <div className="card summary-sidebar" style={{ padding: 26 }}>
             <h4 style={{ marginBottom: 14 }}>Order summary</h4>
-            <div className="sum-line"><span>{order.service?.name || 'Shipping'}</span><span className="v">₹{Number(order.baseFreight).toFixed(2)}</span></div>
-            <div className="sum-line"><span>Surcharges</span><span className="v">₹{Number(order.surchargesTotal).toFixed(2)}</span></div>
-            <div className="sum-line"><span>Warranty</span><span className="v" style={{ color: addonAmount('WARRANTY') > 0 ? undefined : 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span></div>
-            <div className="sum-line"><span>Cardboard</span><span className="v">₹{Number(addonAmount('CARDBOARD') || 0).toFixed(2)}</span></div>
-            <div className="sum-line"><span>Packing</span><span className="v">₹{Number(addonAmount('PACKING') || 0).toFixed(2)}</span></div>
-            <div className="sum-line"><span>Wrapping</span><span className="v">₹{Number(addonAmount('WRAPPING') || 0).toFixed(2)}</span></div>
-            {Number(order.discountTotal) > 0 && (
-              <div className="sum-line"><span>Discount ({order.promoCode})</span><span className="v" style={{ color: 'var(--success)' }}>−₹{Number(order.discountTotal).toFixed(2)}</span></div>
+            {pricingPending ? (
+              <>
+                <p style={{ fontSize: 13.5, color: 'var(--slate)', lineHeight: 1.6 }}>
+                  This is a pickup booking — weight and dimensions will be assessed by our courier in person, and the price will be confirmed at that time.
+                </p>
+                <div className="sum-line total" style={{ marginTop: 14 }}><span>Payment</span><span className="v">Cash on pickup</span></div>
+
+                {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
+
+                <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || submitting} onClick={handleConfirmCashBooking}>
+                  {submitting ? 'Confirming…' : 'Confirm pickup booking'}
+                </button>
+                {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to confirm.</p>}
+              </>
+            ) : (
+              <>
+                <div className="sum-line"><span>{order.service?.name || 'Shipping'}</span><span className="v">₹{Number(order.baseFreight).toFixed(2)}</span></div>
+                <div className="sum-line"><span>Surcharges</span><span className="v">₹{Number(order.surchargesTotal).toFixed(2)}</span></div>
+                <div className="sum-line"><span>Warranty</span><span className="v" style={{ color: addonAmount('WARRANTY') > 0 ? undefined : 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span></div>
+                <div className="sum-line"><span>Cardboard</span><span className="v">₹{Number(addonAmount('CARDBOARD') || 0).toFixed(2)}</span></div>
+                <div className="sum-line"><span>Packing</span><span className="v">₹{Number(addonAmount('PACKING') || 0).toFixed(2)}</span></div>
+                <div className="sum-line"><span>Wrapping</span><span className="v">₹{Number(addonAmount('WRAPPING') || 0).toFixed(2)}</span></div>
+                {Number(order.discountTotal) > 0 && (
+                  <div className="sum-line"><span>Discount ({order.promoCode})</span><span className="v" style={{ color: 'var(--success)' }}>−₹{Number(order.discountTotal).toFixed(2)}</span></div>
+                )}
+
+                <div style={{ display: 'flex', gap: 8, margin: '14px 0' }}>
+                  <input className="input" placeholder="Promo code" style={{ flex: 1 }} value={promoInput} onChange={(e) => setPromoInput(e.target.value)} />
+                  <button type="button" className="btn btn-outline btn-sm" disabled={!promoInput || promoApplying} onClick={applyPromo}>
+                    {promoApplying ? '…' : 'Apply'}
+                  </button>
+                </div>
+                {promoError && <div className="error-text" style={{ marginBottom: 8 }}>{promoError}</div>}
+
+                <div className="sum-line total"><span>Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
+
+                {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
+
+                <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || submitting} onClick={handlePay}>
+                  {submitting ? 'Processing…' : `Pay ₹${Number(order.grandTotal).toFixed(2)} now`}
+                </button>
+                {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to pay.</p>}
+              </>
             )}
-
-            <div style={{ display: 'flex', gap: 8, margin: '14px 0' }}>
-              <input className="input" placeholder="Promo code" style={{ flex: 1 }} value={promoInput} onChange={(e) => setPromoInput(e.target.value)} />
-              <button type="button" className="btn btn-outline btn-sm" disabled={!promoInput || promoApplying} onClick={applyPromo}>
-                {promoApplying ? '…' : 'Apply'}
-              </button>
-            </div>
-            {promoError && <div className="error-text" style={{ marginBottom: 8 }}>{promoError}</div>}
-
-            <div className="sum-line total"><span>Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
-
-            {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
-
-            <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || submitting} onClick={handlePay}>
-              {submitting ? 'Processing…' : `Pay ₹${Number(order.grandTotal).toFixed(2)} now`}
-            </button>
-            {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to pay.</p>}
             <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 12 }}>🔒 Secured by 256-bit SSL encryption</p>
           </div>
         </div>

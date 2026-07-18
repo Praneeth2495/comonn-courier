@@ -179,4 +179,51 @@ async function getPaymentStatus(req, res, next) {
   }
 }
 
-module.exports = { createOrder, confirmPayment, handleWebhook, getPaymentStatus };
+/**
+ * POST /api/payments/:orderId/cash
+ * "Not sure, book pickup" flow only: no online payment happens — the order
+ * is confirmed for pickup immediately and cash is collected once the
+ * courier assesses the actual weight/price in person. Same DG/OTP gates as
+ * the online flow, just no Razorpay involved.
+ */
+async function confirmCashBooking(req, res, next) {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: req.params.orderId } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (!order.pricingPending) {
+      return res.status(409).json({ error: 'Cash booking is only available for pickup orders' });
+    }
+    if (order.status !== 'PENDING_PAYMENT') {
+      return res.status(409).json({ error: `Order is not awaiting payment (status: ${order.status})` });
+    }
+    if (!order.dgAcknowledged) {
+      return res.status(409).json({ error: 'Please acknowledge the dangerous goods declaration first' });
+    }
+    if (!order.otpVerifiedAt) {
+      return res.status(409).json({ error: 'Please verify your email before proceeding to payment' });
+    }
+
+    await prisma.payment.upsert({
+      where: { orderId: order.id },
+      update: { provider: 'cash', method: 'cash', amount: 0, currency: order.currency, status: 'CASH_PENDING' },
+      create: { orderId: order.id, provider: 'cash', method: 'cash', amount: 0, currency: order.currency, status: 'CASH_PENDING' },
+    });
+
+    const { count } = await prisma.order.updateMany({
+      where: { id: order.id, status: 'PENDING_PAYMENT' },
+      data: { status: 'PAID', trackingNumber: await generateTrackingNumber() },
+    });
+    if (count > 0) {
+      await prisma.trackingEvent.create({
+        data: { orderId: order.id, status: 'PAID', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
+      });
+    }
+
+    const updated = await prisma.order.findUnique({ where: { id: order.id }, include: { payment: true } });
+    res.json({ order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createOrder, confirmPayment, handleWebhook, getPaymentStatus, confirmCashBooking };

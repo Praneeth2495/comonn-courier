@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { prisma } = require('../config/db');
-const { generateQuote, round2, recomputeOrderTotals } = require('../services/pricingEngine');
+const { generateQuote, round2, recomputeOrderTotals, resolveZoneForCountry } = require('../services/pricingEngine');
 const { generateOrderNumber } = require('../utils/orderNumber');
 const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addonCatalog');
 const { sendEmail } = require('../services/emailService');
@@ -26,27 +26,20 @@ async function createOrder(req, res, next) {
       declaredValue = 0,
       contentsDescription,
       taxRate = 0,
+      pricingPending = false, // "Not sure, book pickup": weight unknown, no price, cash at pickup
     } = req.body;
 
-    if (!serviceCode || !sender || !receiver || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'serviceCode, sender, receiver and at least one item are required' });
+    if (!pricingPending && !serviceCode) {
+      return res.status(400).json({ error: 'serviceCode is required' });
+    }
+    if (!sender || !receiver || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'sender, receiver and at least one item are required' });
     }
     for (const [label, addr] of [['sender', sender], ['receiver', receiver]]) {
       for (const f of ['contactName', 'phone', 'line1', 'city', 'postcode', 'countryCode']) {
         if (!addr[f]) return res.status(400).json({ error: `${label}.${f} is required` });
       }
     }
-
-    // Re-price authoritatively on the server.
-    const quote = await generateQuote({
-      serviceCode,
-      destinationCountryCode: receiver.countryCode,
-      items,
-      declaredValue,
-      taxRate,
-    });
-
-    const service = await prisma.service.findUnique({ where: { code: serviceCode } });
 
     const senderAddress = await prisma.address.create({
       data: { userId: req.user?.id, ...sender },
@@ -57,8 +50,54 @@ async function createOrder(req, res, next) {
 
     const orderNumber = await generateOrderNumber();
 
-    const order = await prisma.order.create({
-      data: {
+    let orderData;
+    if (pricingPending) {
+      const service = await prisma.service.findUnique({ where: { code: 'PICKUP' } });
+      const zone = await resolveZoneForCountry(receiver.countryCode);
+      orderData = {
+        orderNumber,
+        userId: req.user?.id,
+        serviceId: service.id,
+        senderAddressId: senderAddress.id,
+        receiverAddressId: receiverAddress.id,
+        actualWeightKg: 0,
+        volumetricWeightKg: 0,
+        chargeableWeightKg: 0,
+        declaredValue,
+        contentsDescription,
+        pricingPending: true,
+        items: {
+          create: items.map((it) => ({
+            itemType: it.itemType || 'Box',
+            actualWeightKg: 0,
+            lengthCm: 0,
+            widthCm: 0,
+            heightCm: 0,
+            quantity: Number(it.quantity) || 1,
+            volumetricWeightKg: 0,
+            chargeableWeightKg: 0,
+          })),
+        },
+        zoneCode: zone.code,
+        baseFreight: 0,
+        surchargesTotal: 0,
+        taxRate: 0,
+        taxTotal: 0,
+        grandTotal: 0,
+        currency: 'INR',
+        status: 'PENDING_PAYMENT',
+      };
+    } else {
+      // Re-price authoritatively on the server.
+      const quote = await generateQuote({
+        serviceCode,
+        destinationCountryCode: receiver.countryCode,
+        items,
+        declaredValue,
+        taxRate,
+      });
+      const service = await prisma.service.findUnique({ where: { code: serviceCode } });
+      orderData = {
         orderNumber,
         userId: req.user?.id,
         serviceId: service.id,
@@ -90,7 +129,11 @@ async function createOrder(req, res, next) {
         currency: quote.pricing.currency,
         pricingBreakdown: quote,
         status: 'PENDING_PAYMENT',
-      },
+      };
+    }
+
+    const order = await prisma.order.create({
+      data: orderData,
       include: { service: true, senderAddress: true, receiverAddress: true, items: true },
     });
 
