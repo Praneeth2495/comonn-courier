@@ -10,13 +10,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Atomic per-year sequence for human-friendly order numbers
-// (CMN-<year>-NNNNNN). A plain count()-then-+1 races under concurrent
-// order creation; this table's row is updated with a single atomic
-// UPDATE per request instead.
-model OrderNumberCounter {
-  year  Int @id
-  value Int @default(0)
+// Atomic per-month sequence counters for human-friendly order/tracking
+// numbers (DDMM0<seq>, seq resets each calendar month). Keyed by
+// "<kind>-<year>-<month>" e.g. "order-2026-07". A plain count()-then-+1
+// races under concurrent order creation; this table's row is updated
+// with a single atomic UPDATE per request instead.
+model SequenceCounter {
+  key   String @id
+  value Int    @default(0)
 }
 
 // ------------------------------------------------------------

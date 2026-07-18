@@ -90,7 +90,7 @@ export function PublicLayout({ children }) {
   return (
     <>
       <SiteHeader />
-      <main>{children}</main>
+      <main className="site-main">{children}</main>
       <SiteFooter />
     </>
   );

@@ -60,7 +60,7 @@ export default function Track() {
         <h1>Track your order</h1>
         <p style={{ color: '#AEB6D2', marginTop: 8 }}>Enter your order ID for live status and delivery ETA.</p>
         <form className="track-box" onSubmit={submit}>
-          <input placeholder="e.g. CN1234567890" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} required />
+          <input placeholder="e.g. 180701" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} required />
           <button className="btn btn-primary" disabled={loading}>{loading ? 'Searching…' : 'Track'}</button>
         </form>
       </div>

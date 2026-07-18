@@ -22,7 +22,7 @@ async function markOrderPaid(orderId, extra = {}) {
 
   const { count } = await prisma.order.updateMany({
     where: { id: orderId, status: 'PENDING_PAYMENT' },
-    data: { status: 'PAID', trackingNumber: generateTrackingNumber() },
+    data: { status: 'PAID', trackingNumber: await generateTrackingNumber() },
   });
 
   if (count > 0) {

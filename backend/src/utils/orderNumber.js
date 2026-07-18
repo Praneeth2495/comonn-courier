@@ -1,27 +1,40 @@
 const { prisma } = require('../config/db');
 
-/**
- * Generates CMN-<year>-<sequential 6-digit> e.g. CMN-2026-000123.
- * Uses an atomic upsert+increment on a per-year counter row rather than
- * count()-then-+1, which races under concurrent order creation (two
- * requests can read the same count and both try to create the same
- * orderNumber, hitting the unique constraint).
- */
-async function generateOrderNumber() {
-  const year = new Date().getFullYear();
-  const counter = await prisma.orderNumberCounter.upsert({
-    where: { year },
-    update: { value: { increment: 1 } },
-    create: { year, value: 1 },
-  });
-  const seq = String(counter.value).padStart(6, '0');
-  return `CMN-${year}-${seq}`;
+function pad2(n) {
+  return String(n).padStart(2, '0');
 }
 
-/** Generates a trackable consignment number, e.g. CN + 10 digits */
-function generateTrackingNumber() {
-  const digits = Math.floor(1000000000 + Math.random() * 8999999999);
-  return `CN${digits}`;
+/**
+ * Atomically advances the named monthly counter and returns the new value.
+ * Uses upsert+increment (not count()-then-+1) so concurrent requests never
+ * read the same value and collide on the unique constraint.
+ */
+async function nextMonthlySequence(kind, now) {
+  const key = `${kind}-${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
+  const counter = await prisma.sequenceCounter.upsert({
+    where: { key },
+    update: { value: { increment: 1 } },
+    create: { key, value: 1 },
+  });
+  return counter.value;
+}
+
+/**
+ * Generates DDMM0<seq> e.g. 180701 for the 1st order created on 18 July.
+ * The sequence resets to 1 at the start of each calendar month and is
+ * never zero-padded, so it never repeats within a month.
+ */
+async function generateOrderNumber() {
+  const now = new Date();
+  const seq = await nextMonthlySequence('order', now);
+  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}0${seq}`;
+}
+
+/** Same DDMM0<seq> scheme, on its own monthly counter so it never collides with order numbers. */
+async function generateTrackingNumber() {
+  const now = new Date();
+  const seq = await nextMonthlySequence('tracking', now);
+  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}0${seq}`;
 }
 
 module.exports = { generateOrderNumber, generateTrackingNumber };
