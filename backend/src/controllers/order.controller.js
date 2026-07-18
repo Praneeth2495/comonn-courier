@@ -103,15 +103,24 @@ async function createOrder(req, res, next) {
 /** GET /api/orders (customer: own orders | admin/staff: all, with filters) */
 async function listOrders(req, res, next) {
   try {
-    const { status, q, page = 1, pageSize = 20 } = req.query;
+    const { status, zoneCode, hasUser, q, page = 1, pageSize = 20 } = req.query;
     const where = {};
 
     if (req.user.role === 'CUSTOMER') where.userId = req.user.id;
-    if (status) where.status = status;
+    // status may be a single value or a comma-separated list (for admin tab groupings)
+    if (status) {
+      const statuses = String(status).split(',').filter(Boolean);
+      where.status = statuses.length > 1 ? { in: statuses } : statuses[0];
+    }
+    if (zoneCode) where.zoneCode = zoneCode;
+    if (hasUser === 'true') where.userId = { not: null };
+    if (hasUser === 'false') where.userId = null;
     if (q) {
       where.OR = [
         { orderNumber: { contains: q, mode: 'insensitive' } },
         { trackingNumber: { contains: q, mode: 'insensitive' } },
+        { receiverAddress: { city: { contains: q, mode: 'insensitive' } } },
+        { senderAddress: { city: { contains: q, mode: 'insensitive' } } },
       ];
     }
 

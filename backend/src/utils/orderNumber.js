@@ -1,12 +1,20 @@
 const { prisma } = require('../config/db');
 
-/** Generates CMN-<year>-<sequential 6-digit> e.g. CMN-2026-000123 */
+/**
+ * Generates CMN-<year>-<sequential 6-digit> e.g. CMN-2026-000123.
+ * Uses an atomic upsert+increment on a per-year counter row rather than
+ * count()-then-+1, which races under concurrent order creation (two
+ * requests can read the same count and both try to create the same
+ * orderNumber, hitting the unique constraint).
+ */
 async function generateOrderNumber() {
   const year = new Date().getFullYear();
-  const count = await prisma.order.count({
-    where: { orderNumber: { startsWith: `CMN-${year}-` } },
+  const counter = await prisma.orderNumberCounter.upsert({
+    where: { year },
+    update: { value: { increment: 1 } },
+    create: { year, value: 1 },
   });
-  const seq = String(count + 1).padStart(6, '0');
+  const seq = String(counter.value).padStart(6, '0');
   return `CMN-${year}-${seq}`;
 }
 

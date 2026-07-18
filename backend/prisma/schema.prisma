@@ -10,6 +10,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Atomic per-year sequence for human-friendly order numbers
+// (CMN-<year>-NNNNNN). A plain count()-then-+1 races under concurrent
+// order creation; this table's row is updated with a single atomic
+// UPDATE per request instead.
+model OrderNumberCounter {
+  year  Int @id
+  value Int @default(0)
+}
+
 // ------------------------------------------------------------
 // Auth / Users
 // ------------------------------------------------------------
