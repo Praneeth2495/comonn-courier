@@ -63,9 +63,6 @@ export function SiteFooter() {
       <div className="footer-top">
         <div className="footer-brand">
           <img className="logo-img lg" src={logoFooter} alt="Comonn" />
-          <p style={{ marginTop: 12, color: '#93A0C4', maxWidth: 320, fontSize: 13.5 }}>
-            International courier, priced instantly by zone, weight and volume.
-          </p>
         </div>
         <div className="footer-col">
           <h4>Quick links</h4>
@@ -77,8 +74,8 @@ export function SiteFooter() {
         <div className="footer-col">
           <h4>Get in touch</h4>
           <span className="line">📍 Hyderabad, Telangana</span>
-          <span className="line">📞 1800 001 030</span>
-          <span className="line">✉️ info@comonn.com</span>
+          <span className="line">📞 +91 9108038783</span>
+          <span className="line">✉️ support@comonn.in</span>
         </div>
       </div>
       <div className="footer-bottom">© {new Date().getFullYear()} Comonn. All rights reserved.</div>

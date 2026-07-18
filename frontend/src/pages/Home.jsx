@@ -311,7 +311,6 @@ export default function Home() {
 
       <div className="section" style={{ background: '#fff' }}>
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="eyebrow">Stay informed</div>
           <h2 className="h-lg">News &amp; updates</h2>
         </div>
         <div className="wrap grid-5">

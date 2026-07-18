@@ -12,7 +12,6 @@ export default function About() {
   return (
     <div>
       <div className="about-hero">
-        <div className="eyebrow" style={{ color: '#FF9478' }}>About Comonn</div>
         <h1>Built for the everyday international shipper.</h1>
         <p>We started Comonn to make sending a parcel overseas as easy as sending one across town — with honest pricing and real-time visibility, end to end.</p>
       </div>
@@ -38,7 +37,6 @@ export default function About() {
 
       <div className="section" style={{ background: '#fff' }}>
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="eyebrow">What we stand for</div>
           <h2 className="h-lg">Our values</h2>
         </div>
         <div className="wrap values-grid">

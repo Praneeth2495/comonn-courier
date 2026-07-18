@@ -281,7 +281,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 /* ============================================================
    Redesign additions — Services
    ============================================================ */
-.svc-hero{background:var(--navy);padding:60px 32px 50px;text-align:center;}
+.svc-hero{background:var(--navy);padding:44px 32px 50px;text-align:center;}
 .svc-hero h1{color:#fff;}
 .svc-hero p{color:#AEB6D2;max-width:560px;margin:14px auto 0;}
 .svc-card{padding:28px;display:flex;flex-direction:column;gap:14px;}
@@ -482,7 +482,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 /* ============================================================
    Redesign additions — About
    ============================================================ */
-.about-hero{background:var(--navy);padding:80px 32px;text-align:center;position:relative;overflow:hidden;}
+.about-hero{background:var(--navy);padding:60px 32px 80px;text-align:center;position:relative;overflow:hidden;}
 .about-hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 80% 30%, rgba(255,90,54,.15),transparent 45%);}
 .about-hero h1{color:#fff;font-size:44px;max-width:700px;margin:0 auto;position:relative;}
 .about-hero p{color:#AEB6D2;max-width:560px;margin:16px auto 0;position:relative;}

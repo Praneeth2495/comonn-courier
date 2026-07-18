@@ -24,7 +24,6 @@ export default function Services() {
   return (
     <div>
       <div className="svc-hero">
-        <div className="eyebrow" style={{ color: '#FF9478' }}>What we offer</div>
         <h1>Our services</h1>
         <p>From express air freight to ocean cargo — pick the speed and coverage that fits your shipment.</p>
       </div>
@@ -52,7 +51,6 @@ export default function Services() {
 
       <div className="section" style={{ background: '#fff' }}>
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="eyebrow">Extra protection</div>
           <h2 className="h-lg">International courier add-ons</h2>
         </div>
         <div className="wrap grid-3">
