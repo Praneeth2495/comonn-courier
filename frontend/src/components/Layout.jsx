@@ -60,17 +60,24 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="footer-top">
-        <div>
+        <div className="footer-brand">
           <div className="brand" style={{ color: '#fff' }}>Comonn.</div>
           <p style={{ marginTop: 10, color: '#93A0C4', maxWidth: 320, fontSize: 13.5 }}>
             International courier, priced instantly by zone, weight and volume.
           </p>
         </div>
-        <div>
-          <div style={{ color: '#7381AB', fontSize: 12, textTransform: 'uppercase', marginBottom: 10 }}>Get in touch</div>
-          <div>📍 Truganina, Victoria</div>
-          <div>📞 1800 001 030</div>
-          <div>✉️ info@comonn.com</div>
+        <div className="footer-col">
+          <h4>Quick links</h4>
+          <Link to="/">Home</Link>
+          <Link to="/quote">Book</Link>
+          <a href="#" onClick={(e) => e.preventDefault()}>Terms &amp; Conditions</a>
+          <a href="#" onClick={(e) => e.preventDefault()}>Transit Warranty</a>
+        </div>
+        <div className="footer-col">
+          <h4>Get in touch</h4>
+          <span className="line">📍 Hyderabad, Telangana</span>
+          <span className="line">📞 1800 001 030</span>
+          <span className="line">✉️ info@comonn.com</span>
         </div>
       </div>
       <div className="footer-bottom">© {new Date().getFullYear()} Comonn. All rights reserved.</div>
