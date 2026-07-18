@@ -103,7 +103,7 @@ async function createOrder(req, res, next) {
 /** GET /api/orders (customer: own orders | admin/staff: all, with filters) */
 async function listOrders(req, res, next) {
   try {
-    const { status, zoneCode, hasUser, q, page = 1, pageSize = 20 } = req.query;
+    const { status, notStatus, zoneCode, hasUser, q, page = 1, pageSize = 20 } = req.query;
     const where = {};
 
     if (req.user.role === 'CUSTOMER') where.userId = req.user.id;
@@ -111,6 +111,9 @@ async function listOrders(req, res, next) {
     if (status) {
       const statuses = String(status).split(',').filter(Boolean);
       where.status = statuses.length > 1 ? { in: statuses } : statuses[0];
+    }
+    if (notStatus) {
+      where.status = { notIn: String(notStatus).split(',').filter(Boolean) };
     }
     if (zoneCode) where.zoneCode = zoneCode;
     if (hasUser === 'true') where.userId = { not: null };
@@ -127,7 +130,7 @@ async function listOrders(req, res, next) {
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where,
-        include: { service: true, senderAddress: true, receiverAddress: true, payment: true, items: true },
+        include: { service: true, senderAddress: true, receiverAddress: true, payment: true, items: true, labels: true },
         orderBy: { createdAt: 'desc' },
         skip: (Number(page) - 1) * Number(pageSize),
         take: Number(pageSize),

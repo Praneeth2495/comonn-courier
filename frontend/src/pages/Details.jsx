@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
+import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 
 const COUNTRY_CODES = ['🇮🇳 +91', '🇦🇺 +61', '🇨🇦 +1', '🇳🇿 +64', '🇬🇧 +44', '🇺🇸 +1', '🇪🇺 +32'];
@@ -20,8 +21,27 @@ const emptyAddress = (countryCode) => ({
   countryCode,
 });
 
+function fromSavedAddress(saved) {
+  const dial = COUNTRY_CODES.find((c) => saved.phone?.startsWith(c.split(' ')[1])) || COUNTRY_CODES[0];
+  const phoneNumber = saved.phone?.startsWith(dial.split(' ')[1]) ? saved.phone.slice(dial.split(' ')[1].length).trim() : saved.phone || '';
+  return {
+    contactName: saved.contactName,
+    dialCode: dial,
+    phoneNumber,
+    email: saved.email || '',
+    instructions: saved.instructions || '',
+    line1: saved.line1,
+    line2: saved.line2 || '',
+    city: saved.city,
+    state: saved.state || '',
+    postcode: saved.postcode,
+    countryCode: saved.countryCode,
+  };
+}
+
 export default function Details() {
   const { quoteInput, selectedQuote, setBooking, clearBooking } = useBooking();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [sender, setSender] = useState(() => emptyAddress('IN'));
   const [receiver, setReceiver] = useState(() => emptyAddress(quoteInput?.destinationCountryCode || ''));
@@ -29,6 +49,11 @@ export default function Details() {
   const [declaredValue, setDeclaredValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [savedAddresses, setSavedAddresses] = useState([]);
+
+  useEffect(() => {
+    if (user) client.get('/addresses').then(({ data }) => setSavedAddresses(data.addresses)).catch(() => {});
+  }, [user]);
 
   if (!quoteInput || !selectedQuote) {
     return (
@@ -125,12 +150,26 @@ export default function Details() {
             </div>
 
             <div className="form-section-title inline"><div className="badge">1</div><h4>Receiver details</h4></div>
-            <AddressFields value={receiver} onChange={updateReceiver} instructionsLabel="Delivery instructions" autoFillNote="Country auto-filled from your quote's destination" />
+            <AddressFields
+              value={receiver}
+              onChange={updateReceiver}
+              instructionsLabel="Delivery instructions"
+              autoFillNote="Country auto-filled from your quote's destination"
+              savedAddresses={savedAddresses}
+              onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setReceiver(fromSavedAddress(a)); }}
+            />
           </div>
 
           <div className="form-section-title"><div className="badge">2</div><h4>Sender details</h4></div>
           <div className="card" style={{ padding: 26 }}>
-            <AddressFields value={sender} onChange={updateSender} instructionsLabel="Instructions" autoFillNote="Country auto-filled from your quote's origin" />
+            <AddressFields
+              value={sender}
+              onChange={updateSender}
+              instructionsLabel="Instructions"
+              autoFillNote="Country auto-filled from your quote's origin"
+              savedAddresses={savedAddresses}
+              onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setSender(fromSavedAddress(a)); }}
+            />
           </div>
 
           {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
@@ -147,9 +186,20 @@ export default function Details() {
   );
 }
 
-function AddressFields({ value, onChange, instructionsLabel, autoFillNote }) {
+function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved }) {
   return (
     <>
+      {savedAddresses.length > 0 && (
+        <div className="field" style={{ marginBottom: 14 }}>
+          <label>Use a saved address</label>
+          <select className="select" defaultValue="" onChange={(e) => { if (e.target.value) onSelectSaved(e.target.value); e.target.value = ''; }}>
+            <option value="">Select a saved address…</option>
+            {savedAddresses.map((a) => (
+              <option key={a.id} value={a.id}>{a.label || a.contactName} — {a.city}, {a.countryCode}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="grid-2">
         <div className="field">
           <label>Name</label>

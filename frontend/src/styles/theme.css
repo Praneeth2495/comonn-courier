@@ -453,3 +453,16 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .dash-toolbar{flex-direction:column;align-items:stretch;}
   .search-box{min-width:0;}
 }
+
+/* ============================================================
+   Redesign additions — User dashboard (My Account)
+   ============================================================ */
+.acct-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:26px;}
+.acct-tab{padding:12px 20px;font-size:14px;font-weight:700;color:var(--slate);border-bottom:2.5px solid transparent;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;}
+.acct-tab.active{color:var(--navy);border-bottom-color:var(--coral);}
+.order-card{padding:22px 24px;margin-bottom:16px;}
+.order-card-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.order-route{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--navy);font-size:15px;}
+.order-route .arrow{color:var(--coral);}
+.addr-card{padding:22px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:16px;flex-wrap:wrap;}
+.addr-card .tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--cobalt);margin-bottom:6px;}
