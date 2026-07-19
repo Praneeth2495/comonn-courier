@@ -10,6 +10,7 @@ export default function Labels() {
   const [labels, setLabels] = useState(null);
   const [invoice, setInvoice] = useState(null);
   const [emailedTo, setEmailedTo] = useState(null);
+  const [pricingPending, setPricingPending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const didGenerate = useRef(false);
@@ -20,9 +21,14 @@ export default function Labels() {
     client
       .post(`/labels/${order.id}/generate`)
       .then(({ data }) => {
-        setLabels(data.labels);
-        setInvoice(data.invoice);
-        setEmailedTo(data.emailedTo);
+        if (data.pricingPending) {
+          setPricingPending(true);
+          setEmailedTo(data.emailedTo);
+        } else {
+          setLabels(data.labels);
+          setInvoice(data.invoice);
+          setEmailedTo(data.emailedTo);
+        }
       })
       .catch((err) => setError(err.response?.data?.error || 'Could not generate your labels.'))
       .finally(() => setLoading(false));
@@ -43,12 +49,49 @@ export default function Labels() {
       <div className="section" style={{ paddingTop: 20, maxWidth: 960, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <span className="pill pill-success" style={{ marginBottom: 14 }}>✓ Booking confirmed</span>
-          <h2 className="h-lg" style={{ marginTop: 10 }}>Download your shipping labels</h2>
-          <p className="lead" style={{ marginTop: 8 }}>Print and attach these to each package before pickup.</p>
+          <h2 className="h-lg" style={{ marginTop: 10 }}>
+            {pricingPending ? 'Your pickup is booked' : 'Download your shipping labels'}
+          </h2>
+          <p className="lead" style={{ marginTop: 8 }}>
+            {pricingPending
+              ? "We'll weigh and price your shipment at pickup — no label to print yet."
+              : 'Print and attach these to each package before pickup.'}
+          </p>
         </div>
 
-        {loading && <p className="lead" style={{ textAlign: 'center' }}>Generating your labels…</p>}
+        {loading && <p className="lead" style={{ textAlign: 'center' }}>Confirming your booking…</p>}
         {error && <div className="error-text" style={{ textAlign: 'center' }}>{error}</div>}
+
+        {pricingPending && !loading && (
+          <>
+            <div className="card" style={{ padding: 26, marginTop: 24, textAlign: 'center' }}>
+              <div className="addr-grid" style={{ margin: '0 0 18px' }}>
+                <div className="addr-block"><div className="lbl">Order</div><p>{order.orderNumber}</p></div>
+                <div className="addr-block"><div className="lbl">Tracking</div><p>{order.trackingNumber}</p></div>
+              </div>
+              <p style={{ fontSize: 13.5, color: 'var(--slate)', lineHeight: 1.6 }}>
+                Our courier will collect your shipment, weigh and measure it in person, confirm the final price, and collect payment in cash. Shipping labels will be printed and attached by the courier at pickup.
+              </p>
+            </div>
+
+            {emailedTo && (
+              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: 'var(--success-bg)', borderRadius: 12, padding: '16px 18px', marginTop: 22 }}>
+                <span style={{ fontSize: 18, lineHeight: 1 }}>✉️</span>
+                <p style={{ fontSize: 13.5, color: 'var(--success)' }}>
+                  A booking confirmation has been emailed to <b>{emailedTo}</b>.
+                </p>
+              </div>
+            )}
+
+            <button
+              className="btn btn-outline block"
+              style={{ marginTop: 22 }}
+              onClick={() => { clearBooking(); navigate('/dashboard'); }}
+            >
+              Go to my orders
+            </button>
+          </>
+        )}
 
         {labels && (
           <>

@@ -50,6 +50,60 @@ async function emailLabelsAndInvoice(order, labels, invoice) {
   }
 }
 
+function addressBlockHtml(addr) {
+  if (!addr) return '';
+  const lines = [
+    addr.line1,
+    addr.line2,
+    `${addr.city || ''}${addr.state ? ', ' + addr.state : ''} ${addr.postcode || ''}`.trim(),
+    addr.countryCode,
+  ].filter(Boolean);
+  return `
+    <p style="margin:0 0 2px;font-size:13.5px;"><b>${addr.contactName || ''}</b></p>
+    <p style="margin:0 0 2px;font-size:13px;color:#5B6478;">${addr.phone || ''}${addr.email ? ` · ${addr.email}` : ''}</p>
+    <p style="margin:0;font-size:13px;color:#5B6478;">${lines.join(', ')}</p>
+  `;
+}
+
+function renderBookingConfirmationHtml(order) {
+  const sender = order.senderAddress;
+  const receiver = order.receiverAddress;
+  return `
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#171C2C;">
+      <h2 style="color:#0E1B3D;margin-bottom:4px;">Booking confirmed</h2>
+      <p style="color:#5B6478;font-size:13.5px;">Order <b>${order.orderNumber}</b> · Tracking <b>${order.trackingNumber}</b></p>
+
+      <div style="margin-top:18px;">
+        <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8A93A6;font-weight:600;">Sender</p>
+        <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;">${addressBlockHtml(sender)}</div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8A93A6;font-weight:600;">Receiver</p>
+        <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;">${addressBlockHtml(receiver)}</div>
+      </div>
+
+      <p style="font-size:13.5px;color:#5B6478;line-height:1.6;margin-top:20px;">
+        Since the weight wasn't known at booking, our courier will weigh and measure your shipment in person${order.pickupDate ? ` at pickup on <b>${order.pickupDate}</b>` : ' at pickup'}, confirm the final price, and collect payment in cash. Shipping labels will be printed and attached by the courier at that time.
+      </p>
+      <p style="font-size:12px;color:#8A93A6;margin-top:20px;">Questions about your pickup? Reply to this email or contact us at support@comonn.in.</p>
+    </div>
+  `;
+}
+
+async function sendBookingConfirmationEmail(order, to) {
+  try {
+    await sendEmail({
+      to,
+      from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
+      subject: `Booking confirmed — Order ${order.orderNumber}`,
+      html: renderBookingConfirmationHtml(order),
+    });
+  } catch (err) {
+    console.error('sendBookingConfirmationEmail failed:', err.message);
+  }
+}
+
 /**
  * POST /api/labels/:orderId/generate
  * Step 4 ("Print Labels"): only allowed once the order is PAID. Generates
@@ -75,6 +129,21 @@ async function generateLabel(req, res, next) {
     if (order.status === 'DRAFT' || order.status === 'PENDING_PAYMENT') {
       return res.status(409).json({ error: 'Order must be paid before a label can be generated' });
     }
+
+    // "Not sure, book pickup": weight/price unknown, so there's nothing to
+    // print a label or invoice for yet — send a booking-confirmation email
+    // to the sender instead. confirmationEmailSentAt guards against
+    // resending on page reload (these orders never get a Label row, so the
+    // labels.length check below doesn't apply to them).
+    if (order.pricingPending) {
+      const emailedTo = order.senderAddress?.email || order.otpEmail || null;
+      if (!order.confirmationEmailSentAt && emailedTo) {
+        await sendBookingConfirmationEmail(order, emailedTo);
+        await prisma.order.update({ where: { id: order.id }, data: { confirmationEmailSentAt: new Date() } });
+      }
+      return res.json({ pricingPending: true, emailedTo });
+    }
+
     if (order.labels.length > 0) {
       const invoice = await ensureInvoice(order);
       return res.json({

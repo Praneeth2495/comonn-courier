@@ -214,7 +214,11 @@ model Order {
 
   // "Not sure, book pickup": weight/dimensions unknown at booking time, so
   // no price is computed — courier assesses and collects cash at pickup.
+  // No label/invoice is generated for these; a booking-confirmation email
+  // goes to the sender instead (confirmationEmailSentAt guards against
+  // re-sending it on page reload, since these orders never get a Label row).
   pricingPending  Boolean   @default(false)
+  confirmationEmailSentAt DateTime?
 
   // pre-payment gates (Payment page)
   dgAcknowledged  Boolean   @default(false) // dangerous-goods declaration
