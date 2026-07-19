@@ -345,7 +345,7 @@ export default function Payment() {
               <div className="field" style={{ marginTop: 18 }}>
                 <label>Email verification</label>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                  <div style={{ width: 320, flex: 'none' }}>
+                  <div style={{ width: '100%', maxWidth: 320 }}>
                     <div className="input-group">
                       <input placeholder="example@gmail.com" style={{ flex: 1 }} value={otpEmail} onChange={(e) => setOtpEmail(e.target.value)} disabled={otpVerified} />
                       <button
@@ -362,7 +362,7 @@ export default function Payment() {
                   <input
                     className="input"
                     placeholder="Enter OTP"
-                    style={{ maxWidth: 140, flex: 'none' }}
+                    style={{ maxWidth: 140 }}
                     value={otpCodeInput}
                     onChange={(e) => handleOtpInput(e.target.value)}
                     disabled={!otpSent || otpVerified}

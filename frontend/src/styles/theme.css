@@ -395,6 +395,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .dg-chip .ic{font-size:14px;line-height:1;}
 
 .payment-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:start;}
+.payment-layout>*{min-width:0;}
 @media(max-width:900px){
   .payment-layout{grid-template-columns:1fr!important;}
   .summary-sidebar{position:static;}
