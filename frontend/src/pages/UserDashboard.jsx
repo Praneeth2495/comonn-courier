@@ -107,6 +107,15 @@ export default function UserDashboard() {
                   <span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {o.status === 'PENDING_PAYMENT' && (
+                    <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Continue booking →</button>
+                  )}
+                  {o.trackingNumber && (
+                    <button className="btn btn-primary btn-sm" onClick={() => navigate(`/track?id=${encodeURIComponent(o.trackingNumber)}`)}>
+                      Track order →
+                    </button>
+                  )}
+                  <button className="btn btn-outline btn-sm" onClick={() => setSelected(o)}>View details</button>
                   {label && (
                     <a
                       className="btn btn-outline btn-sm"
@@ -117,15 +126,16 @@ export default function UserDashboard() {
                       Download label
                     </a>
                   )}
-                  {o.trackingNumber && (
-                    <button className="btn btn-primary btn-sm" onClick={() => navigate(`/track?id=${encodeURIComponent(o.trackingNumber)}`)}>
-                      Track order →
-                    </button>
+                  {label && (
+                    <a
+                      className="btn btn-outline btn-sm"
+                      href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${o.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Download invoice
+                    </a>
                   )}
-                  {o.status === 'PENDING_PAYMENT' && (
-                    <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Continue booking →</button>
-                  )}
-                  <button className="btn btn-outline btn-sm" onClick={() => setSelected(o)}>View details</button>
                   {['DRAFT', 'PENDING_PAYMENT', 'PAID'].includes(o.status) && (
                     <button className="btn btn-outline btn-sm" onClick={() => cancel(o.id)}>Cancel</button>
                   )}
