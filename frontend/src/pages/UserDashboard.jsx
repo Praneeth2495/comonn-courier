@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
+import { useBooking } from '../api/BookingContext';
 import ChangePassword from '../components/ChangePassword';
 
 const STATUS_PILL = {
@@ -22,6 +23,7 @@ const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['
 
 export default function UserDashboard() {
   const { user } = useAuth();
+  const { setBooking } = useBooking();
   const navigate = useNavigate();
   const [tab, setTab] = useState('active');
   const [orders, setOrders] = useState([]);
@@ -48,6 +50,12 @@ export default function UserDashboard() {
     if (!confirm('Cancel this order?')) return;
     const { data } = await client.post(`/orders/${id}/cancel`);
     setOrders((prev) => prev.map((o) => (o.id === id ? data.order : o)));
+  }
+
+  async function continueBooking(id) {
+    const { data } = await client.get(`/orders/${id}`);
+    setBooking({ order: data.order });
+    navigate('/payment');
   }
 
   return (
@@ -113,6 +121,9 @@ export default function UserDashboard() {
                     <button className="btn btn-primary btn-sm" onClick={() => navigate(`/track?id=${encodeURIComponent(o.trackingNumber)}`)}>
                       Track order →
                     </button>
+                  )}
+                  {o.status === 'PENDING_PAYMENT' && (
+                    <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Continue booking →</button>
                   )}
                   <button className="btn btn-outline btn-sm" onClick={() => setSelected(o)}>View details</button>
                   {['DRAFT', 'PENDING_PAYMENT', 'PAID'].includes(o.status) && (

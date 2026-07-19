@@ -117,6 +117,7 @@ const STATUS_PILL = {
 };
 
 const ORDER_TABS = [
+  ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
   ['pickup', 'Pickup orders', ['PAID', 'LABEL_GENERATED']],
   ['delivery', 'Delivery orders', ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY']],
   ['history', 'Orders history', ['DELIVERED', 'CANCELLED', 'EXCEPTION']],
