@@ -45,8 +45,24 @@ model User {
   orders    Order[]
   auditLogs AuditLog[]
   zoneAssignments StaffZoneAssignment[]
+  passwordSetTokens PasswordSetToken[]
 
   @@index([email])
+}
+
+// Issued when an account is auto-created for a guest checkout (or when a
+// customer requests "Forgot password"). The raw token is emailed to the
+// customer and only its hash is stored, same pattern as the OTP flow.
+model PasswordSetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Address {

@@ -7,6 +7,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import SetPassword from './pages/SetPassword';
 import Services from './pages/Services';
 import About from './pages/About';
 import Quote from './pages/Quote';
@@ -30,6 +32,8 @@ export default function App() {
             <Route path="/" element={withLayout(<Home />)} />
             <Route path="/login" element={withLayout(<Login />)} />
             <Route path="/register" element={withLayout(<Register />)} />
+            <Route path="/forgot-password" element={withLayout(<ForgotPassword />)} />
+            <Route path="/set-password" element={withLayout(<SetPassword />)} />
             <Route path="/services" element={withLayout(<Services />)} />
             <Route path="/about" element={withLayout(<About />)} />
             <Route path="/quote" element={withLayout(<Quote />)} />

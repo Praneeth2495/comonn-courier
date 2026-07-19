@@ -62,7 +62,7 @@ export default function Login() {
                 {showPassword ? 'HIDE' : 'SHOW'}
               </button>
             </div>
-            <span className="form-foot-link"><a href="#" onClick={(e) => e.preventDefault()}>Forgot password?</a></span>
+            <span className="form-foot-link"><Link to="/forgot-password">Forgot password?</Link></span>
           </div>
           {error && <div className="error-text">{error}</div>}
           <button className="btn btn-primary block" style={{ padding: 13 }} disabled={loading}>

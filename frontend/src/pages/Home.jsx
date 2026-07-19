@@ -164,8 +164,7 @@ export default function Home() {
             </div>
             <h1>Committed to deliver, <span className="hl">on time</span>, every time.</h1>
             <p className="lead">
-              Book an international shipment in under two minutes. Real-time tracking, ₹1,50,000
-              transit warranty, and a price-beat guarantee on every order.
+              Book an international shipment in under two minutes.
             </p>
             <div className="trust-row">
               <div className="trust-item"><div className="ic">🛡️</div><span>Warranty up to ₹1,50,000</span></div>

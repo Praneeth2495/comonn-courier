@@ -4,6 +4,53 @@ const { prisma } = require('../config/db');
 const { generateLabelPdf, STORAGE_DIR } = require('../services/labelService');
 const { generateInvoicePdf } = require('../services/invoiceService');
 const { sendEmail } = require('../services/emailService');
+const { ensureCustomerAccount, passwordSetUrl } = require('../services/accountProvisioning');
+
+function siteUrl(pathname) {
+  const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
+  return `${base}${pathname}`;
+}
+
+function accountBlockHtml(accountInfo) {
+  if (!accountInfo?.isNewAccount) return '';
+  return `
+    <div style="margin-top:24px;padding:18px 20px;background:#F2F6FF;border-radius:12px;">
+      <p style="margin:0 0 8px;font-weight:700;color:#0E1B3D;font-size:14.5px;">We've created an account for you!</p>
+      <p style="margin:0 0 10px;font-size:13px;color:#5B6478;line-height:1.6;">To make managing your international shipments easier, we've set up a private customer portal for you. Use it to track packages live, download labels and invoices, and manage your saved addresses.</p>
+      <p style="margin:0 0 4px;font-size:13px;"><b>Username:</b> ${accountInfo.user.email}</p>
+      <p style="margin:0 0 14px;font-size:13px;"><b>Password:</b> Not set yet — for your security</p>
+      <p style="margin:0 0 6px;"><a href="${passwordSetUrl(accountInfo.rawToken)}" style="background:#FF5A36;color:#fff;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13.5px;display:inline-block;">Set your password →</a></p>
+      <p style="margin:10px 0 0;font-size:11.5px;color:#8A93A6;">This secure link expires in 24 hours. If it expires, just visit our login page and click &quot;Forgot password?&quot; to receive a new one.</p>
+    </div>
+  `;
+}
+
+async function sendReceiverBookingNotification(order) {
+  const to = order.receiverAddress?.email;
+  if (!to) return;
+  try {
+    await sendEmail({
+      to,
+      from: process.env.EMAIL_FROM_ALERTS || 'Comonn Alerts <alerts@comonn.in>',
+      subject: `A parcel is on its way to you — Order ${order.orderNumber}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
+          <h2 style="color:#0E1B3D;margin-bottom:6px;">A parcel has been booked for you</h2>
+          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">Hi ${order.receiverAddress?.contactName || ''},</p>
+          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">${order.senderAddress?.contactName || 'Someone'} has booked a shipment to you via COMONN. Here are the details:</p>
+          <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;margin:16px 0;">
+            <p style="margin:0 0 4px;font-size:13px;"><b>Order number:</b> ${order.orderNumber}</p>
+            ${order.trackingNumber ? `<p style="margin:0;font-size:13px;"><b>Tracking number:</b> ${order.trackingNumber}</p>` : ''}
+          </div>
+          <p style="margin:22px 0;"><a href="${siteUrl(`/track?id=${encodeURIComponent(order.trackingNumber || '')}`)}" style="background:#FF5A36;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Track order →</a></p>
+          <p style="font-size:12px;color:#8A93A6;">Questions about this shipment? Email us at support@comonn.in.</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error('sendReceiverBookingNotification failed:', err.message);
+  }
+}
 
 function toLabelResponse(label) {
   // Relative to the API base URL (which already includes /api) — the
@@ -23,7 +70,7 @@ async function ensureInvoice(order) {
   return prisma.invoice.create({ data: { orderId: order.id, fileUrl: fileName } });
 }
 
-async function emailLabelsAndInvoice(order, labels, invoice) {
+async function emailLabelsAndInvoice(order, labels, invoice, accountInfo) {
   if (!order.otpEmail) return;
   try {
     const attachments = [
@@ -39,8 +86,13 @@ async function emailLabelsAndInvoice(order, labels, invoice) {
     await sendEmail({
       to: order.otpEmail,
       from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
-      subject: `Your Comonn shipping label${labels.length > 1 ? 's' : ''} and invoice — Order ${order.orderNumber}`,
-      html: `<p>Your shipping label${labels.length > 1 ? 's are' : ' is'} attached for order ${order.orderNumber}, along with your invoice. Print the label(s) and attach one to each package before pickup.</p>`,
+      subject: accountInfo?.isNewAccount
+        ? `Confirmed: Order #${order.orderNumber} + Your Account Details`
+        : `Your Comonn shipping label${labels.length > 1 ? 's' : ''} and invoice — Order ${order.orderNumber}`,
+      html: `
+        <p>Your shipping label${labels.length > 1 ? 's are' : ' is'} attached for order ${order.orderNumber}, along with your invoice. Print the label(s) and attach one to each package before pickup.</p>
+        ${accountBlockHtml(accountInfo)}
+      `,
       attachments,
     });
   } catch (err) {
@@ -65,7 +117,7 @@ function addressBlockHtml(addr) {
   `;
 }
 
-function renderBookingConfirmationHtml(order) {
+function renderBookingConfirmationHtml(order, accountInfo) {
   const sender = order.senderAddress;
   const receiver = order.receiverAddress;
   return `
@@ -86,18 +138,21 @@ function renderBookingConfirmationHtml(order) {
       <p style="font-size:13.5px;color:#5B6478;line-height:1.6;margin-top:20px;">
         Since the weight wasn't known at booking, our courier will weigh and measure your shipment in person${order.pickupDate ? ` at pickup on <b>${order.pickupDate}</b>` : ' at pickup'}, confirm the final price, and collect payment in cash. Shipping labels will be printed and attached by the courier at that time.
       </p>
+      ${accountBlockHtml(accountInfo)}
       <p style="font-size:12px;color:#8A93A6;margin-top:20px;">Questions about your pickup? Reply to this email or contact us at support@comonn.in.</p>
     </div>
   `;
 }
 
-async function sendBookingConfirmationEmail(order, to) {
+async function sendBookingConfirmationEmail(order, to, accountInfo) {
   try {
     await sendEmail({
       to,
       from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
-      subject: `Booking confirmed — Order ${order.orderNumber}`,
-      html: renderBookingConfirmationHtml(order),
+      subject: accountInfo?.isNewAccount
+        ? `Confirmed: Order #${order.orderNumber} + Your Account Details`
+        : `Booking confirmed — Order ${order.orderNumber}`,
+      html: renderBookingConfirmationHtml(order, accountInfo),
     });
   } catch (err) {
     console.error('sendBookingConfirmationEmail failed:', err.message);
@@ -138,7 +193,9 @@ async function generateLabel(req, res, next) {
     if (order.pricingPending) {
       const emailedTo = order.senderAddress?.email || order.otpEmail || null;
       if (!order.confirmationEmailSentAt && emailedTo) {
-        await sendBookingConfirmationEmail(order, emailedTo);
+        const accountInfo = await ensureCustomerAccount(order);
+        await sendBookingConfirmationEmail(order, emailedTo, accountInfo);
+        await sendReceiverBookingNotification(order);
         await prisma.order.update({ where: { id: order.id }, data: { confirmationEmailSentAt: new Date() } });
       }
       return res.json({ pricingPending: true, emailedTo });
@@ -192,7 +249,9 @@ async function generateLabel(req, res, next) {
       },
     });
 
-    await emailLabelsAndInvoice(order, labels, invoice);
+    const accountInfo = await ensureCustomerAccount(order);
+    await emailLabelsAndInvoice(order, labels, invoice, accountInfo);
+    await sendReceiverBookingNotification(order);
 
     res.status(201).json({
       labels: labels.map(toLabelResponse),

@@ -46,12 +46,6 @@ export default function UserDashboard() {
     loadOrders();
   }
 
-  async function cancel(id) {
-    if (!confirm('Cancel this order?')) return;
-    const { data } = await client.post(`/orders/${id}/cancel`);
-    setOrders((prev) => prev.map((o) => (o.id === id ? data.order : o)));
-  }
-
   async function continueBooking(id) {
     const { data } = await client.get(`/orders/${id}`);
     setBooking({ order: data.order });
@@ -135,9 +129,6 @@ export default function UserDashboard() {
                     >
                       Download invoice
                     </a>
-                  )}
-                  {['DRAFT', 'PENDING_PAYMENT', 'PAID'].includes(o.status) && (
-                    <button className="btn btn-outline btn-sm" onClick={() => cancel(o.id)}>Cancel</button>
                   )}
                 </div>
               </div>

@@ -34,6 +34,14 @@ export function AuthProvider({ children }) {
     return data.user;
   }
 
+  async function setPassword(token, password) {
+    const { data } = await client.post('/auth/set-password', { token, password });
+    localStorage.setItem('comonn_token', data.token);
+    localStorage.setItem('comonn_user', JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  }
+
   async function register(payload) {
     const { data } = await client.post('/auth/register', payload);
     localStorage.setItem('comonn_token', data.token);
@@ -49,7 +57,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, setPassword }}>
       {children}
     </AuthContext.Provider>
   );
