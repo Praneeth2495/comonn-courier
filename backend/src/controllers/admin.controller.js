@@ -40,7 +40,11 @@ async function dashboardStats(req, res, next) {
 // ---------------- Zones & Countries ----------------
 async function listZones(req, res, next) {
   try {
-    const where = req.user.role === 'STAFF' ? { visibleToStaff: true } : {};
+    let where = {};
+    if (req.user.role === 'STAFF') {
+      const assignments = await prisma.staffZoneAssignment.findMany({ where: { userId: req.user.id }, select: { zoneId: true } });
+      where = { id: { in: assignments.map((a) => a.zoneId) } };
+    }
     const zones = await prisma.zone.findMany({ where, include: { countries: true } });
     res.json({ zones });
   } catch (err) {
@@ -58,15 +62,54 @@ async function createZone(req, res, next) {
   }
 }
 
-/** PATCH /api/admin/zones/:id — ADMIN only: toggle whether STAFF can see this zone's orders */
-async function setZoneStaffVisibility(req, res, next) {
+// ---------------- Staff zone assignments ----------------
+/** GET /api/admin/staff-zones — ADMIN only: every STAFF user with their currently assigned zones */
+async function listStaffZoneAssignments(req, res, next) {
   try {
-    const { visibleToStaff } = req.body;
-    const zone = await prisma.zone.update({
-      where: { id: req.params.id },
-      data: { visibleToStaff: Boolean(visibleToStaff) },
+    const staff = await prisma.user.findMany({
+      where: { role: 'STAFF' },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        zoneAssignments: { select: { zone: { select: { id: true, code: true, name: true } } } },
+      },
+      orderBy: { createdAt: 'asc' },
     });
-    res.json({ zone });
+    res.json({
+      staff: staff.map((s) => ({
+        id: s.id,
+        fullName: s.fullName,
+        email: s.email,
+        zones: s.zoneAssignments.map((a) => a.zone),
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** PUT /api/admin/staff-zones/:userId — ADMIN only: replace a staff member's zone assignments wholesale */
+async function setStaffZoneAssignments(req, res, next) {
+  try {
+    const { zoneIds } = req.body;
+    if (!Array.isArray(zoneIds)) return res.status(400).json({ error: 'zoneIds must be an array' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.params.userId } });
+    if (!user || user.role !== 'STAFF') return res.status(404).json({ error: 'Staff account not found' });
+
+    await prisma.$transaction([
+      prisma.staffZoneAssignment.deleteMany({ where: { userId: req.params.userId } }),
+      ...(zoneIds.length
+        ? [prisma.staffZoneAssignment.createMany({ data: zoneIds.map((zoneId) => ({ userId: req.params.userId, zoneId })) })]
+        : []),
+    ]);
+
+    const zones = await prisma.staffZoneAssignment.findMany({
+      where: { userId: req.params.userId },
+      select: { zone: { select: { id: true, code: true, name: true } } },
+    });
+    res.json({ zones: zones.map((a) => a.zone) });
   } catch (err) {
     next(err);
   }
@@ -212,7 +255,8 @@ module.exports = {
   dashboardStats,
   listZones,
   createZone,
-  setZoneStaffVisibility,
+  listStaffZoneAssignments,
+  setStaffZoneAssignments,
   upsertCountryMapping,
   listServicesAdmin,
   upsertService,

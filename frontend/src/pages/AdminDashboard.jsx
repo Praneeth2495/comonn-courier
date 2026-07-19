@@ -353,31 +353,17 @@ function RatesPanel() {
     load();
   }
 
-  async function toggleStaffVisibility(zone) {
-    const { data } = await client.patch(`/admin/zones/${zone.id}`, { visibleToStaff: !zone.visibleToStaff });
-    setZones((prev) => prev.map((z) => (z.id === zone.id ? { ...z, visibleToStaff: data.zone.visibleToStaff } : z)));
-  }
-
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Zones &amp; Rate Cards</h1>
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 4, color: 'var(--navy)' }}>Zones</h4>
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 12 }}>
-          Toggle which zones staff accounts can see and filter by in Pickup/Delivery orders.
-        </p>
+        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Zones</h4>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {zones.map((z) => (
-            <label
-              key={z.id}
-              className="pill pill-navy"
-              title={z.countries.map((c) => c.countryName).join(', ')}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', opacity: z.visibleToStaff ? 1 : 0.5 }}
-            >
-              <input type="checkbox" checked={z.visibleToStaff} onChange={() => toggleStaffVisibility(z)} style={{ margin: 0 }} />
+            <span key={z.id} className="pill pill-navy" title={z.countries.map((c) => c.countryName).join(', ')}>
               {z.name} · {z.countries.length} countries
-            </label>
+            </span>
           ))}
         </div>
       </div>
@@ -428,11 +414,30 @@ function RatesPanel() {
 
 function UsersPanel() {
   const [users, setUsers] = useState([]);
-  useEffect(() => { client.get('/admin/users').then(({ data }) => setUsers(data.users)); }, []);
+  const [zones, setZones] = useState([]);
+  const [staffZones, setStaffZones] = useState({}); // userId -> [zone,...]
+  const [editingStaff, setEditingStaff] = useState(null); // { id, fullName }
+
+  function load() {
+    client.get('/admin/users').then(({ data }) => setUsers(data.users));
+    client.get('/admin/zones').then(({ data }) => setZones(data.zones));
+    client.get('/admin/staff-zones').then(({ data }) => {
+      const map = {};
+      data.staff.forEach((s) => { map[s.id] = s.zones; });
+      setStaffZones(map);
+    });
+  }
+  useEffect(load, []);
 
   async function setRole(id, role) {
     const { data } = await client.patch(`/admin/users/${id}`, { role });
     setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
+  }
+
+  async function saveZones(userId, zoneIds) {
+    const { data } = await client.put(`/admin/staff-zones/${userId}`, { zoneIds });
+    setStaffZones((prev) => ({ ...prev, [userId]: data.zones }));
+    setEditingStaff(null);
   }
 
   return (
@@ -440,7 +445,7 @@ function UsersPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Users</h1>
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Zones</th></tr></thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
@@ -455,13 +460,77 @@ function UsersPanel() {
                     <option value="ADMIN">Admin</option>
                   </select>
                 </td>
+                <td>
+                  {u.role === 'STAFF' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(staffZones[u.id] || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>None assigned</span>
+                      ) : (
+                        (staffZones[u.id] || []).map((z) => <span key={z.id} className="pill pill-navy" style={{ fontSize: 11 }}>{z.code}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingStaff({ id: u.id, fullName: u.fullName })}>Edit</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {editingStaff && (
+        <StaffZoneModal
+          staff={editingStaff}
+          zones={zones}
+          currentZoneIds={(staffZones[editingStaff.id] || []).map((z) => z.id)}
+          onSave={(zoneIds) => saveZones(editingStaff.id, zoneIds)}
+          onClose={() => setEditingStaff(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function StaffZoneModal({ staff, zones, currentZoneIds, onSave, onClose }) {
+  const [selected, setSelected] = useState(currentZoneIds);
+  const [saving, setSaving] = useState(false);
+
+  function toggle(zoneId) {
+    setSelected((prev) => (prev.includes(zoneId) ? prev.filter((id) => id !== zoneId) : [...prev, zoneId]));
+  }
+
+  async function save() {
+    setSaving(true);
+    await onSave(selected);
+    setSaving(false);
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <h3 style={{ fontSize: 17 }}>Zones for {staff.fullName}</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 30, height: 30, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
+          This staff account will only see and filter Pickup/Delivery orders in the zones checked below.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
+          {zones.map((z) => (
+            <label key={z.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
+              <input type="checkbox" checked={selected.includes(z.id)} onChange={() => toggle(z.id)} />
+              {z.name}
+            </label>
+          ))}
+        </div>
+        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
+          {saving ? 'Saving…' : 'Save zones'}
+        </button>
       </div>
     </div>
   );
