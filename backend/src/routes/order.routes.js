@@ -9,6 +9,7 @@ const {
   cancelOrder,
   listOrderComments,
   addOrderComment,
+  updateOrderDetails,
   updateAddons,
   sendOtp,
   verifyOtp,
@@ -29,6 +30,7 @@ router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), listOrde
 router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), addOrderComment);
 
 // Payment-page pre-payment steps — guest checkout allowed
+router.patch('/:id/details', optionalAuth, updateOrderDetails);
 router.patch('/:id/addons', optionalAuth, updateAddons);
 router.post('/:id/send-otp', otpLimiter, optionalAuth, sendOtp);
 router.post('/:id/verify-otp', otpLimiter, optionalAuth, verifyOtp);

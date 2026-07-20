@@ -41,7 +41,7 @@ export default function Payment() {
   const [order, setOrder] = useState(bookingOrder);
   const [pickupDates] = useState(nextPickupDates);
 
-  const [dgAcknowledged, setDgAcknowledged] = useState(true);
+  const [dgAcknowledged, setDgAcknowledged] = useState(false);
   const [showDgModal, setShowDgModal] = useState(false);
   const [warrantyCoverage, setWarrantyCoverage] = useState(10000);
   const [selectedAddons, setSelectedAddons] = useState([]);
@@ -77,7 +77,7 @@ export default function Payment() {
         warrantyCoverage: 10000,
         addons: [],
         pickupDate: pickupDates[0],
-        dgAcknowledged: true,
+        dgAcknowledged: false,
       })
       .then(({ data }) => { if (seq === addonsSeqRef.current) setOrder(data.order); })
       .catch(() => {});
@@ -277,6 +277,14 @@ export default function Payment() {
       <div className="section" style={{ paddingTop: 20 }}>
         <div className="wrap payment-layout" style={{ maxWidth: 1080 }}>
           <div>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              style={{ marginBottom: 16 }}
+              onClick={() => navigate('/details')}
+            >
+              ← Back
+            </button>
             <div className="card" style={{ padding: 26 }}>
               <h3 style={{ marginBottom: 4 }}>Dangerous goods declaration</h3>
               <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>
@@ -289,9 +297,8 @@ export default function Payment() {
               </label>
             </div>
 
-            {!pricingPending && (
-              <div className="card" style={{ padding: 26, marginTop: 22 }}>
-                <h3 style={{ marginBottom: 6 }}>Add extra protection</h3>
+            <div className="card" style={{ padding: 26, marginTop: 22 }}>
+              <h3 style={{ marginBottom: 6 }}>Add extra protection</h3>
                 <div className="addon-row">
                   <div className="txt">
                     <h4>Transit warranty</h4>
@@ -332,7 +339,6 @@ export default function Payment() {
                   </div>
                 </div>
               </div>
-            )}
 
             <div className="card" style={{ padding: 26, marginTop: 22 }}>
               <h3 style={{ marginBottom: 16 }}>Pickup &amp; verification</h3>
@@ -374,29 +380,26 @@ export default function Payment() {
               </div>
             </div>
 
-            <div className="card" style={{ padding: 26, marginTop: 22 }}>
-              <h3 style={{ marginBottom: 16 }}>Payment method</h3>
-              {pricingPending ? (
-                <>
-                  <div className="pay-method-row">
-                    <div className="pay-method active">💵 Cash</div>
-                  </div>
+            {!pricingPending && (
+              <div className="card" style={{ padding: 26, marginTop: 22 }}>
+                <h3 style={{ marginBottom: 16 }}>Payment method</h3>
+                {dgAcknowledged ? (
+                  <>
+                    <div className="pay-method-row">
+                      <div className={`pay-method ${payMethodTab === 'card' ? 'active' : ''}`} onClick={() => setPayMethodTab('card')}>💳 Credit Card</div>
+                      <div className={`pay-method ${payMethodTab === 'upi' ? 'active' : ''}`} onClick={() => setPayMethodTab('upi')}>📱 UPI</div>
+                    </div>
+                    <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
+                      You'll enter your {payMethodTab === 'card' ? 'card' : 'UPI'} details securely in Razorpay's checkout window — Comonn never stores your payment details.
+                    </p>
+                  </>
+                ) : (
                   <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
-                    Weight and price aren't known yet, so online payment isn't available for this booking — pay in cash to our courier once your shipment is weighed and priced at pickup.
+                    Acknowledge the dangerous goods declaration above to see payment options.
                   </p>
-                </>
-              ) : (
-                <>
-                  <div className="pay-method-row">
-                    <div className={`pay-method ${payMethodTab === 'card' ? 'active' : ''}`} onClick={() => setPayMethodTab('card')}>💳 Credit Card</div>
-                    <div className={`pay-method ${payMethodTab === 'upi' ? 'active' : ''}`} onClick={() => setPayMethodTab('upi')}>📱 UPI</div>
-                  </div>
-                  <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
-                    You'll enter your {payMethodTab === 'card' ? 'card' : 'UPI'} details securely in Razorpay's checkout window — Comonn never stores your payment details.
-                  </p>
-                </>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="card summary-sidebar" style={{ padding: 26 }}>
@@ -404,16 +407,18 @@ export default function Payment() {
             {pricingPending ? (
               <>
                 <p style={{ fontSize: 13.5, color: 'var(--slate)', lineHeight: 1.6 }}>
-                  This is a pickup booking — weight and dimensions will be assessed by our courier in person, and the price will be confirmed at that time.
+                  This is a pickup booking — weight and dimensions will be assessed by our courier in person, and the shipping price will be confirmed at that time. Any add-ons below are collected in cash together with the shipping cost at pickup.
                 </p>
-                <div className="sum-line total" style={{ marginTop: 14 }}><span>Payment</span><span className="v">Cash on pickup</span></div>
+                <div className="sum-line"><span>Warranty</span><span className="v" style={{ color: addonAmount('WARRANTY') > 0 ? undefined : 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span></div>
+                <div className="sum-line"><span>Cardboard</span><span className="v">₹{Number(addonAmount('CARDBOARD') || 0).toFixed(2)}</span></div>
+                <div className="sum-line"><span>Packing</span><span className="v">₹{Number(addonAmount('PACKING') || 0).toFixed(2)}</span></div>
+                <div className="sum-line"><span>Wrapping</span><span className="v">₹{Number(addonAmount('WRAPPING') || 0).toFixed(2)}</span></div>
 
                 {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
 
                 <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || submitting} onClick={handleConfirmCashBooking}>
                   {submitting ? 'Confirming…' : 'Confirm pickup booking'}
                 </button>
-                {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to confirm.</p>}
               </>
             ) : (
               <>
@@ -445,7 +450,9 @@ export default function Payment() {
                 {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to pay.</p>}
               </>
             )}
-            <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 12 }}>🔒 Secured by 256-bit SSL encryption</p>
+            {!pricingPending && (
+              <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 12 }}>🔒 Secured by 256-bit SSL encryption</p>
+            )}
           </div>
         </div>
       </div>

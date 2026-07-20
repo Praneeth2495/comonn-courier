@@ -11,23 +11,64 @@ function emptyItem() {
   return { itemType: 'Box', weightPreset: '', lengthCm: '30', widthCm: '20', heightCm: '15', quantity: 1, showDims: false };
 }
 
+// Rebuilds the item-row form state from a saved quoteInput so navigating
+// back from Details/Payment doesn't lose what was already entered.
+function hydrateItems(quoteInput) {
+  if (!quoteInput?.items?.length) return [emptyItem()];
+  if (quoteInput.pricingPending) {
+    return quoteInput.items.map((it) => ({
+      itemType: it.itemType,
+      weightPreset: 'NOT_SURE',
+      lengthCm: '30',
+      widthCm: '20',
+      heightCm: '15',
+      quantity: it.quantity,
+      showDims: false,
+    }));
+  }
+  return quoteInput.items.map((it) => ({
+    itemType: it.itemType,
+    weightPreset: `${it.actualWeightKg} kg`,
+    lengthCm: String(it.lengthCm),
+    widthCm: String(it.widthCm),
+    heightCm: String(it.heightCm),
+    quantity: it.quantity,
+    showDims: true,
+  }));
+}
+
 export default function Quote() {
   const { user } = useAuth();
+  const { quoteInput, selectedQuote, setBooking } = useBooking();
   const [countries, setCountries] = useState([]);
-  const [destinationCountryCode, setDestinationCountryCode] = useState('');
-  const [items, setItems] = useState([emptyItem()]);
-  const [quotes, setQuotes] = useState(null);
-  const [selected, setSelected] = useState(null);
+  const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || '');
+  const [items, setItems] = useState(() => hydrateItems(quoteInput));
+  const [quotes, setQuotes] = useState(selectedQuote ? [selectedQuote] : null);
+  const [selected, setSelected] = useState(selectedQuote || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [emailAddress, setEmailAddress] = useState(user?.email || '');
   const [emailStatus, setEmailStatus] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const { setBooking } = useBooking();
   const navigate = useNavigate();
 
   useEffect(() => {
     client.get('/quote/countries').then(({ data }) => setCountries(data.countries)).catch(() => {});
+  }, []);
+
+  // Re-fetch the full rate list (not just the previously selected service)
+  // when returning to this page with a quote already in progress.
+  useEffect(() => {
+    if (!quoteInput || quoteInput.pricingPending || !selectedQuote) return;
+    client
+      .post('/quote', { destinationCountryCode: quoteInput.destinationCountryCode, items: quoteInput.items })
+      .then(({ data }) => {
+        setQuotes(data.quotes);
+        const match = data.quotes.find((q) => q.service.code === selectedQuote.service.code);
+        setSelected(match || selectedQuote);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function updateItem(idx, field, value) {

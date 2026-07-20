@@ -316,6 +316,152 @@ async function addOrderComment(req, res, next) {
 }
 
 /**
+ * PATCH /api/orders/:id/details
+ * Edits an order's service/items/destination/addresses and re-prices it
+ * server-side. Two callers:
+ *  - The booking flow itself (Details.jsx), when a customer navigates back
+ *    to Quote/Details and resubmits — this updates the in-progress order in
+ *    place instead of creating a duplicate. Only allowed pre-payment.
+ *  - Staff/admin "Edit order" action on an existing booking, at any status
+ *    (per business decision — orders can be corrected even after pickup).
+ * Existing add-ons/promo carry over; recomputeOrderTotals folds them into
+ * the new grandTotal. Never touches order.status or payment records — the
+ * caller (frontend) is responsible for surfacing any balance due/credit
+ * against what was already paid.
+ */
+async function updateOrderDetails(req, res, next) {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { payment: true },
+    });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const isStaff = req.user && ['ADMIN', 'STAFF'].includes(req.user.role);
+    if (order.status !== 'PENDING_PAYMENT' && !isStaff) {
+      return res.status(409).json({ error: 'This order can no longer be edited from the booking flow. Contact support.' });
+    }
+
+    const {
+      serviceCode,
+      sender,
+      receiver,
+      items,
+      declaredValue = 0,
+      contentsDescription,
+      pricingPending = false,
+    } = req.body;
+
+    if (!pricingPending && !serviceCode) {
+      return res.status(400).json({ error: 'serviceCode is required' });
+    }
+    if (!sender || !receiver || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'sender, receiver and at least one item are required' });
+    }
+    for (const [label, addr] of [['sender', sender], ['receiver', receiver]]) {
+      for (const f of ['contactName', 'phone', 'line1', 'city', 'postcode', 'countryCode']) {
+        if (!addr[f]) return res.status(400).json({ error: `${label}.${f} is required` });
+      }
+    }
+
+    let orderData;
+    let newItems;
+    if (pricingPending) {
+      const service = await prisma.service.findUnique({ where: { code: 'PICKUP' } });
+      const zone = await resolveZoneForCountry(receiver.countryCode);
+      orderData = {
+        serviceId: service.id,
+        actualWeightKg: 0,
+        volumetricWeightKg: 0,
+        chargeableWeightKg: 0,
+        declaredValue,
+        contentsDescription,
+        pricingPending: true,
+        zoneCode: zone.code,
+        baseFreight: 0,
+        surchargesTotal: 0,
+        taxTotal: 0,
+        grandTotal: 0,
+      };
+      newItems = items.map((it) => ({
+        itemType: it.itemType || 'Box',
+        actualWeightKg: 0,
+        lengthCm: 0,
+        widthCm: 0,
+        heightCm: 0,
+        quantity: Number(it.quantity) || 1,
+        volumetricWeightKg: 0,
+        chargeableWeightKg: 0,
+      }));
+    } else {
+      const quote = await generateQuote({
+        serviceCode,
+        destinationCountryCode: receiver.countryCode,
+        items,
+        declaredValue,
+        taxRate: Number(order.taxRate) || 0,
+      });
+      const service = await prisma.service.findUnique({ where: { code: serviceCode } });
+      orderData = {
+        serviceId: service.id,
+        actualWeightKg: quote.weight.actualWeightKg,
+        volumetricWeightKg: quote.weight.volumetricWeightKg,
+        chargeableWeightKg: quote.weight.chargeableWeightKg,
+        declaredValue,
+        contentsDescription,
+        pricingPending: false,
+        zoneCode: quote.zone.code,
+        baseFreight: quote.pricing.baseFreight,
+        surchargesTotal: quote.pricing.surchargesTotal,
+        taxTotal: quote.pricing.taxTotal,
+        grandTotal: quote.pricing.grandTotal,
+        currency: quote.pricing.currency,
+        pricingBreakdown: quote,
+      };
+      newItems = quote.items.map((it) => ({
+        itemType: it.itemType,
+        actualWeightKg: it.actualWeightKg,
+        lengthCm: it.lengthCm,
+        widthCm: it.widthCm,
+        heightCm: it.heightCm,
+        quantity: it.quantity,
+        volumetricWeightKg: it.volumetricWeightKg,
+        chargeableWeightKg: it.chargeableWeightKg,
+      }));
+    }
+
+    const previousTotal = Number(order.grandTotal);
+
+    await prisma.$transaction([
+      prisma.address.update({ where: { id: order.senderAddressId }, data: sender }),
+      prisma.address.update({ where: { id: order.receiverAddressId }, data: receiver }),
+      prisma.orderItem.deleteMany({ where: { orderId: order.id } }),
+      prisma.orderItem.createMany({ data: newItems.map((it) => ({ ...it, orderId: order.id })) }),
+      prisma.order.update({ where: { id: order.id }, data: orderData }),
+    ]);
+
+    const updated = await recomputeOrderTotals(order.id);
+
+    const amountPaid = order.payment?.status === 'SUCCEEDED' ? Number(order.payment.amount) : 0;
+    const balance = round2(Number(updated.grandTotal) - amountPaid);
+
+    if (isStaff) {
+      await prisma.orderComment.create({
+        data: {
+          orderId: order.id,
+          authorId: req.user.id,
+          body: `Order details edited — total changed from ₹${previousTotal.toFixed(2)} to ₹${Number(updated.grandTotal).toFixed(2)}.${amountPaid > 0 ? ` Already paid ₹${amountPaid.toFixed(2)} — ${balance > 0 ? `₹${balance.toFixed(2)} due` : balance < 0 ? `₹${Math.abs(balance).toFixed(2)} credit owed to customer` : 'fully settled'}.` : ''}`,
+        },
+      });
+    }
+
+    res.json({ order: updated, amountPaid, balance });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * PATCH /api/orders/:id/addons
  * Payment page: selects transit-warranty tier + flat add-ons (heavy-duty
  * cardboard/packing/wrapping), pickup date, and the dangerous-goods
@@ -458,6 +604,7 @@ module.exports = {
   cancelOrder,
   listOrderComments,
   addOrderComment,
+  updateOrderDetails,
   updateAddons,
   sendOtp,
   verifyOtp,

@@ -242,14 +242,14 @@ function OrdersPanel() {
       {loading ? <p className="lead">Loading…</p> : (
         <div className="table-wrap">
           <div className={`t-row t-head orders-detailed ${tab === 'bookings' ? 'with-actions' : ''}`}>
-            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}
+            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' || tab === 'bookings' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}
           </div>
           {orders.map((o) => (
             <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''}`} key={o.id}>
               <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
               <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
               <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
-              <div>{tab === 'pickup' ? (o.pickupDate || '—') : (o.items?.reduce((sum, it) => sum + it.quantity, 0) ?? 1)}</div>
+              <div>{tab === 'pickup' || tab === 'bookings' ? (o.pickupDate || '—') : (o.items?.reduce((sum, it) => sum + it.quantity, 0) ?? 1)}</div>
               <div>
                 <select
                   className={`status-badge status-dd ${STATUS_PILL[o.status] || 'pill-navy'}`}

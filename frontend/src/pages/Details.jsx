@@ -40,13 +40,13 @@ function fromSavedAddress(saved) {
 }
 
 export default function Details() {
-  const { quoteInput, selectedQuote, setBooking, clearBooking } = useBooking();
+  const { quoteInput, selectedQuote, order: bookingOrder, setBooking, clearBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [sender, setSender] = useState(() => emptyAddress('IN'));
-  const [receiver, setReceiver] = useState(() => emptyAddress(quoteInput?.destinationCountryCode || ''));
-  const [contentsDescription, setContentsDescription] = useState('');
-  const [declaredValue, setDeclaredValue] = useState('');
+  const [sender, setSender] = useState(() => (bookingOrder ? fromSavedAddress(bookingOrder.senderAddress) : emptyAddress('IN')));
+  const [receiver, setReceiver] = useState(() => (bookingOrder ? fromSavedAddress(bookingOrder.receiverAddress) : emptyAddress(quoteInput?.destinationCountryCode || '')));
+  const [contentsDescription, setContentsDescription] = useState(bookingOrder?.contentsDescription || '');
+  const [declaredValue, setDeclaredValue] = useState(bookingOrder?.declaredValue ? String(bookingOrder.declaredValue) : '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -97,7 +97,7 @@ export default function Details() {
     setError('');
     setLoading(true);
     try {
-      const { data } = await client.post('/orders', {
+      const payload = {
         serviceCode: pricingPending ? undefined : selectedQuote.service.code,
         sender: toAddressPayload(sender),
         receiver: toAddressPayload(receiver),
@@ -105,11 +105,17 @@ export default function Details() {
         declaredValue: Number(declaredValue) || 0,
         contentsDescription,
         pricingPending,
-      });
+      };
+      // If an order already exists from a prior visit to this step (e.g. the
+      // customer went back and changed something), update it in place rather
+      // than creating a duplicate order.
+      const { data } = bookingOrder
+        ? await client.patch(`/orders/${bookingOrder.id}/details`, payload)
+        : await client.post('/orders', payload);
       setBooking({ order: data.order });
       navigate('/payment');
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not create the order. Please check the details and try again.');
+      setError(err.response?.data?.error || 'Could not save the order. Please check the details and try again.');
     } finally {
       setLoading(false);
     }
@@ -119,6 +125,14 @@ export default function Details() {
     <div>
       <div id="stepper-details"><Stepper activeKey="details" /></div>
       <div className="section" style={{ paddingTop: 20, maxWidth: 900, margin: '0 auto' }}>
+        <button
+          type="button"
+          className="btn btn-outline btn-sm"
+          style={{ marginBottom: 16 }}
+          onClick={() => navigate('/quote')}
+        >
+          ← Back
+        </button>
         <form onSubmit={submit}>
           <div className="card summary-card">
             <div className="summary-top"><h3>Booking summary</h3></div>

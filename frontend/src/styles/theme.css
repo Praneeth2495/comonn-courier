@@ -103,6 +103,9 @@ input,select,textarea{font-family:inherit;}
 .step.active .label,.step.done .label{color:var(--navy);}
 .step .track{flex:1;height:2px;background:var(--line);margin:0 4px;}
 .step.done .track{background:var(--success);}
+.step.clickable{cursor:pointer;}
+.step.clickable .num,.step.clickable .label{transition:opacity .15s;}
+.step.clickable:hover .num,.step.clickable:hover .label{opacity:.75;}
 @media(max-width:640px){
   .stepper{padding:20px 12px 4px;}
   .step .label{font-size:11px;}
