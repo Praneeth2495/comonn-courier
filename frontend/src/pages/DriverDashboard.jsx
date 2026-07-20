@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
+import ChangePassword from '../components/ChangePassword';
 import logoFooter from '../assets/logo-footer.png';
 
 const STATUS_LABEL = {
@@ -19,38 +20,19 @@ function formatAddress(a) {
   return `${a.line1}${a.line2 ? `, ${a.line2}` : ''}, ${a.city}${a.state ? `, ${a.state}` : ''} ${a.postcode}, ${a.countryCode}`;
 }
 
+function isoDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
 export default function DriverDashboard() {
   const { user, logout } = useAuth();
+  const [tab, setTab] = useState('jobs');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null);
-  const [error, setError] = useState('');
 
-  function load() {
-    setLoading(true);
-    client.get('/driver/jobs').then(({ data }) => {
-      setJobs(data.jobs);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+  function selectTab(key) {
+    setTab(key);
+    setSidebarOpen(false);
   }
-  useEffect(load, []);
-
-  async function markPickedUp(id) {
-    setUpdatingId(id);
-    setError('');
-    try {
-      await client.patch(`/driver/jobs/${id}/picked-up`);
-      setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status: 'PICKED_UP' } : j)));
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not update this job.');
-    } finally {
-      setUpdatingId(null);
-    }
-  }
-
-  const pendingJobs = jobs.filter((j) => j.status !== 'PICKED_UP' && !['DELIVERED', 'CANCELLED'].includes(j.status));
-  const doneJobs = jobs.filter((j) => j.status === 'PICKED_UP' || ['DELIVERED', 'CANCELLED'].includes(j.status));
 
   return (
     <div className="app-shell">
@@ -65,51 +47,146 @@ export default function DriverDashboard() {
           <img className="logo-img lg" src={logoFooter} alt="Comonn" />
           <span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>Driver</span>
         </div>
-        <button className="app-navlink active">My Jobs</button>
+        <button className={`app-navlink ${tab === 'jobs' ? 'active' : ''}`} onClick={() => selectTab('jobs')}>My Jobs</button>
+        <button className={`app-navlink ${tab === 'profile' ? 'active' : ''}`} onClick={() => selectTab('profile')}>Profile</button>
         <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,.1)' }}>
           <Link to="/" className="app-navlink">← Back to site</Link>
           <button className="app-navlink" onClick={logout}>Log out</button>
         </div>
       </aside>
       <main className="app-main">
-        <h1 className="h-lg" style={{ marginBottom: 4 }}>My pickup jobs</h1>
-        <p className="lead" style={{ marginBottom: 20 }}>{user?.fullName}</p>
-
-        {loading ? (
-          <p className="lead">Loading…</p>
-        ) : jobs.length === 0 ? (
-          <p className="lead">No pickup jobs assigned to you right now.</p>
-        ) : (
-          <>
-            {error && <div className="error-text" style={{ marginBottom: 14 }}>{error}</div>}
-
-            {pendingJobs.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: doneJobs.length ? 28 : 0 }}>
-                {pendingJobs.map((j) => (
-                  <JobCard key={j.id} job={j} updating={updatingId === j.id} onMarkPickedUp={() => markPickedUp(j.id)} />
-                ))}
-              </div>
-            )}
-
-            {doneJobs.length > 0 && (
-              <>
-                <h3 className="h-md" style={{ marginBottom: 12 }}>Completed</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {doneJobs.map((j) => (
-                    <JobCard key={j.id} job={j} updating={false} onMarkPickedUp={null} />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        )}
+        {tab === 'jobs' && <MyJobs userName={user?.fullName} />}
+        {tab === 'profile' && <ChangePassword />}
       </main>
     </div>
   );
 }
 
-function JobCard({ job, updating, onMarkPickedUp }) {
+function MyJobs({ userName }) {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
+  const [error, setError] = useState('');
+
+  const today = new Date();
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  const [fromDate, setFromDate] = useState(isoDate(threeMonthsAgo));
+  const [toDate, setToDate] = useState(isoDate(today));
+
+  function load() {
+    setLoading(true);
+    client.get('/driver/jobs').then(({ data }) => {
+      setJobs(data.jobs);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }
+  useEffect(load, []);
+
+  async function markArrived(id) {
+    setUpdatingId(id);
+    setError('');
+    try {
+      const { data } = await client.patch(`/driver/jobs/${id}/arrived`);
+      setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, driverArrivedAt: data.order.driverArrivedAt } : j)));
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not update this job.');
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function markPickedUp(id) {
+    setUpdatingId(id);
+    setError('');
+    try {
+      const { data } = await client.patch(`/driver/jobs/${id}/picked-up`);
+      setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status: 'PICKED_UP', pickedUpAt: data.order.pickedUpAt } : j)));
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not update this job.');
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  function handleStatusChange(id, value) {
+    if (value === 'ARRIVED') markArrived(id);
+    else if (value === 'PICKED_UP') markPickedUp(id);
+  }
+
+  const pendingJobs = jobs.filter((j) => j.status !== 'PICKED_UP' && !['DELIVERED', 'CANCELLED'].includes(j.status));
+  const doneJobs = jobs
+    .filter((j) => j.status === 'PICKED_UP' || ['DELIVERED', 'CANCELLED'].includes(j.status))
+    .filter((j) => {
+      if (!j.pickedUpAt) return true;
+      const d = j.pickedUpAt.slice(0, 10);
+      return d >= fromDate && d <= toDate;
+    });
+
+  return (
+    <div>
+      <h1 className="h-lg" style={{ marginBottom: 4 }}>My pickup jobs</h1>
+      <p className="lead" style={{ marginBottom: 20 }}>{userName}</p>
+
+      {loading ? (
+        <p className="lead">Loading…</p>
+      ) : jobs.length === 0 ? (
+        <p className="lead">No pickup jobs assigned to you right now.</p>
+      ) : (
+        <>
+          {error && <div className="error-text" style={{ marginBottom: 14 }}>{error}</div>}
+
+          {pendingJobs.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+              {pendingJobs.map((j) => (
+                <JobCard key={j.id} job={j} updating={updatingId === j.id} onStatusChange={(v) => handleStatusChange(j.id, v)} />
+              ))}
+            </div>
+          )}
+
+          <h3 className="h-md" style={{ marginBottom: 12 }}>Completed</h3>
+          <div className="card" style={{ padding: 14, marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Show completed between</span>
+            <input
+              className="input"
+              type="date"
+              style={{ maxWidth: 170 }}
+              value={fromDate}
+              min={isoDate(threeMonthsAgo)}
+              max={toDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
+            <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
+            <input
+              className="input"
+              type="date"
+              style={{ maxWidth: 170 }}
+              value={toDate}
+              min={fromDate}
+              max={isoDate(today)}
+              onChange={(e) => setToDate(e.target.value)}
+            />
+          </div>
+
+          {doneJobs.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {doneJobs.map((j) => (
+                <JobCard key={j.id} job={j} updating={false} onStatusChange={null} />
+              ))}
+            </div>
+          ) : (
+            <p className="lead" style={{ fontSize: 13.5 }}>No completed jobs in this date range.</p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function JobCard({ job, updating, onStatusChange }) {
   const totalBoxQty = job.items?.reduce((sum, it) => sum + it.quantity, 0) || 1;
+  const stage = job.status === 'PICKED_UP' ? 'PICKED_UP' : job.driverArrivedAt ? 'ARRIVED' : '';
+
   return (
     <div className="card" style={{ padding: 22 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
@@ -118,6 +195,7 @@ function JobCard({ job, updating, onMarkPickedUp }) {
           <span className={`pill ${job.status === 'PICKED_UP' ? 'pill-success' : 'pill-cobalt'}`} style={{ marginTop: 6, display: 'inline-block' }}>
             {STATUS_LABEL[job.status] || job.status}
           </span>
+          {stage === 'ARRIVED' && <span className="pill pill-navy" style={{ marginTop: 6, marginLeft: 6, display: 'inline-block' }}>Arrived</span>}
         </div>
         {job.pickupDate && <div style={{ fontSize: 13, color: 'var(--slate)', textAlign: 'right' }}>Pickup date<br /><b>{job.pickupDate}</b></div>}
       </div>
@@ -145,10 +223,15 @@ function JobCard({ job, updating, onMarkPickedUp }) {
         </div>
       </div>
 
-      {onMarkPickedUp && (
-        <button className="btn btn-primary" style={{ marginTop: 16, padding: '12px 22px' }} disabled={updating} onClick={onMarkPickedUp}>
-          {updating ? 'Updating…' : 'Mark picked up'}
-        </button>
+      {onStatusChange && (
+        <div className="field" style={{ marginTop: 16, maxWidth: 240 }}>
+          <label>Update status</label>
+          <select className="select" value={stage} disabled={updating} onChange={(e) => onStatusChange(e.target.value)}>
+            <option value="" disabled>{updating ? 'Updating…' : 'Select…'}</option>
+            <option value="ARRIVED">Arrived for pickup</option>
+            <option value="PICKED_UP">Pickup completed</option>
+          </select>
+        </div>
       )}
     </div>
   );

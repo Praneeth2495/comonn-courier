@@ -18,7 +18,7 @@ export default function AdminDashboard() {
     ['accounts', 'Accounts'],
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
-    ['account', 'Account'],
+    ['account', 'Profile'],
   ];
 
   function selectTab(key) {
@@ -442,6 +442,12 @@ function paidAndDue(o) {
   return { amountPaid, due };
 }
 
+function isoDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function monthEnd(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
+
 function AccountsPanel() {
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
@@ -449,19 +455,28 @@ function AccountsPanel() {
   const [pageSize] = useState(20);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState(null);
+  const now = useState(() => new Date())[0];
+  const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
+  const [toDate, setToDate] = useState(isoDate(monthEnd(now)));
   const seqRef = useRef(0);
 
   function load() {
     setLoading(true);
     const seq = ++seqRef.current;
-    client.get('/orders', { params: { q: q || undefined, page, pageSize } }).then(({ data }) => {
+    const params = { q: q || undefined, page, pageSize, from: fromDate || undefined, to: toDate || undefined };
+    Promise.all([
+      client.get('/orders', { params }),
+      client.get('/orders/summary', { params }),
+    ]).then(([ordersRes, summaryRes]) => {
       if (seq !== seqRef.current) return;
-      setOrders(data.orders);
-      setTotal(data.total);
+      setOrders(ordersRes.data.orders);
+      setTotal(ordersRes.data.total);
+      setSummary(summaryRes.data);
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
-  useEffect(load, [page]);
+  useEffect(load, [page, fromDate, toDate]);
 
   function search(e) {
     e.preventDefault();
@@ -474,6 +489,22 @@ function AccountsPanel() {
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Accounts</h1>
+
+      <div className="card" style={{ padding: 14, marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
+        <input className="input" type="date" style={{ maxWidth: 170 }} value={fromDate} max={toDate} onChange={(e) => { setPage(1); setFromDate(e.target.value); }} />
+        <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
+        <input className="input" type="date" style={{ maxWidth: 170 }} value={toDate} min={fromDate} onChange={(e) => { setPage(1); setToDate(e.target.value); }} />
+      </div>
+
+      {summary && (
+        <div className="stat-grid" style={{ marginBottom: 20 }}>
+          <Stat label="Total bookings" value={summary.totalBookings} />
+          <Stat label="Total paid" value={`₹${Number(summary.totalPaid).toFixed(2)}`} />
+          <Stat label="Total to pay" value={`₹${Number(summary.totalDue).toFixed(2)}`} />
+          <Stat label="Total credit owed" value={`₹${Number(summary.totalCredit).toFixed(2)}`} />
+        </div>
+      )}
 
       <div className="dash-toolbar">
         <form className="search-box" onSubmit={search}>

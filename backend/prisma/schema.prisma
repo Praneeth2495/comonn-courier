@@ -274,6 +274,8 @@ model Order {
   assignedDriverId String?
   assignedDriver   User?      @relation("OrderDriver", fields: [assignedDriverId], references: [id])
   driverAssignedAt DateTime?
+  driverArrivedAt  DateTime? // driver marked "Arrived for pickup"
+  pickedUpAt       DateTime? // driver marked "Pickup completed" (distinct from updatedAt, which later status changes would otherwise shift)
 
   payment         Payment?
   labels          Label[]

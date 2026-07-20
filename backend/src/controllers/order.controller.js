@@ -147,44 +147,61 @@ async function createOrder(req, res, next) {
   }
 }
 
+/**
+ * Shared filter-building logic for both the paginated order list and the
+ * Accounts summary — both need the exact same role-scoped visibility rules
+ * (customers see only their own orders, staff only their assigned zones).
+ */
+async function buildOrdersWhere(req) {
+  const { status, notStatus, zoneCode, hasUser, q, from, to } = req.query;
+  const where = {};
+
+  if (req.user.role === 'CUSTOMER') where.userId = req.user.id;
+  // status may be a single value or a comma-separated list (for admin tab groupings)
+  if (status) {
+    const statuses = String(status).split(',').filter(Boolean);
+    where.status = statuses.length > 1 ? { in: statuses } : statuses[0];
+  }
+  if (notStatus) {
+    where.status = { notIn: String(notStatus).split(',').filter(Boolean) };
+  }
+  if (zoneCode) where.zoneCode = zoneCode;
+  if (hasUser === 'true') where.userId = { not: null };
+  if (hasUser === 'false') where.userId = null;
+
+  // Admin-controlled zone visibility: STAFF only ever see orders in zones
+  // they've been individually assigned, regardless of what zoneCode
+  // filter is requested (a staff member with no assignments sees none).
+  if (req.user.role === 'STAFF') {
+    const assignments = await prisma.staffZoneAssignment.findMany({
+      where: { userId: req.user.id },
+      select: { zone: { select: { code: true } } },
+    });
+    const visibleCodes = assignments.map((a) => a.zone.code);
+    where.zoneCode = zoneCode && visibleCodes.includes(zoneCode) ? zoneCode : { in: visibleCodes };
+  }
+  if (q) {
+    where.OR = [
+      { orderNumber: { contains: q, mode: 'insensitive' } },
+      { trackingNumber: { contains: q, mode: 'insensitive' } },
+      { receiverAddress: { city: { contains: q, mode: 'insensitive' } } },
+      { senderAddress: { city: { contains: q, mode: 'insensitive' } } },
+    ];
+  }
+  if (from || to) {
+    where.createdAt = {};
+    if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000Z`);
+    if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999Z`);
+  }
+
+  return where;
+}
+
 /** GET /api/orders (customer: own orders | admin/staff: all, with filters) */
 async function listOrders(req, res, next) {
   try {
-    const { status, notStatus, zoneCode, hasUser, q, page = 1, pageSize = 20 } = req.query;
-    const where = {};
-
-    if (req.user.role === 'CUSTOMER') where.userId = req.user.id;
-    // status may be a single value or a comma-separated list (for admin tab groupings)
-    if (status) {
-      const statuses = String(status).split(',').filter(Boolean);
-      where.status = statuses.length > 1 ? { in: statuses } : statuses[0];
-    }
-    if (notStatus) {
-      where.status = { notIn: String(notStatus).split(',').filter(Boolean) };
-    }
-    if (zoneCode) where.zoneCode = zoneCode;
-    if (hasUser === 'true') where.userId = { not: null };
-    if (hasUser === 'false') where.userId = null;
-
-    // Admin-controlled zone visibility: STAFF only ever see orders in zones
-    // they've been individually assigned, regardless of what zoneCode
-    // filter is requested (a staff member with no assignments sees none).
-    if (req.user.role === 'STAFF') {
-      const assignments = await prisma.staffZoneAssignment.findMany({
-        where: { userId: req.user.id },
-        select: { zone: { select: { code: true } } },
-      });
-      const visibleCodes = assignments.map((a) => a.zone.code);
-      where.zoneCode = zoneCode && visibleCodes.includes(zoneCode) ? zoneCode : { in: visibleCodes };
-    }
-    if (q) {
-      where.OR = [
-        { orderNumber: { contains: q, mode: 'insensitive' } },
-        { trackingNumber: { contains: q, mode: 'insensitive' } },
-        { receiverAddress: { city: { contains: q, mode: 'insensitive' } } },
-        { senderAddress: { city: { contains: q, mode: 'insensitive' } } },
-      ];
-    }
+    const { page = 1, pageSize = 20 } = req.query;
+    const where = await buildOrdersWhere(req);
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -206,6 +223,42 @@ async function listOrders(req, res, next) {
     ]);
 
     res.json({ orders, total, page: Number(page), pageSize: Number(pageSize) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/orders/summary
+ * Aggregate totals for the Accounts overview — same filters/visibility as
+ * listOrders, but summed across every matching order, not just the current
+ * page.
+ */
+async function getOrdersSummary(req, res, next) {
+  try {
+    const where = await buildOrdersWhere(req);
+    const orders = await prisma.order.findMany({
+      where,
+      select: { grandTotal: true, payment: { select: { status: true, amount: true } } },
+    });
+
+    let totalPaid = 0;
+    let totalDue = 0;
+    let totalCredit = 0;
+    for (const o of orders) {
+      const paid = o.payment?.status === 'SUCCEEDED' ? Number(o.payment.amount) : 0;
+      const due = round2(Number(o.grandTotal) - paid);
+      totalPaid += paid;
+      if (due > 0) totalDue += due;
+      else if (due < 0) totalCredit += Math.abs(due);
+    }
+
+    res.json({
+      totalBookings: orders.length,
+      totalPaid: round2(totalPaid),
+      totalDue: round2(totalDue),
+      totalCredit: round2(totalCredit),
+    });
   } catch (err) {
     next(err);
   }
@@ -653,6 +706,7 @@ async function applyPromo(req, res, next) {
 module.exports = {
   createOrder,
   listOrders,
+  getOrdersSummary,
   getOrder,
   updateOrderStatus,
   assignDriver,
