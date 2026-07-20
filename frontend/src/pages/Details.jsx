@@ -107,12 +107,17 @@ export default function Details() {
         pricingPending,
       };
       // If an order already exists from a prior visit to this step (e.g. the
-      // customer went back and changed something), update it in place rather
-      // than creating a duplicate order.
+      // customer went back and changed something, or staff are editing an
+      // existing booking), update it in place rather than creating a
+      // duplicate order.
       const { data } = bookingOrder
         ? await client.patch(`/orders/${bookingOrder.id}/details`, payload)
         : await client.post('/orders', payload);
-      setBooking({ order: data.order });
+      // amountPaid/balance (only present on the edit/PATCH response) ride
+      // along on the order object so Payment.jsx can show an updated
+      // invoice with any due/credit balance for orders edited after payment.
+      const nextOrder = bookingOrder ? { ...data.order, amountPaid: data.amountPaid, balance: data.balance } : data.order;
+      setBooking({ order: nextOrder });
       navigate('/payment');
     } catch (err) {
       setError(err.response?.data?.error || 'Could not save the order. Please check the details and try again.');

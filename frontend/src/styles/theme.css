@@ -485,11 +485,14 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .chip-filter svg{width:20px;height:14px;border-radius:2px;flex:none;display:block;}
 .chip-filter.active{background:var(--success);color:#fff;border-color:var(--success);}
 .t-row.orders-detailed{grid-template-columns:1.1fr 1.9fr 1.3fr .5fr 1.1fr .7fr;}
-.t-row.orders-detailed.with-actions{grid-template-columns:1.1fr 1.9fr 1.3fr .5fr 1.1fr .7fr .5fr;}
+.t-row.orders-detailed.with-actions{grid-template-columns:1.1fr 1.9fr 1.3fr .5fr 1.1fr .7fr .9fr;}
 .status-dd{display:inline-flex;align-items:center;gap:4px;}
-.row-delete-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--danger);font-size:15px;cursor:pointer;}
+.row-delete-btn,.row-edit-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1.5px solid var(--line);background:#fff;font-size:15px;cursor:pointer;}
+.row-delete-btn{color:var(--danger);}
 .row-delete-btn:hover{background:var(--danger-bg);border-color:var(--danger);}
-.row-delete-btn:disabled{opacity:.4;cursor:not-allowed;}
+.row-delete-btn:disabled,.row-edit-btn:disabled{opacity:.4;cursor:not-allowed;}
+.row-edit-btn{color:var(--cobalt);}
+.row-edit-btn:hover{background:#EAF0FF;border-color:var(--cobalt);}
 .comment-item{padding:12px 0;border-bottom:1px solid var(--line-2);}
 .comment-item:last-child{border-bottom:none;}
 .comment-item .meta{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--slate-light);margin-bottom:4px;}

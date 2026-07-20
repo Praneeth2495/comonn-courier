@@ -39,7 +39,7 @@ function hydrateItems(quoteInput) {
 
 export default function Quote() {
   const { user } = useAuth();
-  const { quoteInput, selectedQuote, setBooking } = useBooking();
+  const { quoteInput, selectedQuote, order: bookingOrder, setBooking } = useBooking();
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || '');
   const [items, setItems] = useState(() => hydrateItems(quoteInput));
@@ -122,7 +122,10 @@ export default function Quote() {
           pricingPending: true,
         },
         selectedQuote: null,
-        order: null,
+        // Preserve an in-progress order (e.g. an admin/staff "Edit order"
+        // session, or a customer resubmitting after navigating back) rather
+        // than always starting a fresh booking.
+        order: bookingOrder || null,
       });
       navigate('/details');
       return;
@@ -150,7 +153,7 @@ export default function Quote() {
   function continueToDetails() {
     if (!selected) return;
     const parsedItems = buildItemsPayload();
-    setBooking({ quoteInput: { destinationCountryCode, items: parsedItems }, selectedQuote: selected, order: null });
+    setBooking({ quoteInput: { destinationCountryCode, items: parsedItems }, selectedQuote: selected, order: bookingOrder || null });
     navigate('/details');
   }
 

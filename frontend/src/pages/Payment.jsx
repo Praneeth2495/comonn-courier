@@ -34,7 +34,7 @@ function nextPickupDates() {
 }
 
 export default function Payment() {
-  const { order: bookingOrder, setBooking } = useBooking();
+  const { order: bookingOrder, setBooking, clearBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -70,6 +70,10 @@ export default function Payment() {
     if (!bookingOrder || didInitialSync.current) return;
     didInitialSync.current = true;
     setOtpEmail(bookingOrder.senderAddress?.email || bookingOrder.receiverAddress?.email || user?.email || '');
+    // An order already past the payment step (edited by staff via "Edit
+    // order") is shown as a read-only updated invoice further down — don't
+    // reset its live add-ons/DG-ack back to defaults.
+    if (bookingOrder.status !== 'PENDING_PAYMENT') return;
     // Sync default add-on state (free warranty tier, today's DG ack, first pickup date) to the order.
     const seq = ++addonsSeqRef.current;
     client
@@ -266,6 +270,64 @@ export default function Payment() {
     );
   }
 
+  // Reached only via an admin/staff "Edit order" on a booking that already
+  // moved past the payment step (customers never edit orders in this state)
+  // — show the recalculated invoice and any due/credit balance instead of
+  // the normal DG/OTP/payment-method UI.
+  if (order.status !== 'PENDING_PAYMENT') {
+    const amountPaid = Number(order.amountPaid || 0);
+    const balance = order.balance !== undefined && order.balance !== null ? Number(order.balance) : Number(order.grandTotal) - amountPaid;
+    return (
+      <div>
+        <div id="stepper-payment"><Stepper activeKey="payment" /></div>
+        <div className="section" style={{ paddingTop: 20 }}>
+          <div className="wrap" style={{ maxWidth: 560, margin: '0 auto' }}>
+            <button type="button" className="btn btn-outline btn-sm" style={{ marginBottom: 16 }} onClick={() => navigate('/details')}>← Back</button>
+            <div className="card" style={{ padding: 26 }}>
+              <h3 style={{ marginBottom: 4 }}>Updated invoice</h3>
+              <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>
+                This booking's details were just edited. Totals below reflect the updated information.
+              </p>
+              <div className="sum-line"><span>{order.service?.name || 'Shipping'} (incl. GST)</span><span className="v">₹{(Number(order.baseFreight) + Number(order.surchargesTotal)).toFixed(2)}</span></div>
+              {order.addons?.map((a) => (
+                <div className="sum-line" key={a.id}><span>{a.label}</span><span className="v">₹{Number(a.amount).toFixed(2)}</span></div>
+              ))}
+              {Number(order.discountTotal) > 0 && (
+                <div className="sum-line"><span>Discount ({order.promoCode})</span><span className="v" style={{ color: 'var(--success)' }}>−₹{Number(order.discountTotal).toFixed(2)}</span></div>
+              )}
+              <div className="sum-line total"><span>New total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
+              <div className="sum-line"><span>Already paid</span><span className="v">₹{amountPaid.toFixed(2)}</span></div>
+              <div className="sum-line total" style={{ marginTop: 8 }}>
+                <span>{balance > 0 ? 'Balance due' : balance < 0 ? 'Credit owed to customer' : 'Settled'}</span>
+                <span className="v" style={{ color: balance > 0 ? 'var(--danger)' : balance < 0 ? 'var(--success)' : undefined }}>
+                  {balance === 0 ? '—' : `₹${Math.abs(balance).toFixed(2)}`}
+                </span>
+              </div>
+              {balance > 0 && (
+                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 12 }}>
+                  Collect this additional amount from the customer directly and note it in the order's comments.
+                </p>
+              )}
+              {balance < 0 && (
+                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 12 }}>
+                  This customer is owed a credit — settle it with them directly and note it in the order's comments.
+                </p>
+              )}
+              <button
+                type="button"
+                className="btn btn-primary block"
+                style={{ padding: 14, marginTop: 20 }}
+                onClick={() => { clearBooking(); navigate('/admin'); }}
+              >
+                Done — back to Bookings
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const totalBoxQty = order.items?.reduce((sum, it) => sum + it.quantity, 0) || 1;
   const addonAmount = (code) => order.addons?.find((a) => a.code === code)?.amount;
   const canPay = dgAcknowledged && otpVerified;
@@ -422,8 +484,7 @@ export default function Payment() {
               </>
             ) : (
               <>
-                <div className="sum-line"><span>{order.service?.name || 'Shipping'}</span><span className="v">₹{Number(order.baseFreight).toFixed(2)}</span></div>
-                <div className="sum-line"><span>Surcharges</span><span className="v">₹{Number(order.surchargesTotal).toFixed(2)}</span></div>
+                <div className="sum-line"><span>{order.service?.name || 'Shipping'} (incl. GST)</span><span className="v">₹{(Number(order.baseFreight) + Number(order.surchargesTotal)).toFixed(2)}</span></div>
                 <div className="sum-line"><span>Warranty</span><span className="v" style={{ color: addonAmount('WARRANTY') > 0 ? undefined : 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span></div>
                 <div className="sum-line"><span>Cardboard</span><span className="v">₹{Number(addonAmount('CARDBOARD') || 0).toFixed(2)}</span></div>
                 <div className="sum-line"><span>Packing</span><span className="v">₹{Number(addonAmount('PACKING') || 0).toFixed(2)}</span></div>

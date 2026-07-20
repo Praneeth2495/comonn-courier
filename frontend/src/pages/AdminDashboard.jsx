@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
+import { useBooking } from '../api/BookingContext';
 import ChangePassword from '../components/ChangePassword';
 import logoFooter from '../assets/logo-footer.png';
 
@@ -131,6 +132,46 @@ const ORDER_TABS = [
   ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
 ];
 
+// Reshapes a fetched order back into the same quoteInput/selectedQuote shape
+// the booking flow (Quote/Details/Payment) already knows how to hydrate from,
+// so "Edit order" can reuse that flow instead of a separate edit UI.
+function toQuoteInput(order, destinationCountryName) {
+  if (order.pricingPending) {
+    return {
+      destinationCountryCode: order.receiverAddress.countryCode,
+      destinationCountryName: destinationCountryName || order.receiverAddress.countryCode,
+      items: order.items.map((it) => ({ itemType: it.itemType, quantity: it.quantity })),
+      pricingPending: true,
+    };
+  }
+  return {
+    destinationCountryCode: order.receiverAddress.countryCode,
+    items: order.items.map((it) => ({
+      itemType: it.itemType,
+      actualWeightKg: Number(it.actualWeightKg),
+      lengthCm: Number(it.lengthCm),
+      widthCm: Number(it.widthCm),
+      heightCm: Number(it.heightCm),
+      quantity: it.quantity,
+    })),
+  };
+}
+
+function toSelectedQuote(order) {
+  if (order.pricingPending) return null;
+  const chargeableWeightKg = Number(order.chargeableWeightKg);
+  return {
+    service: { code: order.service.code, name: order.service.name, transitDays: order.service.transitDays },
+    zone: { code: order.zoneCode, name: order.zoneCode },
+    pricing: {
+      unitPrice: chargeableWeightKg > 0 ? Math.round((Number(order.baseFreight) / chargeableWeightKg) * 100) / 100 : 0,
+      grandTotal: Number(order.grandTotal),
+      currency: order.currency,
+    },
+    weight: { chargeableWeightKg },
+  };
+}
+
 function IndiaFlagChip() {
   return (
     <svg viewBox="0 0 60 40">
@@ -154,7 +195,10 @@ function OrdersPanel() {
   const [loading, setLoading] = useState(true);
   const [detailOrder, setDetailOrder] = useState(null);
   const [commentOrder, setCommentOrder] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const seqRef = useRef(0);
+  const navigate = useNavigate();
+  const { setBooking } = useBooking();
 
   useEffect(() => {
     client.get('/admin/zones').then(({ data }) => setZones(data.zones)).catch(() => {});
@@ -198,6 +242,36 @@ function OrdersPanel() {
     if (!confirm('Delete (cancel) this booking? This cannot be undone from here.')) return;
     const { data } = await client.post(`/orders/${id}/cancel`);
     setOrders((prev) => prev.map((o) => (o.id === id ? data.order : o)));
+  }
+
+  // Sends the existing order back through the Quote/Details/Payment flow,
+  // pre-filled, so staff can edit service/items/addresses and see the
+  // re-priced total (with any due/credit balance) on the Payment page.
+  async function editOrder(id) {
+    setEditingId(id);
+    try {
+      const { data } = await client.get(`/orders/${id}`);
+      const order = data.order;
+      let destinationCountryName;
+      if (order.pricingPending) {
+        try {
+          const { data: cd } = await client.get('/quote/countries');
+          destinationCountryName = cd.countries.find((c) => c.countryCode === order.receiverAddress.countryCode)?.countryName;
+        } catch {
+          // fall back to the raw country code if the lookup fails
+        }
+      }
+      setBooking({
+        quoteInput: toQuoteInput(order, destinationCountryName),
+        selectedQuote: toSelectedQuote(order),
+        order,
+      });
+      navigate('/quote');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Could not load this order for editing.');
+    } finally {
+      setEditingId(null);
+    }
   }
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -262,7 +336,16 @@ function OrdersPanel() {
               </div>
               <div><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>View</button></div>
               {tab === 'bookings' && (
-                <div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    className="row-edit-btn"
+                    title="Edit order"
+                    aria-label="Edit order"
+                    disabled={editingId === o.id}
+                    onClick={() => editOrder(o.id)}
+                  >
+                    {editingId === o.id ? '…' : '✏️'}
+                  </button>
                   <button
                     className="row-delete-btn"
                     title="Delete booking"
