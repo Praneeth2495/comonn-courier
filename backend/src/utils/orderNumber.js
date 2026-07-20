@@ -30,11 +30,4 @@ async function generateOrderNumber() {
   return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}${seq}`;
 }
 
-/** Same DDMM<seq> scheme, on its own monthly counter so it never collides with order numbers. */
-async function generateTrackingNumber() {
-  const now = new Date();
-  const seq = await nextMonthlySequence('tracking', now);
-  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}${seq}`;
-}
-
-module.exports = { generateOrderNumber, generateTrackingNumber };
+module.exports = { generateOrderNumber };

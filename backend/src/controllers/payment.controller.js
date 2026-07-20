@@ -4,7 +4,6 @@ const {
   verifyPaymentSignature,
   verifyWebhookSignature,
 } = require('../services/paymentService');
-const { generateTrackingNumber } = require('../utils/orderNumber');
 
 /**
  * Idempotent: Razorpay retries webhooks at-least-once, and the client-side
@@ -20,9 +19,12 @@ async function markOrderPaid(orderId, extra = {}) {
     data: { status: 'SUCCEEDED', ...extra },
   });
 
+  // Tracking number is just the order number — one identifier for the
+  // customer to remember instead of two unrelated-looking ones.
+  const order = await prisma.order.findUnique({ where: { id: orderId }, select: { orderNumber: true } });
   const { count } = await prisma.order.updateMany({
     where: { id: orderId, status: 'PENDING_PAYMENT' },
-    data: { status: 'PAID', trackingNumber: await generateTrackingNumber() },
+    data: { status: 'PAID', trackingNumber: order.orderNumber },
   });
 
   if (count > 0) {
@@ -210,10 +212,12 @@ async function confirmCashBooking(req, res, next) {
     });
 
     // Distinct from PAID: no money has actually changed hands yet — cash is
-    // only collected once the courier weighs the parcel at pickup.
+    // only collected once the courier weighs the parcel at pickup. Tracking
+    // number is just the order number — one identifier for the customer to
+    // remember instead of two unrelated-looking ones.
     const { count } = await prisma.order.updateMany({
       where: { id: order.id, status: 'PENDING_PAYMENT' },
-      data: { status: 'PICKUP_CONFIRMED', trackingNumber: await generateTrackingNumber() },
+      data: { status: 'PICKUP_CONFIRMED', trackingNumber: order.orderNumber },
     });
     if (count > 0) {
       await prisma.trackingEvent.create({
