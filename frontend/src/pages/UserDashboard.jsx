@@ -126,8 +126,11 @@ export default function UserDashboard() {
                   <span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {o.status === 'PENDING_PAYMENT' && (
+                  {o.status === 'PENDING_PAYMENT' && !o.trackingNumber && (
                     <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Continue booking →</button>
+                  )}
+                  {o.status === 'PENDING_PAYMENT' && o.trackingNumber && !o.pricingPending && (
+                    <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Complete booking →</button>
                   )}
                   {o.trackingNumber && (
                     <button className="btn btn-primary btn-sm" onClick={() => navigate(`/track?id=${encodeURIComponent(o.trackingNumber)}`)}>

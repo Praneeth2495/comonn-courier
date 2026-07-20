@@ -181,15 +181,15 @@ async function generateLabel(req, res, next) {
       },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (order.status === 'DRAFT' || order.status === 'PENDING_PAYMENT') {
-      return res.status(409).json({ error: 'Order must be paid before a label can be generated' });
-    }
 
     // "Not sure, book pickup": weight/price unknown, so there's nothing to
     // print a label or invoice for yet — send a booking-confirmation email
     // to the sender instead. confirmationEmailSentAt guards against
     // resending on page reload (these orders never get a Label row, so the
-    // labels.length check below doesn't apply to them).
+    // labels.length check below doesn't apply to them). Checked before the
+    // DRAFT/PENDING_PAYMENT guard below: cash pickup bookings stay
+    // PENDING_PAYMENT (cash isn't collected until pickup), so they'd
+    // otherwise get incorrectly blocked as "unpaid" here.
     if (order.pricingPending) {
       const emailedTo = order.senderAddress?.email || order.otpEmail || null;
       if (!order.confirmationEmailSentAt && emailedTo) {
@@ -199,6 +199,10 @@ async function generateLabel(req, res, next) {
         await prisma.order.update({ where: { id: order.id }, data: { confirmationEmailSentAt: new Date() } });
       }
       return res.json({ pricingPending: true, emailedTo });
+    }
+
+    if (order.status === 'DRAFT' || order.status === 'PENDING_PAYMENT') {
+      return res.status(409).json({ error: 'Order must be paid before a label can be generated' });
     }
 
     if (order.labels.length > 0) {

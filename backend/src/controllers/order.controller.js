@@ -146,17 +146,33 @@ async function createOrder(req, res, next) {
 /** GET /api/orders (customer: own orders | admin/staff: all, with filters) */
 async function listOrders(req, res, next) {
   try {
-    const { status, notStatus, zoneCode, hasUser, q, page = 1, pageSize = 20 } = req.query;
+    const { status, notStatus, zoneCode, hasUser, includeConfirmedPickups, excludeConfirmedPickups, q, page = 1, pageSize = 20 } = req.query;
     const where = {};
+    const and = [];
 
     if (req.user.role === 'CUSTOMER') where.userId = req.user.id;
     // status may be a single value or a comma-separated list (for admin tab groupings)
     if (status) {
       const statuses = String(status).split(',').filter(Boolean);
-      where.status = statuses.length > 1 ? { in: statuses } : statuses[0];
+      const statusCondition = { status: statuses.length > 1 ? { in: statuses } : statuses[0] };
+      // "Pickup orders" also wants confirmed cash pickup bookings — these
+      // stay PENDING_PAYMENT (cash isn't collected until the courier
+      // weighs the parcel) rather than PAID, so they need an explicit OR
+      // rather than falling under the plain status list above.
+      if (includeConfirmedPickups === 'true') {
+        and.push({ OR: [statusCondition, { pricingPending: true, trackingNumber: { not: null }, status: 'PENDING_PAYMENT' }] });
+      } else {
+        and.push(statusCondition);
+      }
     }
     if (notStatus) {
-      where.status = { notIn: String(notStatus).split(',').filter(Boolean) };
+      and.push({ status: { notIn: String(notStatus).split(',').filter(Boolean) } });
+    }
+    // "Unconfirmed orders" means the customer hasn't finished booking —
+    // a confirmed cash pickup (trackingNumber assigned) doesn't belong
+    // there even though it's still technically PENDING_PAYMENT.
+    if (excludeConfirmedPickups === 'true') {
+      and.push({ NOT: { pricingPending: true, trackingNumber: { not: null } } });
     }
     if (zoneCode) where.zoneCode = zoneCode;
     if (hasUser === 'true') where.userId = { not: null };
@@ -174,13 +190,16 @@ async function listOrders(req, res, next) {
       where.zoneCode = zoneCode && visibleCodes.includes(zoneCode) ? zoneCode : { in: visibleCodes };
     }
     if (q) {
-      where.OR = [
-        { orderNumber: { contains: q, mode: 'insensitive' } },
-        { trackingNumber: { contains: q, mode: 'insensitive' } },
-        { receiverAddress: { city: { contains: q, mode: 'insensitive' } } },
-        { senderAddress: { city: { contains: q, mode: 'insensitive' } } },
-      ];
+      and.push({
+        OR: [
+          { orderNumber: { contains: q, mode: 'insensitive' } },
+          { trackingNumber: { contains: q, mode: 'insensitive' } },
+          { receiverAddress: { city: { contains: q, mode: 'insensitive' } } },
+          { senderAddress: { city: { contains: q, mode: 'insensitive' } } },
+        ],
+      });
     }
+    if (and.length > 0) where.AND = and;
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -276,6 +295,129 @@ async function cancelOrder(req, res, next) {
       where: { id: req.params.id },
       data: { status: 'CANCELLED' },
     });
+    res.json({ order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+function siteUrl(pathname) {
+  const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
+  return `${base}${pathname}`;
+}
+
+async function sendPriceConfirmedEmail(order) {
+  const to = order.otpEmail || order.senderAddress?.email;
+  if (!to) return;
+  try {
+    await sendEmail({
+      to,
+      from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
+      subject: `Your pickup has been weighed — Order ${order.orderNumber}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
+          <h2 style="color:#0E1B3D;margin-bottom:6px;">Your price is confirmed</h2>
+          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">
+            Our courier has weighed and measured your shipment for order <b>${order.orderNumber}</b>.
+            Chargeable weight: <b>${Number(order.chargeableWeightKg).toFixed(2)} kg</b>.
+            Total: <b>₹${Number(order.grandTotal).toFixed(2)}</b>.
+          </p>
+          <p style="margin:22px 0;"><a href="${siteUrl('/dashboard')}" style="background:#FF5A36;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Complete payment →</a></p>
+          <p style="font-size:12px;color:#8A93A6;">Go to Active orders and tap "Complete booking" to pay online, add extra protection if you'd like, and get your shipping label.</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error('sendPriceConfirmedEmail failed:', err.message);
+  }
+}
+
+/**
+ * PATCH /api/orders/:id/finalize-pricing — ADMIN/STAFF only.
+ * For a "Not sure, book pickup" order: once the courier has physically
+ * weighed/measured the package, records the real per-item weight/
+ * dimensions and chosen service, and recomputes pricing through the same
+ * engine as an upfront quote. Clears pricingPending — the order was
+ * already sitting at PENDING_PAYMENT (confirmCashBooking never moves it
+ * to PAID, since no money changes hands until real payment), so no
+ * status change is needed here; the customer's next visit to Payment
+ * now shows the normal online flow (Razorpay + add-ons) instead of the
+ * cash-only one, since both are gated on pricingPending.
+ */
+async function finalizePricing(req, res, next) {
+  try {
+    const { serviceCode, items } = req.body;
+    if (!serviceCode) return res.status(400).json({ error: 'serviceCode is required' });
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'At least one item is required' });
+    }
+    for (const it of items) {
+      for (const f of ['actualWeightKg', 'lengthCm', 'widthCm', 'heightCm', 'quantity']) {
+        if (!it[f] || Number(it[f]) <= 0) return res.status(400).json({ error: `Every item needs a positive ${f}` });
+      }
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { receiverAddress: true },
+    });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (!order.pricingPending) return res.status(409).json({ error: 'This order already has a confirmed price' });
+    if (order.status !== 'PENDING_PAYMENT' || !order.trackingNumber) {
+      return res.status(409).json({ error: 'Order is not a confirmed pickup booking awaiting weighing' });
+    }
+
+    const quote = await generateQuote({
+      serviceCode,
+      destinationCountryCode: order.receiverAddress.countryCode,
+      items,
+      declaredValue: Number(order.declaredValue),
+      taxRate: 0,
+    });
+    const service = await prisma.service.findUnique({ where: { code: serviceCode } });
+
+    await prisma.orderItem.deleteMany({ where: { orderId: order.id } });
+    await prisma.payment.deleteMany({ where: { orderId: order.id } });
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        serviceId: service.id,
+        pricingPending: false,
+        actualWeightKg: quote.weight.actualWeightKg,
+        volumetricWeightKg: quote.weight.volumetricWeightKg,
+        chargeableWeightKg: quote.weight.chargeableWeightKg,
+        baseFreight: quote.pricing.baseFreight,
+        surchargesTotal: quote.pricing.surchargesTotal,
+        taxRate: quote.pricing.taxRate,
+        taxTotal: quote.pricing.taxTotal,
+        grandTotal: quote.pricing.grandTotal,
+        currency: quote.pricing.currency,
+        pricingBreakdown: quote,
+        trackingEvents: {
+          create: {
+            status: 'PENDING_PAYMENT',
+            note: `Weighed by courier: ${quote.weight.chargeableWeightKg} kg chargeable. Price confirmed at ₹${quote.pricing.grandTotal} — awaiting payment.`,
+          },
+        },
+        items: {
+          create: quote.items.map((it) => ({
+            itemType: it.itemType,
+            actualWeightKg: it.actualWeightKg,
+            lengthCm: it.lengthCm,
+            widthCm: it.widthCm,
+            heightCm: it.heightCm,
+            quantity: it.quantity,
+            volumetricWeightKg: it.volumetricWeightKg,
+            chargeableWeightKg: it.chargeableWeightKg,
+          })),
+        },
+      },
+      include: { service: true, senderAddress: true, receiverAddress: true, items: true },
+    });
+
+    await sendPriceConfirmedEmail(updated);
+
     res.json({ order: updated });
   } catch (err) {
     next(err);
@@ -456,6 +598,7 @@ module.exports = {
   getOrder,
   updateOrderStatus,
   cancelOrder,
+  finalizePricing,
   listOrderComments,
   addOrderComment,
   updateAddons,
