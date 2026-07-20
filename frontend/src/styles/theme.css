@@ -262,7 +262,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
    Redesign additions — Login / Register
    ============================================================ */
 .auth-row{max-width:1240px;margin:0 auto;padding:64px 32px;display:grid;grid-template-columns:1fr 460px;gap:56px;align-items:center;}
-.auth-side{background:var(--navy);border-radius:24px;padding:48px 40px;color:#fff;position:relative;overflow:hidden;min-height:480px;display:flex;flex-direction:column;justify-content:flex-start;}
+.auth-side{background:var(--navy);border-radius:24px;padding:48px 40px;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;}
 .auth-side::after{content:"";position:absolute;right:-60px;bottom:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle, rgba(255,90,54,.25), transparent 70%);}
 .auth-side .quote{font-family:'Space Grotesk';font-size:26px;line-height:1.35;font-weight:600;position:relative;}
 .auth-stats{display:flex;gap:28px;position:relative;margin-top:36px;}
@@ -487,6 +487,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .t-row.orders-detailed{grid-template-columns:1.1fr 1.9fr 1.3fr .5fr 1.1fr .7fr;}
 .t-row.orders-detailed.with-actions{grid-template-columns:1.1fr 1.9fr 1.3fr .5fr 1.1fr .7fr .9fr;}
 .t-row.orders-detailed.with-driver{grid-template-columns:.35fr 1.1fr 1.9fr 1.3fr .5fr 1.1fr .7fr 1fr;}
+.t-row.accounts-row{grid-template-columns:1fr 1fr 1.6fr 1.6fr 1.2fr;}
 .status-dd{display:inline-flex;align-items:center;gap:4px;}
 .row-delete-btn,.row-edit-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1.5px solid var(--line);background:#fff;font-size:15px;cursor:pointer;}
 .row-delete-btn{color:var(--danger);}
@@ -505,6 +506,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .t-row.orders-detailed{min-width:820px;}
   .t-row.orders-detailed.with-actions{min-width:900px;}
   .t-row.orders-detailed.with-driver{min-width:960px;}
+  .t-row.accounts-row{min-width:720px;}
   .dash-toolbar{flex-direction:column;align-items:stretch;}
   .search-box{min-width:0;}
 }

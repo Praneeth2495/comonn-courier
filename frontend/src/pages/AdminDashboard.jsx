@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const TABS = [
     ['overview', 'Overview'],
     ['orders', 'Orders'],
+    ['accounts', 'Accounts'],
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
     ['account', 'Account'],
@@ -46,6 +47,7 @@ export default function AdminDashboard() {
       <main className="app-main">
         {tab === 'overview' && <Overview />}
         {tab === 'orders' && <OrdersPanel />}
+        {tab === 'accounts' && <AccountsPanel />}
         {tab === 'rates' && isAdmin && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
         {tab === 'account' && <ChangePassword />}
@@ -429,6 +431,89 @@ function OrdersPanel() {
 
       {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
       {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
+    </div>
+  );
+}
+
+function paidAndDue(o) {
+  const grandTotal = Number(o.grandTotal);
+  const amountPaid = o.payment?.status === 'SUCCEEDED' ? Number(o.payment.amount) : 0;
+  const due = Math.round((grandTotal - amountPaid) * 100) / 100;
+  return { amountPaid, due };
+}
+
+function AccountsPanel() {
+  const [orders, setOrders] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(true);
+  const seqRef = useRef(0);
+
+  function load() {
+    setLoading(true);
+    const seq = ++seqRef.current;
+    client.get('/orders', { params: { q: q || undefined, page, pageSize } }).then(({ data }) => {
+      if (seq !== seqRef.current) return;
+      setOrders(data.orders);
+      setTotal(data.total);
+      setLoading(false);
+    }).catch(() => { if (seq === seqRef.current) setLoading(false); });
+  }
+  useEffect(load, [page]);
+
+  function search(e) {
+    e.preventDefault();
+    setPage(1);
+    load();
+  }
+
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+
+  return (
+    <div>
+      <h1 className="h-lg" style={{ marginBottom: 16 }}>Accounts</h1>
+
+      <div className="dash-toolbar">
+        <form className="search-box" onSubmit={search}>
+          🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
+        </form>
+        <div className="pager">
+          <span>{total} booking{total === 1 ? '' : 's'}</span>
+          <button type="button" className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹</button>
+          <span className="mono" style={{ fontSize: 13 }}>{page} / {pageCount}</span>
+          <button type="button" className="btn btn-outline btn-sm" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>›</button>
+        </div>
+      </div>
+
+      {loading ? <p className="lead">Loading…</p> : (
+        <div className="table-wrap">
+          <div className="t-row t-head accounts-row">
+            <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>To Address</div><div>Paid / To pay</div>
+          </div>
+          {orders.map((o) => {
+            const { amountPaid, due } = paidAndDue(o);
+            return (
+              <div className="t-row accounts-row" key={o.id}>
+                <div className="mono">{o.orderNumber}</div>
+                <div className="mono">{o.invoiceNumber || '—'}</div>
+                <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
+                <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
+                <div>
+                  <div style={{ color: 'var(--success)', fontWeight: 700, fontSize: 13 }}>Paid ₹{amountPaid.toFixed(2)}</div>
+                  {due > 0 ? (
+                    <div style={{ color: 'var(--danger)', fontSize: 12 }}>To pay ₹{due.toFixed(2)}</div>
+                  ) : due < 0 ? (
+                    <div style={{ color: 'var(--slate)', fontSize: 12 }}>Credit ₹{Math.abs(due).toFixed(2)}</div>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+          {orders.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--slate-light)' }}>No bookings yet.</div>}
+        </div>
+      )}
     </div>
   );
 }

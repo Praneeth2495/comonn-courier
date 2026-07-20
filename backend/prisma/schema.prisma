@@ -266,6 +266,7 @@ model Order {
 
   status          OrderStatus @default(DRAFT)
   trackingNumber  String?     @unique
+  invoiceNumber   String?     @unique // "IN1", "IN2"... assigned at booking time, resets only on calendar year change
 
   // Physical pickup dispatch: staff/admin send a pickup job directly to a
   // driver account, who then sees it in their own portal and marks it

@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { prisma } = require('../config/db');
 const { generateQuote, round2, recomputeOrderTotals, resolveZoneForCountry } = require('../services/pricingEngine');
 const { generateOrderNumber } = require('../utils/orderNumber');
+const { generateInvoiceNumber } = require('../utils/invoiceNumber');
 const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addonCatalog');
 const { sendEmail } = require('../services/emailService');
 
@@ -49,6 +50,7 @@ async function createOrder(req, res, next) {
     });
 
     const orderNumber = await generateOrderNumber();
+    const invoiceNumber = await generateInvoiceNumber();
 
     let orderData;
     if (pricingPending) {
@@ -56,6 +58,7 @@ async function createOrder(req, res, next) {
       const zone = await resolveZoneForCountry(receiver.countryCode);
       orderData = {
         orderNumber,
+        invoiceNumber,
         userId: req.user?.id,
         serviceId: service.id,
         senderAddressId: senderAddress.id,
@@ -99,6 +102,7 @@ async function createOrder(req, res, next) {
       const service = await prisma.service.findUnique({ where: { code: serviceCode } });
       orderData = {
         orderNumber,
+        invoiceNumber,
         userId: req.user?.id,
         serviceId: service.id,
         senderAddressId: senderAddress.id,
