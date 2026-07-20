@@ -209,20 +209,13 @@ async function confirmCashBooking(req, res, next) {
       create: { orderId: order.id, provider: 'cash', method: 'cash', amount: 0, currency: order.currency, status: 'CASH_PENDING' },
     });
 
-    // No money has actually changed hands yet — cash is only collected once
-    // the courier weighs the parcel at pickup — so the order stays
-    // PENDING_PAYMENT rather than flipping to PAID. trackingNumber is what
-    // actually marks "booking confirmed" here; the atomic updateMany (same
-    // pattern as markOrderPaid) ensures only the first of any concurrent/
-    // repeat calls assigns one, so a page revisit doesn't churn out a new
-    // tracking number each time.
     const { count } = await prisma.order.updateMany({
-      where: { id: order.id, trackingNumber: null },
-      data: { trackingNumber: await generateTrackingNumber() },
+      where: { id: order.id, status: 'PENDING_PAYMENT' },
+      data: { status: 'PAID', trackingNumber: await generateTrackingNumber() },
     });
     if (count > 0) {
       await prisma.trackingEvent.create({
-        data: { orderId: order.id, status: 'PENDING_PAYMENT', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
+        data: { orderId: order.id, status: 'PAID', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
       });
     }
 

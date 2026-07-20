@@ -167,11 +167,6 @@ function OrdersPanel() {
     if (tabDef[2]) params.status = tabDef[2].join(',');
     else if (tabDef[3] === 'hasUser') params.hasUser = 'true';
     // 'all' mode (Bookings tab): no status/hasUser filter — every booking.
-    // Confirmed cash pickup bookings stay PENDING_PAYMENT (cash isn't
-    // collected until the courier weighs the parcel), so the Pickup
-    // orders tab also needs to pull those in alongside PAID/LABEL_GENERATED.
-    if (tab === 'pickup') params.includeConfirmedPickups = 'true';
-    if (tab === 'unconfirmed') params.excludeConfirmedPickups = 'true';
 
     client.get('/orders', { params }).then(({ data }) => {
       if (seq !== seqRef.current) return; // a newer request superseded this one
@@ -284,22 +279,13 @@ function OrdersPanel() {
         </div>
       )}
 
-      {detailOrder && (
-        <OrderDetailAdminModal
-          order={detailOrder}
-          onClose={() => setDetailOrder(null)}
-          onOrderUpdated={(updated) => {
-            setDetailOrder(updated);
-            setOrders((prev) => prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)));
-          }}
-        />
-      )}
+      {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
       {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
     </div>
   );
 }
 
-function OrderDetailAdminModal({ order, onClose, onOrderUpdated }) {
+function OrderDetailAdminModal({ order, onClose }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
   return (
     <div className="modal-overlay open" onClick={onClose}>
@@ -320,20 +306,16 @@ function OrderDetailAdminModal({ order, onClose, onOrderUpdated }) {
           </div>
         </div>
 
-        {order.pricingPending ? (
-          <FinalizeWeightSection order={order} onFinalized={onOrderUpdated} />
-        ) : (
-          <div className="detail-section">
-            <h4>Shipment</h4>
-            <div className="detail-grid">
-              <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Items</span><span className="v">{itemsSummary || '—'}</span></div>
-              <div className="detail-row"><span className="k">Service</span><span className="v">{order.service?.name}</span></div>
-              <div className="detail-row"><span className="k">Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)} {order.currency}</span></div>
-              <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Goods description</span><span className="v">{order.contentsDescription || '—'}</span></div>
-              <div className="detail-row"><span className="k">Value of goods</span><span className="v">₹{Number(order.declaredValue).toFixed(2)}</span></div>
-            </div>
+        <div className="detail-section">
+          <h4>Shipment</h4>
+          <div className="detail-grid">
+            <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Items</span><span className="v">{itemsSummary || '—'}</span></div>
+            <div className="detail-row"><span className="k">Service</span><span className="v">{order.service?.name}</span></div>
+            <div className="detail-row"><span className="k">Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)} {order.currency}</span></div>
+            <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Goods description</span><span className="v">{order.contentsDescription || '—'}</span></div>
+            <div className="detail-row"><span className="k">Value of goods</span><span className="v">₹{Number(order.declaredValue).toFixed(2)}</span></div>
           </div>
-        )}
+        </div>
 
         <div className="detail-section">
           <h4>Receiver details</h4>
@@ -362,100 +344,6 @@ function OrderDetailAdminModal({ order, onClose, onOrderUpdated }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function FinalizeWeightSection({ order, onFinalized }) {
-  const [services, setServices] = useState([]);
-  const [serviceCode, setServiceCode] = useState('');
-  const [items, setItems] = useState(
-    (order.items?.length ? order.items : [{ itemType: 'Box', quantity: 1 }]).map((it) => ({
-      itemType: it.itemType,
-      quantity: it.quantity,
-      actualWeightKg: '',
-      lengthCm: '',
-      widthCm: '',
-      heightCm: '',
-    }))
-  );
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    client.get('/quote/services').then(({ data }) => setServices(data.services.filter((s) => s.code !== 'PICKUP')));
-  }, []);
-
-  function updateItem(idx, field, value) {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
-  }
-
-  async function submit(e) {
-    e.preventDefault();
-    setError('');
-    if (!serviceCode) return setError('Choose a shipping service.');
-    for (const it of items) {
-      if (!it.actualWeightKg || !it.lengthCm || !it.widthCm || !it.heightCm) {
-        setError('Enter weight and all three dimensions for every item.');
-        return;
-      }
-    }
-    setSubmitting(true);
-    try {
-      const { data } = await client.patch(`/orders/${order.id}/finalize-pricing`, {
-        serviceCode,
-        items: items.map((it) => ({
-          itemType: it.itemType,
-          quantity: Number(it.quantity),
-          actualWeightKg: Number(it.actualWeightKg),
-          lengthCm: Number(it.lengthCm),
-          widthCm: Number(it.widthCm),
-          heightCm: Number(it.heightCm),
-        })),
-      });
-      onFinalized?.(data.order);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not confirm the price.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <div className="detail-section">
-      <h4>Finalize weight &amp; price</h4>
-      <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 14 }}>
-        This was booked as a pickup with weight unknown. Enter what the courier actually measured to confirm the price — the customer can then pay online and add extra protection if they'd like.
-      </p>
-      <form onSubmit={submit}>
-        <div className="field" style={{ marginBottom: 14, maxWidth: 320 }}>
-          <label>Service</label>
-          <select className="select" required value={serviceCode} onChange={(e) => setServiceCode(e.target.value)}>
-            <option value="">Select a service…</option>
-            {services.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
-          </select>
-        </div>
-        {items.map((it, idx) => (
-          <div key={idx} className="grid-2" style={{ marginBottom: 10 }}>
-            <div className="field">
-              <label>{it.itemType} · Qty {it.quantity} · Weight (kg)</label>
-              <input className="input" type="number" step="0.01" min="0.01" required value={it.actualWeightKg} onChange={(e) => updateItem(idx, 'actualWeightKg', e.target.value)} />
-            </div>
-            <div className="field">
-              <label>Dimensions L × W × H (cm)</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input className="input" type="number" min="1" placeholder="L" required value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
-                <input className="input" type="number" min="1" placeholder="W" required value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
-                <input className="input" type="number" min="1" placeholder="H" required value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
-              </div>
-            </div>
-          </div>
-        ))}
-        {error && <div className="error-text" style={{ margin: '8px 0' }}>{error}</div>}
-        <button className="btn btn-primary btn-sm" disabled={submitting} style={{ marginTop: 6 }}>
-          {submitting ? 'Confirming…' : 'Confirm price'}
-        </button>
-      </form>
     </div>
   );
 }
