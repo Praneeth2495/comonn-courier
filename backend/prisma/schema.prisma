@@ -46,8 +46,25 @@ model User {
   auditLogs AuditLog[]
   zoneAssignments StaffZoneAssignment[]
   passwordSetTokens PasswordSetToken[]
+  orderComments OrderComment[]
 
   @@index([email])
+}
+
+// Internal admin/staff notes on an order. Deliberately separate from
+// TrackingEvent, whose `note` field is exposed on the public,
+// unauthenticated /api/track endpoint — an internal comment must never
+// leak there.
+model OrderComment {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
 }
 
 // Issued when an account is auto-created for a guest checkout (or when a
@@ -251,6 +268,7 @@ model Order {
   labels          Label[]
   invoice         Invoice?
   trackingEvents  TrackingEvent[]
+  comments        OrderComment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

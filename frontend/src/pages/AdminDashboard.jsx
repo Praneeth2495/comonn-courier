@@ -118,10 +118,14 @@ const STATUS_PILL = {
   EXCEPTION: 'pill-danger',
 };
 
+// Third element is the status filter; fourth is the filter mode when there's
+// no status list — 'hasUser' scopes to orders tied to a registered account,
+// 'all' shows every booking regardless of account/status.
 const ORDER_TABS = [
+  ['bookings', 'Bookings', null, 'all'],
   ['pickup', 'Pickup orders', ['PAID', 'LABEL_GENERATED']],
   ['delivery', 'Delivery orders', ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY']],
-  ['users', 'Users orders', null], // null = filtered by hasUser instead of status
+  ['users', 'Users orders', null, 'hasUser'],
   ['history', 'Orders history', ['DELIVERED', 'CANCELLED', 'EXCEPTION']],
   ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
 ];
@@ -148,6 +152,7 @@ function OrdersPanel() {
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [detailOrder, setDetailOrder] = useState(null);
+  const [commentOrder, setCommentOrder] = useState(null);
   const seqRef = useRef(0);
 
   useEffect(() => {
@@ -160,7 +165,8 @@ function OrdersPanel() {
     const tabDef = ORDER_TABS.find(([key]) => key === tab);
     const params = { q: q || undefined, page, pageSize, zoneCode: zoneCode || undefined };
     if (tabDef[2]) params.status = tabDef[2].join(',');
-    else params.hasUser = 'true';
+    else if (tabDef[3] === 'hasUser') params.hasUser = 'true';
+    // 'all' mode (Bookings tab): no status/hasUser filter — every booking.
 
     client.get('/orders', { params }).then(({ data }) => {
       if (seq !== seqRef.current) return; // a newer request superseded this one
@@ -182,17 +188,15 @@ function OrdersPanel() {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: data.order.status } : o)));
   }
 
-  async function addComment(id) {
-    const note = prompt('Add a comment for this order');
-    if (!note) return;
-    const order = orders.find((o) => o.id === id);
-    await client.patch(`/orders/${id}/status`, { status: order.status, note });
-    alert('Comment added.');
-  }
-
   async function openDetail(id) {
     const { data } = await client.get(`/orders/${id}`);
     setDetailOrder(data.order);
+  }
+
+  async function cancelBooking(id) {
+    if (!confirm('Delete (cancel) this booking? This cannot be undone from here.')) return;
+    const { data } = await client.post(`/orders/${id}/cancel`);
+    setOrders((prev) => prev.map((o) => (o.id === id ? data.order : o)));
   }
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -236,11 +240,11 @@ function OrdersPanel() {
 
       {loading ? <p className="lead">Loading…</p> : (
         <div className="table-wrap">
-          <div className="t-row t-head orders-detailed">
-            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>
+          <div className={`t-row t-head orders-detailed ${tab === 'bookings' ? 'with-actions' : ''}`}>
+            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}
           </div>
           {orders.map((o) => (
-            <div className="t-row orders-detailed" key={o.id}>
+            <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''}`} key={o.id}>
               <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
               <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
               <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
@@ -255,7 +259,20 @@ function OrdersPanel() {
                   {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
                 </select>
               </div>
-              <div><button className="btn btn-outline btn-sm" onClick={() => addComment(o.id)}>Add</button></div>
+              <div><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>View</button></div>
+              {tab === 'bookings' && (
+                <div>
+                  <button
+                    className="row-delete-btn"
+                    title="Delete booking"
+                    aria-label="Delete booking"
+                    disabled={['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(o.status)}
+                    onClick={() => cancelBooking(o.id)}
+                  >
+                    🗑
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {orders.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--slate-light)' }}>No orders match this filter.</div>}
@@ -263,6 +280,7 @@ function OrdersPanel() {
       )}
 
       {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+      {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
     </div>
   );
 }
@@ -325,6 +343,86 @@ function OrderDetailAdminModal({ order, onClose }) {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function OrderCommentsModal({ order, onClose }) {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [body, setBody] = useState('');
+  const [posting, setPosting] = useState(false);
+  const [error, setError] = useState('');
+
+  function load() {
+    setLoading(true);
+    client.get(`/orders/${order.id}/comments`).then(({ data }) => {
+      setComments(data.comments);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }
+  useEffect(load, [order.id]);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!body.trim()) return;
+    setPosting(true);
+    setError('');
+    try {
+      const { data } = await client.post(`/orders/${order.id}/comments`, { body });
+      setComments((prev) => [...prev, data.comment]);
+      setBody('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not add comment.');
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <h3 style={{ fontSize: 17 }}>Comments — <span className="mono">{order.orderNumber}</span></h3>
+            <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Internal notes, visible only to admin &amp; staff</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+
+        {loading ? (
+          <p className="lead" style={{ fontSize: 13.5 }}>Loading…</p>
+        ) : comments.length === 0 ? (
+          <p className="lead" style={{ fontSize: 13.5 }}>No comments yet.</p>
+        ) : (
+          <div style={{ maxHeight: 320, overflowY: 'auto', marginBottom: 16 }}>
+            {comments.map((c) => (
+              <div className="comment-item" key={c.id}>
+                <div className="meta">
+                  <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
+                  <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <p className="body">{c.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <form onSubmit={submit} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', borderTop: '1px solid var(--line-2)', paddingTop: 14 }}>
+          <textarea
+            className="input"
+            placeholder="Add a comment…"
+            rows={2}
+            style={{ resize: 'vertical', flex: 1 }}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+          <button className="btn btn-primary btn-sm" disabled={!body.trim() || posting} style={{ flex: 'none' }}>
+            {posting ? '…' : 'Add comment'}
+          </button>
+        </form>
+        {error && <div className="error-text" style={{ marginTop: 8 }}>{error}</div>}
       </div>
     </div>
   );

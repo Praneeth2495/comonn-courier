@@ -225,9 +225,16 @@ async function getOrder(req, res, next) {
 }
 
 /** PATCH /api/orders/:id/status — admin/staff only, also logs a tracking event */
+function titleCaseStatus(status) {
+  return status.split('_').map((w) => w[0] + w.slice(1).toLowerCase()).join(' ');
+}
+
 async function updateOrderStatus(req, res, next) {
   try {
     const { status, location, note } = req.body;
+    const existing = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: 'Order not found' });
+
     const order = await prisma.order.update({
       where: { id: req.params.id },
       data: {
@@ -235,6 +242,19 @@ async function updateOrderStatus(req, res, next) {
         trackingEvents: { create: { status, location, note } },
       },
     });
+
+    // Auto-log a system comment so the change is visible (with who/when) in
+    // the same internal comment history admins & staff already check.
+    if (status !== existing.status) {
+      await prisma.orderComment.create({
+        data: {
+          orderId: order.id,
+          authorId: req.user.id,
+          body: `Order status updated to ${titleCaseStatus(status)}.`,
+        },
+      });
+    }
+
     res.json({ order });
   } catch (err) {
     next(err);
@@ -257,6 +277,39 @@ async function cancelOrder(req, res, next) {
       data: { status: 'CANCELLED' },
     });
     res.json({ order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** GET /api/orders/:id/comments — internal admin/staff notes, never exposed publicly */
+async function listOrderComments(req, res, next) {
+  try {
+    const comments = await prisma.orderComment.findMany({
+      where: { orderId: req.params.id },
+      include: { author: { select: { fullName: true, email: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
+    res.json({ comments });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** POST /api/orders/:id/comments */
+async function addOrderComment(req, res, next) {
+  try {
+    const { body } = req.body;
+    if (!body || !body.trim()) return res.status(400).json({ error: 'Comment body is required' });
+
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const comment = await prisma.orderComment.create({
+      data: { orderId: order.id, authorId: req.user.id, body: body.trim() },
+      include: { author: { select: { fullName: true, email: true } } },
+    });
+    res.status(201).json({ comment });
   } catch (err) {
     next(err);
   }
@@ -403,6 +456,8 @@ module.exports = {
   getOrder,
   updateOrderStatus,
   cancelOrder,
+  listOrderComments,
+  addOrderComment,
   updateAddons,
   sendOtp,
   verifyOtp,

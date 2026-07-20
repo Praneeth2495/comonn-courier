@@ -7,6 +7,8 @@ const {
   getOrder,
   updateOrderStatus,
   cancelOrder,
+  listOrderComments,
+  addOrderComment,
   updateAddons,
   sendOtp,
   verifyOtp,
@@ -23,6 +25,8 @@ router.get('/', requireAuth, listOrders);
 router.get('/:id', requireAuth, getOrder);
 router.post('/:id/cancel', requireAuth, cancelOrder);
 router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), updateOrderStatus);
+router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), listOrderComments);
+router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), addOrderComment);
 
 // Payment-page pre-payment steps — guest checkout allowed
 router.patch('/:id/addons', optionalAuth, updateAddons);
