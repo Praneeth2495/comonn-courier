@@ -273,7 +273,7 @@ export default function Quote() {
         <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <h3 style={{ fontSize: 17 }}>Email this quote</h3>
-            <button onClick={() => setShowEmailModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 30, height: 30, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+            <button onClick={() => setShowEmailModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
           </div>
           <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 18 }}>We'll send the price breakdown to this address.</p>
           <form onSubmit={emailQuote}>

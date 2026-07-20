@@ -28,7 +28,7 @@ export default function AdminDashboard() {
     <div className="app-shell">
       <div className="app-mobile-bar">
         <button className="app-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">☰</button>
-        <img className="logo-img" src={logoFooter} alt="Comonn" style={{ filter: 'invert(1) brightness(0.2)' }} />
+        <img className="logo-img" src={logoFooter} alt="Comonn" />
       </div>
       {sidebarOpen && <div className="app-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
       <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
@@ -119,11 +119,11 @@ const STATUS_PILL = {
 };
 
 const ORDER_TABS = [
-  ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
   ['pickup', 'Pickup orders', ['PAID', 'LABEL_GENERATED']],
   ['delivery', 'Delivery orders', ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY']],
-  ['history', 'Orders history', ['DELIVERED', 'CANCELLED', 'EXCEPTION']],
   ['users', 'Users orders', null], // null = filtered by hasUser instead of status
+  ['history', 'Orders history', ['DELIVERED', 'CANCELLED', 'EXCEPTION']],
+  ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
 ];
 
 function IndiaFlagChip() {
@@ -277,7 +277,7 @@ function OrderDetailAdminModal({ order, onClose }) {
             <h3 style={{ fontSize: 17 }}>Order <span className="mono">{order.orderNumber}</span></h3>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Everything the customer entered at booking</p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 30, height: 30, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
         <div className="detail-section">
@@ -520,7 +520,7 @@ function StaffZoneModal({ staff, zones, currentZoneIds, onSave, onClose }) {
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <h3 style={{ fontSize: 17 }}>Zones for {staff.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 30, height: 30, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
           This staff account will only see and filter Pickup/Delivery orders in the zones checked below.

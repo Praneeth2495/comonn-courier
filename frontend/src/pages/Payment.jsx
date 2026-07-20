@@ -283,10 +283,10 @@ export default function Payment() {
                 Some goods are restricted across our network —{' '}
                 <a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); setShowDgModal(true); }}>see examples →</a>
               </p>
-              <div className="dg-ack">
+              <label className="dg-ack">
                 <input type="checkbox" checked={dgAcknowledged} onChange={(e) => toggleDg(e.target.checked)} />
                 <p><b>Yes</b> — I acknowledge that all contents of my freight are void of any dangerous goods. Lithium-ion batteries cannot be sent via air freight. All fluids must be drained from machine parts. Penalties apply.</p>
-              </div>
+              </label>
             </div>
 
             {!pricingPending && (
@@ -454,7 +454,7 @@ export default function Payment() {
         <div className="modal-box" onClick={(e) => e.stopPropagation()}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ fontSize: 17 }}>Restricted goods — examples</h3>
-            <button onClick={() => setShowDgModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 30, height: 30, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+            <button onClick={() => setShowDgModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
           </div>
           <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 16 }}>These items cannot be shipped through our network:</p>
           <div className="dg-chip-row">
