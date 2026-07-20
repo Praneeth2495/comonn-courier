@@ -282,6 +282,133 @@ async function cancelOrder(req, res, next) {
   }
 }
 
+function siteUrl(pathname) {
+  const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
+  return `${base}${pathname}`;
+}
+
+async function sendPriceConfirmedEmail(order) {
+  const to = order.otpEmail || order.senderAddress?.email;
+  if (!to) return;
+  try {
+    await sendEmail({
+      to,
+      from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
+      subject: `Your pickup has been weighed — Order ${order.orderNumber}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
+          <h2 style="color:#0E1B3D;margin-bottom:6px;">Your price is confirmed</h2>
+          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">
+            Our courier has weighed and measured your shipment for order <b>${order.orderNumber}</b>.
+            Chargeable weight: <b>${Number(order.chargeableWeightKg).toFixed(2)} kg</b>.
+            Total: <b>₹${Number(order.grandTotal).toFixed(2)}</b>.
+          </p>
+          <p style="margin:22px 0;"><a href="${siteUrl('/dashboard')}" style="background:#FF5A36;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Complete payment →</a></p>
+          <p style="font-size:12px;color:#8A93A6;">Go to Active orders and tap "Complete booking" to pay online and get your shipping label.</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error('sendPriceConfirmedEmail failed:', err.message);
+  }
+}
+
+/**
+ * PATCH /api/orders/:id/finalize-pricing — ADMIN/STAFF only.
+ * For a "Not sure, book pickup" order: once the courier has physically
+ * weighed/measured the package, records the real per-item weight/
+ * dimensions and chosen service, and recomputes pricing through the same
+ * engine as an upfront quote.
+ *
+ * Confirming a cash pickup booking (confirmCashBooking) already moves the
+ * order straight to PAID — that only means "booking locked in, cash owed
+ * at pickup", not that money changed hands. To let the customer pay
+ * online for the now-known amount instead, this reverts status back to
+ * PENDING_PAYMENT and drops the stale cash payment intent, so the
+ * existing Payment page's normal Razorpay flow (createOrder requires
+ * PENDING_PAYMENT) picks it up on their next visit.
+ */
+async function finalizePricing(req, res, next) {
+  try {
+    const { serviceCode, items } = req.body;
+    if (!serviceCode) return res.status(400).json({ error: 'serviceCode is required' });
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'At least one item is required' });
+    }
+    for (const it of items) {
+      for (const f of ['actualWeightKg', 'lengthCm', 'widthCm', 'heightCm', 'quantity']) {
+        if (!it[f] || Number(it[f]) <= 0) return res.status(400).json({ error: `Every item needs a positive ${f}` });
+      }
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { receiverAddress: true },
+    });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (!order.pricingPending) return res.status(409).json({ error: 'This order already has a confirmed price' });
+    if (order.status !== 'PAID') {
+      return res.status(409).json({ error: `Order must be a confirmed pickup booking awaiting weighing (status: ${order.status})` });
+    }
+
+    const quote = await generateQuote({
+      serviceCode,
+      destinationCountryCode: order.receiverAddress.countryCode,
+      items,
+      declaredValue: Number(order.declaredValue),
+      taxRate: 0,
+    });
+    const service = await prisma.service.findUnique({ where: { code: serviceCode } });
+
+    await prisma.orderItem.deleteMany({ where: { orderId: order.id } });
+    await prisma.payment.deleteMany({ where: { orderId: order.id } });
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        serviceId: service.id,
+        pricingPending: false,
+        status: 'PENDING_PAYMENT',
+        actualWeightKg: quote.weight.actualWeightKg,
+        volumetricWeightKg: quote.weight.volumetricWeightKg,
+        chargeableWeightKg: quote.weight.chargeableWeightKg,
+        baseFreight: quote.pricing.baseFreight,
+        surchargesTotal: quote.pricing.surchargesTotal,
+        taxRate: quote.pricing.taxRate,
+        taxTotal: quote.pricing.taxTotal,
+        grandTotal: quote.pricing.grandTotal,
+        currency: quote.pricing.currency,
+        pricingBreakdown: quote,
+        trackingEvents: {
+          create: {
+            status: 'PENDING_PAYMENT',
+            note: `Weighed by courier: ${quote.weight.chargeableWeightKg} kg chargeable. Price confirmed at ₹${quote.pricing.grandTotal} — awaiting payment.`,
+          },
+        },
+        items: {
+          create: quote.items.map((it) => ({
+            itemType: it.itemType,
+            actualWeightKg: it.actualWeightKg,
+            lengthCm: it.lengthCm,
+            widthCm: it.widthCm,
+            heightCm: it.heightCm,
+            quantity: it.quantity,
+            volumetricWeightKg: it.volumetricWeightKg,
+            chargeableWeightKg: it.chargeableWeightKg,
+          })),
+        },
+      },
+      include: { service: true, senderAddress: true, receiverAddress: true, items: true },
+    });
+
+    await sendPriceConfirmedEmail(updated);
+
+    res.json({ order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** GET /api/orders/:id/comments — internal admin/staff notes, never exposed publicly */
 async function listOrderComments(req, res, next) {
   try {
@@ -456,6 +583,7 @@ module.exports = {
   getOrder,
   updateOrderStatus,
   cancelOrder,
+  finalizePricing,
   listOrderComments,
   addOrderComment,
   updateAddons,
