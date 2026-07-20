@@ -8,7 +8,7 @@ import Stepper from '../components/Stepper';
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 
 function emptyItem() {
-  return { itemType: 'Box', weightPreset: '', lengthCm: '30', widthCm: '20', heightCm: '15', quantity: 1, showDims: false };
+  return { itemType: 'Box', weightPreset: '', lengthCm: '', widthCm: '', heightCm: '', quantity: 1, showDims: false };
 }
 
 // Rebuilds the item-row form state from a saved quoteInput so navigating
@@ -19,9 +19,9 @@ function hydrateItems(quoteInput) {
     return quoteInput.items.map((it) => ({
       itemType: it.itemType,
       weightPreset: 'NOT_SURE',
-      lengthCm: '30',
-      widthCm: '20',
-      heightCm: '15',
+      lengthCm: '',
+      widthCm: '',
+      heightCm: '',
       quantity: it.quantity,
       showDims: false,
     }));
@@ -89,6 +89,7 @@ export default function Quote() {
     const parsed = [];
     for (const it of items) {
       if (!it.weightPreset || it.weightPreset === 'NOT_SURE') return null;
+      if (!it.lengthCm || !it.widthCm || !it.heightCm) return null;
       parsed.push({
         itemType: it.itemType,
         actualWeightKg: Number(it.weightPreset.replace(' kg', '')),
@@ -133,7 +134,7 @@ export default function Quote() {
 
     const parsedItems = buildItemsPayload();
     if (!parsedItems) {
-      setError('Please select a weight for every item.');
+      setError('Please select a weight and enter dimensions for every item.');
       return;
     }
 
@@ -239,8 +240,8 @@ export default function Quote() {
                 </div>
               ) : (
                 <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
-                  If dimensions are known, <a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); updateItem(idx, 'showDims', true); }}>Click Here.</a>{' '}
-                  (assuming {it.lengthCm}×{it.widthCm}×{it.heightCm} cm otherwise)
+                  <a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); updateItem(idx, 'showDims', true); }}>Click Here</a>{' '}
+                  to enter this item's dimensions.
                 </p>
               )}
 
