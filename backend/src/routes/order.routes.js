@@ -6,6 +6,7 @@ const {
   listOrders,
   getOrder,
   updateOrderStatus,
+  assignDriver,
   cancelOrder,
   listOrderComments,
   addOrderComment,
@@ -26,6 +27,7 @@ router.get('/', requireAuth, listOrders);
 router.get('/:id', requireAuth, getOrder);
 router.post('/:id/cancel', requireAuth, cancelOrder);
 router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), updateOrderStatus);
+router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF'), assignDriver);
 router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), listOrderComments);
 router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), addOrderComment);
 

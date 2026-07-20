@@ -17,6 +17,7 @@ const labelRoutes = require('./routes/label.routes');
 const trackingRoutes = require('./routes/tracking.routes');
 const adminRoutes = require('./routes/admin.routes');
 const addressRoutes = require('./routes/address.routes');
+const driverRoutes = require('./routes/driver.routes');
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/labels', labelRoutes);
 app.use('/api/track', trackingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/driver', driverRoutes);
 
 // Static download of generated label PDFs (also served explicitly via
 // /api/labels/:orderId/download for access-controlled downloads)

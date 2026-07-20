@@ -27,6 +27,7 @@ enum Role {
   CUSTOMER
   ADMIN
   STAFF
+  DRIVER
 }
 
 model User {
@@ -47,6 +48,7 @@ model User {
   zoneAssignments StaffZoneAssignment[]
   passwordSetTokens PasswordSetToken[]
   orderComments OrderComment[]
+  driverJobs Order[] @relation("OrderDriver")
 
   @@index([email])
 }
@@ -265,6 +267,13 @@ model Order {
   status          OrderStatus @default(DRAFT)
   trackingNumber  String?     @unique
 
+  // Physical pickup dispatch: staff/admin send a pickup job directly to a
+  // driver account, who then sees it in their own portal and marks it
+  // PICKED_UP once collected in person.
+  assignedDriverId String?
+  assignedDriver   User?      @relation("OrderDriver", fields: [assignedDriverId], references: [id])
+  driverAssignedAt DateTime?
+
   payment         Payment?
   labels          Label[]
   invoice         Invoice?
@@ -276,6 +285,7 @@ model Order {
 
   @@index([status])
   @@index([userId])
+  @@index([assignedDriverId])
 }
 
 // One physical package within a (possibly multi-item) shipment.

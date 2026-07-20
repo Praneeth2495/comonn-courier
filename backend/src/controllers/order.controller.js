@@ -185,7 +185,15 @@ async function listOrders(req, res, next) {
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where,
-        include: { service: true, senderAddress: true, receiverAddress: true, payment: true, items: true, labels: true },
+        include: {
+          service: true,
+          senderAddress: true,
+          receiverAddress: true,
+          payment: true,
+          items: true,
+          labels: true,
+          assignedDriver: { select: { id: true, fullName: true } },
+        },
         orderBy: { createdAt: 'desc' },
         skip: (Number(page) - 1) * Number(pageSize),
         take: Number(pageSize),
@@ -256,6 +264,48 @@ async function updateOrderStatus(req, res, next) {
     }
 
     res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PATCH /api/orders/assign-driver
+ * ADMIN/STAFF: sends one or more pickup jobs directly to a driver account in
+ * a single action. The driver then sees these in their own portal and marks
+ * each PICKED_UP once collected in person.
+ */
+async function assignDriver(req, res, next) {
+  try {
+    const { orderIds, driverId } = req.body;
+    if (!Array.isArray(orderIds) || orderIds.length === 0) {
+      return res.status(400).json({ error: 'orderIds must be a non-empty array' });
+    }
+    if (!driverId) return res.status(400).json({ error: 'driverId is required' });
+
+    const driver = await prisma.user.findUnique({ where: { id: driverId } });
+    if (!driver || driver.role !== 'DRIVER') {
+      return res.status(400).json({ error: 'driverId must belong to a driver account' });
+    }
+
+    await prisma.order.updateMany({
+      where: { id: { in: orderIds } },
+      data: { assignedDriverId: driverId, driverAssignedAt: new Date() },
+    });
+
+    await prisma.orderComment.createMany({
+      data: orderIds.map((orderId) => ({
+        orderId,
+        authorId: req.user.id,
+        body: `Pickup job sent to driver ${driver.fullName}.`,
+      })),
+    });
+
+    const orders = await prisma.order.findMany({
+      where: { id: { in: orderIds } },
+      select: { id: true, assignedDriver: { select: { id: true, fullName: true } } },
+    });
+    res.json({ orders });
   } catch (err) {
     next(err);
   }
@@ -601,6 +651,7 @@ module.exports = {
   listOrders,
   getOrder,
   updateOrderStatus,
+  assignDriver,
   cancelOrder,
   listOrderComments,
   addOrderComment,

@@ -18,6 +18,7 @@ import Labels from './pages/Labels';
 import Track from './pages/Track';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import DriverDashboard from './pages/DriverDashboard';
 
 function withLayout(el) {
   return <PublicLayout>{el}</PublicLayout>;
@@ -55,6 +56,14 @@ export default function App() {
               element={
                 <ProtectedRoute roles={['ADMIN', 'STAFF']}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/driver"
+              element={
+                <ProtectedRoute roles={['DRIVER']}>
+                  <DriverDashboard />
                 </ProtectedRoute>
               }
             />

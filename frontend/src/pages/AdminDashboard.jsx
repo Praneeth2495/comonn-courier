@@ -196,6 +196,10 @@ function OrdersPanel() {
   const [detailOrder, setDetailOrder] = useState(null);
   const [commentOrder, setCommentOrder] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const [assignDriverId, setAssignDriverId] = useState('');
+  const [assigning, setAssigning] = useState(false);
   const seqRef = useRef(0);
   const navigate = useNavigate();
   const { setBooking } = useBooking();
@@ -203,6 +207,14 @@ function OrdersPanel() {
   useEffect(() => {
     client.get('/admin/zones').then(({ data }) => setZones(data.zones)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (tab === 'pickup' && drivers.length === 0) {
+      client.get('/admin/drivers').then(({ data }) => setDrivers(data.drivers)).catch(() => {});
+    }
+    setSelectedIds([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   function load() {
     setLoading(true);
@@ -242,6 +254,29 @@ function OrdersPanel() {
     if (!confirm('Delete (cancel) this booking? This cannot be undone from here.')) return;
     const { data } = await client.post(`/orders/${id}/cancel`);
     setOrders((prev) => prev.map((o) => (o.id === id ? data.order : o)));
+  }
+
+  function toggleSelect(id) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  // Sends every selected pickup job to one driver in a single action — the
+  // driver then sees these in their own portal and marks each PICKED_UP once
+  // collected in person.
+  async function sendToDriver() {
+    if (!assignDriverId || selectedIds.length === 0) return;
+    setAssigning(true);
+    try {
+      const { data } = await client.patch('/orders/assign-driver', { orderIds: selectedIds, driverId: assignDriverId });
+      const byId = Object.fromEntries(data.orders.map((o) => [o.id, o]));
+      setOrders((prev) => prev.map((o) => (byId[o.id] ? { ...o, assignedDriver: byId[o.id].assignedDriver } : o)));
+      setSelectedIds([]);
+      setAssignDriverId('');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Could not send these jobs to the driver.');
+    } finally {
+      setAssigning(false);
+    }
   }
 
   // Sends the existing order back through the Quote/Details/Payment flow,
@@ -313,13 +348,33 @@ function OrdersPanel() {
         </div>
       </div>
 
+      {tab === 'pickup' && selectedIds.length > 0 && (
+        <div className="card" style={{ padding: 14, marginBottom: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{selectedIds.length} selected</span>
+          <select className="select" style={{ maxWidth: 220 }} value={assignDriverId} onChange={(e) => setAssignDriverId(e.target.value)}>
+            <option value="">Choose a driver…</option>
+            {drivers.map((d) => <option key={d.id} value={d.id}>{d.fullName}</option>)}
+          </select>
+          <button className="btn btn-primary btn-sm" disabled={!assignDriverId || assigning} onClick={sendToDriver}>
+            {assigning ? 'Sending…' : 'Send to driver'}
+          </button>
+          {drivers.length === 0 && <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>No driver accounts yet — create one from Users (set role to Driver).</span>}
+        </div>
+      )}
+
       {loading ? <p className="lead">Loading…</p> : (
         <div className="table-wrap">
-          <div className={`t-row t-head orders-detailed ${tab === 'bookings' ? 'with-actions' : ''}`}>
-            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' || tab === 'bookings' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}
+          <div className={`t-row t-head orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''}`}>
+            {tab === 'pickup' && <div></div>}
+            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' || tab === 'bookings' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}{tab === 'pickup' && <div>Driver</div>}
           </div>
           {orders.map((o) => (
-            <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''}`} key={o.id}>
+            <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''}`} key={o.id}>
+              {tab === 'pickup' && (
+                <div>
+                  <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggleSelect(o.id)} />
+                </div>
+              )}
               <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
               <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
               <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
@@ -355,6 +410,15 @@ function OrdersPanel() {
                   >
                     🗑
                   </button>
+                </div>
+              )}
+              {tab === 'pickup' && (
+                <div>
+                  {o.assignedDriver ? (
+                    <span className="pill pill-cobalt" style={{ fontSize: 11 }}>{o.assignedDriver.fullName}</span>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)', fontSize: 12 }}>Unassigned</span>
+                  )}
                 </div>
               )}
             </div>
@@ -645,6 +709,7 @@ function UsersPanel() {
                     <option value="CUSTOMER">Customer</option>
                     <option value="STAFF">Staff</option>
                     <option value="ADMIN">Admin</option>
+                    <option value="DRIVER">Driver</option>
                   </select>
                 </td>
                 <td>

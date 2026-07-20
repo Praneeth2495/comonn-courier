@@ -238,6 +238,20 @@ async function listUsers(req, res, next) {
   }
 }
 
+/** GET /api/admin/drivers — ADMIN & STAFF: active driver accounts, for the pickup job assignment dropdown */
+async function listDrivers(req, res, next) {
+  try {
+    const drivers = await prisma.user.findMany({
+      where: { role: 'DRIVER', isActive: true },
+      select: { id: true, fullName: true, email: true, phone: true },
+      orderBy: { fullName: 'asc' },
+    });
+    res.json({ drivers });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function setUserRole(req, res, next) {
   try {
     const { role, isActive } = req.body;
@@ -266,5 +280,6 @@ module.exports = {
   listSurcharges,
   upsertSurcharge,
   listUsers,
+  listDrivers,
   setUserRole,
 };

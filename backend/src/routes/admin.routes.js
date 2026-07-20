@@ -26,4 +26,7 @@ router.post('/surcharges', requireRole('ADMIN'), admin.upsertSurcharge);
 router.get('/users', requireRole('ADMIN'), admin.listUsers);
 router.patch('/users/:id', requireRole('ADMIN'), admin.setUserRole);
 
+// Available to ADMIN & STAFF (both can dispatch pickup jobs to drivers)
+router.get('/drivers', admin.listDrivers);
+
 module.exports = router;
