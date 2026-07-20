@@ -76,19 +76,21 @@ function Overview() {
       </div>
 
       <h3 className="h-md" style={{ margin: '24px 0 12px' }}>Recent orders</h3>
-      <table className="data-table">
-        <thead><tr><th>Order</th><th>Service</th><th>Destination</th><th>Status</th></tr></thead>
-        <tbody>
-          {recentOrders.map((o) => (
-            <tr key={o.id}>
-              <td className="mono">{o.orderNumber}</td>
-              <td>{o.service.name}</td>
-              <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
-              <td>{o.status.replace(/_/g, ' ')}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead><tr><th>Order</th><th>Service</th><th>Destination</th><th>Status</th></tr></thead>
+          <tbody>
+            {recentOrders.map((o) => (
+              <tr key={o.id}>
+                <td className="mono">{o.orderNumber}</td>
+                <td>{o.service.name}</td>
+                <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
+                <td>{o.status.replace(/_/g, ' ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -394,21 +396,23 @@ function RatesPanel() {
         </form>
       </div>
 
-      <table className="data-table">
-        <thead><tr><th>Service</th><th>Zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th></th></tr></thead>
-        <tbody>
-          {rateCards.map((r) => (
-            <tr key={r.id}>
-              <td>{r.service.name}</td>
-              <td>{r.zone.code}</td>
-              <td>{r.weightFromKg} – {r.weightToKg} kg</td>
-              <td>₹{Number(r.basePrice).toFixed(2)}</td>
-              <td>₹{Number(r.perKgOverage).toFixed(2)}</td>
-              <td><button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead><tr><th>Service</th><th>Zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th></th></tr></thead>
+          <tbody>
+            {rateCards.map((r) => (
+              <tr key={r.id}>
+                <td>{r.service.name}</td>
+                <td>{r.zone.code}</td>
+                <td>{r.weightFromKg} – {r.weightToKg} kg</td>
+                <td>₹{Number(r.basePrice).toFixed(2)}</td>
+                <td>₹{Number(r.perKgOverage).toFixed(2)}</td>
+                <td><button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
