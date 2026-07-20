@@ -20,21 +20,21 @@ async function nextMonthlySequence(kind, now) {
 }
 
 /**
- * Generates DDMM0<seq> e.g. 180701 for the 1st order created on 18 July.
+ * Generates DDMM<seq> e.g. 18071 for the 1st order created on 18 July.
  * The sequence resets to 1 at the start of each calendar month and is
  * never zero-padded, so it never repeats within a month.
  */
 async function generateOrderNumber() {
   const now = new Date();
   const seq = await nextMonthlySequence('order', now);
-  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}0${seq}`;
+  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}${seq}`;
 }
 
-/** Same DDMM0<seq> scheme, on its own monthly counter so it never collides with order numbers. */
+/** Same DDMM<seq> scheme, on its own monthly counter so it never collides with order numbers. */
 async function generateTrackingNumber() {
   const now = new Date();
   const seq = await nextMonthlySequence('tracking', now);
-  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}0${seq}`;
+  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}${seq}`;
 }
 
 module.exports = { generateOrderNumber, generateTrackingNumber };
