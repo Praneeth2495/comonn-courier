@@ -469,12 +469,8 @@ export default function Payment() {
             {pricingPending ? (
               <>
                 <p style={{ fontSize: 13.5, color: 'var(--slate)', lineHeight: 1.6 }}>
-                  This is a pickup booking — weight and dimensions will be assessed by our courier in person, and the shipping price will be confirmed at that time. Any add-ons below are collected in cash together with the shipping cost at pickup.
+                  This is a pickup booking — weight and dimensions will be assessed by our courier in person, and the shipping price will be confirmed at that time.
                 </p>
-                <div className="sum-line"><span>Warranty</span><span className="v" style={{ color: addonAmount('WARRANTY') > 0 ? undefined : 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span></div>
-                <div className="sum-line"><span>Cardboard</span><span className="v">₹{Number(addonAmount('CARDBOARD') || 0).toFixed(2)}</span></div>
-                <div className="sum-line"><span>Packing</span><span className="v">₹{Number(addonAmount('PACKING') || 0).toFixed(2)}</span></div>
-                <div className="sum-line"><span>Wrapping</span><span className="v">₹{Number(addonAmount('WRAPPING') || 0).toFixed(2)}</span></div>
 
                 {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
 
