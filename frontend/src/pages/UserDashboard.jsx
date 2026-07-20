@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
@@ -18,6 +18,7 @@ const STATUS_PILL = {
   EXCEPTION: 'pill-danger',
 };
 const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
+const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
 const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['addresses', 'Saved addresses']];
 
@@ -31,15 +32,39 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [showAccount, setShowAccount] = useState(false);
+  const labelRequestedRef = useRef(new Set());
 
   function loadOrders() {
     setLoading(true);
     const params = { q: q || undefined };
     if (tab === 'history') params.status = HISTORY_STATUSES.join(',');
     else params.notStatus = HISTORY_STATUSES.join(',');
-    client.get('/orders', { params }).then(({ data }) => setOrders(data.orders)).finally(() => setLoading(false));
+    client.get('/orders', { params }).then(({ data }) => {
+      setOrders(data.orders);
+      ensureLabelsForPaidOrders(data.orders);
+    }).finally(() => setLoading(false));
   }
   useEffect(() => { if (tab !== 'addresses') loadOrders(); }, [tab]);
+
+  // A paid order only gets its label/invoice generated once the customer
+  // lands on the post-payment Labels page — if they never do (closed the
+  // tab, navigated away), it's stuck showing "Paid" with no download
+  // buttons. Generate it lazily here instead; the endpoint is idempotent.
+  function ensureLabelsForPaidOrders(list) {
+    list
+      .filter((o) => PAID_STATUSES.includes(o.status) && !o.pricingPending && !(o.labels?.length))
+      .filter((o) => !labelRequestedRef.current.has(o.id))
+      .forEach((o) => {
+        labelRequestedRef.current.add(o.id);
+        client.post(`/labels/${o.id}/generate`).then(({ data }) => {
+          if (data.labels?.length) {
+            setOrders((prev) => prev.map((p) => (p.id === o.id ? { ...p, labels: data.labels, status: 'LABEL_GENERATED' } : p)));
+          }
+        }).catch(() => {
+          labelRequestedRef.current.delete(o.id); // allow a retry on the next load
+        });
+      });
+  }
 
   function search(e) {
     e.preventDefault();
