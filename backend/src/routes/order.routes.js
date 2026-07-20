@@ -7,7 +7,6 @@ const {
   getOrder,
   updateOrderStatus,
   cancelOrder,
-  finalizePricing,
   listOrderComments,
   addOrderComment,
   updateAddons,
@@ -26,7 +25,6 @@ router.get('/', requireAuth, listOrders);
 router.get('/:id', requireAuth, getOrder);
 router.post('/:id/cancel', requireAuth, cancelOrder);
 router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), updateOrderStatus);
-router.patch('/:id/finalize-pricing', requireAuth, requireRole('ADMIN', 'STAFF'), finalizePricing);
 router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), listOrderComments);
 router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), addOrderComment);
 
