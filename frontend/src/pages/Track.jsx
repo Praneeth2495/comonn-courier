@@ -7,6 +7,7 @@ const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', OUT_FOR_DEL
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
   PENDING_PAYMENT: 'pill-warn',
+  PICKUP_CONFIRMED: 'pill-cobalt',
   PAID: 'pill-cobalt',
   LABEL_GENERATED: 'pill-cobalt',
   PICKED_UP: 'pill-cobalt',

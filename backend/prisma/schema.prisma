@@ -197,6 +197,7 @@ model Surcharge {
 enum OrderStatus {
   DRAFT           // quote created, not yet booked
   PENDING_PAYMENT
+  PICKUP_CONFIRMED // "Not sure, book pickup" cash order: booking locked in, cash owed at pickup — no money collected yet
   PAID
   LABEL_GENERATED
   PICKED_UP

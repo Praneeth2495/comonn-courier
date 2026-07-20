@@ -104,10 +104,11 @@ function Stat({ label, value }) {
   );
 }
 
-const ORDER_STATUSES = ['PENDING_PAYMENT', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
+const ORDER_STATUSES = ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
 
 const STATUS_PILL = {
   PENDING_PAYMENT: 'pill-warn',
+  PICKUP_CONFIRMED: 'pill-cobalt',
   PAID: 'pill-cobalt',
   LABEL_GENERATED: 'pill-cobalt',
   PICKED_UP: 'pill-cobalt',
@@ -123,7 +124,7 @@ const STATUS_PILL = {
 // 'all' shows every booking regardless of account/status.
 const ORDER_TABS = [
   ['bookings', 'Bookings', null, 'all'],
-  ['pickup', 'Pickup orders', ['PAID', 'LABEL_GENERATED']],
+  ['pickup', 'Pickup orders', ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED']],
   ['delivery', 'Delivery orders', ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY']],
   ['users', 'Users orders', null, 'hasUser'],
   ['history', 'Orders history', ['DELIVERED', 'CANCELLED', 'EXCEPTION']],

@@ -8,6 +8,7 @@ import ChangePassword from '../components/ChangePassword';
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
   PENDING_PAYMENT: 'pill-warn',
+  PICKUP_CONFIRMED: 'pill-cobalt',
   PAID: 'pill-cobalt',
   LABEL_GENERATED: 'pill-cobalt',
   PICKED_UP: 'pill-cobalt',

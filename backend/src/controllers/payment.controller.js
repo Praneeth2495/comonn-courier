@@ -209,13 +209,15 @@ async function confirmCashBooking(req, res, next) {
       create: { orderId: order.id, provider: 'cash', method: 'cash', amount: 0, currency: order.currency, status: 'CASH_PENDING' },
     });
 
+    // Distinct from PAID: no money has actually changed hands yet — cash is
+    // only collected once the courier weighs the parcel at pickup.
     const { count } = await prisma.order.updateMany({
       where: { id: order.id, status: 'PENDING_PAYMENT' },
-      data: { status: 'PAID', trackingNumber: await generateTrackingNumber() },
+      data: { status: 'PICKUP_CONFIRMED', trackingNumber: await generateTrackingNumber() },
     });
     if (count > 0) {
       await prisma.trackingEvent.create({
-        data: { orderId: order.id, status: 'PAID', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
+        data: { orderId: order.id, status: 'PICKUP_CONFIRMED', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
       });
     }
 
