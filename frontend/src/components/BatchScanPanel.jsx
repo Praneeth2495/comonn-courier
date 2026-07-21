@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, lazy, Suspense, useState } from 'react';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
+
+// Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
+// the (mostly public) app bundle when only staff/admin/driver ever open it.
+const BarcodeCameraScanner = lazy(() => import('./BarcodeCameraScanner'));
 
 const ORDER_STATUSES = ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
 
@@ -29,6 +33,8 @@ export default function BatchScanPanel() {
   const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', status: '' });
   const [addingLoc, setAddingLoc] = useState(false);
   const [locError, setLocError] = useState('');
+  const [showCamera, setShowCamera] = useState(false);
+  const [showLocCamera, setShowLocCamera] = useState(false);
 
   function loadBatches() {
     setLoadingBatches(true);
@@ -93,23 +99,27 @@ export default function BatchScanPanel() {
     setPhase('SCANNING');
   }
 
+  // Shared by both the keyboard/physical-scanner input and the camera
+  // scanner — scanning a known location's barcode picks the status it
+  // represents instead of adding a label to the batch (still overridable at
+  // the status step below).
+  function handleScannedCode(code) {
+    if (!code) return;
+    const loc = locations.find((l) => l.barcodeValue === code);
+    if (loc) {
+      setChosenStatus(loc.status);
+      setLastLocationScanned(loc);
+      return;
+    }
+    setCodes((prev) => [...prev, code]);
+  }
+
   function handleScanKeyDown(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
       const code = scanInput.trim();
       setScanInput('');
-      if (!code) return;
-
-      // Scanning a known location's barcode picks the status it represents
-      // instead of adding a label to the batch — still overridable at the
-      // status step below.
-      const loc = locations.find((l) => l.barcodeValue === code);
-      if (loc) {
-        setChosenStatus(loc.status);
-        setLastLocationScanned(loc);
-        return;
-      }
-      setCodes((prev) => [...prev, code]);
+      handleScannedCode(code);
     }
   }
 
@@ -212,15 +222,19 @@ export default function BatchScanPanel() {
       {phase === 'SCANNING' && (
         <div className="card" style={{ padding: 24, marginBottom: 24 }}>
           {mode === 'CREATE' && <h4 style={{ marginBottom: 4 }}>Batch: {batchName}</h4>}
-          <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>Scan each label's barcode (or type the code and press Enter).</p>
-          <input
-            className="input"
-            placeholder="Scan or type barcode…"
-            autoFocus
-            value={scanInput}
-            onChange={(e) => setScanInput(e.target.value)}
-            onKeyDown={handleScanKeyDown}
-          />
+          <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>Scan each label's barcode (physical scanner, camera, or type the code and press Enter).</p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className="input"
+              placeholder="Scan or type barcode…"
+              autoFocus
+              style={{ flex: 1 }}
+              value={scanInput}
+              onChange={(e) => setScanInput(e.target.value)}
+              onKeyDown={handleScanKeyDown}
+            />
+            <button type="button" className="btn btn-outline" style={{ flex: 'none' }} onClick={() => setShowCamera(true)}>📷 Camera</button>
+          </div>
           {lastLocationScanned && (
             <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 10 }}>
               📍 Location scanned: <b>{lastLocationScanned.name}</b> — status will be set to <b>{lastLocationScanned.status.replace(/_/g, ' ')}</b>
@@ -371,7 +385,10 @@ export default function BatchScanPanel() {
               </div>
               <div className="field">
                 <label>Barcode (scan or type)</label>
-                <input className="input" placeholder="Scan or type…" required value={locForm.barcodeValue} onChange={(e) => setLocForm({ ...locForm, barcodeValue: e.target.value })} />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input className="input" placeholder="Scan or type…" required style={{ flex: 1 }} value={locForm.barcodeValue} onChange={(e) => setLocForm({ ...locForm, barcodeValue: e.target.value })} />
+                  <button type="button" className="btn btn-outline btn-sm" style={{ flex: 'none' }} onClick={() => setShowLocCamera(true)}>📷</button>
+                </div>
               </div>
               <div className="field">
                 <label>Status</label>
@@ -405,6 +422,18 @@ export default function BatchScanPanel() {
           </div>
         )}
       </div>
+
+      <Suspense fallback={null}>
+        {showCamera && (
+          <BarcodeCameraScanner onScan={handleScannedCode} onClose={() => setShowCamera(false)} />
+        )}
+        {showLocCamera && (
+          <BarcodeCameraScanner
+            onScan={(text) => setLocForm((prev) => ({ ...prev, barcodeValue: text }))}
+            onClose={() => setShowLocCamera(false)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }
