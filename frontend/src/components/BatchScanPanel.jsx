@@ -31,7 +31,7 @@ export default function BatchScanPanel() {
   const [lastLocationScanned, setLastLocationScanned] = useState(null);
   const [locationNotes, setLocationNotes] = useState([]);
   const [showLocations, setShowLocations] = useState(false);
-  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', status: '', label: '' });
+  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', label: '' });
   const [addingLoc, setAddingLoc] = useState(false);
   const [locError, setLocError] = useState('');
   const [showCamera, setShowCamera] = useState(false);
@@ -50,18 +50,16 @@ export default function BatchScanPanel() {
 
   async function addLocation(e) {
     e.preventDefault();
-    if (!locForm.name.trim() || !locForm.barcodeValue.trim()) return;
-    if (!locForm.status && !locForm.label.trim()) return;
+    if (!locForm.name.trim() || !locForm.barcodeValue.trim() || !locForm.label.trim()) return;
     setAddingLoc(true);
     setLocError('');
     try {
       await client.post('/locations', {
         name: locForm.name,
         barcodeValue: locForm.barcodeValue,
-        status: locForm.status || null,
-        label: locForm.label.trim() || null,
+        label: locForm.label.trim(),
       });
-      setLocForm({ name: '', barcodeValue: '', status: '', label: '' });
+      setLocForm({ name: '', barcodeValue: '', label: '' });
       loadLocations();
     } catch (err) {
       setLocError(err.response?.data?.error || 'Could not add this location.');
@@ -428,15 +426,15 @@ export default function BatchScanPanel() {
               <div>
                 <h3 style={{ fontSize: 17 }}>Barcode locations</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
-                  Status auto-selects that status when scanned during Batch Scan. Label is logged as a comment on
-                  each matched order. Set either, or both — at least one is required.
+                  Scanning a location during Batch Scan logs its label as a comment on every matched order — it never
+                  changes the order's status.
                 </p>
               </div>
               <button onClick={() => setShowLocations(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
 
             <form onSubmit={addLocation} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'end' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end' }}>
                 <div className="field">
                   <label>Name</label>
                   <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
@@ -449,15 +447,8 @@ export default function BatchScanPanel() {
                   </div>
                 </div>
                 <div className="field">
-                  <label>Status</label>
-                  <select className="select" value={locForm.status} onChange={(e) => setLocForm({ ...locForm, status: e.target.value })}>
-                    <option value="">None</option>
-                    {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
-                  </select>
-                </div>
-                <div className="field">
-                  <label>Label (optional)</label>
-                  <input className="input" placeholder="e.g. Sorted at Hub A" value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
+                  <label>Label</label>
+                  <input className="input" placeholder="e.g. Sorted at Hub A" required value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
                 </div>
                 <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
               </div>
