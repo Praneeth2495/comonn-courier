@@ -80,7 +80,6 @@ function Overview() {
         <Stat label="Paid" value={totals.paid} />
         <Stat label="In transit" value={totals.inTransit} />
         <Stat label="Delivered" value={totals.delivered} />
-        <Stat label="Total revenue" value={`₹${Number(totals.totalRevenue).toFixed(2)}`} />
       </div>
 
       <h3 className="h-md" style={{ margin: '24px 0 12px' }}>Recent orders</h3>
@@ -132,8 +131,8 @@ const STATUS_PILL = {
 // 'all' shows every booking regardless of account/status.
 const ORDER_TABS = [
   ['bookings', 'Bookings', null, 'all'],
-  ['pickup', 'Pickup orders', ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED']],
-  ['delivery', 'Delivery orders', ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY']],
+  ['pickup', 'Pickup orders', ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
+  ['delivery', 'Delivery orders', ['IN_TRANSIT', 'OUT_FOR_DELIVERY']],
   ['users', 'Users orders', null, 'hasUser'],
   ['history', 'Orders history', ['DELIVERED', 'CANCELLED', 'EXCEPTION']],
   ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
