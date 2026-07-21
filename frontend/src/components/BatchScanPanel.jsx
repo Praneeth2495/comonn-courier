@@ -30,7 +30,7 @@ export default function BatchScanPanel() {
   const [locations, setLocations] = useState([]);
   const [lastLocationScanned, setLastLocationScanned] = useState(null);
   const [showLocations, setShowLocations] = useState(false);
-  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', status: '' });
+  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', type: 'STATUS', status: '', label: '' });
   const [addingLoc, setAddingLoc] = useState(false);
   const [locError, setLocError] = useState('');
   const [showCamera, setShowCamera] = useState(false);
@@ -49,12 +49,19 @@ export default function BatchScanPanel() {
 
   async function addLocation(e) {
     e.preventDefault();
-    if (!locForm.name.trim() || !locForm.barcodeValue.trim() || !locForm.status) return;
+    if (!locForm.name.trim() || !locForm.barcodeValue.trim()) return;
+    if (locForm.type === 'STATUS' && !locForm.status) return;
+    if (locForm.type === 'LABEL' && !locForm.label.trim()) return;
     setAddingLoc(true);
     setLocError('');
     try {
-      await client.post('/locations', locForm);
-      setLocForm({ name: '', barcodeValue: '', status: '' });
+      await client.post('/locations', {
+        name: locForm.name,
+        barcodeValue: locForm.barcodeValue,
+        status: locForm.type === 'STATUS' ? locForm.status : null,
+        label: locForm.type === 'LABEL' ? locForm.label : null,
+      });
+      setLocForm({ name: '', barcodeValue: '', type: 'STATUS', status: '', label: '' });
       loadLocations();
     } catch (err) {
       setLocError(err.response?.data?.error || 'Could not add this location.');
@@ -125,7 +132,9 @@ export default function BatchScanPanel() {
     if (!code) return;
     const loc = locations.find((l) => l.barcodeValue === code);
     if (loc) {
-      setChosenStatus(loc.status);
+      // Status locations pre-fill the status to apply; label-only locations
+      // are purely informational and never touch chosenStatus/Order.status.
+      if (loc.status) setChosenStatus(loc.status);
       setLastLocationScanned(loc);
       return;
     }
@@ -255,7 +264,10 @@ export default function BatchScanPanel() {
           </div>
           {lastLocationScanned && (
             <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 10 }}>
-              📍 Location scanned: <b>{lastLocationScanned.name}</b> — status will be set to <b>{lastLocationScanned.status.replace(/_/g, ' ')}</b>
+              📍 Location scanned: <b>{lastLocationScanned.name}</b>
+              {lastLocationScanned.status
+                ? <> — status will be set to <b>{lastLocationScanned.status.replace(/_/g, ' ')}</b></>
+                : <> — <i>{lastLocationScanned.label}</i> (informational only, no status change)</>}
             </p>
           )}
           <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{codes.length} scanned</p>
@@ -390,44 +402,64 @@ export default function BatchScanPanel() {
               <div>
                 <h3 style={{ fontSize: 17 }}>Barcode locations</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
-                  Scanning one of these during Batch Scan auto-selects the status it represents.
+                  A status location auto-selects that status when scanned during Batch Scan. A label location is
+                  purely informational — scanning it never changes an order's status.
                 </p>
               </div>
               <button onClick={() => setShowLocations(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
 
-            <form onSubmit={addLocation} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr auto', gap: 8, alignItems: 'end', marginBottom: 16 }}>
-              <div className="field">
-                <label>Name</label>
-                <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
+            <form onSubmit={addLocation} style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                  <input type="radio" checked={locForm.type === 'STATUS'} onChange={() => setLocForm({ ...locForm, type: 'STATUS' })} />
+                  Order status
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                  <input type="radio" checked={locForm.type === 'LABEL'} onChange={() => setLocForm({ ...locForm, type: 'LABEL' })} />
+                  Custom label (no status change)
+                </label>
               </div>
-              <div className="field">
-                <label>Barcode (scan or type)</label>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <input className="input" placeholder="Scan or type…" required style={{ flex: 1 }} value={locForm.barcodeValue} onChange={(e) => setLocForm({ ...locForm, barcodeValue: e.target.value })} />
-                  <button type="button" className="btn btn-outline btn-sm" style={{ flex: 'none' }} onClick={() => setShowLocCamera(true)}>📷</button>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr auto', gap: 8, alignItems: 'end' }}>
+                <div className="field">
+                  <label>Name</label>
+                  <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
                 </div>
+                <div className="field">
+                  <label>Barcode (scan or type)</label>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input className="input" placeholder="Scan or type…" required style={{ flex: 1 }} value={locForm.barcodeValue} onChange={(e) => setLocForm({ ...locForm, barcodeValue: e.target.value })} />
+                    <button type="button" className="btn btn-outline btn-sm" style={{ flex: 'none' }} onClick={() => setShowLocCamera(true)}>📷</button>
+                  </div>
+                </div>
+                {locForm.type === 'STATUS' ? (
+                  <div className="field">
+                    <label>Status</label>
+                    <select className="select" required value={locForm.status} onChange={(e) => setLocForm({ ...locForm, status: e.target.value })}>
+                      <option value="">Select…</option>
+                      {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="field">
+                    <label>Label</label>
+                    <input className="input" placeholder="e.g. Sorted at Hub A" required value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
+                  </div>
+                )}
+                <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
               </div>
-              <div className="field">
-                <label>Status</label>
-                <select className="select" required value={locForm.status} onChange={(e) => setLocForm({ ...locForm, status: e.target.value })}>
-                  <option value="">Select…</option>
-                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
-                </select>
-              </div>
-              <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
             </form>
             {locError && <div className="error-text" style={{ marginBottom: 12 }}>{locError}</div>}
 
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               <table className="data-table">
-                <thead><tr><th>Name</th><th>Barcode</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Name</th><th>Barcode</th><th>Status / Label</th><th></th></tr></thead>
                 <tbody>
                   {locations.map((l) => (
                     <tr key={l.id}>
                       <td>{l.name}</td>
                       <td className="mono">{l.barcodeValue}</td>
-                      <td>{l.status.replace(/_/g, ' ')}</td>
+                      <td>{l.status ? l.status.replace(/_/g, ' ') : <i>{l.label}</i>}</td>
                       <td style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-outline btn-sm" onClick={() => printLocation(l.id, l.name)}>🖨️ Print label</button>
                         <button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button>

@@ -465,14 +465,17 @@ model ScanBatchItem {
 }
 
 // A physical location (warehouse bay, sorting hub, delivery vehicle...)
-// with its own barcode. Scanning it during Batch Scan auto-selects the
-// status that location represents, instead of picking one manually.
+// with its own barcode. Exactly one of status/label is set:
+//  - status: scanning it during Batch Scan auto-selects that order status.
+//  - label: purely informational — scanning it never touches Order.status,
+//    just shows which checkpoint was scanned.
 model ScanLocation {
-  id           String      @id @default(uuid())
-  name         String      // "Warehouse A - Inbound", "Van 3"...
-  barcodeValue String      @unique
-  status       OrderStatus
+  id           String       @id @default(uuid())
+  name         String       // "Warehouse A - Inbound", "Van 3"...
+  barcodeValue String       @unique
+  status       OrderStatus?
+  label        String?
   createdById  String
-  createdBy    User        @relation(fields: [createdById], references: [id])
-  createdAt    DateTime    @default(now())
+  createdBy    User         @relation(fields: [createdById], references: [id])
+  createdAt    DateTime     @default(now())
 }
