@@ -16,6 +16,8 @@ export default function BatchScanPanel() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [changingId, setChangingId] = useState(null);
+  const [viewingBatch, setViewingBatch] = useState(null);
+  const [loadingView, setLoadingView] = useState(false);
 
   function loadBatches() {
     setLoadingBatches(true);
@@ -107,6 +109,18 @@ export default function BatchScanPanel() {
       alert(err.response?.data?.error || 'Could not update this batch\'s status.');
     } finally {
       setChangingId(null);
+    }
+  }
+
+  async function viewBatch(id) {
+    setLoadingView(true);
+    try {
+      const { data } = await client.get(`/batches/${id}`);
+      setViewingBatch(data.batch);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Could not load this batch.');
+    } finally {
+      setLoadingView(false);
     }
   }
 
@@ -232,7 +246,10 @@ export default function BatchScanPanel() {
                   <td>{b._count.items}</td>
                   <td>{b.createdBy?.fullName || '—'}</td>
                   <td>{new Date(b.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                  <td><button className="btn btn-outline btn-sm" onClick={() => deleteBatch(b.id)}>Delete</button></td>
+                  <td style={{ display: 'flex', gap: 6 }}>
+                    <button className="btn btn-outline btn-sm" disabled={loadingView} onClick={() => viewBatch(b.id)}>View</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => deleteBatch(b.id)}>Delete</button>
+                  </td>
                 </tr>
               ))}
               {batches.length === 0 && (
@@ -242,6 +259,39 @@ export default function BatchScanPanel() {
           </table>
         </div>
       )}
+
+      <div className={`modal-overlay ${viewingBatch ? 'open' : ''}`} onClick={() => setViewingBatch(null)}>
+        {viewingBatch && (
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <h3 style={{ fontSize: 17 }}>{viewingBatch.name}</h3>
+                <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
+                  {viewingBatch.items.length} label{viewingBatch.items.length === 1 ? '' : 's'} scanned · status applied: {viewingBatch.status.replace(/_/g, ' ')}
+                </p>
+              </div>
+              <button onClick={() => setViewingBatch(null)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+            </div>
+            <div style={{ maxHeight: 420, overflowY: 'auto' }}>
+              <table className="data-table">
+                <thead><tr><th>Barcode</th><th>Order</th></tr></thead>
+                <tbody>
+                  {viewingBatch.items.map((it) => (
+                    <tr key={it.id}>
+                      <td className="mono">{it.barcodeValue}</td>
+                      <td>
+                        {it.matched
+                          ? <span className="mono">{it.orderNumber}</span>
+                          : <span style={{ color: 'var(--danger)' }}>Not matched</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
