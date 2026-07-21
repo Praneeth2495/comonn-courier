@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const TABS = [
     ['overview', 'Overview'],
     ['orders', 'Orders'],
-    ['accounts', 'Accounts'],
+    ...(isAdmin ? [['accounts', 'Accounts']] : []),
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
     ['account', 'Profile'],
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
       <main className="app-main">
         {tab === 'overview' && <Overview />}
         {tab === 'orders' && <OrdersPanel />}
-        {tab === 'accounts' && <AccountsPanel />}
+        {tab === 'accounts' && isAdmin && <AccountsPanel />}
         {tab === 'rates' && isAdmin && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
         {tab === 'account' && <ChangePassword />}
