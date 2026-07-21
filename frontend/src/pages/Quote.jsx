@@ -48,7 +48,10 @@ function hydrateItems(quoteInput) {
     widthCm: it.widthCm ? String(it.widthCm) : '',
     heightCm: it.heightCm ? String(it.heightCm) : '',
     quantity: it.quantity,
-    showDims: !!(it.lengthCm || it.widthCm || it.heightCm),
+    // Always start collapsed behind "(Click here, if dimensions are
+    // known)" — even if dimensions were already entered/persisted — rather
+    // than auto-expanding just because a value happens to be present.
+    showDims: false,
   }));
 }
 

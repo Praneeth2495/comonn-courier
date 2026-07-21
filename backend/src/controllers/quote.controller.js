@@ -52,10 +52,20 @@ async function getInstantQuote(req, res, next) {
     }
 
     // If no service specified, quote every active service so the frontend
-    // can render a comparison list (Express / Economy / etc).
-    const services = serviceCode
-      ? [{ code: serviceCode }]
-      : await prisma.service.findMany({ where: { isActive: true }, select: { code: true } });
+    // can render a comparison list. Service has no natural sort column, so
+    // order explicitly (Express first, then Economy, then anything else).
+    const SERVICE_ORDER = ['EXPRESS', 'ECONOMY'];
+    let services;
+    if (serviceCode) {
+      services = [{ code: serviceCode }];
+    } else {
+      services = await prisma.service.findMany({ where: { isActive: true }, select: { code: true } });
+      services.sort((a, b) => {
+        const ai = SERVICE_ORDER.indexOf(a.code);
+        const bi = SERVICE_ORDER.indexOf(b.code);
+        return (ai === -1 ? SERVICE_ORDER.length : ai) - (bi === -1 ? SERVICE_ORDER.length : bi);
+      });
+    }
 
     const quotes = [];
     for (const s of services) {

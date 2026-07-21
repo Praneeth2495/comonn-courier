@@ -31,7 +31,9 @@ function calcVolumetricWeightKg({ lengthCm, widthCm, heightCm, divisor = 5000 })
   // calculation entirely so chargeable weight falls back to actual weight.
   if (!lengthCm || !widthCm || !heightCm) return 0;
   const volumeCm3 = Number(lengthCm) * Number(widthCm) * Number(heightCm);
-  return volumeCm3 / divisor;
+  // Rounded up to the next whole kg (e.g. 23.4kg -> 24kg), matching standard
+  // courier practice of billing volumetric weight in whole-kg increments.
+  return Math.ceil(volumeCm3 / divisor);
 }
 
 function calcChargeableWeightKg({ actualWeightKg, volumetricWeightKg }) {
