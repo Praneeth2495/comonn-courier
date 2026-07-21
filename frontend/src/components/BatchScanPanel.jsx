@@ -31,11 +31,10 @@ export default function BatchScanPanel() {
   const [lastLocationScanned, setLastLocationScanned] = useState(null);
   const [locationNotes, setLocationNotes] = useState([]);
   const [showLocations, setShowLocations] = useState(false);
-  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', label: '' });
+  const [locForm, setLocForm] = useState({ name: '', label: '' });
   const [addingLoc, setAddingLoc] = useState(false);
   const [locError, setLocError] = useState('');
   const [showCamera, setShowCamera] = useState(false);
-  const [showLocCamera, setShowLocCamera] = useState(false);
 
   function loadBatches() {
     setLoadingBatches(true);
@@ -50,16 +49,12 @@ export default function BatchScanPanel() {
 
   async function addLocation(e) {
     e.preventDefault();
-    if (!locForm.name.trim() || !locForm.barcodeValue.trim() || !locForm.label.trim()) return;
+    if (!locForm.name.trim() || !locForm.label.trim()) return;
     setAddingLoc(true);
     setLocError('');
     try {
-      await client.post('/locations', {
-        name: locForm.name,
-        barcodeValue: locForm.barcodeValue,
-        label: locForm.label.trim(),
-      });
-      setLocForm({ name: '', barcodeValue: '', label: '' });
+      await client.post('/locations', { name: locForm.name, label: locForm.label.trim() });
+      setLocForm({ name: '', label: '' });
       loadLocations();
     } catch (err) {
       setLocError(err.response?.data?.error || 'Could not add this location.');
@@ -434,17 +429,10 @@ export default function BatchScanPanel() {
             </div>
 
             <form onSubmit={addLocation} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 8, alignItems: 'end' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, alignItems: 'end' }}>
                 <div className="field">
                   <label>Name</label>
                   <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
-                </div>
-                <div className="field">
-                  <label>Barcode (scan or type)</label>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <input className="input" placeholder="Scan or type…" required style={{ flex: 1 }} value={locForm.barcodeValue} onChange={(e) => setLocForm({ ...locForm, barcodeValue: e.target.value })} />
-                    <button type="button" className="btn btn-outline btn-sm" style={{ flex: 'none' }} onClick={() => setShowLocCamera(true)}>📷</button>
-                  </div>
                 </div>
                 <div className="field">
                   <label>Label</label>
@@ -486,12 +474,6 @@ export default function BatchScanPanel() {
       <Suspense fallback={null}>
         {showCamera && (
           <BarcodeCameraScanner onScan={handleScannedCode} onClose={() => setShowCamera(false)} />
-        )}
-        {showLocCamera && (
-          <BarcodeCameraScanner
-            onScan={(text) => setLocForm((prev) => ({ ...prev, barcodeValue: text }))}
-            onClose={() => setShowLocCamera(false)}
-          />
         )}
       </Suspense>
     </div>

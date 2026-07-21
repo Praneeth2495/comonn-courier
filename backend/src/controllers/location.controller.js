@@ -15,27 +15,35 @@ async function listLocations(req, res, next) {
   }
 }
 
+/** Atomically advances a simple counter for auto-generated location barcodes. */
+async function nextLocationSeq() {
+  const counter = await prisma.sequenceCounter.upsert({
+    where: { key: 'location' },
+    update: { value: { increment: 1 } },
+    create: { key: 'location', value: 1 },
+  });
+  return counter.value;
+}
+
 /**
  * POST /api/locations — ADMIN/STAFF only
- * status and label are independent — a location can have either, or both:
- * scanning it pre-fills the status (if set) AND logs the label as an order
- * comment (if set). At least one of the two must be given.
+ * The barcode value is auto-generated (LOC1, LOC2...) — staff just name the
+ * location and describe it; "Print label" turns that barcode into a
+ * physical sticker. Scanning it logs the label as a comment on every
+ * matched order; it never changes an order's status.
  */
 async function createLocation(req, res, next) {
   try {
-    const { name, barcodeValue, status, label } = req.body;
+    const { name, label } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'name is required' });
-    if (!barcodeValue || !barcodeValue.trim()) return res.status(400).json({ error: 'barcodeValue is required' });
-    if (!status && !(label && label.trim())) {
-      return res.status(400).json({ error: 'Either a status or a custom label is required' });
-    }
+    if (!label || !label.trim()) return res.status(400).json({ error: 'label is required' });
 
+    const seq = await nextLocationSeq();
     const location = await prisma.scanLocation.create({
       data: {
         name: name.trim(),
-        barcodeValue: barcodeValue.trim(),
-        status: status || null,
-        label: label && label.trim() ? label.trim() : null,
+        barcodeValue: `LOC${seq}`,
+        label: label.trim(),
         createdById: req.user.id,
       },
       include: { createdBy: { select: { fullName: true } } },
