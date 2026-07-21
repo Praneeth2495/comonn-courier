@@ -1,19 +1,40 @@
 const { prisma } = require('../config/db');
 
-/** Resolves scanned barcode values to their orders via the Label table. */
+/**
+ * Resolves scanned codes to their orders. Tries the Label table first (real
+ * printed barcodes), then falls back to matching the order number or
+ * tracking number directly — covers orders that never got a physical label
+ * (e.g. cash-pickup bookings assessed in person, with nothing to print
+ * until/unless staff generates one).
+ */
 async function resolveBarcodes(barcodeValues) {
   const unique = [...new Set(barcodeValues)];
+
   const labels = await prisma.label.findMany({
     where: { barcodeValue: { in: unique } },
     include: { order: { select: { id: true, orderNumber: true } } },
   });
   const byBarcode = new Map(labels.map((l) => [l.barcodeValue, l]));
 
+  const unresolved = unique.filter((code) => !byBarcode.has(code));
+  const byOrderCode = new Map();
+  if (unresolved.length > 0) {
+    const orders = await prisma.order.findMany({
+      where: { OR: [{ orderNumber: { in: unresolved } }, { trackingNumber: { in: unresolved } }] },
+      select: { id: true, orderNumber: true, trackingNumber: true },
+    });
+    for (const order of orders) {
+      if (unresolved.includes(order.orderNumber)) byOrderCode.set(order.orderNumber, order);
+      if (order.trackingNumber && unresolved.includes(order.trackingNumber)) byOrderCode.set(order.trackingNumber, order);
+    }
+  }
+
   return unique.map((barcodeValue) => {
     const label = byBarcode.get(barcodeValue);
-    return label
-      ? { barcodeValue, matched: true, orderId: label.order.id, orderNumber: label.order.orderNumber }
-      : { barcodeValue, matched: false, orderId: null, orderNumber: null };
+    if (label) return { barcodeValue, matched: true, orderId: label.order.id, orderNumber: label.order.orderNumber };
+    const order = byOrderCode.get(barcodeValue);
+    if (order) return { barcodeValue, matched: true, orderId: order.id, orderNumber: order.orderNumber };
+    return { barcodeValue, matched: false, orderId: null, orderNumber: null };
   });
 }
 
