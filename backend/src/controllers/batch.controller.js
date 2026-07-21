@@ -38,6 +38,41 @@ async function resolveBarcodes(barcodeValues) {
   });
 }
 
+/**
+ * POST /api/batches/preview
+ * Resolves scanned codes to their orders (same logic used before applying)
+ * without changing anything — lets the scanning UI show which order each
+ * code actually matched, live, so a typo that happens to collide with a
+ * different real order is caught before anything is applied, not after.
+ */
+async function previewResolve(req, res, next) {
+  try {
+    const { barcodeValues } = req.body;
+    if (!Array.isArray(barcodeValues) || barcodeValues.length === 0) {
+      return res.status(400).json({ error: 'barcodeValues must be a non-empty array' });
+    }
+
+    const items = await resolveBarcodes(barcodeValues);
+    const orderIds = [...new Set(items.filter((i) => i.matched).map((i) => i.orderId))];
+    const orders = await prisma.order.findMany({
+      where: { id: { in: orderIds } },
+      select: { id: true, receiverAddress: { select: { city: true, countryCode: true } } },
+    });
+    const byId = new Map(orders.map((o) => [o.id, o]));
+
+    const enriched = items.map((i) => {
+      if (!i.matched) return i;
+      const order = byId.get(i.orderId);
+      const destination = order?.receiverAddress ? `${order.receiverAddress.city}, ${order.receiverAddress.countryCode}` : null;
+      return { ...i, destination };
+    });
+
+    res.json({ items: enriched });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** Applies `status` to every distinct order among the resolved (matched) items. */
 async function applyStatusToItems(items, status) {
   const orderIds = [...new Set(items.filter((i) => i.matched).map((i) => i.orderId))];
@@ -198,4 +233,4 @@ async function deleteBatch(req, res, next) {
   }
 }
 
-module.exports = { applyStatus, createBatch, updateBatchStatus, listBatches, getBatch, deleteBatch };
+module.exports = { previewResolve, applyStatus, createBatch, updateBatchStatus, listBatches, getBatch, deleteBatch };

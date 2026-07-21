@@ -7,6 +7,7 @@ router.use(requireAuth, requireRole('ADMIN', 'STAFF', 'DRIVER'));
 router.get('/', batch.listBatches);
 router.post('/', batch.createBatch);
 router.post('/apply-status', batch.applyStatus);
+router.post('/preview', batch.previewResolve);
 router.get('/:id', batch.getBatch);
 router.patch('/:id/status', batch.updateBatchStatus);
 router.delete('/:id', batch.deleteBatch);

@@ -35,6 +35,27 @@ export default function BatchScanPanel() {
   const [addingLoc, setAddingLoc] = useState(false);
   const [locError, setLocError] = useState('');
   const [showCamera, setShowCamera] = useState(false);
+  const [preview, setPreview] = useState({}); // barcodeValue -> { matched, orderNumber, destination }
+
+  // Live-resolves scanned codes to their orders as they're typed/scanned, so
+  // a typo that happens to collide with a different real order is visible
+  // immediately (before Apply), not just reported as an "updated" count.
+  useEffect(() => {
+    if (codes.length === 0) {
+      setPreview({});
+      return;
+    }
+    const timer = setTimeout(() => {
+      client.post('/batches/preview', { barcodeValues: codes })
+        .then(({ data }) => {
+          const map = {};
+          data.items.forEach((i) => { map[i.barcodeValue] = i; });
+          setPreview(map);
+        })
+        .catch(() => {});
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [codes]);
 
   function loadBatches() {
     setLoadingBatches(true);
@@ -98,6 +119,7 @@ export default function BatchScanPanel() {
     setError('');
     setLastLocationScanned(null);
     setLocationNotes([]);
+    setPreview({});
   }
 
   function startCreateBatch() {
@@ -283,12 +305,22 @@ export default function BatchScanPanel() {
           <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{codes.length} scanned</p>
           {codes.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, maxHeight: 220, overflowY: 'auto' }}>
-              {codes.map((c, i) => (
-                <span key={i} className="pill pill-navy" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  {c}
-                  <button type="button" onClick={() => removeCode(i)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 700, padding: 0 }}>✕</button>
-                </span>
-              ))}
+              {codes.map((c, i) => {
+                const p = preview[c];
+                const checked = p !== undefined;
+                const pillClass = !checked ? 'pill-navy' : p.matched ? 'pill-success' : 'pill-danger';
+                return (
+                  <span key={i} className={`pill ${pillClass}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <span>
+                      {c}
+                      {checked && (p.matched
+                        ? <> → {p.orderNumber}{p.destination ? ` · ${p.destination}` : ''}</>
+                        : <> — not matched</>)}
+                    </span>
+                    <button type="button" onClick={() => removeCode(i)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 700, padding: 0 }}>✕</button>
+                  </span>
+                );
+              })}
             </div>
           )}
           {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
