@@ -133,8 +133,6 @@ const ORDER_TABS = [
   ['bookings', 'Bookings', null, 'all'],
   ['pickup', 'Pickup orders', ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
   ['delivery', 'Delivery orders', ['IN_TRANSIT', 'OUT_FOR_DELIVERY']],
-  ['users', 'Users orders', null, 'hasUser'],
-  ['history', 'Orders history', ['DELIVERED', 'CANCELLED', 'EXCEPTION']],
   ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
 ];
 
