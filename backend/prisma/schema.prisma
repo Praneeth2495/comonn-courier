@@ -51,6 +51,7 @@ model User {
   driverJobs Order[] @relation("OrderDriver")
   inventoryUpdates InventoryItem[]
   scanBatches ScanBatch[]
+  scanLocations ScanLocation[]
 
   @@index([email])
 }
@@ -461,4 +462,17 @@ model ScanBatchItem {
   createdAt    DateTime  @default(now())
 
   @@index([batchId])
+}
+
+// A physical location (warehouse bay, sorting hub, delivery vehicle...)
+// with its own barcode. Scanning it during Batch Scan auto-selects the
+// status that location represents, instead of picking one manually.
+model ScanLocation {
+  id           String      @id @default(uuid())
+  name         String      // "Warehouse A - Inbound", "Van 3"...
+  barcodeValue String      @unique
+  status       OrderStatus
+  createdById  String
+  createdBy    User        @relation(fields: [createdById], references: [id])
+  createdAt    DateTime    @default(now())
 }

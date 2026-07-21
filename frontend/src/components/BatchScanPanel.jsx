@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
+import { useAuth } from '../api/AuthContext';
 
 const ORDER_STATUSES = ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
 
 export default function BatchScanPanel() {
+  const { user } = useAuth();
+  const canManageLocations = user?.role === 'ADMIN' || user?.role === 'STAFF';
+
   const [batches, setBatches] = useState([]);
   const [loadingBatches, setLoadingBatches] = useState(true);
   const [mode, setMode] = useState(null); // 'CREATE' | 'STATUS'
@@ -19,11 +23,45 @@ export default function BatchScanPanel() {
   const [viewingBatch, setViewingBatch] = useState(null);
   const [loadingView, setLoadingView] = useState(false);
 
+  const [locations, setLocations] = useState([]);
+  const [lastLocationScanned, setLastLocationScanned] = useState(null);
+  const [showLocations, setShowLocations] = useState(false);
+  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', status: '' });
+  const [addingLoc, setAddingLoc] = useState(false);
+  const [locError, setLocError] = useState('');
+
   function loadBatches() {
     setLoadingBatches(true);
     client.get('/batches').then(({ data }) => { setBatches(data.batches); setLoadingBatches(false); }).catch(() => setLoadingBatches(false));
   }
   useEffect(loadBatches, []);
+
+  function loadLocations() {
+    client.get('/locations').then(({ data }) => setLocations(data.locations)).catch(() => {});
+  }
+  useEffect(loadLocations, []);
+
+  async function addLocation(e) {
+    e.preventDefault();
+    if (!locForm.name.trim() || !locForm.barcodeValue.trim() || !locForm.status) return;
+    setAddingLoc(true);
+    setLocError('');
+    try {
+      await client.post('/locations', locForm);
+      setLocForm({ name: '', barcodeValue: '', status: '' });
+      loadLocations();
+    } catch (err) {
+      setLocError(err.response?.data?.error || 'Could not add this location.');
+    } finally {
+      setAddingLoc(false);
+    }
+  }
+
+  async function deleteLocation(id) {
+    if (!confirm('Delete this barcode location?')) return;
+    await client.delete(`/locations/${id}`);
+    setLocations((prev) => prev.filter((l) => l.id !== id));
+  }
 
   function reset() {
     setMode(null);
@@ -34,6 +72,7 @@ export default function BatchScanPanel() {
     setChosenStatus('');
     setResult(null);
     setError('');
+    setLastLocationScanned(null);
   }
 
   function startCreateBatch() {
@@ -58,8 +97,19 @@ export default function BatchScanPanel() {
     if (e.key === 'Enter') {
       e.preventDefault();
       const code = scanInput.trim();
-      if (code) setCodes((prev) => [...prev, code]);
       setScanInput('');
+      if (!code) return;
+
+      // Scanning a known location's barcode picks the status it represents
+      // instead of adding a label to the batch — still overridable at the
+      // status step below.
+      const loc = locations.find((l) => l.barcodeValue === code);
+      if (loc) {
+        setChosenStatus(loc.status);
+        setLastLocationScanned(loc);
+        return;
+      }
+      setCodes((prev) => [...prev, code]);
     }
   }
 
@@ -140,6 +190,9 @@ export default function BatchScanPanel() {
         <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
           <button className="btn btn-primary" style={{ padding: '14px 24px' }} onClick={startCreateBatch}>📦 Create batch &amp; update</button>
           <button className="btn btn-outline" style={{ padding: '14px 24px' }} onClick={startUpdateStatus}>🔄 Update status</button>
+          {canManageLocations && (
+            <button className="btn btn-outline" style={{ padding: '14px 24px' }} onClick={() => setShowLocations(true)}>📍 Barcode locations</button>
+          )}
         </div>
       )}
 
@@ -168,6 +221,11 @@ export default function BatchScanPanel() {
             onChange={(e) => setScanInput(e.target.value)}
             onKeyDown={handleScanKeyDown}
           />
+          {lastLocationScanned && (
+            <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 10 }}>
+              📍 Location scanned: <b>{lastLocationScanned.name}</b> — status will be set to <b>{lastLocationScanned.status.replace(/_/g, ' ')}</b>
+            </p>
+          )}
           <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{codes.length} scanned</p>
           {codes.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, maxHeight: 220, overflowY: 'auto' }}>
@@ -286,6 +344,61 @@ export default function BatchScanPanel() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className={`modal-overlay ${showLocations ? 'open' : ''}`} onClick={() => setShowLocations(false)}>
+        {showLocations && (
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <h3 style={{ fontSize: 17 }}>Barcode locations</h3>
+                <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
+                  Scanning one of these during Batch Scan auto-selects the status it represents.
+                </p>
+              </div>
+              <button onClick={() => setShowLocations(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+            </div>
+
+            <form onSubmit={addLocation} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr auto', gap: 8, alignItems: 'end', marginBottom: 16 }}>
+              <div className="field">
+                <label>Name</label>
+                <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
+              </div>
+              <div className="field">
+                <label>Barcode (scan or type)</label>
+                <input className="input" placeholder="Scan or type…" required value={locForm.barcodeValue} onChange={(e) => setLocForm({ ...locForm, barcodeValue: e.target.value })} />
+              </div>
+              <div className="field">
+                <label>Status</label>
+                <select className="select" required value={locForm.status} onChange={(e) => setLocForm({ ...locForm, status: e.target.value })}>
+                  <option value="">Select…</option>
+                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                </select>
+              </div>
+              <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
+            </form>
+            {locError && <div className="error-text" style={{ marginBottom: 12 }}>{locError}</div>}
+
+            <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+              <table className="data-table">
+                <thead><tr><th>Name</th><th>Barcode</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                  {locations.map((l) => (
+                    <tr key={l.id}>
+                      <td>{l.name}</td>
+                      <td className="mono">{l.barcodeValue}</td>
+                      <td>{l.status.replace(/_/g, ' ')}</td>
+                      <td><button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button></td>
+                    </tr>
+                  ))}
+                  {locations.length === 0 && (
+                    <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No barcode locations yet.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
