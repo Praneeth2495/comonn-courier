@@ -49,6 +49,8 @@ model User {
   passwordSetTokens PasswordSetToken[]
   orderComments OrderComment[]
   driverJobs Order[] @relation("OrderDriver")
+  inventoryUpdates InventoryItem[]
+  scanBatches ScanBatch[]
 
   @@index([email])
 }
@@ -417,4 +419,46 @@ model AuditLog {
   entityId  String?
   meta      Json?
   createdAt DateTime @default(now())
+}
+
+// ------------------------------------------------------------
+// Inventory (equipment/supplies used for courier services)
+// ------------------------------------------------------------
+model InventoryItem {
+  id                String   @id @default(uuid())
+  name              String   @unique // "Heavy-duty cardboard", "Wrap rolls"...
+  unit              String   @default("pcs") // "boxes" | "rolls" | "pcs" ...
+  quantity          Int      @default(0)
+  lowStockThreshold Int?
+  updatedById       String?
+  updatedBy         User?    @relation(fields: [updatedById], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// Batch scan (staff/admin scan multiple shipping labels at once and
+// bulk-update their order status)
+// ------------------------------------------------------------
+model ScanBatch {
+  id          String          @id @default(uuid())
+  name        String
+  status      OrderStatus
+  createdById String
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  items       ScanBatchItem[]
+  createdAt   DateTime        @default(now())
+}
+
+model ScanBatchItem {
+  id           String    @id @default(uuid())
+  batchId      String
+  batch        ScanBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  barcodeValue String
+  orderId      String?
+  orderNumber  String?
+  matched      Boolean   @default(true) // false if the scanned barcode didn't resolve to a label
+  createdAt    DateTime  @default(now())
+
+  @@index([batchId])
 }

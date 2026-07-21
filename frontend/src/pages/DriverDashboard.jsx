@@ -71,8 +71,7 @@ function MyJobs({ userName }) {
   const today = new Date();
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-  const [fromDate, setFromDate] = useState(isoDate(threeMonthsAgo));
-  const [toDate, setToDate] = useState(isoDate(today));
+  const [selectedDate, setSelectedDate] = useState(isoDate(today));
 
   function load() {
     setLoading(true);
@@ -119,14 +118,29 @@ function MyJobs({ userName }) {
     .filter((j) => j.status === 'PICKED_UP' || ['DELIVERED', 'CANCELLED'].includes(j.status))
     .filter((j) => {
       if (!j.pickedUpAt) return true;
-      const d = j.pickedUpAt.slice(0, 10);
-      return d >= fromDate && d <= toDate;
+      return j.pickedUpAt.slice(0, 10) === selectedDate;
     });
 
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 4 }}>My pickup jobs</h1>
-      <p className="lead" style={{ marginBottom: 20 }}>{userName}</p>
+      <p className="lead" style={{ marginBottom: 16 }}>{userName}</p>
+
+      <div className="card" style={{ padding: 14, marginBottom: 20, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>View jobs completed on</span>
+        <input
+          className="input"
+          type="date"
+          style={{ maxWidth: 170 }}
+          value={selectedDate}
+          min={isoDate(threeMonthsAgo)}
+          max={isoDate(today)}
+          onChange={(e) => setSelectedDate(e.target.value)}
+        />
+        {selectedDate !== isoDate(today) && (
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setSelectedDate(isoDate(today))}>Today</button>
+        )}
+      </div>
 
       {loading ? (
         <p className="lead">Loading…</p>
@@ -145,28 +159,6 @@ function MyJobs({ userName }) {
           )}
 
           <h3 className="h-md" style={{ marginBottom: 12 }}>Completed</h3>
-          <div className="card" style={{ padding: 14, marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Show completed between</span>
-            <input
-              className="input"
-              type="date"
-              style={{ maxWidth: 170 }}
-              value={fromDate}
-              min={isoDate(threeMonthsAgo)}
-              max={toDate}
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-            <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
-            <input
-              className="input"
-              type="date"
-              style={{ maxWidth: 170 }}
-              value={toDate}
-              min={fromDate}
-              max={isoDate(today)}
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </div>
 
           {doneJobs.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -175,7 +167,7 @@ function MyJobs({ userName }) {
               ))}
             </div>
           ) : (
-            <p className="lead" style={{ fontSize: 13.5 }}>No completed jobs in this date range.</p>
+            <p className="lead" style={{ fontSize: 13.5 }}>No completed jobs on this day.</p>
           )}
         </>
       )}
