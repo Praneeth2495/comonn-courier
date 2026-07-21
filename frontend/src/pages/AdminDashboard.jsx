@@ -552,8 +552,29 @@ function AccountsPanel() {
   );
 }
 
+const LABEL_ELIGIBLE_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+
 function OrderDetailAdminModal({ order, onClose }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
+  const [labels, setLabels] = useState(order.labels || []);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
+
+  async function generateLabel() {
+    setGenerating(true);
+    setGenerateError('');
+    try {
+      const { data } = await client.post(`/labels/${order.id}/generate`);
+      setLabels(data.labels || []);
+    } catch (err) {
+      setGenerateError(err.response?.data?.error || 'Could not generate the label — please try again.');
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  const canGenerate = labels.length === 0 && !order.pricingPending && LABEL_ELIGIBLE_STATUSES.includes(order.status);
+
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
@@ -610,6 +631,29 @@ function OrderDetailAdminModal({ order, onClose }) {
             </div>
           </div>
         </div>
+
+        {labels.length > 0 && (
+          <div className="detail-section" style={{ marginBottom: 0, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {labels.map((l) => (
+              <a key={l.id} className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/download/${l.id}`} target="_blank" rel="noreferrer">
+                Download label{labels.length > 1 ? ` (${l.packageIndex})` : ''}
+              </a>
+            ))}
+            <a className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${order.id}`} target="_blank" rel="noreferrer">
+              Download invoice
+            </a>
+          </div>
+        )}
+
+        {canGenerate && (
+          <div className="detail-section" style={{ marginBottom: 0 }}>
+            <button className="btn btn-outline btn-sm" disabled={generating} onClick={generateLabel}>
+              {generating ? 'Generating…' : 'Generate label & invoice'}
+            </button>
+            {generateError && <div className="error-text" style={{ marginTop: 8 }}>{generateError}</div>}
+          </div>
+        )}
+        )}
       </div>
     </div>
   );
