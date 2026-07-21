@@ -263,9 +263,18 @@ export default function Home() {
                     )}
                     {showDims ? (
                       <div className="item-row equal" style={{ marginTop: 8 }}>
-                        <input className="input" type="number" min="1" placeholder="Length (cm)" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)} />
-                        <input className="input" type="number" min="1" placeholder="Width (cm)" value={widthCm} onChange={(e) => setWidthCm(e.target.value)} />
-                        <input className="input" type="number" min="1" placeholder="Height (cm)" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
+                        <div>
+                          <div className="lbl" style={{ marginBottom: 4 }}>Length (cm)</div>
+                          <input className="input" type="number" min="1" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)} />
+                        </div>
+                        <div>
+                          <div className="lbl" style={{ marginBottom: 4 }}>Width (cm)</div>
+                          <input className="input" type="number" min="1" value={widthCm} onChange={(e) => setWidthCm(e.target.value)} />
+                        </div>
+                        <div>
+                          <div className="lbl" style={{ marginBottom: 4 }}>Height (cm)</div>
+                          <input className="input" type="number" min="1" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
+                        </div>
                       </div>
                     ) : (
                       <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>

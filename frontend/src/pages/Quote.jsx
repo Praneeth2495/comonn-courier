@@ -260,9 +260,18 @@ export default function Quote() {
                   )}
                   {it.showDims ? (
                     <div className="item-row equal" style={{ marginTop: 8 }}>
-                      <input className="input" type="number" min="1" placeholder="Length (cm)" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
-                      <input className="input" type="number" min="1" placeholder="Width (cm)" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
-                      <input className="input" type="number" min="1" placeholder="Height (cm)" value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
+                      <div>
+                        <div className="lbl" style={{ marginBottom: 4 }}>Length (cm)</div>
+                        <input className="input" type="number" min="1" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
+                      </div>
+                      <div>
+                        <div className="lbl" style={{ marginBottom: 4 }}>Width (cm)</div>
+                        <input className="input" type="number" min="1" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
+                      </div>
+                      <div>
+                        <div className="lbl" style={{ marginBottom: 4 }}>Height (cm)</div>
+                        <input className="input" type="number" min="1" value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
+                      </div>
                     </div>
                   ) : (
                     <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>

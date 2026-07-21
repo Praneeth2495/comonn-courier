@@ -64,10 +64,29 @@ function toInvoiceResponse(invoice) {
 
 async function ensureInvoice(order) {
   const existing = await prisma.invoice.findUnique({ where: { orderId: order.id } });
-  if (existing) return existing;
+  if (existing) {
+    // Label/invoice PDFs live on local disk, which doesn't persist across
+    // backend redeploys — regenerate (same deterministic filename) if the
+    // file has gone missing rather than trusting the DB row blindly.
+    if (!fs.existsSync(path.join(STORAGE_DIR, existing.fileUrl))) {
+      await generateInvoicePdf(order);
+    }
+    return existing;
+  }
 
   const { fileName } = await generateInvoicePdf(order);
   return prisma.invoice.create({ data: { orderId: order.id, fileUrl: fileName } });
+}
+
+// One "package" entry per unit of quantity, across all items — same order
+// every time (derived purely from order.items), so package N always maps
+// to the same label regardless of when it's (re)computed.
+function buildPackages(order) {
+  const packages = [];
+  for (const item of order.items) {
+    for (let i = 0; i < item.quantity; i++) packages.push(item);
+  }
+  return packages;
 }
 
 async function emailLabelsAndInvoice(order, labels, invoice, accountInfo) {
@@ -203,6 +222,20 @@ async function generateLabel(req, res, next) {
 
     if (order.labels.length > 0) {
       const invoice = await ensureInvoice(order);
+      // Same disk-doesn't-persist-across-redeploys issue as ensureInvoice —
+      // regenerate any label whose PDF file has gone missing.
+      const existingPackages = buildPackages(order);
+      const existingTotalPackages = existingPackages.length || 1;
+      for (const label of order.labels) {
+        if (!fs.existsSync(path.join(STORAGE_DIR, label.fileUrl))) {
+          await generateLabelPdf(order, {
+            packageIndex: label.packageIndex,
+            totalPackages: existingTotalPackages,
+            item: existingPackages[label.packageIndex - 1] || existingPackages[0],
+            barcodeValue: label.barcodeValue,
+          });
+        }
+      }
       return res.json({
         labels: order.labels.map(toLabelResponse),
         invoice: toInvoiceResponse(invoice),
@@ -210,11 +243,7 @@ async function generateLabel(req, res, next) {
       });
     }
 
-    // One "package" entry per unit of quantity, across all items.
-    const packages = [];
-    for (const item of order.items) {
-      for (let i = 0; i < item.quantity; i++) packages.push(item);
-    }
+    const packages = buildPackages(order);
     const totalPackages = packages.length || 1;
 
     const labels = [];
@@ -273,6 +302,23 @@ async function downloadLabel(req, res, next) {
     const label = await prisma.label.findUnique({ where: { id: req.params.labelId } });
     if (!label) return res.status(404).json({ error: 'Label not found' });
     const filePath = path.resolve(path.join(STORAGE_DIR, label.fileUrl));
+    // Local disk doesn't persist across backend redeploys — regenerate on
+    // the fly (same deterministic filename) if the file has gone missing.
+    if (!fs.existsSync(filePath)) {
+      const order = await prisma.order.findUnique({
+        where: { id: label.orderId },
+        include: { items: true, service: true, senderAddress: true, receiverAddress: true },
+      });
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+      const packages = buildPackages(order);
+      const totalPackages = packages.length || 1;
+      await generateLabelPdf(order, {
+        packageIndex: label.packageIndex,
+        totalPackages,
+        item: packages[label.packageIndex - 1] || packages[0],
+        barcodeValue: label.barcodeValue,
+      });
+    }
     if (req.query.inline) {
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
@@ -294,6 +340,16 @@ async function downloadInvoice(req, res, next) {
     const invoice = await prisma.invoice.findUnique({ where: { orderId: req.params.orderId } });
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
     const filePath = path.resolve(path.join(STORAGE_DIR, invoice.fileUrl));
+    // Local disk doesn't persist across backend redeploys — regenerate on
+    // the fly (same deterministic filename) if the file has gone missing.
+    if (!fs.existsSync(filePath)) {
+      const order = await prisma.order.findUnique({
+        where: { id: invoice.orderId },
+        include: { senderAddress: true, receiverAddress: true, service: true, addons: true, payment: true },
+      });
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+      await generateInvoicePdf(order);
+    }
     if (req.query.inline) {
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);

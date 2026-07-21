@@ -21,6 +21,7 @@ const driverRoutes = require('./routes/driver.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
 const batchRoutes = require('./routes/batch.routes');
 const locationRoutes = require('./routes/location.routes');
+const { startDriverAutoUnassignJob } = require('./services/driverAutoUnassign');
 
 const app = express();
 
@@ -59,6 +60,8 @@ app.use('/labels', express.static(path.join(__dirname, '../storage/labels')));
 
 app.use(notFound);
 app.use(errorHandler);
+
+startDriverAutoUnassignJob();
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

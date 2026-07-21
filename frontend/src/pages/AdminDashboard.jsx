@@ -653,7 +653,6 @@ function OrderDetailAdminModal({ order, onClose }) {
             {generateError && <div className="error-text" style={{ marginTop: 8 }}>{generateError}</div>}
           </div>
         )}
-        )}
       </div>
     </div>
   );

@@ -21,8 +21,11 @@ function formatAddress(a) {
   return `${a.line1}${a.line2 ? `, ${a.line2}` : ''}, ${a.city}${a.state ? `, ${a.state}` : ''} ${a.postcode}, ${a.countryCode}`;
 }
 
+// Couriers operate in IST — comparing dates in UTC (toISOString()) would
+// misfile any pickup between midnight and 5:30am IST under the previous
+// calendar day. en-CA locale formats as YYYY-MM-DD.
 function isoDate(d) {
-  return d.toISOString().slice(0, 10);
+  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 }
 
 export default function DriverDashboard() {
@@ -121,7 +124,7 @@ function MyJobs({ userName }) {
     .filter((j) => j.status === 'PICKED_UP' || ['DELIVERED', 'CANCELLED'].includes(j.status))
     .filter((j) => {
       if (!j.pickedUpAt) return true;
-      return j.pickedUpAt.slice(0, 10) === selectedDate;
+      return isoDate(new Date(j.pickedUpAt)) === selectedDate;
     });
 
   return (

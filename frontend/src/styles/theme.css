@@ -353,7 +353,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .summary-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
 .addr-grid{display:flex;gap:16px;padding:4px 0;margin:8px 0;}
 .addr-grid .addr-block{flex:1;background:var(--paper);border:1px solid var(--line-2);border-radius:12px;padding:16px 18px;}
-.addr-block .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:700;margin-bottom:6px;}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:700;margin-bottom:6px;}
 .addr-block p{font-size:13.5px;color:var(--ink);line-height:1.5;}
 .item-line{display:flex;justify-content:space-between;align-items:center;padding-top:14px;flex-wrap:wrap;gap:10px;}
 .item-line .tag-group{display:flex;gap:16px;flex-wrap:wrap;}
