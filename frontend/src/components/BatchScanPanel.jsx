@@ -449,7 +449,7 @@ export default function BatchScanPanel() {
                   </div>
                 </div>
                 <div className="field">
-                  <label>Status (optional)</label>
+                  <label>Status</label>
                   <select className="select" value={locForm.status} onChange={(e) => setLocForm({ ...locForm, status: e.target.value })}>
                     <option value="">None</option>
                     {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
