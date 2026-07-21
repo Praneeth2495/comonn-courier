@@ -141,19 +141,15 @@ export default function BatchScanPanel() {
   }
 
   // Shared by both the keyboard/physical-scanner input and the camera
-  // scanner — scanning a known location's barcode picks the status it
-  // represents instead of adding a label to the batch (still overridable at
-  // the status step below).
+  // scanner — scanning a known location's barcode picks its label as the
+  // status to apply (still overridable at the status step below) and
+  // queues the same text to be logged as a comment.
   function handleScannedCode(code) {
     if (!code) return;
     const loc = locations.find((l) => l.barcodeValue === code);
     if (loc) {
-      // A location's status and label are independent — either or both may
-      // be set. status pre-fills the status to apply; label is recorded as
-      // an order comment instead (see applyBatch) and never touches
-      // Order.status on its own.
-      if (loc.status) setChosenStatus(loc.status);
-      if (loc.label) setLocationNotes((prev) => [...prev, { name: loc.name, label: loc.label }]);
+      setChosenStatus(loc.label);
+      setLocationNotes((prev) => [...prev, { name: loc.name, label: loc.label }]);
       setLastLocationScanned(loc);
       return;
     }
@@ -173,26 +169,17 @@ export default function BatchScanPanel() {
     setCodes((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  // In "Update status" mode, if only a custom-label location was scanned (no
-  // status pending), there's nothing to pick — apply immediately instead of
-  // showing an empty status step.
-  const skipStatusStep = mode === 'STATUS' && !chosenStatus && locationNotes.length > 0;
-
   function finishScanning() {
     if (codes.length === 0) {
       setError('Scan at least one label first.');
       return;
     }
     setError('');
-    if (skipStatusStep) {
-      applyBatch();
-      return;
-    }
     setPhase('FINISH');
   }
 
   async function applyBatch() {
-    if (!chosenStatus && !skipStatusStep) return;
+    if (!chosenStatus) return;
     setSubmitting(true);
     setError('');
     try {
@@ -201,7 +188,7 @@ export default function BatchScanPanel() {
         setResult({ updatedCount: data.updatedCount, items: data.batch.items });
         loadBatches();
       } else {
-        const { data } = await client.post('/batches/apply-status', { barcodeValues: codes, status: chosenStatus || undefined, locationNotes });
+        const { data } = await client.post('/batches/apply-status', { barcodeValues: codes, status: chosenStatus, locationNotes });
         setResult({ updatedCount: data.updatedCount, items: data.items });
       }
       setPhase('DONE');
@@ -292,14 +279,12 @@ export default function BatchScanPanel() {
           </div>
           {lastLocationScanned && (
             <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 10 }}>
-              📍 Location scanned: <b>{lastLocationScanned.name}</b>
-              {lastLocationScanned.status && <> — status will be set to <b>{lastLocationScanned.status.replace(/_/g, ' ')}</b></>}
-              {lastLocationScanned.label && <> — note: <i>{lastLocationScanned.label}</i></>}
+              📍 Location scanned: <b>{lastLocationScanned.name}</b> — status will be set to <b>{lastLocationScanned.label}</b>
             </p>
           )}
           {locationNotes.length > 0 && (
             <p style={{ fontSize: 12, color: 'var(--slate)', marginTop: 6 }}>
-              Will be logged as a comment on each order below: {locationNotes.map((l) => `${l.name} (${l.label})`).join('; ')}
+              Will also be logged as a comment on each order below: {locationNotes.map((l) => `${l.name} (${l.label})`).join('; ')}
             </p>
           )}
           <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{codes.length} scanned</p>
@@ -339,6 +324,7 @@ export default function BatchScanPanel() {
             <label>New status</label>
             <select className="select" value={chosenStatus} onChange={(e) => setChosenStatus(e.target.value)}>
               <option value="">Select status…</option>
+              {chosenStatus && !ORDER_STATUSES.includes(chosenStatus) && <option value={chosenStatus}>{chosenStatus} (from scanned location)</option>}
               {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
@@ -356,11 +342,7 @@ export default function BatchScanPanel() {
         <div className="card" style={{ padding: 24, maxWidth: 480, marginBottom: 24 }}>
           <h4 style={{ marginBottom: 8, color: 'var(--success)' }}>✓ Done</h4>
           <p style={{ fontSize: 13.5, marginBottom: 10 }}>
-            {chosenStatus ? (
-              <>{result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{chosenStatus.replace(/_/g, ' ')}</b>.</>
-            ) : (
-              <>No status was changed — only the location note was logged.</>
-            )}
+            {result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{chosenStatus.replace(/_/g, ' ')}</b>.
           </p>
           {locationNotes.length > 0 && (
             <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 10 }}>
@@ -393,6 +375,7 @@ export default function BatchScanPanel() {
                       disabled={changingId === b.id}
                       onChange={(e) => changeBatchStatus(b.id, e.target.value)}
                     >
+                      {!ORDER_STATUSES.includes(b.status) && <option value={b.status}>{b.status}</option>}
                       {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
                     </select>
                   </td>
@@ -453,8 +436,8 @@ export default function BatchScanPanel() {
               <div>
                 <h3 style={{ fontSize: 17 }}>Barcode locations</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
-                  Scanning a location during Batch Scan logs its label as a comment on every matched order — it never
-                  changes the order's status.
+                  Scanning a location during Batch Scan sets its label as the new status on every matched order, and
+                  logs the same text as a comment (with who scanned it and when).
                 </p>
               </div>
               <button onClick={() => setShowLocations(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
@@ -477,16 +460,13 @@ export default function BatchScanPanel() {
 
             <div style={{ maxHeight: 360, overflowY: 'auto' }}>
               <table className="data-table">
-                <thead><tr><th>Name</th><th>Barcode</th><th>Status / Label</th><th></th></tr></thead>
+                <thead><tr><th>Name</th><th>Barcode</th><th>Label / Status</th><th></th></tr></thead>
                 <tbody>
                   {locations.map((l) => (
                     <tr key={l.id}>
                       <td>{l.name}</td>
                       <td className="mono">{l.barcodeValue}</td>
-                      <td>
-                        {l.status && <div>{l.status.replace(/_/g, ' ')}</div>}
-                        {l.label && <div><i>{l.label}</i></div>}
-                      </td>
+                      <td><i>{l.label}</i></td>
                       <td style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-outline btn-sm" onClick={() => printLocation(l.id, l.name)}>🖨️ Print label</button>
                         <button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button>

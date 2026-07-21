@@ -390,6 +390,7 @@ function OrdersPanel() {
                   value={o.status}
                   onChange={(e) => updateStatus(o.id, e.target.value)}
                 >
+                  {!ORDER_STATUSES.includes(o.status) && <option value={o.status}>{o.status}</option>}
                   {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
                 </select>
               </div>

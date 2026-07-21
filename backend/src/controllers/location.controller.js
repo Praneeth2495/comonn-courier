@@ -29,8 +29,8 @@ async function nextLocationSeq() {
  * POST /api/locations — ADMIN/STAFF only
  * The barcode value is auto-generated (LOC1, LOC2...) — staff just name the
  * location and describe it; "Print label" turns that barcode into a
- * physical sticker. Scanning it logs the label as a comment on every
- * matched order; it never changes an order's status.
+ * physical sticker. Scanning it sets the label as the literal new status on
+ * every matched order, and logs the same text as a comment.
  */
 async function createLocation(req, res, next) {
   try {
@@ -58,12 +58,13 @@ async function createLocation(req, res, next) {
 /** PATCH /api/locations/:id — ADMIN/STAFF only */
 async function updateLocation(req, res, next) {
   try {
-    const { name, barcodeValue, status, label } = req.body;
+    const { name, barcodeValue, label } = req.body;
+    if (label !== undefined && !(label && label.trim())) return res.status(400).json({ error: 'label is required' });
+
     const data = {};
     if (name !== undefined) data.name = name.trim();
     if (barcodeValue !== undefined) data.barcodeValue = barcodeValue.trim();
-    if (status !== undefined) data.status = status || null;
-    if (label !== undefined) data.label = label && label.trim() ? label.trim() : null;
+    if (label !== undefined) data.label = label.trim();
 
     const location = await prisma.scanLocation.update({
       where: { id: req.params.id },
@@ -107,10 +108,7 @@ async function printLocationBarcode(req, res, next) {
     doc.image(barcodePng, { fit: [230, barcodeHeight], align: 'center' });
     doc.y = barcodeTop + barcodeHeight + 8;
     doc.font('Helvetica-Bold').fontSize(11).text(location.barcodeValue, { align: 'center' });
-    const details = [];
-    if (location.status) details.push(`Sets status: ${location.status.replace(/_/g, ' ')}`);
-    if (location.label) details.push(`Label: ${location.label}`);
-    doc.font('Helvetica').fontSize(8).text(details.join(' | '), { align: 'center' });
+    doc.font('Helvetica').fontSize(8).text(`Sets status: ${location.label}`, { align: 'center' });
 
     doc.end();
   } catch (err) {

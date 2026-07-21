@@ -199,19 +199,13 @@ model Surcharge {
 // ------------------------------------------------------------
 // Orders / Shipments
 // ------------------------------------------------------------
-enum OrderStatus {
-  DRAFT           // quote created, not yet booked
-  PENDING_PAYMENT
-  PICKUP_CONFIRMED // "Not sure, book pickup" cash order: booking locked in, cash owed at pickup — no money collected yet
-  PAID
-  LABEL_GENERATED
-  PICKED_UP
-  IN_TRANSIT
-  OUT_FOR_DELIVERY
-  DELIVERED
-  CANCELLED
-  EXCEPTION
-}
+// Not a database enum — status is free text so a barcode location's label
+// can become a genuine new order status (e.g. "Sorted at hub"), not just
+// one of the fixed lifecycle values below. Those fixed values remain the
+// ones the rest of the app's business logic (payment flow, driver actions,
+// admin tab groupings, cancellation rules) checks for by exact string:
+// DRAFT, PENDING_PAYMENT, PICKUP_CONFIRMED, PAID, LABEL_GENERATED,
+// PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, EXCEPTION.
 
 model Order {
   id             String      @id @default(uuid())
@@ -267,7 +261,7 @@ model Order {
   otpExpiresAt    DateTime?
   otpVerifiedAt   DateTime?
 
-  status          OrderStatus @default(DRAFT)
+  status          String      @default("DRAFT")
   trackingNumber  String?     @unique
   invoiceNumber   String?     @unique // "IN1", "IN2"... assigned at booking time, resets only on calendar year change
 
@@ -402,7 +396,7 @@ model TrackingEvent {
   id        String      @id @default(uuid())
   orderId   String
   order     Order       @relation(fields: [orderId], references: [id])
-  status    OrderStatus
+  status    String
   location  String?
   note      String?
   occurredAt DateTime   @default(now())
@@ -444,7 +438,7 @@ model InventoryItem {
 model ScanBatch {
   id          String          @id @default(uuid())
   name        String
-  status      OrderStatus
+  status      String
   createdById String
   createdBy   User            @relation(fields: [createdById], references: [id])
   items       ScanBatchItem[]
@@ -465,16 +459,14 @@ model ScanBatchItem {
 }
 
 // A physical location (warehouse bay, sorting hub, delivery vehicle...)
-// with its own barcode. Exactly one of status/label is set:
-//  - status: scanning it during Batch Scan auto-selects that order status.
-//  - label: purely informational — scanning it never touches Order.status,
-//    just shows which checkpoint was scanned.
+// with its own barcode. Scanning it during Batch Scan sets its label as the
+// literal new Order.status on every matched order (e.g. "Sorted at hub"),
+// and logs the same text as a comment with who scanned it and when.
 model ScanLocation {
   id           String       @id @default(uuid())
   name         String       // "Warehouse A - Inbound", "Van 3"...
   barcodeValue String       @unique
-  status       OrderStatus?
-  label        String?
+  label        String       // also the literal status applied when scanned
   createdById  String
   createdBy    User         @relation(fields: [createdById], references: [id])
   createdAt    DateTime     @default(now())
