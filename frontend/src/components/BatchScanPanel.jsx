@@ -69,6 +69,24 @@ export default function BatchScanPanel() {
     setLocations((prev) => prev.filter((l) => l.id !== id));
   }
 
+  // Opens a printable 4x3in PDF sticker with this location's Code128
+  // barcode (same rendering used for real shipping labels) in a new tab.
+  async function printLocation(id, name) {
+    try {
+      const { data } = await client.get(`/locations/${id}/barcode.pdf`, { responseType: 'blob' });
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `location-${name.replace(/\s+/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      alert('Could not generate the barcode PDF.');
+    }
+  }
+
   function reset() {
     setMode(null);
     setPhase('IDLE');
@@ -410,7 +428,10 @@ export default function BatchScanPanel() {
                       <td>{l.name}</td>
                       <td className="mono">{l.barcodeValue}</td>
                       <td>{l.status.replace(/_/g, ' ')}</td>
-                      <td><button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button></td>
+                      <td style={{ display: 'flex', gap: 6 }}>
+                        <button className="btn btn-outline btn-sm" onClick={() => printLocation(l.id, l.name)}>🖨️ Print label</button>
+                        <button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button>
+                      </td>
                     </tr>
                   ))}
                   {locations.length === 0 && (

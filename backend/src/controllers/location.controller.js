@@ -1,4 +1,6 @@
+const PDFDocument = require('pdfkit');
 const { prisma } = require('../config/db');
+const { renderBarcode } = require('../services/labelService');
 
 /** GET /api/locations — available to ADMIN, STAFF, DRIVER (used during scanning) */
 async function listLocations(req, res, next) {
@@ -53,6 +55,44 @@ async function updateLocation(req, res, next) {
   }
 }
 
+/**
+ * GET /api/locations/:id/barcode.pdf
+ * A small printable sticker (4in x 3in) with the location's Code128
+ * barcode — same rendering (bwip-js) used for real shipping labels — so it
+ * can be printed and stuck up at the physical location it represents.
+ */
+async function printLocationBarcode(req, res, next) {
+  try {
+    const location = await prisma.scanLocation.findUnique({ where: { id: req.params.id } });
+    if (!location) return res.status(404).json({ error: 'Location not found' });
+
+    const barcodePng = await renderBarcode(location.barcodeValue);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="location-${location.name.replace(/\s+/g, '-')}.pdf"`);
+
+    const doc = new PDFDocument({ size: [288, 216], margin: 16 }); // 4in x 3in @72dpi
+    doc.pipe(res);
+
+    doc.font('Helvetica-Bold').fontSize(14).text('COMONN', { align: 'center' });
+    doc.font('Helvetica').fontSize(9).text('Barcode location', { align: 'center' });
+    doc.moveDown(0.8);
+    doc.font('Helvetica-Bold').fontSize(16).text(location.name, { align: 'center' });
+    doc.moveDown(0.6);
+
+    const barcodeTop = doc.y;
+    const barcodeHeight = 70;
+    doc.image(barcodePng, { fit: [230, barcodeHeight], align: 'center' });
+    doc.y = barcodeTop + barcodeHeight + 8;
+    doc.font('Helvetica-Bold').fontSize(11).text(location.barcodeValue, { align: 'center' });
+    doc.font('Helvetica').fontSize(8).text(`Sets status: ${location.status.replace(/_/g, ' ')}`, { align: 'center' });
+
+    doc.end();
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** DELETE /api/locations/:id — ADMIN/STAFF only */
 async function deleteLocation(req, res, next) {
   try {
@@ -63,4 +103,4 @@ async function deleteLocation(req, res, next) {
   }
 }
 
-module.exports = { listLocations, createLocation, updateLocation, deleteLocation };
+module.exports = { listLocations, createLocation, updateLocation, deleteLocation, printLocationBarcode };
