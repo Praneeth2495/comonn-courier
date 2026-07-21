@@ -53,19 +53,21 @@ async function applyStatusToItems(items, status) {
 }
 
 /**
- * Logs which custom-label locations were scanned alongside this batch as an
- * internal comment on every matched order — this is the only place a
- * label-only location scan (which never touches Order.status) is recorded,
- * so it stays visible via that order's Comments.
+ * Logs which locations' labels were scanned alongside this batch as an
+ * internal comment on every matched order — stays visible via that order's
+ * Comments, with who did it and when spelled out in the note itself (not
+ * just the surrounding comment metadata).
  */
-async function logLocationNotes(items, locationNotes, actorId) {
+async function logLocationNotes(items, locationNotes, actor) {
   if (!Array.isArray(locationNotes) || locationNotes.length === 0) return;
   const orderIds = [...new Set(items.filter((i) => i.matched).map((i) => i.orderId))];
   if (orderIds.length === 0) return;
 
-  const body = `Scanned at location: ${locationNotes.map((l) => `${l.name} — ${l.label}`).join('; ')}`;
+  const who = actor.fullName || actor.email;
+  const when = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const body = `Scanned at location: ${locationNotes.map((l) => `${l.name} — ${l.label}`).join('; ')} (by ${who} at ${when})`;
   await Promise.all(
-    orderIds.map((orderId) => prisma.orderComment.create({ data: { orderId, authorId: actorId, body } }))
+    orderIds.map((orderId) => prisma.orderComment.create({ data: { orderId, authorId: actor.id, body } }))
   );
 }
 
@@ -87,7 +89,7 @@ async function applyStatus(req, res, next) {
 
     const items = await resolveBarcodes(barcodeValues);
     const updatedCount = status ? await applyStatusToItems(items, status) : 0;
-    await logLocationNotes(items, locationNotes, req.user.id);
+    await logLocationNotes(items, locationNotes, req.user);
     res.json({ items, updatedCount });
   } catch (err) {
     next(err);
@@ -111,7 +113,7 @@ async function createBatch(req, res, next) {
 
     const items = await resolveBarcodes(barcodeValues);
     const updatedCount = await applyStatusToItems(items, status);
-    await logLocationNotes(items, locationNotes, req.user.id);
+    await logLocationNotes(items, locationNotes, req.user);
 
     const batch = await prisma.scanBatch.create({
       data: {

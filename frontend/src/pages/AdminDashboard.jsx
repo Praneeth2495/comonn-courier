@@ -18,7 +18,7 @@ export default function AdminDashboard() {
     ['orders', 'Orders'],
     ...(isAdmin ? [['accounts', 'Accounts']] : []),
     ['inventory', 'Inventory'],
-    ['batchscan', 'Batch Scan'],
+    ['batchscan', 'Scan'],
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
     ['account', 'Profile'],

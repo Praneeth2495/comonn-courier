@@ -17,25 +17,24 @@ async function listLocations(req, res, next) {
 
 /**
  * POST /api/locations — ADMIN/STAFF only
- * status and label are independent — a location can have either, or both:
- * scanning it pre-fills the status (if set) AND logs the label as an order
- * comment (if set). At least one of the two must be given.
+ * Every location must map to a real order status — the label is just a
+ * human-friendly description of that checkpoint (used in the note logged on
+ * scanned orders), not a separate informational-only mode.
  */
 async function createLocation(req, res, next) {
   try {
     const { name, barcodeValue, status, label } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'name is required' });
     if (!barcodeValue || !barcodeValue.trim()) return res.status(400).json({ error: 'barcodeValue is required' });
-    if (!status && !(label && label.trim())) {
-      return res.status(400).json({ error: 'Either a status or a custom label is required' });
-    }
+    if (!status) return res.status(400).json({ error: 'status is required' });
+    if (!label || !label.trim()) return res.status(400).json({ error: 'label is required' });
 
     const location = await prisma.scanLocation.create({
       data: {
         name: name.trim(),
         barcodeValue: barcodeValue.trim(),
-        status: status || null,
-        label: label && label.trim() ? label.trim() : null,
+        status,
+        label: label.trim(),
         createdById: req.user.id,
       },
       include: { createdBy: { select: { fullName: true } } },
@@ -51,11 +50,14 @@ async function createLocation(req, res, next) {
 async function updateLocation(req, res, next) {
   try {
     const { name, barcodeValue, status, label } = req.body;
+    if (status !== undefined && !status) return res.status(400).json({ error: 'status is required' });
+    if (label !== undefined && !(label && label.trim())) return res.status(400).json({ error: 'label is required' });
+
     const data = {};
     if (name !== undefined) data.name = name.trim();
     if (barcodeValue !== undefined) data.barcodeValue = barcodeValue.trim();
-    if (status !== undefined) data.status = status || null;
-    if (label !== undefined) data.label = label && label.trim() ? label.trim() : null;
+    if (status !== undefined) data.status = status;
+    if (label !== undefined) data.label = label.trim();
 
     const location = await prisma.scanLocation.update({
       where: { id: req.params.id },
@@ -99,10 +101,7 @@ async function printLocationBarcode(req, res, next) {
     doc.image(barcodePng, { fit: [230, barcodeHeight], align: 'center' });
     doc.y = barcodeTop + barcodeHeight + 8;
     doc.font('Helvetica-Bold').fontSize(11).text(location.barcodeValue, { align: 'center' });
-    const details = [];
-    if (location.status) details.push(`Sets status: ${location.status.replace(/_/g, ' ')}`);
-    if (location.label) details.push(`Label: ${location.label}`);
-    doc.font('Helvetica').fontSize(8).text(details.join(' | '), { align: 'center' });
+    doc.font('Helvetica').fontSize(8).text(`${location.label} — sets status: ${location.status.replace(/_/g, ' ')}`, { align: 'center' });
 
     doc.end();
   } catch (err) {
