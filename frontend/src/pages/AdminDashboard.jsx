@@ -635,12 +635,12 @@ function OrderDetailAdminModal({ order, onClose }) {
         {labels.length > 0 && (
           <div className="detail-section" style={{ marginBottom: 0, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {labels.map((l) => (
-              <a key={l.id} className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/download/${l.id}`} target="_blank" rel="noreferrer">
-                Download label{labels.length > 1 ? ` (${l.packageIndex})` : ''}
+              <a key={l.id} className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/download/${l.id}?inline=1`} target="_blank" rel="noreferrer">
+                View label{labels.length > 1 ? ` (${l.packageIndex})` : ''}
               </a>
             ))}
-            <a className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${order.id}`} target="_blank" rel="noreferrer">
-              Download invoice
+            <a className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${order.id}?inline=1`} target="_blank" rel="noreferrer">
+              View invoice
             </a>
           </div>
         )}

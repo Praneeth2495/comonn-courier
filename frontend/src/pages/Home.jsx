@@ -3,6 +3,21 @@ import { useNavigate } from 'react-router-dom';
 
 const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
 
+// Standard international air-freight volumetric divisor (cm3/kg) — matches
+// the pricing engine's default, used here only to preview the max size a
+// customer could pack at their chosen weight before it costs more than the
+// actual-weight price (final pricing still runs server-side on the Quote page).
+const STANDARD_DIVISOR = 5000;
+
+function maxDimsHint(weightPreset) {
+  if (!weightPreset || weightPreset === 'Not sure') return null;
+  const weightKg = Number(weightPreset.replace(' kg', ''));
+  if (!weightKg) return null;
+  const side = Math.cbrt(weightKg * STANDARD_DIVISOR);
+  const sumCm = Math.round(side * 3 * 10) / 10;
+  return `${sumCm} cm (sum of length + width + height)`;
+}
+
 function IndiaChakra() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="18" height="12">
@@ -142,6 +157,11 @@ export default function Home() {
   const navigate = useNavigate();
   const [qty, setQty] = useState(1);
   const [trackId, setTrackId] = useState('');
+  const [weightPreset, setWeightPreset] = useState('');
+  const [showDims, setShowDims] = useState(false);
+  const [lengthCm, setLengthCm] = useState('');
+  const [widthCm, setWidthCm] = useState('');
+  const [heightCm, setHeightCm] = useState('');
 
   function handleGetQuote(e) {
     e.preventDefault();
@@ -219,9 +239,9 @@ export default function Home() {
                 <label>Item 1</label>
                 <div className="item-row equal">
                   <select className="select"><option>Box</option><option>Pallet</option><option>Envelope</option></select>
-                  <select className="select" defaultValue="">
+                  <select className="select" value={weightPreset} onChange={(e) => setWeightPreset(e.target.value)}>
                     <option disabled value="">Weight (kg)</option>
-                    {WEIGHT_OPTIONS.map((w) => <option key={w}>{w}</option>)}
+                    {WEIGHT_OPTIONS.map((w) => <option key={w} value={w}>{w}</option>)}
                   </select>
                   <div className="qty-stepper">
                     <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))}>–</button>
@@ -229,9 +249,31 @@ export default function Home() {
                     <button type="button" onClick={() => setQty((q) => q + 1)}>+</button>
                   </div>
                 </div>
-                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
-                  If dimensions are known, <a href="/quote" style={{ color: 'var(--cobalt)', fontWeight: 700 }}>Click Here.</a>
-                </p>
+
+                {weightPreset === 'Not sure' ? (
+                  <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
+                    We'll weigh and measure this at pickup, then collect payment in cash.
+                  </p>
+                ) : (
+                  <>
+                    {!showDims && maxDimsHint(weightPreset) && (
+                      <p style={{ fontSize: 12, color: 'var(--slate-light)', marginTop: 8 }}>
+                        Max allowed dimensions for this weight: {maxDimsHint(weightPreset)}
+                      </p>
+                    )}
+                    {showDims ? (
+                      <div className="item-row equal" style={{ marginTop: 8 }}>
+                        <input className="input" type="number" min="1" placeholder="Length (cm)" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)} />
+                        <input className="input" type="number" min="1" placeholder="Width (cm)" value={widthCm} onChange={(e) => setWidthCm(e.target.value)} />
+                        <input className="input" type="number" min="1" placeholder="Height (cm)" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>
+                        (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); setShowDims(true); }}>Click here</a>, if dimensions are known)
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>

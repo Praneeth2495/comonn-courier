@@ -27,6 +27,9 @@ function round2(n) {
  * some carriers use 4000 for domestic/road.
  */
 function calcVolumetricWeightKg({ lengthCm, widthCm, heightCm, divisor = 5000 }) {
+  // Dimensions are optional — if any is missing, skip the volumetric
+  // calculation entirely so chargeable weight falls back to actual weight.
+  if (!lengthCm || !widthCm || !heightCm) return 0;
   const volumeCm3 = Number(lengthCm) * Number(widthCm) * Number(heightCm);
   return volumeCm3 / divisor;
 }
@@ -116,9 +119,9 @@ function priceItem(item, divisor) {
   return {
     itemType,
     actualWeightKg: Number(actualWeightKg),
-    lengthCm: Number(lengthCm),
-    widthCm: Number(widthCm),
-    heightCm: Number(heightCm),
+    lengthCm: lengthCm ? Number(lengthCm) : 0,
+    widthCm: widthCm ? Number(widthCm) : 0,
+    heightCm: heightCm ? Number(heightCm) : 0,
     quantity: Number(quantity),
     volumetricWeightKg: round2(volumetricWeightKg),
     chargeableWeightKg: round2(chargeableWeightKgPerUnit * Number(quantity)),

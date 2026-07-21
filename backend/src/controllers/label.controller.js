@@ -263,23 +263,43 @@ async function generateLabel(req, res, next) {
   }
 }
 
-/** GET /api/labels/download/:labelId — streams a label PDF */
+/**
+ * GET /api/labels/download/:labelId — streams a label PDF.
+ * `?inline=1` (used by the admin/staff Bookings "View label" button) opens
+ * it in the browser tab instead of forcing a download.
+ */
 async function downloadLabel(req, res, next) {
   try {
     const label = await prisma.label.findUnique({ where: { id: req.params.labelId } });
     if (!label) return res.status(404).json({ error: 'Label not found' });
-    res.download(path.join(STORAGE_DIR, label.fileUrl));
+    const filePath = path.resolve(path.join(STORAGE_DIR, label.fileUrl));
+    if (req.query.inline) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+      return res.sendFile(filePath);
+    }
+    res.download(filePath);
   } catch (err) {
     next(err);
   }
 }
 
-/** GET /api/labels/invoice/download/:orderId — streams the invoice PDF */
+/**
+ * GET /api/labels/invoice/download/:orderId — streams the invoice PDF.
+ * `?inline=1` (used by the admin/staff Bookings "View invoice" button) opens
+ * it in the browser tab instead of forcing a download.
+ */
 async function downloadInvoice(req, res, next) {
   try {
     const invoice = await prisma.invoice.findUnique({ where: { orderId: req.params.orderId } });
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
-    res.download(path.join(STORAGE_DIR, invoice.fileUrl));
+    const filePath = path.resolve(path.join(STORAGE_DIR, invoice.fileUrl));
+    if (req.query.inline) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+      return res.sendFile(filePath);
+    }
+    res.download(filePath);
   } catch (err) {
     next(err);
   }

@@ -6,7 +6,7 @@ function renderQuoteEmailHtml(quote) {
   const itemRows = quote.items
     .map(
       (it) =>
-        `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.itemType} x${it.quantity}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.lengthCm}×${it.widthCm}×${it.heightCm} cm</td><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.actualWeightKg} kg each</td></tr>`
+        `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.itemType} x${it.quantity}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.lengthCm && it.widthCm && it.heightCm ? `${it.lengthCm}×${it.widthCm}×${it.heightCm} cm` : '—'}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.actualWeightKg} kg each</td></tr>`
     )
     .join('');
 
@@ -45,10 +45,10 @@ async function getInstantQuote(req, res, next) {
         error: 'destinationCountryCode and at least one item are required',
       });
     }
+    // Dimensions are optional — if omitted, pricing falls back to actual
+    // weight (chargeable weight = max(actual, volumetric), volumetric = 0).
     for (const [i, item] of items.entries()) {
-      for (const f of ['actualWeightKg', 'lengthCm', 'widthCm', 'heightCm']) {
-        if (!item[f]) return res.status(400).json({ error: `items[${i}].${f} is required` });
-      }
+      if (!item.actualWeightKg) return res.status(400).json({ error: `items[${i}].actualWeightKg is required` });
     }
 
     // If no service specified, quote every active service so the frontend

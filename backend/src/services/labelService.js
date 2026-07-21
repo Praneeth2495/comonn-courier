@@ -59,9 +59,13 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
     doc.font('Helvetica-Bold').fontSize(11).text(formatAddress(order.receiverAddress));
     doc.moveDown(0.6);
 
-    // This package's details
+    // This package's details — dims are optional at booking time, so omit
+    // that segment entirely rather than printing "0x0x0 cm".
+    const dimsPart = (Number(item.lengthCm) && Number(item.widthCm) && Number(item.heightCm))
+      ? ` | Dims: ${item.lengthCm}x${item.widthCm}x${item.heightCm} cm`
+      : '';
     doc.font('Helvetica').fontSize(8).text(
-      `${item.itemType} | Weight: ${item.actualWeightKg} kg | Dims: ${item.lengthCm}x${item.widthCm}x${item.heightCm} cm | Zone: ${order.zoneCode}`
+      `${item.itemType} | Weight: ${item.actualWeightKg} kg${dimsPart} | Zone: ${order.zoneCode}`
     );
     if (order.contentsDescription) doc.text(`Contents: ${order.contentsDescription}`);
     doc.moveDown(0.6);

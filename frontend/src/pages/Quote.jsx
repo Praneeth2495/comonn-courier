@@ -7,6 +7,21 @@ import Stepper from '../components/Stepper';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 
+// Standard international air-freight volumetric divisor (cm3/kg) — matches
+// the pricing engine's default, used here only to preview the max size a
+// customer could pack at their chosen weight before it costs more than the
+// actual-weight price (final pricing still runs server-side per service).
+const STANDARD_DIVISOR = 5000;
+
+function maxDimsHint(weightPreset) {
+  if (!weightPreset || weightPreset === 'NOT_SURE') return null;
+  const weightKg = Number(weightPreset.replace(' kg', ''));
+  if (!weightKg) return null;
+  const side = Math.cbrt(weightKg * STANDARD_DIVISOR);
+  const sumCm = Math.round(side * 3 * 10) / 10;
+  return `${sumCm} cm (sum of length + width + height)`;
+}
+
 function emptyItem() {
   return { itemType: 'Box', weightPreset: '', lengthCm: '', widthCm: '', heightCm: '', quantity: 1, showDims: false };
 }
@@ -29,11 +44,11 @@ function hydrateItems(quoteInput) {
   return quoteInput.items.map((it) => ({
     itemType: it.itemType,
     weightPreset: `${it.actualWeightKg} kg`,
-    lengthCm: String(it.lengthCm),
-    widthCm: String(it.widthCm),
-    heightCm: String(it.heightCm),
+    lengthCm: it.lengthCm ? String(it.lengthCm) : '',
+    widthCm: it.widthCm ? String(it.widthCm) : '',
+    heightCm: it.heightCm ? String(it.heightCm) : '',
     quantity: it.quantity,
-    showDims: true,
+    showDims: !!(it.lengthCm || it.widthCm || it.heightCm),
   }));
 }
 
@@ -89,13 +104,14 @@ export default function Quote() {
     const parsed = [];
     for (const it of items) {
       if (!it.weightPreset || it.weightPreset === 'NOT_SURE') return null;
-      if (!it.lengthCm || !it.widthCm || !it.heightCm) return null;
       parsed.push({
         itemType: it.itemType,
         actualWeightKg: Number(it.weightPreset.replace(' kg', '')),
-        lengthCm: Number(it.lengthCm),
-        widthCm: Number(it.widthCm),
-        heightCm: Number(it.heightCm),
+        // Dimensions are optional — if left blank, pricing assumes actual
+        // weight is the chargeable weight (skips the volumetric calc).
+        lengthCm: it.lengthCm ? Number(it.lengthCm) : undefined,
+        widthCm: it.widthCm ? Number(it.widthCm) : undefined,
+        heightCm: it.heightCm ? Number(it.heightCm) : undefined,
         quantity: Number(it.quantity) || 1,
       });
     }
@@ -134,7 +150,7 @@ export default function Quote() {
 
     const parsedItems = buildItemsPayload();
     if (!parsedItems) {
-      setError('Please select a weight and enter dimensions for every item.');
+      setError('Please select a weight for every item.');
       return;
     }
 
@@ -232,17 +248,25 @@ export default function Quote() {
                 <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
                   We'll weigh and measure this at pickup, then collect payment in cash.
                 </p>
-              ) : it.showDims ? (
-                <div className="item-row equal" style={{ marginTop: 8 }}>
-                  <input className="input" type="number" min="1" placeholder="Length (cm)" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
-                  <input className="input" type="number" min="1" placeholder="Width (cm)" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
-                  <input className="input" type="number" min="1" placeholder="Height (cm)" value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
-                </div>
               ) : (
-                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
-                  <a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); updateItem(idx, 'showDims', true); }}>Click Here</a>{' '}
-                  to enter this item's dimensions.
-                </p>
+                <>
+                  {!it.showDims && maxDimsHint(it.weightPreset) && (
+                    <p style={{ fontSize: 12, color: 'var(--slate-light)', marginTop: 8 }}>
+                      Max allowed dimensions for this weight: {maxDimsHint(it.weightPreset)}
+                    </p>
+                  )}
+                  {it.showDims ? (
+                    <div className="item-row equal" style={{ marginTop: 8 }}>
+                      <input className="input" type="number" min="1" placeholder="Length (cm)" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
+                      <input className="input" type="number" min="1" placeholder="Width (cm)" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
+                      <input className="input" type="number" min="1" placeholder="Height (cm)" value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>
+                      (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); updateItem(idx, 'showDims', true); }}>Click here</a>, if dimensions are known)
+                    </p>
+                  )}
+                </>
               )}
 
               {items.length > 1 && (
