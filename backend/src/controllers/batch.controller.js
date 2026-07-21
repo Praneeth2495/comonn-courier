@@ -53,20 +53,41 @@ async function applyStatusToItems(items, status) {
 }
 
 /**
+ * Logs which custom-label locations were scanned alongside this batch as an
+ * internal comment on every matched order — this is the only place a
+ * label-only location scan (which never touches Order.status) is recorded,
+ * so it stays visible via that order's Comments.
+ */
+async function logLocationNotes(items, locationNotes, actorId) {
+  if (!Array.isArray(locationNotes) || locationNotes.length === 0) return;
+  const orderIds = [...new Set(items.filter((i) => i.matched).map((i) => i.orderId))];
+  if (orderIds.length === 0) return;
+
+  const body = `Scanned at location: ${locationNotes.map((l) => `${l.name} — ${l.label}`).join('; ')}`;
+  await Promise.all(
+    orderIds.map((orderId) => prisma.orderComment.create({ data: { orderId, authorId: actorId, body } }))
+  );
+}
+
+/**
  * POST /api/batches/apply-status
  * "Update status" flow: scan labels, apply a status to the matched orders,
- * and stop — nothing is saved to the batch history.
+ * and stop — nothing is saved to the batch history. status may be omitted
+ * if there's nothing but location notes to log (no status change at all).
  */
 async function applyStatus(req, res, next) {
   try {
-    const { barcodeValues, status } = req.body;
+    const { barcodeValues, status, locationNotes } = req.body;
     if (!Array.isArray(barcodeValues) || barcodeValues.length === 0) {
       return res.status(400).json({ error: 'barcodeValues must be a non-empty array' });
     }
-    if (!status) return res.status(400).json({ error: 'status is required' });
+    if (!status && !(Array.isArray(locationNotes) && locationNotes.length > 0)) {
+      return res.status(400).json({ error: 'status is required' });
+    }
 
     const items = await resolveBarcodes(barcodeValues);
-    const updatedCount = await applyStatusToItems(items, status);
+    const updatedCount = status ? await applyStatusToItems(items, status) : 0;
+    await logLocationNotes(items, locationNotes, req.user.id);
     res.json({ items, updatedCount });
   } catch (err) {
     next(err);
@@ -81,7 +102,7 @@ async function applyStatus(req, res, next) {
  */
 async function createBatch(req, res, next) {
   try {
-    const { name, barcodeValues, status } = req.body;
+    const { name, barcodeValues, status, locationNotes } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'name is required' });
     if (!Array.isArray(barcodeValues) || barcodeValues.length === 0) {
       return res.status(400).json({ error: 'barcodeValues must be a non-empty array' });
@@ -90,6 +111,7 @@ async function createBatch(req, res, next) {
 
     const items = await resolveBarcodes(barcodeValues);
     const updatedCount = await applyStatusToItems(items, status);
+    await logLocationNotes(items, locationNotes, req.user.id);
 
     const batch = await prisma.scanBatch.create({
       data: {

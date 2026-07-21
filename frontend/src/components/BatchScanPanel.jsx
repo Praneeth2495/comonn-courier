@@ -29,8 +29,9 @@ export default function BatchScanPanel() {
 
   const [locations, setLocations] = useState([]);
   const [lastLocationScanned, setLastLocationScanned] = useState(null);
+  const [locationNotes, setLocationNotes] = useState([]);
   const [showLocations, setShowLocations] = useState(false);
-  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', type: 'STATUS', status: '', label: '' });
+  const [locForm, setLocForm] = useState({ name: '', barcodeValue: '', status: '', label: '' });
   const [addingLoc, setAddingLoc] = useState(false);
   const [locError, setLocError] = useState('');
   const [showCamera, setShowCamera] = useState(false);
@@ -50,18 +51,17 @@ export default function BatchScanPanel() {
   async function addLocation(e) {
     e.preventDefault();
     if (!locForm.name.trim() || !locForm.barcodeValue.trim()) return;
-    if (locForm.type === 'STATUS' && !locForm.status) return;
-    if (locForm.type === 'LABEL' && !locForm.label.trim()) return;
+    if (!locForm.status && !locForm.label.trim()) return;
     setAddingLoc(true);
     setLocError('');
     try {
       await client.post('/locations', {
         name: locForm.name,
         barcodeValue: locForm.barcodeValue,
-        status: locForm.type === 'STATUS' ? locForm.status : null,
-        label: locForm.type === 'LABEL' ? locForm.label : null,
+        status: locForm.status || null,
+        label: locForm.label.trim() || null,
       });
-      setLocForm({ name: '', barcodeValue: '', type: 'STATUS', status: '', label: '' });
+      setLocForm({ name: '', barcodeValue: '', status: '', label: '' });
       loadLocations();
     } catch (err) {
       setLocError(err.response?.data?.error || 'Could not add this location.');
@@ -104,6 +104,7 @@ export default function BatchScanPanel() {
     setResult(null);
     setError('');
     setLastLocationScanned(null);
+    setLocationNotes([]);
   }
 
   function startCreateBatch() {
@@ -132,9 +133,12 @@ export default function BatchScanPanel() {
     if (!code) return;
     const loc = locations.find((l) => l.barcodeValue === code);
     if (loc) {
-      // Status locations pre-fill the status to apply; label-only locations
-      // are purely informational and never touch chosenStatus/Order.status.
+      // A location's status and label are independent — either or both may
+      // be set. status pre-fills the status to apply; label is recorded as
+      // an order comment instead (see applyBatch) and never touches
+      // Order.status on its own.
       if (loc.status) setChosenStatus(loc.status);
+      if (loc.label) setLocationNotes((prev) => [...prev, { name: loc.name, label: loc.label }]);
       setLastLocationScanned(loc);
       return;
     }
@@ -154,26 +158,35 @@ export default function BatchScanPanel() {
     setCodes((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  // In "Update status" mode, if only a custom-label location was scanned (no
+  // status pending), there's nothing to pick — apply immediately instead of
+  // showing an empty status step.
+  const skipStatusStep = mode === 'STATUS' && !chosenStatus && locationNotes.length > 0;
+
   function finishScanning() {
     if (codes.length === 0) {
       setError('Scan at least one label first.');
       return;
     }
     setError('');
+    if (skipStatusStep) {
+      applyBatch();
+      return;
+    }
     setPhase('FINISH');
   }
 
   async function applyBatch() {
-    if (!chosenStatus) return;
+    if (!chosenStatus && !skipStatusStep) return;
     setSubmitting(true);
     setError('');
     try {
       if (mode === 'CREATE') {
-        const { data } = await client.post('/batches', { name: batchName, barcodeValues: codes, status: chosenStatus });
+        const { data } = await client.post('/batches', { name: batchName, barcodeValues: codes, status: chosenStatus, locationNotes });
         setResult({ updatedCount: data.updatedCount, items: data.batch.items });
         loadBatches();
       } else {
-        const { data } = await client.post('/batches/apply-status', { barcodeValues: codes, status: chosenStatus });
+        const { data } = await client.post('/batches/apply-status', { barcodeValues: codes, status: chosenStatus || undefined, locationNotes });
         setResult({ updatedCount: data.updatedCount, items: data.items });
       }
       setPhase('DONE');
@@ -265,9 +278,13 @@ export default function BatchScanPanel() {
           {lastLocationScanned && (
             <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 10 }}>
               📍 Location scanned: <b>{lastLocationScanned.name}</b>
-              {lastLocationScanned.status
-                ? <> — status will be set to <b>{lastLocationScanned.status.replace(/_/g, ' ')}</b></>
-                : <> — <i>{lastLocationScanned.label}</i> (informational only, no status change)</>}
+              {lastLocationScanned.status && <> — status will be set to <b>{lastLocationScanned.status.replace(/_/g, ' ')}</b></>}
+              {lastLocationScanned.label && <> — note: <i>{lastLocationScanned.label}</i></>}
+            </p>
+          )}
+          {locationNotes.length > 0 && (
+            <p style={{ fontSize: 12, color: 'var(--slate)', marginTop: 6 }}>
+              Will be logged as a comment on each order below: {locationNotes.map((l) => `${l.name} (${l.label})`).join('; ')}
             </p>
           )}
           <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{codes.length} scanned</p>
@@ -314,8 +331,17 @@ export default function BatchScanPanel() {
         <div className="card" style={{ padding: 24, maxWidth: 480, marginBottom: 24 }}>
           <h4 style={{ marginBottom: 8, color: 'var(--success)' }}>✓ Done</h4>
           <p style={{ fontSize: 13.5, marginBottom: 10 }}>
-            {result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{chosenStatus.replace(/_/g, ' ')}</b>.
+            {chosenStatus ? (
+              <>{result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{chosenStatus.replace(/_/g, ' ')}</b>.</>
+            ) : (
+              <>No status was changed — only the location note was logged.</>
+            )}
           </p>
+          {locationNotes.length > 0 && (
+            <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 10 }}>
+              Also logged as a comment on each order — view it via that order's Comments in the Orders tab.
+            </p>
+          )}
           {notMatched.length > 0 && (
             <p style={{ fontSize: 12.5, color: 'var(--danger)' }}>
               {notMatched.length} code{notMatched.length === 1 ? '' : 's'} didn't match any label: {notMatched.map((i) => i.barcodeValue).join(', ')}
@@ -402,25 +428,15 @@ export default function BatchScanPanel() {
               <div>
                 <h3 style={{ fontSize: 17 }}>Barcode locations</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
-                  A status location auto-selects that status when scanned during Batch Scan. A label location is
-                  purely informational — scanning it never changes an order's status.
+                  Status auto-selects that status when scanned during Batch Scan. Label is logged as a comment on
+                  each matched order. Set either, or both — at least one is required.
                 </p>
               </div>
               <button onClick={() => setShowLocations(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
 
             <form onSubmit={addLocation} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                  <input type="radio" checked={locForm.type === 'STATUS'} onChange={() => setLocForm({ ...locForm, type: 'STATUS' })} />
-                  Order status
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                  <input type="radio" checked={locForm.type === 'LABEL'} onChange={() => setLocForm({ ...locForm, type: 'LABEL' })} />
-                  Custom label (no status change)
-                </label>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 1fr auto', gap: 8, alignItems: 'end' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'end' }}>
                 <div className="field">
                   <label>Name</label>
                   <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
@@ -432,20 +448,17 @@ export default function BatchScanPanel() {
                     <button type="button" className="btn btn-outline btn-sm" style={{ flex: 'none' }} onClick={() => setShowLocCamera(true)}>📷</button>
                   </div>
                 </div>
-                {locForm.type === 'STATUS' ? (
-                  <div className="field">
-                    <label>Status</label>
-                    <select className="select" required value={locForm.status} onChange={(e) => setLocForm({ ...locForm, status: e.target.value })}>
-                      <option value="">Select…</option>
-                      {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
-                    </select>
-                  </div>
-                ) : (
-                  <div className="field">
-                    <label>Label</label>
-                    <input className="input" placeholder="e.g. Sorted at Hub A" required value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
-                  </div>
-                )}
+                <div className="field">
+                  <label>Status (optional)</label>
+                  <select className="select" value={locForm.status} onChange={(e) => setLocForm({ ...locForm, status: e.target.value })}>
+                    <option value="">None</option>
+                    {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Label (optional)</label>
+                  <input className="input" placeholder="e.g. Sorted at Hub A" value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
+                </div>
                 <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
               </div>
             </form>
@@ -459,7 +472,10 @@ export default function BatchScanPanel() {
                     <tr key={l.id}>
                       <td>{l.name}</td>
                       <td className="mono">{l.barcodeValue}</td>
-                      <td>{l.status ? l.status.replace(/_/g, ' ') : <i>{l.label}</i>}</td>
+                      <td>
+                        {l.status && <div>{l.status.replace(/_/g, ' ')}</div>}
+                        {l.label && <div><i>{l.label}</i></div>}
+                      </td>
                       <td style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-outline btn-sm" onClick={() => printLocation(l.id, l.name)}>🖨️ Print label</button>
                         <button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button>

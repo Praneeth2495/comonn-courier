@@ -17,9 +17,9 @@ async function listLocations(req, res, next) {
 
 /**
  * POST /api/locations — ADMIN/STAFF only
- * Exactly one of status/label must be given: status locations update
- * Order.status when scanned; label locations are purely informational and
- * never touch an order.
+ * status and label are independent — a location can have either, or both:
+ * scanning it pre-fills the status (if set) AND logs the label as an order
+ * comment (if set). At least one of the two must be given.
  */
 async function createLocation(req, res, next) {
   try {
@@ -35,7 +35,7 @@ async function createLocation(req, res, next) {
         name: name.trim(),
         barcodeValue: barcodeValue.trim(),
         status: status || null,
-        label: status ? null : label.trim(),
+        label: label && label.trim() ? label.trim() : null,
         createdById: req.user.id,
       },
       include: { createdBy: { select: { fullName: true } } },
@@ -54,14 +54,8 @@ async function updateLocation(req, res, next) {
     const data = {};
     if (name !== undefined) data.name = name.trim();
     if (barcodeValue !== undefined) data.barcodeValue = barcodeValue.trim();
-    if (status !== undefined) {
-      data.status = status || null;
-      if (status) data.label = null;
-    }
-    if (label !== undefined) {
-      data.label = label ? label.trim() : null;
-      if (label) data.status = null;
-    }
+    if (status !== undefined) data.status = status || null;
+    if (label !== undefined) data.label = label && label.trim() ? label.trim() : null;
 
     const location = await prisma.scanLocation.update({
       where: { id: req.params.id },
@@ -105,10 +99,10 @@ async function printLocationBarcode(req, res, next) {
     doc.image(barcodePng, { fit: [230, barcodeHeight], align: 'center' });
     doc.y = barcodeTop + barcodeHeight + 8;
     doc.font('Helvetica-Bold').fontSize(11).text(location.barcodeValue, { align: 'center' });
-    doc.font('Helvetica').fontSize(8).text(
-      location.status ? `Sets status: ${location.status.replace(/_/g, ' ')}` : `Label: ${location.label}`,
-      { align: 'center' }
-    );
+    const details = [];
+    if (location.status) details.push(`Sets status: ${location.status.replace(/_/g, ' ')}`);
+    if (location.label) details.push(`Label: ${location.label}`);
+    doc.font('Helvetica').fontSize(8).text(details.join(' | '), { align: 'center' });
 
     doc.end();
   } catch (err) {
