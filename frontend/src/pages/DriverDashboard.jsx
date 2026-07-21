@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import ChangePassword from '../components/ChangePassword';
+import BatchScanPanel from '../components/BatchScanPanel';
 import logoFooter from '../assets/logo-footer.png';
 
 const STATUS_LABEL = {
@@ -48,6 +49,7 @@ export default function DriverDashboard() {
           <span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>Driver</span>
         </div>
         <button className={`app-navlink ${tab === 'jobs' ? 'active' : ''}`} onClick={() => selectTab('jobs')}>My Jobs</button>
+        <button className={`app-navlink ${tab === 'batchscan' ? 'active' : ''}`} onClick={() => selectTab('batchscan')}>Batch Scan</button>
         <button className={`app-navlink ${tab === 'profile' ? 'active' : ''}`} onClick={() => selectTab('profile')}>Profile</button>
         <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,.1)' }}>
           <Link to="/" className="app-navlink">← Back to site</Link>
@@ -56,6 +58,7 @@ export default function DriverDashboard() {
       </aside>
       <main className="app-main">
         {tab === 'jobs' && <MyJobs userName={user?.fullName} />}
+        {tab === 'batchscan' && <BatchScanPanel />}
         {tab === 'profile' && <ChangePassword />}
       </main>
     </div>

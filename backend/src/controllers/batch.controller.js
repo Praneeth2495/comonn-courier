@@ -88,6 +88,34 @@ async function createBatch(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/batches/:id/status
+ * Re-applies a (possibly different) status to every order already resolved
+ * in this saved batch — no re-scanning needed. Can be called repeatedly as
+ * the batch's real-world status moves forward (or is corrected).
+ */
+async function updateBatchStatus(req, res, next) {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ error: 'status is required' });
+
+    const batch = await prisma.scanBatch.findUnique({ where: { id: req.params.id }, include: { items: true } });
+    if (!batch) return res.status(404).json({ error: 'Batch not found' });
+
+    const updatedCount = await applyStatusToItems(batch.items, status);
+
+    const updated = await prisma.scanBatch.update({
+      where: { id: batch.id },
+      data: { status },
+      include: { items: true, createdBy: { select: { fullName: true } } },
+    });
+
+    res.json({ batch: updated, updatedCount });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** GET /api/batches — saved batch history */
 async function listBatches(req, res, next) {
   try {
@@ -125,4 +153,4 @@ async function deleteBatch(req, res, next) {
   }
 }
 
-module.exports = { applyStatus, createBatch, listBatches, getBatch, deleteBatch };
+module.exports = { applyStatus, createBatch, updateBatchStatus, listBatches, getBatch, deleteBatch };
