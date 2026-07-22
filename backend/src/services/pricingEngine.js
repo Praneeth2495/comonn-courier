@@ -56,38 +56,70 @@ async function resolveZoneForCountry(countryCode) {
 }
 
 /**
+ * Resolve a pickup (origin) postcode to its origin Zone id, e.g.
+ * "India-urban" — used to optionally narrow RateCard selection by
+ * fromZoneId. Returns null if the postcode isn't known (or wasn't
+ * supplied yet, e.g. at the instant-quote-preview stage before the sender
+ * address is entered) — callers then fall back to the zone-agnostic
+ * (fromZoneId: null) rate brackets, i.e. today's default behavior.
+ */
+async function resolveFromZoneForPostcode(countryCode, postcode) {
+  if (!countryCode || !postcode) return null;
+  const mapping = await prisma.postcodeZone.findUnique({
+    where: { countryCode_postcode: { countryCode: countryCode.toUpperCase(), postcode: String(postcode).trim() } },
+  });
+  return mapping ? mapping.zoneId : null;
+}
+
+/**
  * Find the correct rate bracket for a given service/zone/chargeable weight.
  * Brackets are contiguous, non-overlapping [weightFromKg, weightToKg] ranges.
  * If the weight is heavier than the top bracket, we extrapolate using that
  * bracket's perKgOverage rate.
+ *
+ * If fromZoneId resolves to an origin zone (see resolveFromZoneForPostcode)
+ * and brackets exist scoped to it, those are preferred; otherwise falls
+ * back to the zone-agnostic brackets (fromZoneId: null) that every
+ * pre-existing rate card already uses — so nothing changes in price until
+ * an admin actually adds origin-specific brackets.
  */
-async function findRateBracket({ serviceId, zoneId, chargeableWeightKg }) {
-  const brackets = await prisma.rateCard.findMany({
+async function findRateBracket({ serviceId, zoneId, fromZoneId, chargeableWeightKg }) {
+  function selectFrom(brackets) {
+    if (brackets.length === 0) return null;
+    const exact = brackets.find(
+      (b) => chargeableWeightKg >= Number(b.weightFromKg) && chargeableWeightKg <= Number(b.weightToKg)
+    );
+    if (exact) return { bracket: exact, extrapolated: false };
+
+    // heavier than every defined bracket -> extrapolate off the top bracket
+    const top = brackets[brackets.length - 1];
+    if (chargeableWeightKg > Number(top.weightToKg)) {
+      return { bracket: top, extrapolated: true };
+    }
+
+    // lighter than the smallest bracket floor (shouldn't normally happen
+    // since brackets should start at 0) -> fall back to the lowest bracket
+    return { bracket: brackets[0], extrapolated: false };
+  }
+
+  const allBrackets = await prisma.rateCard.findMany({
     where: { serviceId, zoneId, isActive: true },
     orderBy: { weightFromKg: 'asc' },
   });
 
-  if (brackets.length === 0) {
+  if (fromZoneId) {
+    const specific = selectFrom(allBrackets.filter((b) => b.fromZoneId === fromZoneId));
+    if (specific) return specific;
+  }
+
+  const wildcard = selectFrom(allBrackets.filter((b) => b.fromZoneId === null));
+  if (!wildcard) {
     const err = new Error('No rate card configured for this service/zone');
     err.status = 422;
     err.code = 'RATE_CARD_NOT_FOUND';
     throw err;
   }
-
-  const exact = brackets.find(
-    (b) => chargeableWeightKg >= Number(b.weightFromKg) && chargeableWeightKg <= Number(b.weightToKg)
-  );
-  if (exact) return { bracket: exact, extrapolated: false };
-
-  // heavier than every defined bracket -> extrapolate off the top bracket
-  const top = brackets[brackets.length - 1];
-  if (chargeableWeightKg > Number(top.weightToKg)) {
-    return { bracket: top, extrapolated: true };
-  }
-
-  // lighter than the smallest bracket floor (shouldn't normally happen since
-  // brackets should start at 0) -> fall back to the lowest bracket
-  return { bracket: brackets[0], extrapolated: false };
+  return wildcard;
 }
 
 /** Apply active surcharges for a service. Returns { total, items[] } */
@@ -146,6 +178,10 @@ function priceItem(item, divisor) {
  * @param {Array<{itemType?:string, actualWeightKg:number, lengthCm:number, widthCm:number, heightCm:number, quantity?:number}>} input.items
  * @param {number} [input.declaredValue=0]
  * @param {number} [input.taxRate=0] fractional, e.g. 0.10 for 10% GST
+ * @param {string} [input.originCountryCode]  sender's country, e.g. "IN" —
+ *   only known once the Details step is filled in, not at the initial
+ *   instant-quote-preview stage
+ * @param {string} [input.originPostcode]  sender's pickup postcode
  */
 async function generateQuote(input) {
   const {
@@ -154,6 +190,8 @@ async function generateQuote(input) {
     items,
     declaredValue = 0,
     taxRate = 0,
+    originCountryCode,
+    originPostcode,
   } = input;
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -179,9 +217,11 @@ async function generateQuote(input) {
   const volumetricWeightKg = round2(pricedItems.reduce((sum, it) => sum + it.volumetricWeightKgTotal, 0));
   const chargeableWeightKg = round2(pricedItems.reduce((sum, it) => sum + it.chargeableWeightKg, 0));
 
+  const fromZoneId = await resolveFromZoneForPostcode(originCountryCode, originPostcode);
   const { bracket, extrapolated } = await findRateBracket({
     serviceId: service.id,
     zoneId: zone.id,
+    fromZoneId,
     chargeableWeightKg,
   });
 
@@ -270,6 +310,7 @@ module.exports = {
   calcVolumetricWeightKg,
   calcChargeableWeightKg,
   resolveZoneForCountry,
+  resolveFromZoneForPostcode,
   findRateBracket,
   applySurcharges,
   generateQuote,

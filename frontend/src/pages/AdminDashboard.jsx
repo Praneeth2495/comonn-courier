@@ -870,12 +870,14 @@ function InventoryPanel() {
 
 function RatesPanel() {
   const [zones, setZones] = useState([]);
+  const [originZones, setOriginZones] = useState([]);
   const [services, setServices] = useState([]);
   const [rateCards, setRateCards] = useState([]);
-  const [form, setForm] = useState({ serviceId: '', zoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR' });
+  const [form, setForm] = useState({ serviceId: '', zoneId: '', fromZoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR' });
 
   function load() {
     client.get('/admin/zones').then(({ data }) => setZones(data.zones));
+    client.get('/admin/zones', { params: { kind: 'origin' } }).then(({ data }) => setOriginZones(data.zones));
     client.get('/admin/services').then(({ data }) => setServices(data.services));
     client.get('/admin/rate-cards').then(({ data }) => setRateCards(data.rateCards));
   }
@@ -883,7 +885,7 @@ function RatesPanel() {
 
   async function submit(e) {
     e.preventDefault();
-    await client.post('/admin/rate-cards', form);
+    await client.post('/admin/rate-cards', { ...form, fromZoneId: form.fromZoneId || null });
     setForm({ ...form, weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '' });
     load();
   }
@@ -911,7 +913,7 @@ function RatesPanel() {
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Add a rate bracket</h4>
-        <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 10, alignItems: 'end' }}>
+        <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, alignItems: 'end' }}>
           <div className="field">
             <label>Service</label>
             <select className="select" required value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })}>
@@ -920,10 +922,17 @@ function RatesPanel() {
             </select>
           </div>
           <div className="field">
-            <label>Zone</label>
+            <label>To zone</label>
             <select className="select" required value={form.zoneId} onChange={(e) => setForm({ ...form, zoneId: e.target.value })}>
               <option value="">—</option>
               {zones.map((z) => <option key={z.id} value={z.id}>{z.code}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>From zone (optional)</label>
+            <select className="select" value={form.fromZoneId} onChange={(e) => setForm({ ...form, fromZoneId: e.target.value })}>
+              <option value="">Any</option>
+              {originZones.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
             </select>
           </div>
           <div className="field"><label>From kg</label><input className="input" type="number" step="0.01" required value={form.weightFromKg} onChange={(e) => setForm({ ...form, weightFromKg: e.target.value })} /></div>
@@ -936,12 +945,13 @@ function RatesPanel() {
 
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Service</th><th>Zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th></th></tr></thead>
+          <thead><tr><th>Service</th><th>To zone</th><th>From zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th></th></tr></thead>
           <tbody>
             {rateCards.map((r) => (
               <tr key={r.id}>
                 <td>{r.service.name}</td>
                 <td>{r.zone.code}</td>
+                <td>{r.fromZone ? r.fromZone.name : <span style={{ color: 'var(--slate-light)' }}>Any</span>}</td>
                 <td>{r.weightFromKg} – {r.weightToKg} kg</td>
                 <td>₹{Number(r.basePrice).toFixed(2)}</td>
                 <td>₹{Number(r.perKgOverage).toFixed(2)}</td>

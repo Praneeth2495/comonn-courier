@@ -119,6 +119,28 @@ async function listServices(req, res, next) {
 }
 
 /**
+ * GET /api/quote/postcode-suggestions?postcode=532001 — India-only for now.
+ * One postcode can map to several suburbs (different post offices sharing
+ * the same PIN), so this returns every match for the customer to pick from.
+ */
+async function postcodeSuggestions(req, res, next) {
+  try {
+    const postcode = (req.query.postcode || '').trim();
+    if (postcode.length !== 6 || !/^\d{6}$/.test(postcode)) {
+      return res.json({ suggestions: [] });
+    }
+    const suggestions = await prisma.postcodeSuggestion.findMany({
+      where: { countryCode: 'IN', postcode },
+      select: { suburb: true, state: true },
+      orderBy: { suburb: 'asc' },
+    });
+    res.json({ suggestions });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * POST /api/quote/email
  * Re-prices server-side (never trust a client-cached quote for the emailed
  * numbers) and sends the quote to the given address via Resend.
@@ -145,4 +167,4 @@ async function emailQuote(req, res, next) {
   }
 }
 
-module.exports = { getInstantQuote, listCountries, listServices, emailQuote };
+module.exports = { getInstantQuote, listCountries, listServices, postcodeSuggestions, emailQuote };

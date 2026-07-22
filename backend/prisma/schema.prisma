@@ -120,11 +120,34 @@ model Zone {
   id             String   @id @default(uuid())
   code           String   @unique // "ZONE_A"
   name           String            // "Zone A — Asia Pacific"
+  // "destination" = customer-facing shipping zone, matched via CountryZone
+  // and used as RateCard.zoneId. "origin" = domestic India pickup-postcode
+  // classification (e.g. "India-urban"), matched via PostcodeZone and used
+  // as RateCard.fromZoneId — kept distinct so the admin's destination-zone
+  // dropdown never gets polluted with origin-only zones.
+  kind           String   @default("destination")
   countries      CountryZone[]
-  rateCards      RateCard[]
+  postcodeZones  PostcodeZone[]
+  rateCards      RateCard[] @relation("RateCardZone")
+  rateCardsFrom  RateCard[] @relation("RateCardFromZone")
   staffAssignments StaffZoneAssignment[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+// Maps a domestic India pickup postcode to an origin Zone (kind="origin"),
+// so pricing can optionally differ by pickup location via
+// RateCard.fromZoneId — imported from the same source as
+// PostcodeSuggestion. A postcode not found here has no origin-zone
+// restriction (matches any RateCard, i.e. treated as the baseline/default).
+model PostcodeZone {
+  id          String @id @default(uuid())
+  countryCode String // ISO alpha-2, e.g. "IN"
+  postcode    String
+  zoneId      String
+  zone        Zone   @relation(fields: [zoneId], references: [id])
+
+  @@unique([countryCode, postcode])
 }
 
 // Admin-controlled: which STAFF accounts can see/filter Pickup & Delivery
@@ -150,6 +173,20 @@ model CountryZone {
   zone        Zone   @relation(fields: [zoneId], references: [id])
 }
 
+// Postcode -> suburb/state autocomplete for the sender/receiver address
+// forms (India only for now — imported from an Australia-Post-style
+// suggestion list). One postcode maps to many suburbs, so lookups return a
+// list for the customer to pick from rather than a single match.
+model PostcodeSuggestion {
+  id          String @id @default(uuid())
+  countryCode String // ISO alpha-2, e.g. "IN"
+  postcode    String
+  suburb      String
+  state       String
+
+  @@index([countryCode, postcode])
+}
+
 // A Service is a product line: Express, Economy, Freight, Documents...
 model Service {
   id            String   @id @default(uuid())
@@ -164,7 +201,8 @@ model Service {
   orders        Order[]
 }
 
-// RateCard = one weight-break price for a given service + zone.
+// RateCard = one weight-break price for a given service + destination zone,
+// optionally narrowed further by an origin (pickup) zone.
 // e.g. Service=EXPRESS, Zone=ZONE_A, 0-0.5kg => $18.50 base,
 // then perKgAbove for weight beyond the bracket ceiling.
 model RateCard {
@@ -172,7 +210,14 @@ model RateCard {
   serviceId      String
   service        Service  @relation(fields: [serviceId], references: [id])
   zoneId         String
-  zone           Zone     @relation(fields: [zoneId], references: [id])
+  zone           Zone     @relation("RateCardZone", fields: [zoneId], references: [id])
+  // Optional origin (pickup) zone — e.g. a bracket that only applies when
+  // picking up from an "India-rural" postcode. NULL matches any origin, so
+  // every existing rate card (with no origin dimension) keeps working
+  // unchanged; a bracket with a specific fromZoneId is preferred over a
+  // NULL one when both match (see pricingEngine.js's findRateBracket).
+  fromZoneId     String?
+  fromZone       Zone?    @relation("RateCardFromZone", fields: [fromZoneId], references: [id])
   weightFromKg   Decimal  @db.Decimal(10, 3) // inclusive lower bound
   weightToKg     Decimal  @db.Decimal(10, 3) // inclusive upper bound
   basePrice      Decimal  @db.Decimal(10, 2) // INR
@@ -183,6 +228,7 @@ model RateCard {
   isActive       Boolean  @default(true)
 
   @@index([serviceId, zoneId, weightFromKg, weightToKg])
+  @@index([fromZoneId])
 }
 
 // Optional extra fees layered on top of the base rate card lookup

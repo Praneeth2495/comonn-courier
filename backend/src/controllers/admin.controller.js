@@ -38,12 +38,18 @@ async function dashboardStats(req, res, next) {
 }
 
 // ---------------- Zones & Countries ----------------
+// kind=destination (default) — customer-facing shipping zones (Zone A/B/C…),
+// matched via CountryZone and used as RateCard.zoneId. Staff only see their
+// assigned subset. kind=origin — domestic India pickup-postcode zones (e.g.
+// "India-urban"), used as RateCard.fromZoneId; not staff-restricted since
+// they're unrelated to the destination-zone assignment feature.
 async function listZones(req, res, next) {
   try {
-    let where = {};
-    if (req.user.role === 'STAFF') {
+    const kind = req.query.kind === 'origin' ? 'origin' : 'destination';
+    let where = { kind };
+    if (kind === 'destination' && req.user.role === 'STAFF') {
       const assignments = await prisma.staffZoneAssignment.findMany({ where: { userId: req.user.id }, select: { zoneId: true } });
-      where = { id: { in: assignments.map((a) => a.zoneId) } };
+      where = { ...where, id: { in: assignments.map((a) => a.zoneId) } };
     }
     const zones = await prisma.zone.findMany({ where, include: { countries: true } });
     res.json({ zones });
@@ -161,7 +167,7 @@ async function listRateCards(req, res, next) {
     if (zoneId) where.zoneId = zoneId;
     const rateCards = await prisma.rateCard.findMany({
       where,
-      include: { service: true, zone: true },
+      include: { service: true, zone: true, fromZone: true },
       orderBy: [{ serviceId: 'asc' }, { zoneId: 'asc' }, { weightFromKg: 'asc' }],
     });
     res.json({ rateCards });
@@ -176,6 +182,7 @@ async function upsertRateCard(req, res, next) {
       id,
       serviceId,
       zoneId,
+      fromZoneId,
       weightFromKg,
       weightToKg,
       basePrice,
@@ -183,7 +190,7 @@ async function upsertRateCard(req, res, next) {
       currency,
       isActive,
     } = req.body;
-    const data = { serviceId, zoneId, weightFromKg, weightToKg, basePrice, perKgOverage, currency, isActive };
+    const data = { serviceId, zoneId, fromZoneId: fromZoneId || null, weightFromKg, weightToKg, basePrice, perKgOverage, currency, isActive };
     const rateCard = id
       ? await prisma.rateCard.update({ where: { id }, data })
       : await prisma.rateCard.create({ data });

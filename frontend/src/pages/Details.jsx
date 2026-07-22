@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
@@ -295,6 +295,29 @@ export default function Details() {
 }
 
 function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved }) {
+  const [pinSuggestions, setPinSuggestions] = useState([]);
+  const debounceRef = useRef(null);
+
+  function handlePostcodeChange(v) {
+    onChange('postcode', v);
+    clearTimeout(debounceRef.current);
+    if (!/^\d{6}$/.test(v) || value.countryCode !== 'IN') {
+      setPinSuggestions([]);
+      return;
+    }
+    debounceRef.current = setTimeout(() => {
+      client.get('/quote/postcode-suggestions', { params: { postcode: v } })
+        .then(({ data }) => setPinSuggestions(data.suggestions))
+        .catch(() => setPinSuggestions([]));
+    }, 400);
+  }
+
+  function pickSuggestion(s) {
+    onChange('city', s.suburb);
+    onChange('state', s.state);
+    setPinSuggestions([]);
+  }
+
   return (
     <>
       {savedAddresses.length > 0 && (
@@ -352,9 +375,23 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         </div>
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
-        <div className="field" style={{ maxWidth: 220 }}>
+        <div className="field" style={{ maxWidth: 220, position: 'relative' }}>
           <label>Pin code</label>
-          <input className="input" required value={value.postcode} onChange={(e) => onChange('postcode', e.target.value)} />
+          <input className="input" required value={value.postcode} onChange={(e) => handlePostcodeChange(e.target.value)} />
+          {pinSuggestions.length > 0 && (
+            <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
+              {pinSuggestions.map((s, i) => (
+                <button
+                  type="button"
+                  key={i}
+                  className="acct-menu-item"
+                  onClick={() => pickSuggestion(s)}
+                >
+                  {s.suburb}, {s.state}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="field" style={{ maxWidth: 220 }}>
           <label>Country code</label>

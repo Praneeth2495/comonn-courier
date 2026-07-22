@@ -111,6 +111,8 @@ async function createOrder(req, res, next) {
         items,
         declaredValue,
         taxRate,
+        originCountryCode: sender.countryCode,
+        originPostcode: sender.postcode,
       });
       const service = await prisma.service.findUnique({ where: { code: serviceCode } });
       orderData = {
@@ -554,6 +556,8 @@ async function updateOrderDetails(req, res, next) {
         items,
         declaredValue,
         taxRate: Number(order.taxRate) || 0,
+        originCountryCode: sender.countryCode,
+        originPostcode: sender.postcode,
       });
       const service = await prisma.service.findUnique({ where: { code: serviceCode } });
       orderData = {
