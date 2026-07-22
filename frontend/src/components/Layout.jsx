@@ -6,7 +6,7 @@ import EditProfile from './EditProfile';
 import logoFull from '../assets/logo-full.png';
 import logoFooter from '../assets/logo-footer.png';
 
-function AccountMenu({ name, onOpen }) {
+function AccountMenu({ name, onOpen, onLogout }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -23,10 +23,24 @@ function AccountMenu({ name, onOpen }) {
     onOpen(section);
   }
 
+  const initial = name?.[0]?.toUpperCase() || '?';
+
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen((v) => !v)}>
-        {name} ▾
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+      >
+        <span
+          style={{
+            width: 34, height: 34, borderRadius: '50%', background: 'var(--navy)', color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, flex: 'none',
+          }}
+        >
+          {initial}
+        </span>
+        <span style={{ fontSize: 12, color: 'var(--slate)' }}>▾</span>
       </button>
       {open && (
         <div
@@ -35,6 +49,8 @@ function AccountMenu({ name, onOpen }) {
         >
           <button type="button" className="acct-menu-item" onClick={() => choose('profile')}>Profile details</button>
           <button type="button" className="acct-menu-item" onClick={() => choose('password')}>Change password</button>
+          <div style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
+          <button type="button" className="acct-menu-item" onClick={() => { setOpen(false); onLogout(); }}>Log out</button>
         </div>
       )}
     </div>
@@ -67,22 +83,18 @@ export function SiteHeader({ onOpenAccount }) {
         </nav>
         <div className="nav-actions">
           {user ? (
-            <>
-              {user.role === 'ADMIN' || user.role === 'STAFF' ? (
+            user.role === 'ADMIN' || user.role === 'STAFF' ? (
+              <>
                 <Link to="/admin" className="btn btn-ghost btn-sm">{user.fullName?.split(' ')[0]}</Link>
-              ) : (
-                <AccountMenu name={user.fullName?.split(' ')[0]} onOpen={onOpenAccount} />
-              )}
-              <button
-                className="btn btn-outline btn-sm"
-                onClick={() => {
-                  logout();
-                  navigate('/');
-                }}
-              >
-                Log out
-              </button>
-            </>
+                <button className="btn btn-outline btn-sm" onClick={() => { logout(); navigate('/'); }}>Log out</button>
+              </>
+            ) : (
+              <AccountMenu
+                name={user.fullName?.split(' ')[0]}
+                onOpen={onOpenAccount}
+                onLogout={() => { logout(); navigate('/'); }}
+              />
+            )
           ) : (
             <>
               <Link to="/login" className="btn btn-ghost btn-sm">Login</Link>
