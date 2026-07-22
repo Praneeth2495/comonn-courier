@@ -204,16 +204,8 @@ export default function Home() {
               <div className="field">
                 <label>Origin</label>
                 <div className="input-group">
-                  <select className="flag" defaultValue="🇮🇳 IN">
-                    <option>🇮🇳 IN</option>
-                    <option>🇦🇺 AU</option>
-                    <option>🇨🇦 CA</option>
-                    <option>🇳🇿 NZ</option>
-                    <option>🇬🇧 GB</option>
-                    <option>🇺🇸 US</option>
-                    <option>🇪🇺 EU</option>
-                  </select>
-                  <input placeholder="Enter pickup location" />
+                  <select className="flag" disabled defaultValue="🇮🇳 IN"><option>🇮🇳 IN</option></select>
+                  <input placeholder="India" disabled style={{ color: 'var(--slate-light)' }} />
                 </div>
               </div>
 

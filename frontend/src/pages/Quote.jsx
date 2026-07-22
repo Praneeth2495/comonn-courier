@@ -206,7 +206,10 @@ export default function Quote() {
       <div className="section" style={{ paddingTop: 20, maxWidth: 820, margin: '0 auto' }}>
         <form className="card" style={{ padding: 28, marginBottom: 28, overflow: 'hidden' }} onSubmit={submitQuote}>
           <div className="airmail-edge" style={{ borderRadius: '18px 18px 0 0', margin: '-28px -28px 22px', width: 'calc(100% + 56px)' }} />
-          <h3 style={{ marginBottom: 18 }}>Instant Booking</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <h3 style={{ fontSize: 17 }}>Instant Booking</h3>
+            <span className="pill pill-cobalt">Get a quote in 4 clicks</span>
+          </div>
 
           <div className="grid-2">
             <div className="field">
