@@ -109,14 +109,20 @@ export default function Details() {
       // If an order already exists from a prior visit to this step (e.g. the
       // customer went back and changed something, or staff are editing an
       // existing booking), update it in place rather than creating a
-      // duplicate order.
-      const { data } = bookingOrder
+      // duplicate order. But a completed order (already past payment)
+      // left over in context from a previous booking — e.g. the customer
+      // started a new quote without explicitly finishing the last one —
+      // must NOT be treated as "still being edited": only staff can edit an
+      // already-settled order; for anyone else, still-PENDING_PAYMENT is
+      // what actually means "this is the same in-progress booking."
+      const isEditingExisting = bookingOrder && (bookingOrder.status === 'PENDING_PAYMENT' || ['ADMIN', 'STAFF'].includes(user?.role));
+      const { data } = isEditingExisting
         ? await client.patch(`/orders/${bookingOrder.id}/details`, payload)
         : await client.post('/orders', payload);
       // amountPaid/balance (only present on the edit/PATCH response) ride
       // along on the order object so Payment.jsx can show an updated
       // invoice with any due/credit balance for orders edited after payment.
-      const nextOrder = bookingOrder ? { ...data.order, amountPaid: data.amountPaid, balance: data.balance } : data.order;
+      const nextOrder = isEditingExisting ? { ...data.order, amountPaid: data.amountPaid, balance: data.balance } : data.order;
       setBooking({ order: nextOrder });
       navigate('/payment');
     } catch (err) {
