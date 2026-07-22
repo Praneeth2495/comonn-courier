@@ -8,11 +8,11 @@ export function SiteHeader() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const links = [
+    ...(user?.role === 'CUSTOMER' ? [['/dashboard', 'Dashboard']] : []),
     ['/quote', 'Book'],
     ['/track', 'Track'],
     ['/services', 'Services', 'nav-hide-mobile'],
     ['/about', 'About', 'nav-hide-mobile'],
-    ...(user?.role === 'CUSTOMER' ? [['/dashboard', 'Dashboard']] : []),
   ];
   return (
     <header className="site-header">
