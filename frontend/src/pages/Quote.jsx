@@ -83,7 +83,7 @@ export default function Quote() {
   useEffect(() => {
     if (!quoteInput || quoteInput.pricingPending || !selectedQuote) return;
     client
-      .post('/quote', { destinationCountryCode: quoteInput.destinationCountryCode, items: quoteInput.items })
+      .post('/quote', { destinationCountryCode: quoteInput.destinationCountryCode, items: quoteInput.items, originPostcode: quoteInput.originPostcode })
       .then(({ data }) => {
         setQuotes(data.quotes);
         const match = data.quotes.find((q) => q.service.code === selectedQuote.service.code);
