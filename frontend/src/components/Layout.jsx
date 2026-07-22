@@ -1,7 +1,38 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
 import logoFull from '../assets/logo-full.png';
 import logoFooter from '../assets/logo-footer.png';
+
+function AccountMenu({ name }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen((v) => !v)}>
+        {name} ▾
+      </button>
+      {open && (
+        <div
+          className="card"
+          style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 180, zIndex: 50 }}
+        >
+          <Link to="/dashboard?account=profile" className="acct-menu-item" onClick={() => setOpen(false)}>Profile details</Link>
+          <Link to="/dashboard?account=password" className="acct-menu-item" onClick={() => setOpen(false)}>Change password</Link>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function SiteHeader() {
   const { pathname } = useLocation();
@@ -30,12 +61,11 @@ export function SiteHeader() {
         <div className="nav-actions">
           {user ? (
             <>
-              <Link
-                to={user.role === 'ADMIN' || user.role === 'STAFF' ? '/admin' : '/dashboard?account=1'}
-                className="btn btn-ghost btn-sm"
-              >
-                {user.fullName?.split(' ')[0]}
-              </Link>
+              {user.role === 'ADMIN' || user.role === 'STAFF' ? (
+                <Link to="/admin" className="btn btn-ghost btn-sm">{user.fullName?.split(' ')[0]}</Link>
+              ) : (
+                <AccountMenu name={user.fullName?.split(' ')[0]} />
+              )}
               <button
                 className="btn btn-outline btn-sm"
                 onClick={() => {
