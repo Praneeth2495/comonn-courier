@@ -5,41 +5,52 @@ const {
   verifyWebhookSignature,
 } = require('../services/paymentService');
 const { sendReceiverBookingNotification } = require('./label.controller');
-const { PAYABLE_STATUSES } = require('./order.controller');
+const { PAYABLE_STATUSES, round2 } = require('./order.controller');
 
 /**
  * Idempotent: Razorpay retries webhooks at-least-once, and the client-side
- * /confirm call can race with (or duplicate) the webhook. The PENDING_PAYMENT
- * condition on the order update is checked and applied atomically by
+ * /confirm call can race with (or duplicate) the webhook. The PAYABLE_STATUSES
+ * condition on each order update is checked and applied atomically by
  * Postgres, so only the first caller — webhook or confirm — actually
- * transitions the order and writes a tracking event/number; later callers
- * just keep the payment record in sync.
+ * transitions each order and writes its tracking event/number; later callers
+ * just keep the payment records in sync.
+ *
+ * A single Razorpay order can cover MULTIPLE Comonn orders (paying for
+ * several bookings from the same session in one transaction — see
+ * createCombinedOrder) — every Payment row sharing this providerOrderId
+ * gets marked, one order at a time, so per-order accounting (amount,
+ * tracking event, receiver alert) stays correct for each.
  */
-async function markOrderPaid(orderId, extra = {}) {
-  await prisma.payment.update({
-    where: { orderId },
+async function markOrdersPaidForProviderOrder(providerOrderId, extra = {}) {
+  const payments = await prisma.payment.findMany({ where: { providerOrderId } });
+  if (!payments.length) return;
+
+  await prisma.payment.updateMany({
+    where: { providerOrderId },
     data: { status: 'SUCCEEDED', ...extra },
   });
 
-  // Tracking number is just the order number — one identifier for the
-  // customer to remember instead of two unrelated-looking ones.
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: { senderAddress: true, receiverAddress: true },
-  });
-  const { count } = await prisma.order.updateMany({
-    where: { id: orderId, status: { in: PAYABLE_STATUSES } },
-    data: { status: 'PAID', trackingNumber: order.orderNumber },
-  });
-
-  if (count > 0) {
-    await prisma.trackingEvent.create({
-      data: { orderId, status: 'PAID', note: 'Payment confirmed' },
+  for (const payment of payments) {
+    const order = await prisma.order.findUnique({
+      where: { id: payment.orderId },
+      include: { senderAddress: true, receiverAddress: true },
     });
-    // Pickup-booking orders ("Not sure, book pickup") never got a receiver
-    // alert at booking time — only once payment is actually confirmed.
-    if (order.pricingPending) {
-      await sendReceiverBookingNotification({ ...order, trackingNumber: order.orderNumber });
+    if (!order) continue;
+
+    const { count } = await prisma.order.updateMany({
+      where: { id: order.id, status: { in: PAYABLE_STATUSES } },
+      data: { status: 'PAID', trackingNumber: order.orderNumber },
+    });
+
+    if (count > 0) {
+      await prisma.trackingEvent.create({
+        data: { orderId: order.id, status: 'PAID', note: 'Payment confirmed' },
+      });
+      // Pickup-booking orders ("Not sure, book pickup") never got a receiver
+      // alert at booking time — only once payment is actually confirmed.
+      if (order.pricingPending) {
+        await sendReceiverBookingNotification({ ...order, trackingNumber: order.orderNumber });
+      }
     }
   }
 }
@@ -108,6 +119,92 @@ async function createOrder(req, res, next) {
 }
 
 /**
+ * POST /api/payments/combined/order
+ * Pays for several bookings saved in the same session (see BookingContext's
+ * savedBookings) in a single Razorpay transaction — one Razorpay Order for
+ * the combined total; one Payment row per Comonn order (all sharing the
+ * same providerOrderId), each keeping its own individual amount so
+ * per-order accounting/refunds stay correct. DG ack + OTP verification only
+ * need to have happened on ONE of the orders (whichever the customer
+ * actually completed them on) — that gets propagated to the rest of the
+ * group here, since it's one combined checkout.
+ */
+async function createCombinedOrder(req, res, next) {
+  try {
+    const { orderIds } = req.body;
+    if (!Array.isArray(orderIds) || orderIds.length < 2) {
+      return res.status(400).json({ error: 'At least two orderIds are required for a combined payment' });
+    }
+
+    const orders = await prisma.order.findMany({
+      where: { id: { in: orderIds } },
+      include: { payment: true },
+    });
+    if (orders.length !== orderIds.length) {
+      return res.status(404).json({ error: 'One or more orders were not found' });
+    }
+    for (const o of orders) {
+      if (!PAYABLE_STATUSES.includes(o.status)) {
+        return res.status(409).json({ error: `Order ${o.orderNumber} is not awaiting payment (status: ${o.status})` });
+      }
+    }
+
+    const verified = orders.find((o) => o.dgAcknowledged && o.otpVerifiedAt);
+    if (!verified) {
+      return res.status(409).json({ error: 'Please acknowledge the dangerous goods declaration and verify your email first' });
+    }
+    const unverifiedIds = orders.filter((o) => o.id !== verified.id && (!o.dgAcknowledged || !o.otpVerifiedAt)).map((o) => o.id);
+    if (unverifiedIds.length) {
+      await prisma.order.updateMany({
+        where: { id: { in: unverifiedIds } },
+        data: { dgAcknowledged: true, otpVerifiedAt: verified.otpVerifiedAt, otpEmail: verified.otpEmail },
+      });
+    }
+
+    const combinedTotal = round2(orders.reduce((sum, o) => sum + Number(o.grandTotal), 0));
+    const currency = orders[0].currency;
+
+    // Reuse an existing unpaid combined Razorpay order for this exact same
+    // group + amounts rather than creating duplicates.
+    const existingProviderOrderId = orders[0].payment?.providerOrderId;
+    const canReuse = existingProviderOrderId && orders.every((o) =>
+      o.payment?.providerOrderId === existingProviderOrderId &&
+      o.payment?.status === 'REQUIRES_PAYMENT' &&
+      Number(o.payment.amount) === Number(o.grandTotal)
+    );
+    const orderSummaries = orders.map((o) => ({ id: o.id, orderNumber: o.orderNumber, invoiceNumber: o.invoiceNumber, grandTotal: o.grandTotal }));
+    if (canReuse) {
+      return res.json({
+        payment: { providerOrderId: existingProviderOrderId, amount: combinedTotal, currency },
+        keyId: process.env.RAZORPAY_KEY_ID,
+        orders: orderSummaries,
+      });
+    }
+
+    const rzpOrder = await createRazorpayOrder({
+      amount: combinedTotal,
+      currency,
+      orderId: orders.map((o) => o.id).join(','),
+      orderNumber: orders.map((o) => o.orderNumber).join(','),
+    });
+
+    await Promise.all(orders.map((o) => prisma.payment.upsert({
+      where: { orderId: o.id },
+      update: { providerOrderId: rzpOrder.id, amount: o.grandTotal, currency: o.currency, status: 'REQUIRES_PAYMENT' },
+      create: { orderId: o.id, providerOrderId: rzpOrder.id, amount: o.grandTotal, currency: o.currency, status: 'REQUIRES_PAYMENT' },
+    })));
+
+    res.json({
+      payment: { providerOrderId: rzpOrder.id, amount: combinedTotal, currency },
+      keyId: process.env.RAZORPAY_KEY_ID,
+      orders: orderSummaries,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * POST /api/payments/:orderId/confirm
  * Called by the frontend immediately after Razorpay Checkout's handler fires.
  * Verifies the HMAC SHA256 signature Razorpay returns before trusting the
@@ -128,7 +225,7 @@ async function confirmPayment(req, res, next) {
     if (!payment) return res.status(404).json({ error: 'No matching payment found for this order' });
 
     if (payment.status !== 'SUCCEEDED') {
-      await markOrderPaid(req.params.orderId, { providerPaymentId: razorpay_payment_id, method: 'razorpay' });
+      await markOrdersPaidForProviderOrder(razorpay_order_id, { providerPaymentId: razorpay_payment_id, method: 'razorpay' });
     }
 
     res.json({ ok: true });
@@ -153,9 +250,11 @@ async function handleWebhook(req, res, next) {
 
     if (event.event === 'payment.captured') {
       const entity = event.payload.payment.entity;
-      const orderId = entity.notes?.orderId;
-      if (orderId) {
-        await markOrderPaid(orderId, {
+      // entity.order_id (Razorpay's own field) rather than notes.orderId —
+      // works uniformly whether this Razorpay order covers one Comonn order
+      // or several combined into one payment (see createCombinedOrder).
+      if (entity.order_id) {
+        await markOrdersPaidForProviderOrder(entity.order_id, {
           providerPaymentId: entity.id,
           rawWebhookPayload: event,
           method: entity.method,
@@ -165,10 +264,9 @@ async function handleWebhook(req, res, next) {
 
     if (event.event === 'payment.failed') {
       const entity = event.payload.payment.entity;
-      const orderId = entity.notes?.orderId;
-      if (orderId) {
-        await prisma.payment.update({
-          where: { orderId },
+      if (entity.order_id) {
+        await prisma.payment.updateMany({
+          where: { providerOrderId: entity.order_id },
           data: { status: 'FAILED', rawWebhookPayload: event },
         });
       }
@@ -242,4 +340,4 @@ async function confirmCashBooking(req, res, next) {
   }
 }
 
-module.exports = { createOrder, confirmPayment, handleWebhook, getPaymentStatus, confirmCashBooking };
+module.exports = { createOrder, createCombinedOrder, confirmPayment, handleWebhook, getPaymentStatus, confirmCashBooking };

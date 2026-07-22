@@ -39,10 +39,11 @@ function nextPickupDates() {
 }
 
 export default function Payment() {
-  const { order: bookingOrder, savedBookings, setBooking, clearBooking, removeSavedBooking } = useBooking();
+  const { order: bookingOrder, savedBookings, setBooking, clearBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [paidAwaitingNext, setPaidAwaitingNext] = useState(false);
+  const [combinedSubmitting, setCombinedSubmitting] = useState(false);
+  const [combinedResults, setCombinedResults] = useState(null);
 
   const [order, setOrder] = useState(bookingOrder);
   const [pickupDates] = useState(nextPickupDates);
@@ -100,39 +101,6 @@ export default function Payment() {
     syncDefaultAddons(bookingOrder.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingOrder?.id]);
-
-  // Loads the next saved booking (from "New booking" on the Details page)
-  // into this same page — re-runs the same reset the initial mount does,
-  // since we're staying on /payment rather than remounting.
-  async function payNextSavedBooking() {
-    if (!savedBookings?.length) return;
-    const next = savedBookings[0];
-    setPaidAwaitingNext(false);
-    setSubmitting(true);
-    setError('');
-    try {
-      const { data } = await client.get(`/orders/${next.id}/pay`);
-      removeSavedBooking(next.id);
-      setBooking({ order: data.order });
-      setOrder(data.order);
-      setOtpEmail(data.order.senderAddress?.email || data.order.receiverAddress?.email || user?.email || '');
-      setOtpSent(false);
-      setOtpCodeInput('');
-      setOtpVerified(!!data.order.otpVerifiedAt);
-      setOtpError('');
-      setDgAcknowledged(!!data.order.dgAcknowledged);
-      setWarrantyCoverage(10000);
-      setSelectedAddons([]);
-      setPickupDate(pickupDates[0]);
-      setPromoInput('');
-      setPromoError('');
-      setSubmitting(false);
-      if (PAYABLE_STATUSES.includes(data.order.status)) await syncDefaultAddons(data.order.id);
-    } catch (err) {
-      setSubmitting(false);
-      setError(err.response?.data?.error || 'Could not load the next booking.');
-    }
-  }
 
   async function syncAddons(overrides) {
     const payload = {
@@ -271,13 +239,8 @@ export default function Payment() {
           await client.post(`/payments/${order.id}/confirm`, response);
           const succeeded = await pollForSuccess();
           if (succeeded) {
-            if (savedBookings?.length > 0) {
-              setSubmitting(false);
-              setPaidAwaitingNext(true);
-            } else {
-              setBooking({});
-              navigate('/labels');
-            }
+            setBooking({});
+            navigate('/labels');
           } else {
             setError('Payment is processing — refresh in a moment or check your order status.');
             setSubmitting(false);
@@ -294,6 +257,76 @@ export default function Payment() {
     rzp.on('payment.failed', () => {
       setError('Payment failed. Please try again.');
       setSubmitting(false);
+    });
+
+    rzp.open();
+  }
+
+  // Pays for the current order plus every booking saved this session (via
+  // "New booking" on the Details page) in a single Razorpay transaction.
+  async function handleCombinedPay() {
+    setError('');
+    if (!dgAcknowledged) {
+      setError('Please acknowledge the dangerous goods declaration.');
+      return;
+    }
+    if (!otpVerified) {
+      setError('Please verify your email before paying.');
+      return;
+    }
+    if (!window.Razorpay) {
+      setError('Payment checkout failed to load. Please refresh and try again.');
+      return;
+    }
+
+    const allOrders = [order, ...savedBookings];
+    setCombinedSubmitting(true);
+    let checkoutData;
+    try {
+      const { data } = await client.post('/payments/combined/order', { orderIds: allOrders.map((o) => o.id) });
+      checkoutData = data;
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not start payment.');
+      setCombinedSubmitting(false);
+      return;
+    }
+
+    const rzp = new window.Razorpay({
+      key: checkoutData.keyId,
+      order_id: checkoutData.payment.providerOrderId,
+      name: 'Comonn',
+      description: `${allOrders.length} bookings`,
+      handler: async (response) => {
+        try {
+          await client.post(`/payments/${order.id}/confirm`, response);
+          const succeeded = await pollForSuccess();
+          if (!succeeded) {
+            setError('Payment is processing — refresh in a moment or check your order status.');
+            setCombinedSubmitting(false);
+            return;
+          }
+          const results = await Promise.all(allOrders.map(async (o) => {
+            try {
+              const { data } = await client.post(`/labels/${o.id}/generate`);
+              return { orderId: o.id, orderNumber: o.orderNumber, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending };
+            } catch (err) {
+              return { orderId: o.id, orderNumber: o.orderNumber, error: err.response?.data?.error || 'Could not generate this label.' };
+            }
+          }));
+          setCombinedResults(results);
+          setBooking({ quoteInput: null, selectedQuote: null, order: null, savedBookings: [] });
+        } catch (err) {
+          setError(err.response?.data?.error || 'Could not confirm payment.');
+          setCombinedSubmitting(false);
+        }
+      },
+      modal: { ondismiss: () => setCombinedSubmitting(false) },
+      theme: { color: '#0f172a' },
+    });
+
+    rzp.on('payment.failed', () => {
+      setError('Payment failed. Please try again.');
+      setCombinedSubmitting(false);
     });
 
     rzp.open();
@@ -316,13 +349,8 @@ export default function Payment() {
       // creation response rather than overwriting it with this endpoint's
       // response, which only includes `payment`.
       await client.post(`/payments/${order.id}/cash`);
-      if (savedBookings?.length > 0) {
-        setSubmitting(false);
-        setPaidAwaitingNext(true);
-      } else {
-        setBooking({});
-        navigate('/labels');
-      }
+      setBooking({});
+      navigate('/labels');
     } catch (err) {
       setError(err.response?.data?.error || 'Could not confirm the booking.');
       setSubmitting(false);
@@ -338,18 +366,40 @@ export default function Payment() {
     );
   }
 
-  if (paidAwaitingNext) {
+  if (combinedResults) {
     return (
-      <div className="wrap section-narrow" style={{ textAlign: 'center', paddingTop: 20 }}>
-        <span className="pill pill-success" style={{ marginBottom: 14 }}>✓ Payment confirmed</span>
-        <h2 className="h-lg" style={{ marginTop: 10 }}>Order {order.orderNumber} is booked</h2>
-        <p className="lead" style={{ marginTop: 8 }}>
-          You have {savedBookings.length} more booking{savedBookings.length > 1 ? 's' : ''} saved this session, still awaiting payment.
-        </p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
-          <button type="button" className="btn btn-outline" onClick={() => { setBooking({}); navigate('/labels'); }}>I'll pay later</button>
-          <button type="button" className="btn btn-primary" onClick={payNextSavedBooking}>Pay next booking →</button>
+      <div className="wrap section-narrow" style={{ paddingTop: 20 }}>
+        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+          <span className="pill pill-success" style={{ marginBottom: 14 }}>✓ Payment confirmed</span>
+          <h2 className="h-lg" style={{ marginTop: 10 }}>{combinedResults.length} bookings paid</h2>
+          <p className="lead" style={{ marginTop: 8 }}>Print and attach labels to each package before pickup.</p>
         </div>
+        {combinedResults.map((r) => (
+          <div className="card" key={r.orderId} style={{ padding: 22, marginTop: 18 }}>
+            <h4 style={{ marginBottom: 10 }}>Order {r.orderNumber}</h4>
+            {r.error ? (
+              <p className="error-text">{r.error}</p>
+            ) : r.pricingPending ? (
+              <p style={{ fontSize: 13.5, color: 'var(--slate)' }}>We'll weigh and price this at pickup, then collect payment in cash — no label to print yet.</p>
+            ) : (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {r.labels?.map((l) => (
+                  <a key={l.id} className="btn btn-dark btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}${l.downloadUrl}`} target="_blank" rel="noreferrer">
+                    ⬇ Download label{r.labels.length > 1 ? ` (${l.packageIndex}/${r.labels.length})` : ''}
+                  </a>
+                ))}
+                {r.invoice && (
+                  <a className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}${r.invoice.downloadUrl}`} target="_blank" rel="noreferrer">
+                    ⬇ Download invoice
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+        <button className="btn btn-primary block" style={{ marginTop: 24, padding: 14 }} onClick={() => { clearBooking(); navigate('/dashboard'); }}>
+          Go to my orders
+        </button>
       </div>
     );
   }
@@ -416,6 +466,13 @@ export default function Payment() {
   const addonAmount = (code) => order.addons?.find((a) => a.code === code)?.amount;
   const canPay = dgAcknowledged && otpVerified;
   const pricingPending = Boolean(order.pricingPending);
+
+  // Pricing-pending ("Not sure, book pickup") saved bookings have no real
+  // amount to charge — they're confirmed separately (cash at pickup), so
+  // only real priced bookings go into the combined payment.
+  const payableSavedBookings = (savedBookings || []).filter((b) => !b.pricingPending);
+  const pendingCashBookings = (savedBookings || []).filter((b) => b.pricingPending);
+  const combinedTotal = Number(order.grandTotal) + payableSavedBookings.reduce((sum, b) => sum + Number(b.grandTotal), 0);
 
   return (
     <div>
@@ -562,6 +619,37 @@ export default function Payment() {
           </div>
 
           <div className="card summary-sidebar" style={{ padding: 26 }}>
+            {!pricingPending && payableSavedBookings.length > 0 ? (
+              <>
+                <h4 style={{ marginBottom: 4 }}>Payment summary</h4>
+                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 14 }}>
+                  Pay for all {payableSavedBookings.length + 1} bookings from this session in one payment.
+                </p>
+                <div className="sum-line"><span>{order.invoiceNumber || order.orderNumber}</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
+                {payableSavedBookings.map((b) => (
+                  <div className="sum-line" key={b.id}><span>{b.invoiceNumber || b.orderNumber}</span><span className="v">₹{Number(b.grandTotal).toFixed(2)}</span></div>
+                ))}
+                <div className="sum-line total" style={{ marginTop: 8 }}>
+                  <span>Combined total</span>
+                  <span className="v">₹{combinedTotal.toFixed(2)}</span>
+                </div>
+
+                {pendingCashBookings.length > 0 && (
+                  <p style={{ fontSize: 12, color: 'var(--slate-light)', marginTop: 10 }}>
+                    {pendingCashBookings.length} pickup booking{pendingCashBookings.length > 1 ? 's' : ''} ({pendingCashBookings.map((b) => b.orderNumber).join(', ')}) will need separate confirmation — priced in cash at pickup, not part of this payment.
+                  </p>
+                )}
+
+                {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
+
+                <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || combinedSubmitting} onClick={handleCombinedPay}>
+                  {combinedSubmitting ? 'Processing…' : `Pay ₹${combinedTotal.toFixed(2)} now`}
+                </button>
+                {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to pay.</p>}
+                <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 12 }}>🔒 Secured by 256-bit SSL encryption</p>
+              </>
+            ) : (
+              <>
             <h4 style={{ marginBottom: 14 }}>Order summary</h4>
             {pricingPending ? (
               <>
@@ -606,6 +694,8 @@ export default function Payment() {
             )}
             {!pricingPending && (
               <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 12 }}>🔒 Secured by 256-bit SSL encryption</p>
+            )}
+              </>
             )}
           </div>
         </div>
