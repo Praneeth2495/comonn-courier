@@ -85,6 +85,17 @@ async function deleteAddress(req, res, next) {
     await prisma.address.delete({ where: { id: req.params.id } });
     res.json({ ok: true });
   } catch (err) {
+    // This address row is still directly referenced by an order
+    // (senderAddressId/receiverAddressId is a RESTRICT foreign key) — can
+    // happen for older accounts auto-created from a guest checkout, before
+    // account provisioning started cloning addresses instead of reusing
+    // the order's own rows. Prisma surfaces this as a generic
+    // PrismaClientUnknownRequestError (not the usual P2003 code) when the
+    // connection goes through Railway's proxy, so match on the underlying
+    // Postgres error instead of err.code.
+    if (err.code === 'P2003' || /violates.*foreign key constraint/i.test(err.message || '')) {
+      return res.status(409).json({ error: 'This address is linked to an existing order and cannot be deleted.' });
+    }
     next(err);
   }
 }

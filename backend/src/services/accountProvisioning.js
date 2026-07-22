@@ -40,12 +40,33 @@ async function ensureCustomerAccount(order) {
 
   await prisma.order.update({ where: { id: order.id }, data: { userId: user.id } });
 
+  // Clone into new rows rather than flipping isSaved on the order's own
+  // address rows — those stay permanently referenced by the order
+  // (senderAddressId/receiverAddressId is a RESTRICT foreign key), so
+  // reusing them here would make the resulting "saved" entry impossible
+  // to ever delete from the account's address book.
   const addressIds = [order.senderAddressId, order.receiverAddressId].filter(Boolean);
   if (addressIds.length) {
-    await prisma.address.updateMany({
-      where: { id: { in: addressIds } },
-      data: { userId: user.id, isSaved: true },
-    });
+    const addresses = await prisma.address.findMany({ where: { id: { in: addressIds } } });
+    for (const addr of addresses) {
+      await prisma.address.create({
+        data: {
+          userId: user.id,
+          isSaved: true,
+          label: addr.label,
+          contactName: addr.contactName,
+          phone: addr.phone,
+          email: addr.email,
+          instructions: addr.instructions,
+          line1: addr.line1,
+          line2: addr.line2,
+          city: addr.city,
+          state: addr.state,
+          postcode: addr.postcode,
+          countryCode: addr.countryCode,
+        },
+      });
+    }
   }
 
   if (isNewAccount) {

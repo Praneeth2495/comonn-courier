@@ -204,8 +204,12 @@ function SavedAddresses() {
 
   async function remove(id) {
     if (!confirm('Delete this saved address?')) return;
-    await client.delete(`/addresses/${id}`);
-    load();
+    try {
+      await client.delete(`/addresses/${id}`);
+      load();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Could not delete this address — it may still be linked to an existing order.');
+    }
   }
 
   if (loading) return <p className="lead">Loading addresses…</p>;
