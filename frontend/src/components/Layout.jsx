@@ -57,16 +57,27 @@ function AccountMenu({ name, onOpen, onLogout }) {
   );
 }
 
+// Where "Dashboard" in the header should go for a logged-in user, by role.
+function dashboardPath(role) {
+  if (role === 'ADMIN' || role === 'STAFF') return '/admin';
+  if (role === 'DRIVER') return '/driver';
+  return '/dashboard';
+}
+
 export function SiteHeader({ onOpenAccount }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  // Services/About only collapse on mobile when logged in — Dashboard takes
+  // up the extra slot then. Logged-out visitors see all four regardless of
+  // screen size, since there's no Dashboard link competing for space.
+  const hideOnMobile = user ? 'nav-hide-mobile' : '';
   const links = [
-    ...(user?.role === 'CUSTOMER' ? [['/dashboard', 'Dashboard']] : []),
+    ...(user ? [[dashboardPath(user.role), 'Dashboard']] : []),
     ['/quote', 'Book'],
     ['/track', 'Track'],
-    ['/services', 'Services', 'nav-hide-mobile'],
-    ['/about', 'About', 'nav-hide-mobile'],
+    ['/services', 'Services', hideOnMobile],
+    ['/about', 'About', hideOnMobile],
   ];
   return (
     <header className="site-header">
@@ -83,18 +94,11 @@ export function SiteHeader({ onOpenAccount }) {
         </nav>
         <div className="nav-actions">
           {user ? (
-            user.role === 'ADMIN' || user.role === 'STAFF' ? (
-              <>
-                <Link to="/admin" className="btn btn-ghost btn-sm">{user.fullName?.split(' ')[0]}</Link>
-                <button className="btn btn-outline btn-sm" onClick={() => { logout(); navigate('/'); }}>Log out</button>
-              </>
-            ) : (
-              <AccountMenu
-                name={user.fullName?.split(' ')[0]}
-                onOpen={onOpenAccount}
-                onLogout={() => { logout(); navigate('/'); }}
-              />
-            )
+            <AccountMenu
+              name={user.fullName?.split(' ')[0]}
+              onOpen={onOpenAccount}
+              onLogout={() => { logout(); navigate('/'); }}
+            />
           ) : (
             <>
               <Link to="/login" className="btn btn-ghost btn-sm">Login</Link>
