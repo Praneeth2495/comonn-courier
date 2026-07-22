@@ -190,7 +190,9 @@ async function upsertRateCard(req, res, next) {
       currency,
       isActive,
     } = req.body;
-    const data = { serviceId, zoneId, fromZoneId: fromZoneId || null, weightFromKg, weightToKg, basePrice, perKgOverage, currency, isActive };
+    // Base price is optional — a bracket can be priced purely per-kg
+    // (perKgOverage * weight) with no flat component.
+    const data = { serviceId, zoneId, fromZoneId: fromZoneId || null, weightFromKg, weightToKg, basePrice: basePrice === '' || basePrice === undefined || basePrice === null ? 0 : basePrice, perKgOverage, currency, isActive };
     const rateCard = id
       ? await prisma.rateCard.update({ where: { id }, data })
       : await prisma.rateCard.create({ data });
