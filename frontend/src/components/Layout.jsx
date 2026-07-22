@@ -12,6 +12,7 @@ export function SiteHeader() {
     ['/track', 'Track'],
     ['/services', 'Services'],
     ['/about', 'About'],
+    ...(user?.role === 'CUSTOMER' ? [['/dashboard', 'Dashboard']] : []),
   ];
   return (
     <header className="site-header">
