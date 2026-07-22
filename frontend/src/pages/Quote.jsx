@@ -234,6 +234,7 @@ export default function Quote() {
                 <select className="select" value={it.itemType} onChange={(e) => updateItem(idx, 'itemType', e.target.value)}>
                   <option>Box</option>
                   <option>Pallet</option>
+                  <option>Document</option>
                 </select>
                 <select className="select" value={it.weightPreset} onChange={(e) => updateItem(idx, 'weightPreset', e.target.value)}>
                   <option value="">Weight (kg)</option>

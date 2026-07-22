@@ -238,7 +238,7 @@ export default function Home() {
               <div className="field" style={{ marginBottom: 6 }}>
                 <label>Item 1</label>
                 <div className="item-row equal">
-                  <select className="select"><option>Box</option><option>Pallet</option><option>Envelope</option></select>
+                  <select className="select"><option>Box</option><option>Pallet</option><option>Document</option><option>Envelope</option></select>
                   <select className="select" value={weightPreset} onChange={(e) => setWeightPreset(e.target.value)}>
                     <option disabled value="">Weight (kg)</option>
                     {WEIGHT_OPTIONS.map((w) => <option key={w} value={w}>{w}</option>)}

@@ -62,6 +62,7 @@ export default function Payment() {
   const [payMethodTab, setPayMethodTab] = useState('card');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const didInitialSync = useRef(false);
   const addonsSeqRef = useRef(0);
@@ -121,6 +122,18 @@ export default function Payment() {
   function toggleDg(checked) {
     setDgAcknowledged(checked);
     syncAddons({ dgAcknowledged: checked });
+  }
+
+  async function copyPaymentLink() {
+    const link = `${window.location.origin}/pay/${order.id}`;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      window.prompt('Copy this payment link:', link);
+      return;
+    }
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2500);
   }
 
   async function sendOtp() {
@@ -347,6 +360,19 @@ export default function Payment() {
             >
               ← Back
             </button>
+
+            {['ADMIN', 'STAFF'].includes(user?.role) && (
+              <div className="card" style={{ padding: 22, marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h3 style={{ marginBottom: 4 }}>Share payment link</h3>
+                  <p className="lead" style={{ fontSize: 13.5 }}>Send this to the customer so they can complete payment themselves.</p>
+                </div>
+                <button type="button" className="btn btn-outline btn-sm" onClick={copyPaymentLink}>
+                  {linkCopied ? 'Copied ✓' : 'Copy link'}
+                </button>
+              </div>
+            )}
+
             <div className="card" style={{ padding: 26 }}>
               <h3 style={{ marginBottom: 4 }}>Dangerous goods declaration</h3>
               <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>

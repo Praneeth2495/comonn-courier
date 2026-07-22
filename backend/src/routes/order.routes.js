@@ -16,6 +16,7 @@ const {
   sendOtp,
   verifyOtp,
   applyPromo,
+  getOrderForPayment,
 } = require('../controllers/order.controller');
 
 // Prevents OTP-spam abuse (each call sends a real email / checks a guess).
@@ -27,6 +28,9 @@ router.post('/', optionalAuth, createOrder);
 router.get('/', requireAuth, listOrders);
 router.get('/summary', requireAuth, requireRole('ADMIN'), getOrdersSummary);
 router.get('/:id', requireAuth, getOrder);
+// Public, shareable payment-link entry point (see getOrderForPayment) —
+// deliberately no auth: staff share this URL directly with the customer.
+router.get('/:id/pay', getOrderForPayment);
 router.post('/:id/cancel', requireAuth, cancelOrder);
 router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), updateOrderStatus);
 router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF'), assignDriver);

@@ -4,6 +4,7 @@ const {
   verifyPaymentSignature,
   verifyWebhookSignature,
 } = require('../services/paymentService');
+const { sendReceiverBookingNotification } = require('./label.controller');
 
 /**
  * Idempotent: Razorpay retries webhooks at-least-once, and the client-side
@@ -21,7 +22,10 @@ async function markOrderPaid(orderId, extra = {}) {
 
   // Tracking number is just the order number — one identifier for the
   // customer to remember instead of two unrelated-looking ones.
-  const order = await prisma.order.findUnique({ where: { id: orderId }, select: { orderNumber: true } });
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { senderAddress: true, receiverAddress: true },
+  });
   const { count } = await prisma.order.updateMany({
     where: { id: orderId, status: 'PENDING_PAYMENT' },
     data: { status: 'PAID', trackingNumber: order.orderNumber },
@@ -31,6 +35,11 @@ async function markOrderPaid(orderId, extra = {}) {
     await prisma.trackingEvent.create({
       data: { orderId, status: 'PAID', note: 'Payment confirmed' },
     });
+    // Pickup-booking orders ("Not sure, book pickup") never got a receiver
+    // alert at booking time — only once payment is actually confirmed.
+    if (order.pricingPending) {
+      await sendReceiverBookingNotification({ ...order, trackingNumber: order.orderNumber });
+    }
   }
 }
 

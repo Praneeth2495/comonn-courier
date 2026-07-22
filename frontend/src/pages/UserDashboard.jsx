@@ -212,6 +212,8 @@ function SavedAddresses() {
 
   return (
     <div>
+      {editing === null && <button className="btn btn-primary btn-sm" style={{ marginBottom: 16 }} onClick={startAdd}>+ Add address</button>}
+
       {addresses.map((a) => (
         <div className="card addr-card" key={a.id}>
           <div>
@@ -232,8 +234,6 @@ function SavedAddresses() {
       {addresses.length === 0 && editing === null && (
         <div className="empty-state card" style={{ marginBottom: 16 }}><p>No saved addresses yet.</p></div>
       )}
-
-      {editing === null && <button className="btn btn-primary btn-sm" onClick={startAdd}>+ Add address</button>}
 
       {editing !== null && (
         <form className="card" style={{ padding: 22 }} onSubmit={save}>

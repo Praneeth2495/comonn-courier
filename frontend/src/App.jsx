@@ -14,6 +14,7 @@ import About from './pages/About';
 import Quote from './pages/Quote';
 import Details from './pages/Details';
 import Payment from './pages/Payment';
+import PaymentByLink from './pages/PaymentByLink';
 import Labels from './pages/Labels';
 import Track from './pages/Track';
 import UserDashboard from './pages/UserDashboard';
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/quote" element={withLayout(<Quote />)} />
             <Route path="/details" element={withLayout(<Details />)} />
             <Route path="/payment" element={withLayout(<Payment />)} />
+            <Route path="/pay/:orderId" element={withLayout(<PaymentByLink />)} />
             <Route path="/labels" element={withLayout(<Labels />)} />
             <Route path="/track" element={withLayout(<Track />)} />
 

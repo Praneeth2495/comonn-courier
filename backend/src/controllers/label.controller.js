@@ -206,15 +206,17 @@ async function generateLabel(req, res, next) {
 
     // "Not sure, book pickup": weight/price unknown, so there's nothing to
     // print a label or invoice for yet — send a booking-confirmation email
-    // to the sender instead. confirmationEmailSentAt guards against
-    // resending on page reload (these orders never get a Label row, so the
-    // labels.length check below doesn't apply to them).
+    // to the sender instead. The receiver alert is deliberately NOT sent
+    // here — for these cash-collected pickup orders it only goes out once
+    // payment is actually confirmed (see markOrderPaid / updateOrderStatus),
+    // not at initial booking time. confirmationEmailSentAt guards against
+    // resending the sender email on page reload (these orders never get a
+    // Label row, so the labels.length check below doesn't apply to them).
     if (order.pricingPending) {
       const emailedTo = order.senderAddress?.email || order.otpEmail || null;
       if (!order.confirmationEmailSentAt && emailedTo) {
         const accountInfo = await ensureCustomerAccount(order);
         await sendBookingConfirmationEmail(order, emailedTo, accountInfo);
-        await sendReceiverBookingNotification(order);
         await prisma.order.update({ where: { id: order.id }, data: { confirmationEmailSentAt: new Date() } });
       }
       return res.json({ pricingPending: true, emailedTo });
@@ -361,4 +363,4 @@ async function downloadInvoice(req, res, next) {
   }
 }
 
-module.exports = { generateLabel, downloadLabel, downloadInvoice };
+module.exports = { generateLabel, downloadLabel, downloadInvoice, sendReceiverBookingNotification };

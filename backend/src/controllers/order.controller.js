@@ -5,6 +5,7 @@ const { generateOrderNumber } = require('../utils/orderNumber');
 const { generateInvoiceNumber } = require('../utils/invoiceNumber');
 const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addonCatalog');
 const { sendEmail } = require('../services/emailService');
+const { sendReceiverBookingNotification } = require('./label.controller');
 
 /**
  * POST /api/orders
@@ -289,6 +290,28 @@ async function getOrder(req, res, next) {
   }
 }
 
+/**
+ * GET /api/orders/:id/pay — public, shareable payment-link entry point.
+ * Deliberately much narrower than the staff-only GET /:id: only ever
+ * returns an order that's currently PENDING_PAYMENT, so the link stops
+ * working once it's been paid, cancelled, or otherwise moved on — nothing
+ * sensitive to leak via a guessed/expired link.
+ */
+async function getOrderForPayment(req, res, next) {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { service: true, senderAddress: true, receiverAddress: true, items: true, addons: true, payment: true },
+    });
+    if (!order || order.status !== 'PENDING_PAYMENT') {
+      return res.status(404).json({ error: 'This payment link is no longer valid.' });
+    }
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** PATCH /api/orders/:id/status — admin/staff only, also logs a tracking event */
 function titleCaseStatus(status) {
   return status.split('_').map((w) => w[0] + w.slice(1).toLowerCase()).join(' ');
@@ -297,7 +320,10 @@ function titleCaseStatus(status) {
 async function updateOrderStatus(req, res, next) {
   try {
     const { status, location, note } = req.body;
-    const existing = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const existing = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { senderAddress: true, receiverAddress: true },
+    });
     if (!existing) return res.status(404).json({ error: 'Order not found' });
 
     const order = await prisma.order.update({
@@ -318,6 +344,15 @@ async function updateOrderStatus(req, res, next) {
           body: `Order status updated to ${titleCaseStatus(status)}.`,
         },
       });
+    }
+
+    // Pickup-booking orders ("Not sure, book pickup") never got a receiver
+    // alert at booking time — it only goes out once payment is actually
+    // confirmed. Staff manually marking cash collected as PAID is one way
+    // that happens (the online payment flow's own markOrderPaid() covers
+    // the other).
+    if (existing.pricingPending && status === 'PAID' && existing.status !== 'PAID') {
+      await sendReceiverBookingNotification({ ...order, senderAddress: existing.senderAddress, receiverAddress: existing.receiverAddress });
     }
 
     res.json({ order });
@@ -525,6 +560,13 @@ async function updateOrderDetails(req, res, next) {
         currency: quote.pricing.currency,
         pricingBreakdown: quote,
       };
+      // A pickup-booking order ("Not sure, book pickup") just getting a real
+      // price for the first time (staff assessed the parcel and priced it)
+      // needs to go through actual payment — not be treated as a
+      // post-payment edit of an already-settled order.
+      if (order.pricingPending) {
+        orderData.status = 'PENDING_PAYMENT';
+      }
       newItems = quote.items.map((it) => ({
         itemType: it.itemType,
         actualWeightKg: it.actualWeightKg,
@@ -718,5 +760,6 @@ module.exports = {
   sendOtp,
   verifyOtp,
   applyPromo,
+  getOrderForPayment,
   round2,
 };
