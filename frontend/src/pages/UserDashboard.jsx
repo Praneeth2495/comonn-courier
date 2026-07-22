@@ -50,7 +50,7 @@ export default function UserDashboard() {
       setSearchParams((prev) => { prev.delete('account'); return prev; }, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   function loadOrders() {
     setLoading(true);
