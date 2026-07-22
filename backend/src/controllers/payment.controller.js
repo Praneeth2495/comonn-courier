@@ -5,6 +5,7 @@ const {
   verifyWebhookSignature,
 } = require('../services/paymentService');
 const { sendReceiverBookingNotification } = require('./label.controller');
+const { PAYABLE_STATUSES } = require('./order.controller');
 
 /**
  * Idempotent: Razorpay retries webhooks at-least-once, and the client-side
@@ -27,7 +28,7 @@ async function markOrderPaid(orderId, extra = {}) {
     include: { senderAddress: true, receiverAddress: true },
   });
   const { count } = await prisma.order.updateMany({
-    where: { id: orderId, status: 'PENDING_PAYMENT' },
+    where: { id: orderId, status: { in: PAYABLE_STATUSES } },
     data: { status: 'PAID', trackingNumber: order.orderNumber },
   });
 
@@ -55,7 +56,7 @@ async function createOrder(req, res, next) {
       include: { payment: true },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (order.status !== 'PENDING_PAYMENT') {
+    if (!PAYABLE_STATUSES.includes(order.status)) {
       return res.status(409).json({ error: `Order is not awaiting payment (status: ${order.status})` });
     }
     if (!order.dgAcknowledged) {
@@ -204,7 +205,7 @@ async function confirmCashBooking(req, res, next) {
     if (!order.pricingPending) {
       return res.status(409).json({ error: 'Cash booking is only available for pickup orders' });
     }
-    if (order.status !== 'PENDING_PAYMENT') {
+    if (!PAYABLE_STATUSES.includes(order.status)) {
       return res.status(409).json({ error: `Order is not awaiting payment (status: ${order.status})` });
     }
     if (!order.dgAcknowledged) {
@@ -225,7 +226,7 @@ async function confirmCashBooking(req, res, next) {
     // number is just the order number — one identifier for the customer to
     // remember instead of two unrelated-looking ones.
     const { count } = await prisma.order.updateMany({
-      where: { id: order.id, status: 'PENDING_PAYMENT' },
+      where: { id: order.id, status: { in: PAYABLE_STATUSES } },
       data: { status: 'PICKUP_CONFIRMED', trackingNumber: order.orderNumber },
     });
     if (count > 0) {

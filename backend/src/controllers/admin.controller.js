@@ -5,13 +5,13 @@ async function dashboardStats(req, res, next) {
   try {
     const [totalOrders, pendingPayment, paid, inTransit, delivered, revenueAgg] = await Promise.all([
       prisma.order.count(),
-      prisma.order.count({ where: { status: 'PENDING_PAYMENT' } }),
+      prisma.order.count({ where: { status: { in: ['UNFINISHED', 'PENDING_PAYMENT'] } } }),
       prisma.order.count({ where: { status: 'PAID' } }),
       prisma.order.count({ where: { status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
       prisma.order.count({ where: { status: 'DELIVERED' } }),
       prisma.order.aggregate({
         _sum: { grandTotal: true },
-        where: { status: { notIn: ['DRAFT', 'PENDING_PAYMENT', 'CANCELLED'] } },
+        where: { status: { notIn: ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'CANCELLED'] } },
       }),
     ]);
 

@@ -200,7 +200,7 @@ async function generateLabel(req, res, next) {
       },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (order.status === 'DRAFT' || order.status === 'PENDING_PAYMENT') {
+    if (['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT'].includes(order.status)) {
       return res.status(409).json({ error: 'Order must be paid before a label can be generated' });
     }
 

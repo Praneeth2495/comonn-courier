@@ -5,6 +5,11 @@ import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 
+// UNFINISHED: fresh order, not yet paid. PENDING_PAYMENT: a pickup-booking
+// order staff have just priced, ready for actual payment. Both mean "still
+// awaiting payment" for gating purposes here.
+const PAYABLE_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT'];
+
 const WARRANTY_TIERS = [
   { coverage: 10000, label: '₹10,000 cover — Free' },
   { coverage: 25000, label: '₹25,000 cover — ₹300' },
@@ -34,9 +39,10 @@ function nextPickupDates() {
 }
 
 export default function Payment() {
-  const { order: bookingOrder, setBooking, clearBooking } = useBooking();
+  const { order: bookingOrder, savedBookings, setBooking, clearBooking, removeSavedBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [paidAwaitingNext, setPaidAwaitingNext] = useState(false);
 
   const [order, setOrder] = useState(bookingOrder);
   const [pickupDates] = useState(nextPickupDates);
@@ -67,6 +73,22 @@ export default function Payment() {
   const didInitialSync = useRef(false);
   const addonsSeqRef = useRef(0);
 
+  // Sync default add-on state (free warranty tier, today's DG ack, first pickup date) to the order.
+  async function syncDefaultAddons(orderId) {
+    const seq = ++addonsSeqRef.current;
+    try {
+      const { data } = await client.patch(`/orders/${orderId}/addons`, {
+        warrantyCoverage: 10000,
+        addons: [],
+        pickupDate: pickupDates[0],
+        dgAcknowledged: false,
+      });
+      if (seq === addonsSeqRef.current) setOrder(data.order);
+    } catch {
+      // best-effort — the customer can still set these manually below
+    }
+  }
+
   useEffect(() => {
     if (!bookingOrder || didInitialSync.current) return;
     didInitialSync.current = true;
@@ -74,20 +96,43 @@ export default function Payment() {
     // An order already past the payment step (edited by staff via "Edit
     // order") is shown as a read-only updated invoice further down — don't
     // reset its live add-ons/DG-ack back to defaults.
-    if (bookingOrder.status !== 'PENDING_PAYMENT') return;
-    // Sync default add-on state (free warranty tier, today's DG ack, first pickup date) to the order.
-    const seq = ++addonsSeqRef.current;
-    client
-      .patch(`/orders/${bookingOrder.id}/addons`, {
-        warrantyCoverage: 10000,
-        addons: [],
-        pickupDate: pickupDates[0],
-        dgAcknowledged: false,
-      })
-      .then(({ data }) => { if (seq === addonsSeqRef.current) setOrder(data.order); })
-      .catch(() => {});
+    if (!PAYABLE_STATUSES.includes(bookingOrder.status)) return;
+    syncDefaultAddons(bookingOrder.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingOrder?.id]);
+
+  // Loads the next saved booking (from "New booking" on the Details page)
+  // into this same page — re-runs the same reset the initial mount does,
+  // since we're staying on /payment rather than remounting.
+  async function payNextSavedBooking() {
+    if (!savedBookings?.length) return;
+    const next = savedBookings[0];
+    setPaidAwaitingNext(false);
+    setSubmitting(true);
+    setError('');
+    try {
+      const { data } = await client.get(`/orders/${next.id}/pay`);
+      removeSavedBooking(next.id);
+      setBooking({ order: data.order });
+      setOrder(data.order);
+      setOtpEmail(data.order.senderAddress?.email || data.order.receiverAddress?.email || user?.email || '');
+      setOtpSent(false);
+      setOtpCodeInput('');
+      setOtpVerified(!!data.order.otpVerifiedAt);
+      setOtpError('');
+      setDgAcknowledged(!!data.order.dgAcknowledged);
+      setWarrantyCoverage(10000);
+      setSelectedAddons([]);
+      setPickupDate(pickupDates[0]);
+      setPromoInput('');
+      setPromoError('');
+      setSubmitting(false);
+      if (PAYABLE_STATUSES.includes(data.order.status)) await syncDefaultAddons(data.order.id);
+    } catch (err) {
+      setSubmitting(false);
+      setError(err.response?.data?.error || 'Could not load the next booking.');
+    }
+  }
 
   async function syncAddons(overrides) {
     const payload = {
@@ -226,8 +271,13 @@ export default function Payment() {
           await client.post(`/payments/${order.id}/confirm`, response);
           const succeeded = await pollForSuccess();
           if (succeeded) {
-            setBooking({});
-            navigate('/labels');
+            if (savedBookings?.length > 0) {
+              setSubmitting(false);
+              setPaidAwaitingNext(true);
+            } else {
+              setBooking({});
+              navigate('/labels');
+            }
           } else {
             setError('Payment is processing — refresh in a moment or check your order status.');
             setSubmitting(false);
@@ -266,8 +316,13 @@ export default function Payment() {
       // creation response rather than overwriting it with this endpoint's
       // response, which only includes `payment`.
       await client.post(`/payments/${order.id}/cash`);
-      setBooking({});
-      navigate('/labels');
+      if (savedBookings?.length > 0) {
+        setSubmitting(false);
+        setPaidAwaitingNext(true);
+      } else {
+        setBooking({});
+        navigate('/labels');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Could not confirm the booking.');
       setSubmitting(false);
@@ -283,11 +338,27 @@ export default function Payment() {
     );
   }
 
+  if (paidAwaitingNext) {
+    return (
+      <div className="wrap section-narrow" style={{ textAlign: 'center', paddingTop: 20 }}>
+        <span className="pill pill-success" style={{ marginBottom: 14 }}>✓ Payment confirmed</span>
+        <h2 className="h-lg" style={{ marginTop: 10 }}>Order {order.orderNumber} is booked</h2>
+        <p className="lead" style={{ marginTop: 8 }}>
+          You have {savedBookings.length} more booking{savedBookings.length > 1 ? 's' : ''} saved this session, still awaiting payment.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
+          <button type="button" className="btn btn-outline" onClick={() => { setBooking({}); navigate('/labels'); }}>I'll pay later</button>
+          <button type="button" className="btn btn-primary" onClick={payNextSavedBooking}>Pay next booking →</button>
+        </div>
+      </div>
+    );
+  }
+
   // Reached only via an admin/staff "Edit order" on a booking that already
   // moved past the payment step (customers never edit orders in this state)
   // — show the recalculated invoice and any due/credit balance instead of
   // the normal DG/OTP/payment-method UI.
-  if (order.status !== 'PENDING_PAYMENT') {
+  if (!PAYABLE_STATUSES.includes(order.status)) {
     const amountPaid = Number(order.amountPaid || 0);
     const balance = order.balance !== undefined && order.balance !== null ? Number(order.balance) : Number(order.grandTotal) - amountPaid;
     return (

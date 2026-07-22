@@ -111,9 +111,10 @@ function Stat({ label, value }) {
   );
 }
 
-const ORDER_STATUSES = ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
+const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
 
 const STATUS_PILL = {
+  UNFINISHED: 'pill-warn',
   PENDING_PAYMENT: 'pill-warn',
   PICKUP_CONFIRMED: 'pill-cobalt',
   PAID: 'pill-cobalt',
@@ -129,11 +130,15 @@ const STATUS_PILL = {
 // Third element is the status filter; fourth is the filter mode when there's
 // no status list — 'hasUser' scopes to orders tied to a registered account,
 // 'all' shows every booking regardless of account/status.
+// UNFINISHED = a quote+details started but payment never even reached
+// (leads for follow-up). PENDING_PAYMENT is now narrower — a pickup-booking
+// order staff have already priced and pushed to real payment — tracked
+// alongside the rest of the pickup pipeline rather than Unconfirmed.
 const ORDER_TABS = [
   ['bookings', 'Bookings', null, 'all'],
-  ['pickup', 'Pickup orders', ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
+  ['pickup', 'Pickup orders', ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
   ['delivery', 'Delivery orders', ['IN_TRANSIT', 'OUT_FOR_DELIVERY']],
-  ['unconfirmed', 'Unconfirmed orders', ['PENDING_PAYMENT']],
+  ['unconfirmed', 'Unconfirmed orders', ['UNFINISHED']],
 ];
 
 // Reshapes a fetched order back into the same quoteInput/selectedQuote shape

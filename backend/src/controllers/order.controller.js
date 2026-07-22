@@ -7,12 +7,24 @@ const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addo
 const { sendEmail } = require('../services/emailService');
 const { sendReceiverBookingNotification } = require('./label.controller');
 
+// UNFINISHED: a customer created a quote + entered details but hasn't
+// completed payment yet — the resting status for every newly-created order.
+// PENDING_PAYMENT is now reserved for a narrower, staff-driven case: a
+// pickup-booking order ("Not sure, book pickup") that's just been given a
+// real price via admin/staff Edit order, ready for actual payment — these
+// are tracked in the Pickup orders tab rather than Unconfirmed, since
+// they're already a confirmed pickup, just awaiting payment completion.
+// Both are "not yet paid" for gating purposes (editable, payable), so
+// guards throughout this file and payment.controller.js check against
+// this combined list rather than the single literal status.
+const PAYABLE_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT'];
+
 /**
  * POST /api/orders
  * Step 2 of the flow ("Add Details"): takes the chosen service + parcel
  * details + sender/receiver addresses, re-prices server-side (never trust
  * a client-supplied price), persists an immutable pricing snapshot, and
- * creates a DRAFT/PENDING_PAYMENT order ready for the payment step.
+ * creates a DRAFT/UNFINISHED order ready for the payment step.
  *
  * Works for both logged-in customers (userId attached) and guest checkout
  * (userId omitted — order still gets created, can be claimed on the
@@ -89,7 +101,7 @@ async function createOrder(req, res, next) {
         taxTotal: 0,
         grandTotal: 0,
         currency: 'INR',
-        status: 'PENDING_PAYMENT',
+        status: 'UNFINISHED',
       };
     } else {
       // Re-price authoritatively on the server.
@@ -133,7 +145,7 @@ async function createOrder(req, res, next) {
         grandTotal: quote.pricing.grandTotal,
         currency: quote.pricing.currency,
         pricingBreakdown: quote,
-        status: 'PENDING_PAYMENT',
+        status: 'UNFINISHED',
       };
     }
 
@@ -293,7 +305,7 @@ async function getOrder(req, res, next) {
 /**
  * GET /api/orders/:id/pay — public, shareable payment-link entry point.
  * Deliberately much narrower than the staff-only GET /:id: only ever
- * returns an order that's currently PENDING_PAYMENT, so the link stops
+ * returns an order that's still awaiting payment, so the link stops
  * working once it's been paid, cancelled, or otherwise moved on — nothing
  * sensitive to leak via a guessed/expired link.
  */
@@ -303,7 +315,7 @@ async function getOrderForPayment(req, res, next) {
       where: { id: req.params.id },
       include: { service: true, senderAddress: true, receiverAddress: true, items: true, addons: true, payment: true },
     });
-    if (!order || order.status !== 'PENDING_PAYMENT') {
+    if (!order || !PAYABLE_STATUSES.includes(order.status)) {
       return res.status(404).json({ error: 'This payment link is no longer valid.' });
     }
     res.json({ order });
@@ -480,7 +492,7 @@ async function updateOrderDetails(req, res, next) {
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
     const isStaff = req.user && ['ADMIN', 'STAFF'].includes(req.user.role);
-    if (order.status !== 'PENDING_PAYMENT' && !isStaff) {
+    if (!PAYABLE_STATUSES.includes(order.status) && !isStaff) {
       return res.status(409).json({ error: 'This order can no longer be edited from the booking flow. Contact support.' });
     }
 
@@ -621,7 +633,7 @@ async function updateAddons(req, res, next) {
   try {
     const order = await prisma.order.findUnique({ where: { id: req.params.id }, include: { items: true } });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (order.status !== 'PENDING_PAYMENT') {
+    if (!PAYABLE_STATUSES.includes(order.status)) {
       return res.status(409).json({ error: 'Order is no longer awaiting payment' });
     }
 
@@ -666,7 +678,7 @@ async function sendOtp(req, res, next) {
 
     const order = await prisma.order.findUnique({ where: { id: req.params.id } });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (order.status !== 'PENDING_PAYMENT') {
+    if (!PAYABLE_STATUSES.includes(order.status)) {
       return res.status(409).json({ error: 'Order is no longer awaiting payment' });
     }
 
@@ -722,7 +734,7 @@ async function applyPromo(req, res, next) {
 
     const order = await prisma.order.findUnique({ where: { id: req.params.id } });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (order.status !== 'PENDING_PAYMENT') {
+    if (!PAYABLE_STATUSES.includes(order.status)) {
       return res.status(409).json({ error: 'Order is no longer awaiting payment' });
     }
 
@@ -762,4 +774,5 @@ module.exports = {
   applyPromo,
   getOrderForPayment,
   round2,
+  PAYABLE_STATUSES,
 };

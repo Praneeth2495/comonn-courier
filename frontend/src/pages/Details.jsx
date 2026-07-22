@@ -39,8 +39,12 @@ function fromSavedAddress(saved) {
   };
 }
 
+function isAddressFilled(addr) {
+  return !!(addr.contactName && addr.phoneNumber && addr.line1 && addr.city && addr.postcode && addr.countryCode);
+}
+
 export default function Details() {
-  const { quoteInput, selectedQuote, order: bookingOrder, setBooking, clearBooking } = useBooking();
+  const { quoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking, addSavedBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [sender, setSender] = useState(() => (bookingOrder ? fromSavedAddress(bookingOrder.senderAddress) : emptyAddress('IN')));
@@ -50,6 +54,7 @@ export default function Details() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [savedAddresses, setSavedAddresses] = useState([]);
+  const [showNewBookingConfirm, setShowNewBookingConfirm] = useState(false);
 
   useEffect(() => {
     if (user) client.get('/addresses').then(({ data }) => setSavedAddresses(data.addresses)).catch(() => {});
@@ -87,9 +92,37 @@ export default function Details() {
     };
   }
 
-  function newBooking() {
-    clearBooking();
-    navigate('/quote');
+  // Shared by the normal "Book now" submit and "New booking" (which saves
+  // the current one before starting the next) — creates or updates the
+  // order and returns it.
+  async function saveOrder() {
+    const payload = {
+      serviceCode: pricingPending ? undefined : selectedQuote.service.code,
+      sender: toAddressPayload(sender),
+      receiver: toAddressPayload(receiver),
+      items: quoteInput.items,
+      declaredValue: Number(declaredValue) || 0,
+      contentsDescription,
+      pricingPending,
+    };
+    // If an order already exists from a prior visit to this step (e.g. the
+    // customer went back and changed something, or staff are editing an
+    // existing booking), update it in place rather than creating a
+    // duplicate order. But a completed order (already past payment)
+    // left over in context from a previous booking — e.g. the customer
+    // started a new quote without explicitly finishing the last one —
+    // must NOT be treated as "still being edited": only staff can edit an
+    // already-settled order; for anyone else, still awaiting payment
+    // (UNFINISHED, or PENDING_PAYMENT once staff have priced a pickup
+    // booking) is what actually means "this is the same in-progress booking."
+    const isEditingExisting = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role));
+    const { data } = isEditingExisting
+      ? await client.patch(`/orders/${bookingOrder.id}/details`, payload)
+      : await client.post('/orders', payload);
+    // amountPaid/balance (only present on the edit/PATCH response) ride
+    // along on the order object so Payment.jsx can show an updated
+    // invoice with any due/credit balance for orders edited after payment.
+    return isEditingExisting ? { ...data.order, amountPaid: data.amountPaid, balance: data.balance } : data.order;
   }
 
   async function submit(e) {
@@ -97,32 +130,7 @@ export default function Details() {
     setError('');
     setLoading(true);
     try {
-      const payload = {
-        serviceCode: pricingPending ? undefined : selectedQuote.service.code,
-        sender: toAddressPayload(sender),
-        receiver: toAddressPayload(receiver),
-        items: quoteInput.items,
-        declaredValue: Number(declaredValue) || 0,
-        contentsDescription,
-        pricingPending,
-      };
-      // If an order already exists from a prior visit to this step (e.g. the
-      // customer went back and changed something, or staff are editing an
-      // existing booking), update it in place rather than creating a
-      // duplicate order. But a completed order (already past payment)
-      // left over in context from a previous booking — e.g. the customer
-      // started a new quote without explicitly finishing the last one —
-      // must NOT be treated as "still being edited": only staff can edit an
-      // already-settled order; for anyone else, still-PENDING_PAYMENT is
-      // what actually means "this is the same in-progress booking."
-      const isEditingExisting = bookingOrder && (bookingOrder.status === 'PENDING_PAYMENT' || ['ADMIN', 'STAFF'].includes(user?.role));
-      const { data } = isEditingExisting
-        ? await client.patch(`/orders/${bookingOrder.id}/details`, payload)
-        : await client.post('/orders', payload);
-      // amountPaid/balance (only present on the edit/PATCH response) ride
-      // along on the order object so Payment.jsx can show an updated
-      // invoice with any due/credit balance for orders edited after payment.
-      const nextOrder = isEditingExisting ? { ...data.order, amountPaid: data.amountPaid, balance: data.balance } : data.order;
+      const nextOrder = await saveOrder();
       setBooking({ order: nextOrder });
       navigate('/payment');
     } catch (err) {
@@ -130,6 +138,38 @@ export default function Details() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleNewBookingClick() {
+    if (!isAddressFilled(sender) || !isAddressFilled(receiver)) {
+      setShowNewBookingConfirm(true);
+      return;
+    }
+    saveCurrentAndStartNew();
+  }
+
+  async function saveCurrentAndStartNew() {
+    setShowNewBookingConfirm(false);
+    setError('');
+    setLoading(true);
+    try {
+      const savedOrder = await saveOrder();
+      addSavedBooking(savedOrder);
+      navigate('/quote');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not save this booking. Please check the details and try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // "Cancel" in the confirm popup — discard the current, not-yet-filled-in
+  // attempt (but keep any other bookings already saved this session) and
+  // start fresh.
+  function discardAndStartNew() {
+    setShowNewBookingConfirm(false);
+    setBooking({ quoteInput: null, selectedQuote: null, order: null });
+    navigate('/quote');
   }
 
   return (
@@ -144,6 +184,22 @@ export default function Details() {
         >
           ← Back
         </button>
+
+        {savedBookings?.length > 0 && (
+          <div className="card" style={{ padding: '14px 18px', marginBottom: 16, background: 'var(--paper)' }}>
+            <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--slate-light)', fontWeight: 700, marginBottom: 8 }}>
+              {savedBookings.length} other booking{savedBookings.length > 1 ? 's' : ''} saved this session
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {savedBookings.map((b) => (
+                <span key={b.id} className="pill pill-navy" style={{ fontSize: 12 }}>
+                  {b.orderNumber} · {b.senderAddress?.city} → {b.receiverAddress?.city}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <form onSubmit={submit}>
           <div className="card summary-card">
             <div className="summary-top"><h3>Booking summary</h3></div>
@@ -210,13 +266,30 @@ export default function Details() {
           {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
           <div style={{ display: 'flex', gap: 14, marginTop: 26 }}>
-            <button type="button" className="btn btn-outline" style={{ flex: 1, padding: 13 }} onClick={newBooking}>New booking</button>
+            <button type="button" className="btn btn-outline" style={{ flex: 1, padding: 13 }} disabled={loading} onClick={handleNewBookingClick}>
+              {loading ? 'Saving…' : 'New booking'}
+            </button>
             <button className="btn btn-primary" style={{ flex: 1, padding: 13 }} disabled={loading}>
               {loading ? 'Booking…' : 'Book now →'}
             </button>
           </div>
         </form>
       </div>
+
+      {showNewBookingConfirm && (
+        <div className="modal-overlay open" onClick={() => setShowNewBookingConfirm(false)}>
+          <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 8 }}>Details not added</h3>
+            <p className="lead" style={{ fontSize: 13.5, marginBottom: 22 }}>
+              This booking's receiver/sender details aren't filled in yet. Continue filling them in, or cancel this booking to start a new one.
+            </p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={discardAndStartNew}>Cancel</button>
+              <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={() => setShowNewBookingConfirm(false)}>Continue to add details</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

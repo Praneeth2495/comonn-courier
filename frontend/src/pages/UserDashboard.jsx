@@ -7,6 +7,7 @@ import ChangePassword from '../components/ChangePassword';
 
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
+  UNFINISHED: 'pill-warn',
   PENDING_PAYMENT: 'pill-warn',
   PICKUP_CONFIRMED: 'pill-cobalt',
   PAID: 'pill-cobalt',
@@ -127,7 +128,7 @@ export default function UserDashboard() {
                   <span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {o.status === 'PENDING_PAYMENT' && (
+                  {['UNFINISHED', 'PENDING_PAYMENT'].includes(o.status) && (
                     <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Continue booking →</button>
                   )}
                   {o.trackingNumber && (

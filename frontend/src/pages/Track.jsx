@@ -6,6 +6,7 @@ const SHIP_STAGES = ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED']
 const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered' };
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
+  UNFINISHED: 'pill-warn',
   PENDING_PAYMENT: 'pill-warn',
   PICKUP_CONFIRMED: 'pill-cobalt',
   PAID: 'pill-cobalt',
