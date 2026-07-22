@@ -47,7 +47,16 @@ export default function Details() {
   const { quoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking, addSavedBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [sender, setSender] = useState(() => (bookingOrder ? fromSavedAddress(bookingOrder.senderAddress) : emptyAddress('IN')));
+  const [sender, setSender] = useState(() => {
+    if (bookingOrder) return fromSavedAddress(bookingOrder.senderAddress);
+    // Pre-fill from the pickup pincode entered on the Quote page's Origin
+    // field, if the customer picked a suggestion there.
+    const base = emptyAddress('IN');
+    if (quoteInput?.originPostcode) base.postcode = quoteInput.originPostcode;
+    if (quoteInput?.originSuburb) base.city = quoteInput.originSuburb;
+    if (quoteInput?.originState) base.state = quoteInput.originState;
+    return base;
+  });
   const [receiver, setReceiver] = useState(() => (bookingOrder ? fromSavedAddress(bookingOrder.receiverAddress) : emptyAddress(quoteInput?.destinationCountryCode || '')));
   const [contentsDescription, setContentsDescription] = useState(bookingOrder?.contentsDescription || '');
   const [declaredValue, setDeclaredValue] = useState(bookingOrder?.declaredValue ? String(bookingOrder.declaredValue) : '');
@@ -387,7 +396,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
                   className="acct-menu-item"
                   onClick={() => pickSuggestion(s)}
                 >
-                  {s.suburb}, {s.state}
+                  {value.postcode}, {s.suburb}, {s.state}
                 </button>
               ))}
             </div>

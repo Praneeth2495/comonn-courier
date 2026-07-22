@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
@@ -60,6 +60,10 @@ export default function Quote() {
   const { quoteInput, selectedQuote, order: bookingOrder, setBooking } = useBooking();
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || '');
+  const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || '');
+  const [originSuggestions, setOriginSuggestions] = useState([]);
+  const [originPicked, setOriginPicked] = useState(quoteInput?.originSuburb ? { suburb: quoteInput.originSuburb, state: quoteInput.originState } : null);
+  const originDebounceRef = useRef(null);
   const [items, setItems] = useState(() => hydrateItems(quoteInput));
   const [quotes, setQuotes] = useState(selectedQuote ? [selectedQuote] : null);
   const [selected, setSelected] = useState(selectedQuote || null);
@@ -91,6 +95,30 @@ export default function Quote() {
 
   function updateItem(idx, field, value) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
+  }
+
+  // Origin (pickup) postcode autocomplete — same India-only suggestion
+  // dataset used on the Details page's address forms, offered here too so
+  // the quote can reflect origin-zone pricing from the start, and so
+  // Details.jsx can pre-fill the sender's postcode/city/state from it.
+  function handleOriginPostcodeChange(v) {
+    setOriginPostcode(v);
+    setOriginPicked(null);
+    clearTimeout(originDebounceRef.current);
+    if (!/^\d{6}$/.test(v)) {
+      setOriginSuggestions([]);
+      return;
+    }
+    originDebounceRef.current = setTimeout(() => {
+      client.get('/quote/postcode-suggestions', { params: { postcode: v } })
+        .then(({ data }) => setOriginSuggestions(data.suggestions))
+        .catch(() => setOriginSuggestions([]));
+    }, 400);
+  }
+
+  function pickOriginSuggestion(s) {
+    setOriginPicked(s);
+    setOriginSuggestions([]);
   }
 
   function addItem() {
@@ -140,6 +168,9 @@ export default function Quote() {
           destinationCountryName: countryObj?.countryName || destinationCountryCode,
           items: pickupItems,
           pricingPending: true,
+          originPostcode: originPostcode || undefined,
+          originSuburb: originPicked?.suburb,
+          originState: originPicked?.state,
         },
         selectedQuote: null,
         // Preserve an in-progress order (e.g. an admin/staff "Edit order"
@@ -161,7 +192,7 @@ export default function Quote() {
     setQuotes(null);
     setSelected(null);
     try {
-      const { data } = await client.post('/quote', { destinationCountryCode, items: parsedItems });
+      const { data } = await client.post('/quote', { destinationCountryCode, items: parsedItems, originPostcode: originPostcode || undefined });
       setQuotes(data.quotes);
     } catch (err) {
       setError(err.response?.data?.error || 'Could not get a quote — please check the details and try again.');
@@ -173,7 +204,17 @@ export default function Quote() {
   function continueToDetails() {
     if (!selected) return;
     const parsedItems = buildItemsPayload();
-    setBooking({ quoteInput: { destinationCountryCode, items: parsedItems }, selectedQuote: selected, order: bookingOrder || null });
+    setBooking({
+      quoteInput: {
+        destinationCountryCode,
+        items: parsedItems,
+        originPostcode: originPostcode || undefined,
+        originSuburb: originPicked?.suburb,
+        originState: originPicked?.state,
+      },
+      selectedQuote: selected,
+      order: bookingOrder || null,
+    });
     navigate('/details');
   }
 
@@ -212,12 +253,28 @@ export default function Quote() {
           </div>
 
           <div className="grid-2">
-            <div className="field">
+            <div className="field" style={{ position: 'relative' }}>
               <label>Origin</label>
               <div className="input-group">
                 <select className="flag" disabled defaultValue="🇮🇳 IN"><option>🇮🇳 IN</option></select>
-                <input placeholder="India" disabled style={{ color: 'var(--slate-light)' }} />
+                <input
+                  placeholder="Pickup pincode"
+                  value={originPostcode}
+                  onChange={(e) => handleOriginPostcodeChange(e.target.value)}
+                />
               </div>
+              {originPicked && (
+                <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 4 }}>✓ {originPostcode}, {originPicked.suburb}, {originPicked.state}</p>
+              )}
+              {originSuggestions.length > 0 && (
+                <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
+                  {originSuggestions.map((s, i) => (
+                    <button type="button" key={i} className="acct-menu-item" onClick={() => pickOriginSuggestion(s)}>
+                      {originPostcode}, {s.suburb}, {s.state}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="field">
               <label>Destination</label>

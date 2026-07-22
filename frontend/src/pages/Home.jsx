@@ -1,5 +1,7 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import client from '../api/client';
+import { useBooking } from '../api/BookingContext';
 
 const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
 
@@ -155,6 +157,7 @@ function ArrowIcon() {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { setBooking } = useBooking();
   const [qty, setQty] = useState(1);
   const [trackId, setTrackId] = useState('');
   const [weightPreset, setWeightPreset] = useState('');
@@ -162,9 +165,40 @@ export default function Home() {
   const [lengthCm, setLengthCm] = useState('');
   const [widthCm, setWidthCm] = useState('');
   const [heightCm, setHeightCm] = useState('');
+  const [originPostcode, setOriginPostcode] = useState('');
+  const [originSuggestions, setOriginSuggestions] = useState([]);
+  const [originPicked, setOriginPicked] = useState(null);
+  const originDebounceRef = useRef(null);
+
+  // Same India-only postcode suggestion dataset used on the Details page —
+  // offered here too so the pickup pincode carries forward to the Book
+  // page (and from there, pre-fills the sender's address) instead of
+  // having to be re-entered.
+  function handleOriginPostcodeChange(v) {
+    setOriginPostcode(v);
+    setOriginPicked(null);
+    clearTimeout(originDebounceRef.current);
+    if (!/^\d{6}$/.test(v)) {
+      setOriginSuggestions([]);
+      return;
+    }
+    originDebounceRef.current = setTimeout(() => {
+      client.get('/quote/postcode-suggestions', { params: { postcode: v } })
+        .then(({ data }) => setOriginSuggestions(data.suggestions))
+        .catch(() => setOriginSuggestions([]));
+    }, 400);
+  }
+
+  function pickOriginSuggestion(s) {
+    setOriginPicked(s);
+    setOriginSuggestions([]);
+  }
 
   function handleGetQuote(e) {
     e.preventDefault();
+    if (originPostcode) {
+      setBooking({ quoteInput: { originPostcode, originSuburb: originPicked?.suburb, originState: originPicked?.state } });
+    }
     navigate('/quote');
   }
 
@@ -201,12 +235,28 @@ export default function Home() {
                 <span className="pill pill-cobalt">Get a quote in 4 clicks</span>
               </div>
 
-              <div className="field">
+              <div className="field" style={{ position: 'relative' }}>
                 <label>Origin</label>
                 <div className="input-group">
                   <select className="flag" disabled defaultValue="🇮🇳 IN"><option>🇮🇳 IN</option></select>
-                  <input placeholder="India" disabled style={{ color: 'var(--slate-light)' }} />
+                  <input
+                    placeholder="Pickup pincode"
+                    value={originPostcode}
+                    onChange={(e) => handleOriginPostcodeChange(e.target.value)}
+                  />
                 </div>
+                {originPicked && (
+                  <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 4 }}>✓ {originPostcode}, {originPicked.suburb}, {originPicked.state}</p>
+                )}
+                {originSuggestions.length > 0 && (
+                  <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
+                    {originSuggestions.map((s, i) => (
+                      <button type="button" key={i} className="acct-menu-item" onClick={() => pickOriginSuggestion(s)}>
+                        {originPostcode}, {s.suburb}, {s.state}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="route-line" />

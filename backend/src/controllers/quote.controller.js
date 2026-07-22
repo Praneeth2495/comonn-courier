@@ -38,7 +38,7 @@ function renderQuoteEmailHtml(quote) {
  */
 async function getInstantQuote(req, res, next) {
   try {
-    const { serviceCode, destinationCountryCode, items, declaredValue } = req.body;
+    const { serviceCode, destinationCountryCode, items, declaredValue, originPostcode } = req.body;
 
     if (!destinationCountryCode || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
@@ -75,6 +75,8 @@ async function getInstantQuote(req, res, next) {
           destinationCountryCode,
           items,
           declaredValue,
+          originCountryCode: originPostcode ? 'IN' : undefined,
+          originPostcode,
         });
         quotes.push(quote);
       } catch (innerErr) {
