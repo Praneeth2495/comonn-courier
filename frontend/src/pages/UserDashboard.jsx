@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
@@ -29,6 +29,7 @@ export default function UserDashboard() {
   const { user } = useAuth();
   const { setBooking } = useBooking();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState('active');
   const [orders, setOrders] = useState([]);
   const [q, setQ] = useState('');
@@ -36,6 +37,17 @@ export default function UserDashboard() {
   const [selected, setSelected] = useState(null);
   const [showAccount, setShowAccount] = useState(false);
   const labelRequestedRef = useRef(new Set());
+
+  // The header's profile name link navigates here with ?account=1 to open
+  // this panel directly (see Layout.jsx's SiteHeader) — clear the param
+  // right away so it doesn't linger in the URL.
+  useEffect(() => {
+    if (searchParams.get('account')) {
+      setShowAccount(true);
+      setSearchParams((prev) => { prev.delete('account'); return prev; }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function loadOrders() {
     setLoading(true);
@@ -83,22 +95,17 @@ export default function UserDashboard() {
   return (
     <div className="wrap section">
       <div>
-        <h1
-          className="h-lg"
-          style={{ marginBottom: 4, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}
-          onClick={() => setShowAccount((v) => !v)}
-          title={showAccount ? 'Hide account settings' : 'Account settings'}
-        >
-          Hi, {user?.fullName?.split(' ')[0]} 👋
-          <span style={{ fontSize: 13, color: 'var(--slate-light)', transform: showAccount ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>▾</span>
-        </h1>
+        <h1 className="h-lg" style={{ marginBottom: 4 }}>Hi, {user?.fullName?.split(' ')[0]} 👋</h1>
         <p className="lead" style={{ marginBottom: 24 }}>Here's what's happening with your shipments.</p>
       </div>
 
       {showAccount && (
-        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 24 }}>
-          <EditProfile />
-          <ChangePassword />
+        <div style={{ marginBottom: 24 }}>
+          <button className="btn btn-outline btn-sm" style={{ marginBottom: 14 }} onClick={() => setShowAccount(false)}>✕ Close account settings</button>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+            <EditProfile />
+            <ChangePassword />
+          </div>
         </div>
       )}
 

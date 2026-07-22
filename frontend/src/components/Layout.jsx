@@ -31,7 +31,7 @@ export function SiteHeader() {
           {user ? (
             <>
               <Link
-                to={user.role === 'ADMIN' || user.role === 'STAFF' ? '/admin' : '/dashboard'}
+                to={user.role === 'ADMIN' || user.role === 'STAFF' ? '/admin' : '/dashboard?account=1'}
                 className="btn btn-ghost btn-sm"
               >
                 {user.fullName?.split(' ')[0]}
