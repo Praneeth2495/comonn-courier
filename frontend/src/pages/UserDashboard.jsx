@@ -82,14 +82,17 @@ export default function UserDashboard() {
 
   return (
     <div className="wrap section">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 className="h-lg" style={{ marginBottom: 4 }}>Hi, {user?.fullName?.split(' ')[0]} 👋</h1>
-          <p className="lead" style={{ marginBottom: 24 }}>Here's what's happening with your shipments.</p>
-        </div>
-        <button className="btn btn-outline btn-sm" onClick={() => setShowAccount((v) => !v)}>
-          {showAccount ? 'Hide account settings' : 'Account settings'}
-        </button>
+      <div>
+        <h1
+          className="h-lg"
+          style={{ marginBottom: 4, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+          onClick={() => setShowAccount((v) => !v)}
+          title={showAccount ? 'Hide account settings' : 'Account settings'}
+        >
+          Hi, {user?.fullName?.split(' ')[0]} 👋
+          <span style={{ fontSize: 13, color: 'var(--slate-light)', transform: showAccount ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>▾</span>
+        </h1>
+        <p className="lead" style={{ marginBottom: 24 }}>Here's what's happening with your shipments.</p>
       </div>
 
       {showAccount && (
