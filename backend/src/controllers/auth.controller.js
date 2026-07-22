@@ -71,6 +71,35 @@ async function me(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/auth/me — update the logged-in user's own profile details.
+ * Email is deliberately not editable here — it's the login identifier and
+ * is also used to match guest orders, so changing it needs its own
+ * verification flow rather than a plain field edit.
+ */
+async function updateProfile(req, res, next) {
+  try {
+    const { fullName, phone, company } = req.body;
+    if (fullName !== undefined && !fullName.trim()) {
+      return res.status(400).json({ error: 'fullName cannot be empty' });
+    }
+
+    const data = {};
+    if (fullName !== undefined) data.fullName = fullName.trim();
+    if (phone !== undefined) data.phone = phone.trim() || null;
+    if (company !== undefined) data.company = company.trim() || null;
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data,
+      select: { id: true, email: true, fullName: true, phone: true, company: true, role: true, createdAt: true },
+    });
+    res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function changePassword(req, res, next) {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -163,4 +192,4 @@ async function setPassword(req, res, next) {
   }
 }
 
-module.exports = { register, login, me, changePassword, forgotPassword, setPassword };
+module.exports = { register, login, me, updateProfile, changePassword, forgotPassword, setPassword };

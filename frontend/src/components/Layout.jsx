@@ -10,8 +10,8 @@ export function SiteHeader() {
   const links = [
     ['/quote', 'Book'],
     ['/track', 'Track'],
-    ['/services', 'Services'],
-    ['/about', 'About'],
+    ['/services', 'Services', 'nav-hide-mobile'],
+    ['/about', 'About', 'nav-hide-mobile'],
     ...(user?.role === 'CUSTOMER' ? [['/dashboard', 'Dashboard']] : []),
   ];
   return (
@@ -21,8 +21,8 @@ export function SiteHeader() {
           <img className="logo-img lg" src={logoFull} alt="Comonn" />
         </Link>
         <nav className="nav-links">
-          {links.map(([to, label]) => (
-            <Link key={to} to={to} className={pathname === to ? 'current' : ''}>
+          {links.map(([to, label, extraClass]) => (
+            <Link key={to} to={to} className={[pathname === to ? 'current' : '', extraClass].filter(Boolean).join(' ')}>
               {label}
             </Link>
           ))}

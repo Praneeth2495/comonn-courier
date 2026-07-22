@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
 import ChangePassword from '../components/ChangePassword';
+import EditProfile from '../components/EditProfile';
 
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
@@ -91,7 +92,12 @@ export default function UserDashboard() {
         </button>
       </div>
 
-      {showAccount && <div style={{ marginBottom: 24 }}><ChangePassword /></div>}
+      {showAccount && (
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 24 }}>
+          <EditProfile />
+          <ChangePassword />
+        </div>
+      )}
 
       <div className="acct-tabs">
         {ACCT_TABS.map(([key, label]) => (
