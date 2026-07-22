@@ -306,11 +306,12 @@ export default function Payment() {
             return;
           }
           const results = await Promise.all(allOrders.map(async (o) => {
+            const destination = o.receiverAddress ? `${o.receiverAddress.city}, ${o.receiverAddress.countryCode}` : '—';
             try {
               const { data } = await client.post(`/labels/${o.id}/generate`);
-              return { orderId: o.id, orderNumber: o.orderNumber, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending };
+              return { orderId: o.id, orderNumber: o.orderNumber, destination, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending };
             } catch (err) {
-              return { orderId: o.id, orderNumber: o.orderNumber, error: err.response?.data?.error || 'Could not generate this label.' };
+              return { orderId: o.id, orderNumber: o.orderNumber, destination, error: err.response?.data?.error || 'Could not generate this label.' };
             }
           }));
           setCombinedResults(results);
@@ -376,7 +377,10 @@ export default function Payment() {
         </div>
         {combinedResults.map((r) => (
           <div className="card" key={r.orderId} style={{ padding: 22, marginTop: 18 }}>
-            <h4 style={{ marginBottom: 10 }}>Order {r.orderNumber}</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+              <h4>Order {r.orderNumber}</h4>
+              <span style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>→ {r.destination}</span>
+            </div>
             {r.error ? (
               <p className="error-text">{r.error}</p>
             ) : r.pricingPending ? (
@@ -625,9 +629,9 @@ export default function Payment() {
                 <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 14 }}>
                   Pay for all {payableSavedBookings.length + 1} bookings from this session in one payment.
                 </p>
-                <div className="sum-line"><span>{order.invoiceNumber || order.orderNumber}</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
+                <div className="sum-line"><span>Order {order.orderNumber}</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
                 {payableSavedBookings.map((b) => (
-                  <div className="sum-line" key={b.id}><span>{b.invoiceNumber || b.orderNumber}</span><span className="v">₹{Number(b.grandTotal).toFixed(2)}</span></div>
+                  <div className="sum-line" key={b.id}><span>Order {b.orderNumber}</span><span className="v">₹{Number(b.grandTotal).toFixed(2)}</span></div>
                 ))}
                 <div className="sum-line total" style={{ marginTop: 8 }}>
                   <span>Combined total</span>
