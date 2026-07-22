@@ -38,7 +38,7 @@ input,select,textarea{font-family:inherit;}
 .nav-links a{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--slate);}
 .nav-links a:hover{background:var(--paper);color:var(--ink);}
 .nav-links a.current{color:var(--navy);font-weight:600;background:var(--paper);}
-.acct-menu-item{display:block;padding:9px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--ink);}
+.acct-menu-item{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--ink);background:none;border:none;cursor:pointer;font-family:inherit;}
 .acct-menu-item:hover{background:var(--paper);}
 .nav-actions{display:flex;align-items:center;gap:10px;}
 

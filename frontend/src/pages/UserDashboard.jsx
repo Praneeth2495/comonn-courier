@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
-import ChangePassword from '../components/ChangePassword';
-import EditProfile from '../components/EditProfile';
 
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
@@ -29,28 +27,12 @@ export default function UserDashboard() {
   const { user } = useAuth();
   const { setBooking } = useBooking();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState('active');
   const [orders, setOrders] = useState([]);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
-  // null | 'profile' | 'password' — only one account-settings section shows
-  // at a time, chosen from the header's dropdown (see Layout.jsx's AccountMenu).
-  const [accountSection, setAccountSection] = useState(null);
   const labelRequestedRef = useRef(new Set());
-
-  // The header's dropdown links here with ?account=profile or
-  // ?account=password to open that specific section directly — clear the
-  // param right away so it doesn't linger in the URL.
-  useEffect(() => {
-    const section = searchParams.get('account');
-    if (section === 'profile' || section === 'password') {
-      setAccountSection(section);
-      setSearchParams((prev) => { prev.delete('account'); return prev; }, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
 
   function loadOrders() {
     setLoading(true);
@@ -102,24 +84,13 @@ export default function UserDashboard() {
         <p className="lead" style={{ marginBottom: 24 }}>Here's what's happening with your shipments.</p>
       </div>
 
-      {accountSection && (
-        <div style={{ marginBottom: 24 }}>
-          <button className="btn btn-outline btn-sm" style={{ marginBottom: 14 }} onClick={() => setAccountSection(null)}>
-            ✕ Close {accountSection === 'profile' ? 'profile details' : 'change password'}
-          </button>
-          {accountSection === 'profile' ? <EditProfile /> : <ChangePassword />}
-        </div>
-      )}
-
-      {!accountSection && (
       <div className="acct-tabs">
         {ACCT_TABS.map(([key, label]) => (
           <button key={key} className={`acct-tab ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>{label}</button>
         ))}
       </div>
-      )}
 
-      {!accountSection && tab !== 'addresses' && (
+      {tab !== 'addresses' && (
         <>
           <form className="search-box" style={{ marginBottom: 20, maxWidth: 360 }} onSubmit={search}>
             🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -184,7 +155,7 @@ export default function UserDashboard() {
         </>
       )}
 
-      {!accountSection && tab === 'addresses' && <SavedAddresses />}
+      {tab === 'addresses' && <SavedAddresses />}
 
       {selected && <OrderDetailModal order={selected} onClose={() => setSelected(null)} />}
     </div>

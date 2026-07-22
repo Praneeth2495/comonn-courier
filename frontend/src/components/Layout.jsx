@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
+import ChangePassword from './ChangePassword';
+import EditProfile from './EditProfile';
 import logoFull from '../assets/logo-full.png';
 import logoFooter from '../assets/logo-footer.png';
 
-function AccountMenu({ name }) {
+function AccountMenu({ name, onOpen }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -16,6 +18,11 @@ function AccountMenu({ name }) {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  function choose(section) {
+    setOpen(false);
+    onOpen(section);
+  }
+
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen((v) => !v)}>
@@ -26,15 +33,15 @@ function AccountMenu({ name }) {
           className="card"
           style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 180, zIndex: 50 }}
         >
-          <Link to="/dashboard?account=profile" className="acct-menu-item" onClick={() => setOpen(false)}>Profile details</Link>
-          <Link to="/dashboard?account=password" className="acct-menu-item" onClick={() => setOpen(false)}>Change password</Link>
+          <button type="button" className="acct-menu-item" onClick={() => choose('profile')}>Profile details</button>
+          <button type="button" className="acct-menu-item" onClick={() => choose('password')}>Change password</button>
         </div>
       )}
     </div>
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({ onOpenAccount }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -64,7 +71,7 @@ export function SiteHeader() {
               {user.role === 'ADMIN' || user.role === 'STAFF' ? (
                 <Link to="/admin" className="btn btn-ghost btn-sm">{user.fullName?.split(' ')[0]}</Link>
               ) : (
-                <AccountMenu name={user.fullName?.split(' ')[0]} />
+                <AccountMenu name={user.fullName?.split(' ')[0]} onOpen={onOpenAccount} />
               )}
               <button
                 className="btn btn-outline btn-sm"
@@ -115,11 +122,30 @@ export function SiteFooter() {
 }
 
 export function PublicLayout({ children }) {
+  // null | 'profile' | 'password' — lets the header's account dropdown open
+  // either section as a modal from anywhere in the app, not just the
+  // Dashboard page.
+  const [accountSection, setAccountSection] = useState(null);
   return (
     <>
-      <SiteHeader />
+      <SiteHeader onOpenAccount={setAccountSection} />
       <main className="site-main">{children}</main>
       <SiteFooter />
+      {accountSection && (
+        <div className="modal-overlay open" onClick={() => setAccountSection(null)}>
+          <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+              <button
+                onClick={() => setAccountSection(null)}
+                style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 14, color: 'var(--slate)', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+            {accountSection === 'profile' ? <EditProfile /> : <ChangePassword />}
+          </div>
+        </div>
+      )}
     </>
   );
 }
