@@ -154,6 +154,11 @@ export default function Quote() {
     setError('');
     setEmailStatus('');
 
+    if (!originPostcode) {
+      setError('Please enter your pickup pincode.');
+      return;
+    }
+
     if (!destinationCountryCode) {
       setError('Please choose a destination.');
       return;
@@ -372,7 +377,7 @@ export default function Quote() {
           </button>
         </form>
 
-        {quotes && (
+        {quotes && originPostcode && destinationCountryCode && (
           <div>
             <h3 className="h-md" style={{ marginBottom: 16 }}>Choose a service</h3>
             {quotes.map((q) => {
