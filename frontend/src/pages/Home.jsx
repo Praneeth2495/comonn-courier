@@ -168,6 +168,7 @@ export default function Home() {
   const [originPostcode, setOriginPostcode] = useState('');
   const [originSuggestions, setOriginSuggestions] = useState([]);
   const [originPicked, setOriginPicked] = useState(null);
+  const [originFocused, setOriginFocused] = useState(false);
   const originDebounceRef = useRef(null);
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState('');
@@ -294,13 +295,12 @@ export default function Home() {
                   <select className="flag" disabled defaultValue="🇮🇳 IN"><option>🇮🇳 IN</option></select>
                   <input
                     placeholder="Pickup pincode"
-                    value={originPostcode}
+                    value={originFocused || !originPicked ? originPostcode : `${originPostcode}, ${originPicked.suburb}, ${originPicked.state}`}
                     onChange={(e) => handleOriginPostcodeChange(e.target.value)}
+                    onFocus={() => setOriginFocused(true)}
+                    onBlur={() => setOriginFocused(false)}
                   />
                 </div>
-                {originPicked && (
-                  <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 4 }}>✓ {originPostcode}, {originPicked.suburb}, {originPicked.state}</p>
-                )}
                 {originSuggestions.length > 0 && (
                   <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
                     {originSuggestions.map((s, i) => (
