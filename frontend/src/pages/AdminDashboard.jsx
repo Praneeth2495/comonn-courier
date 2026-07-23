@@ -868,12 +868,14 @@ function InventoryPanel() {
   );
 }
 
+const EMPTY_RATE_FORM = { id: null, serviceId: '', zoneId: '', fromZoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR' };
+
 function RatesPanel() {
   const [zones, setZones] = useState([]);
   const [originZones, setOriginZones] = useState([]);
   const [services, setServices] = useState([]);
   const [rateCards, setRateCards] = useState([]);
-  const [form, setForm] = useState({ serviceId: '', zoneId: '', fromZoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR' });
+  const [form, setForm] = useState(EMPTY_RATE_FORM);
 
   function load() {
     client.get('/admin/zones').then(({ data }) => setZones(data.zones));
@@ -886,13 +888,33 @@ function RatesPanel() {
   async function submit(e) {
     e.preventDefault();
     await client.post('/admin/rate-cards', { ...form, fromZoneId: form.fromZoneId || null });
-    setForm({ ...form, weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '' });
+    setForm(EMPTY_RATE_FORM);
     load();
+  }
+
+  function startEdit(r) {
+    setForm({
+      id: r.id,
+      serviceId: r.serviceId,
+      zoneId: r.zoneId,
+      fromZoneId: r.fromZoneId || '',
+      weightFromKg: String(r.weightFromKg),
+      weightToKg: String(r.weightToKg),
+      basePrice: String(r.basePrice),
+      perKgOverage: String(r.perKgOverage),
+      currency: r.currency,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    setForm(EMPTY_RATE_FORM);
   }
 
   async function remove(id) {
     if (!confirm('Delete this rate bracket?')) return;
     await client.delete(`/admin/rate-cards/${id}`);
+    if (form.id === id) setForm(EMPTY_RATE_FORM);
     load();
   }
 
@@ -912,7 +934,7 @@ function RatesPanel() {
       </div>
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Add a rate bracket</h4>
+        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>{form.id ? 'Edit rate bracket' : 'Add a rate bracket'}</h4>
         <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, alignItems: 'end' }}>
           <div className="field">
             <label>Service</label>
@@ -939,7 +961,10 @@ function RatesPanel() {
           <div className="field"><label>To kg</label><input className="input" type="number" step="0.01" required value={form.weightToKg} onChange={(e) => setForm({ ...form, weightToKg: e.target.value })} /></div>
           <div className="field"><label>Base price (optional)</label><input className="input" type="number" step="0.01" placeholder="0" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} /></div>
           <div className="field"><label>₹/kg overage</label><input className="input" type="number" step="0.01" required value={form.perKgOverage} onChange={(e) => setForm({ ...form, perKgOverage: e.target.value })} /></div>
-          <button className="btn btn-primary btn-sm" style={{ gridColumn: '1 / -1' }}>Add bracket</button>
+          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
+            <button className="btn btn-primary btn-sm">{form.id ? 'Update bracket' : 'Add bracket'}</button>
+            {form.id && <button type="button" className="btn btn-outline btn-sm" onClick={cancelEdit}>Cancel</button>}
+          </div>
         </form>
       </div>
 
@@ -955,7 +980,10 @@ function RatesPanel() {
                 <td>{r.weightFromKg} – {r.weightToKg} kg</td>
                 <td>₹{Number(r.basePrice).toFixed(2)}</td>
                 <td>₹{Number(r.perKgOverage).toFixed(2)}</td>
-                <td><button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button></td>
+                <td style={{ display: 'flex', gap: 8 }}>
+                  <button className="btn btn-outline btn-sm" onClick={() => startEdit(r)}>Edit</button>
+                  <button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>
