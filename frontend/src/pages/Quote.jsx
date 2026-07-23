@@ -26,6 +26,22 @@ function emptyItem() {
   return { itemType: 'Box', weightPreset: '', lengthCm: '', widthCm: '', heightCm: '', quantity: 1, showDims: false };
 }
 
+// A "Continue booking" link from an emailed quote lands here with
+// ?resume=<base64url JSON> — decodes to the same shape as quoteInput, so a
+// fresh page load (no BookingContext state yet) still opens pre-filled and
+// auto-fetches services immediately.
+function parseResumeParam() {
+  try {
+    const raw = new URLSearchParams(window.location.search).get('resume');
+    if (!raw) return null;
+    let base64 = raw.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) base64 += '=';
+    return JSON.parse(atob(base64));
+  } catch {
+    return null;
+  }
+}
+
 // Rebuilds the item-row form state from a saved quoteInput so navigating
 // back from Details/Payment doesn't lose what was already entered.
 function hydrateItems(quoteInput) {
@@ -57,7 +73,12 @@ function hydrateItems(quoteInput) {
 
 export default function Quote() {
   const { user } = useAuth();
-  const { quoteInput, selectedQuote, order: bookingOrder, setBooking } = useBooking();
+  const { quoteInput: contextQuoteInput, selectedQuote, order: bookingOrder, setBooking } = useBooking();
+  // An emailed "Continue booking" link carries its own state via ?resume=
+  // rather than BookingContext (a fresh page load has none yet) — it wins
+  // over whatever's already in context.
+  const [resumeInput] = useState(parseResumeParam);
+  const quoteInput = resumeInput || contextQuoteInput;
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || '');
   const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || '');
@@ -95,9 +116,11 @@ export default function Quote() {
   }, []);
 
   // If the customer already filled in origin, destination, and weight on
-  // the Home page instant-booking box, don't make them click "Get instant
-  // quote" again here — fetch and show services right away.
+  // the Home page instant-booking box (or clicked "Continue booking" from
+  // an emailed quote), don't make them click "Get instant quote" again
+  // here — fetch and show services right away.
   useEffect(() => {
+    if (resumeInput) window.history.replaceState({}, '', '/quote');
     if (!quoteInput?.autoFetch || !destinationCountryCode || !originPostcode) return;
     const parsedItems = buildItemsPayload();
     if (parsedItems) fetchQuotes(parsedItems);
@@ -258,6 +281,8 @@ export default function Quote() {
         destinationCountryCode,
         items: parsedItems,
         originPostcode: originPostcode || undefined,
+        originSuburb: originPicked?.suburb,
+        originState: originPicked?.state,
       });
       setEmailStatus('sent');
     } catch (err) {

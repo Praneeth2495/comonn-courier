@@ -2,27 +2,66 @@ const { generateQuote } = require('../services/pricingEngine');
 const { sendEmail } = require('../services/emailService');
 const { prisma } = require('../config/db');
 
-function renderQuoteEmailHtml(quote) {
+// Mirrors the Book page's Instant Booking box + "Choose a service" row so
+// the email reads like a snapshot of what the customer saw on screen.
+function renderQuoteEmailHtml(quote, { originText, resumeUrl }) {
   const itemRows = quote.items
     .map(
       (it) =>
-        `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.itemType} x${it.quantity}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.lengthCm && it.widthCm && it.heightCm ? `${it.lengthCm}×${it.widthCm}×${it.heightCm} cm` : '—'}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;">${it.actualWeightKg} kg each</td></tr>`
+        `<tr><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.itemType} x${it.quantity}</td><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.lengthCm && it.widthCm && it.heightCm ? `${it.lengthCm}×${it.widthCm}×${it.heightCm} cm` : '—'}</td><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.actualWeightKg} kg each</td></tr>`
     )
     .join('');
 
   return `
-    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#171C2C;">
-      <h2 style="color:#0E1B3D;">Your Comonn quote</h2>
-      <p style="color:#5B6478;">${quote.service.name} to ${quote.zone.name}</p>
-      <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px;">
-        <thead><tr style="text-align:left;color:#8A93A6;font-size:11.5px;text-transform:uppercase;">
-          <th style="padding:6px 10px;">Item</th><th style="padding:6px 10px;">Dimensions</th><th style="padding:6px 10px;">Weight</th>
-        </tr></thead>
-        <tbody>${itemRows}</tbody>
-      </table>
-      <p style="font-size:13.5px;color:#5B6478;">Chargeable weight: <b>${quote.weight.chargeableWeightKg} kg</b></p>
-      <p style="font-size:24px;font-weight:700;color:#0E1B3D;margin-top:20px;">₹${quote.pricing.grandTotal.toFixed(2)} ${quote.pricing.currency}</p>
-      <p style="font-size:12px;color:#8A93A6;">This quote is valid for a limited time and may vary based on final parcel weight/dimensions at pickup.</p>
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#171C2C;background:#F7F5F0;padding:22px;">
+      <div style="background:#fff;border-radius:14px;padding:22px;border:1px solid #E7E3DA;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+          <tr>
+            <td style="font-size:17px;font-weight:700;color:#171C2C;">Instant Booking</td>
+            <td style="text-align:right;">
+              <span style="background:#EAF0FF;color:#2451FF;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">Get a quote in 4 clicks</span>
+            </td>
+          </tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
+          <tr>
+            <td style="width:50%;vertical-align:top;padding-right:10px;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Origin</div>
+              <div style="font-size:14px;font-weight:600;">${originText || 'India'}</div>
+            </td>
+            <td style="width:50%;vertical-align:top;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Destination</div>
+              <div style="font-size:14px;font-weight:600;">${quote.zone.name}</div>
+            </td>
+          </tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;border-top:1px dashed #E7E3DA;padding-top:10px;">
+          <thead><tr style="text-align:left;color:#8A93A6;font-size:11px;text-transform:uppercase;">
+            <th style="padding:8px 10px 6px;">Item</th><th style="padding:8px 10px 6px;">Dimensions</th><th style="padding:8px 10px 6px;">Weight</th>
+          </tr></thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:20px 22px;margin-top:16px;border:1px solid #E7E3DA;">
+        <h3 style="margin:0 0 14px;font-size:15px;color:#171C2C;">Choose a service</h3>
+        <table style="width:100%;border-collapse:collapse;border:1.5px solid #2451FF;border-radius:10px;">
+          <tr>
+            <td style="padding:14px 16px;">
+              <div style="font-weight:700;font-size:14px;color:#171C2C;">${quote.service.name}</div>
+              <div style="font-size:12px;color:#8A93A6;margin-top:2px;">${quote.service.transitDays} business days · ${quote.zone.name}</div>
+            </td>
+            <td style="padding:14px 16px;text-align:right;white-space:nowrap;">
+              <div style="font-size:20px;font-weight:700;color:#0E1B3D;">₹${quote.pricing.grandTotal.toFixed(2)}</div>
+              <div style="font-size:11px;color:#8A93A6;margin-top:2px;">${quote.weight.chargeableWeightKg} kg billed</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      ${resumeUrl ? `<a href="${resumeUrl}" style="display:block;text-align:center;margin-top:18px;background:#FF5A36;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:10px;font-size:15px;">Continue booking →</a>` : ''}
+
+      <p style="font-size:12px;color:#8A93A6;text-align:center;margin-top:16px;">This quote is valid for a limited time and may vary based on final parcel weight/dimensions at pickup.</p>
     </div>
   `;
 }
@@ -149,7 +188,7 @@ async function postcodeSuggestions(req, res, next) {
  */
 async function emailQuote(req, res, next) {
   try {
-    const { email, serviceCode, destinationCountryCode, items, declaredValue, originPostcode } = req.body;
+    const { email, serviceCode, destinationCountryCode, items, declaredValue, originPostcode, originSuburb, originState } = req.body;
 
     if (!email || !serviceCode || !destinationCountryCode || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'email, serviceCode, destinationCountryCode and items are required' });
@@ -164,10 +203,18 @@ async function emailQuote(req, res, next) {
       originPostcode,
     });
 
+    const originText = originPostcode ? [originPostcode, originSuburb, originState].filter(Boolean).join(', ') : undefined;
+
+    // "Continue booking" resumes the Book page with everything pre-filled
+    // and auto-fetches services immediately, same as the Home page handoff.
+    const resumePayload = { destinationCountryCode, items, originPostcode, originSuburb, originState, autoFetch: true };
+    const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
+    const resumeUrl = `${base}/quote?resume=${Buffer.from(JSON.stringify(resumePayload)).toString('base64url')}`;
+
     await sendEmail({
       to: email,
       subject: `Your Comonn quote — ${quote.service.name} to ${quote.zone.name}`,
-      html: renderQuoteEmailHtml(quote),
+      html: renderQuoteEmailHtml(quote, { originText, resumeUrl }),
     });
 
     res.json({ ok: true });
