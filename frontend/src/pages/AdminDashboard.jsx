@@ -870,6 +870,12 @@ function InventoryPanel() {
 
 const EMPTY_RATE_FORM = { id: null, serviceId: '', zoneId: '', fromZoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR' };
 
+// Document Express and Pickup Booking aren't priced via weight/zone rate
+// brackets (Document is retired, Pickup is priced by staff at collection) —
+// hidden from "Add a rate bracket", but kept selectable if a bracket for one
+// of them is already being edited so its service isn't silently reassigned.
+const RATE_BRACKET_EXCLUDED_SERVICE_CODES = ['DOCUMENTS', 'PICKUP'];
+
 function RatesPanel() {
   const [zones, setZones] = useState([]);
   const [originZones, setOriginZones] = useState([]);
@@ -940,7 +946,9 @@ function RatesPanel() {
             <label>Service</label>
             <select className="select" required value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })}>
               <option value="">—</option>
-              {services.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {services
+                .filter((s) => !RATE_BRACKET_EXCLUDED_SERVICE_CODES.includes(s.code) || s.id === form.serviceId)
+                .map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
           <div className="field">
