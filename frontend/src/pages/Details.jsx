@@ -47,8 +47,15 @@ export default function Details() {
   const { quoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking, addSavedBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
+  // A completed (paid/labeled) order left over in context from a previous,
+  // already-finished booking must never prefill a new one — only an order
+  // still actually in progress (or one staff are deliberately editing)
+  // should be treated as "this is the same booking, not a fresh one".
+  // Otherwise a guest starting a second booking in the same tab would see
+  // the previous customer's name/address auto-filled in these fields.
+  const isEditingExisting = Boolean(bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role)));
   const [sender, setSender] = useState(() => {
-    if (bookingOrder) return fromSavedAddress(bookingOrder.senderAddress);
+    if (isEditingExisting) return fromSavedAddress(bookingOrder.senderAddress);
     // Pre-fill from the pickup pincode entered on the Quote page's Origin
     // field, if the customer picked a suggestion there.
     const base = emptyAddress('IN');
@@ -57,9 +64,9 @@ export default function Details() {
     if (quoteInput?.originState) base.state = quoteInput.originState;
     return base;
   });
-  const [receiver, setReceiver] = useState(() => (bookingOrder ? fromSavedAddress(bookingOrder.receiverAddress) : emptyAddress(quoteInput?.destinationCountryCode || '')));
-  const [contentsDescription, setContentsDescription] = useState(bookingOrder?.contentsDescription || '');
-  const [declaredValue, setDeclaredValue] = useState(bookingOrder?.declaredValue ? String(bookingOrder.declaredValue) : '');
+  const [receiver, setReceiver] = useState(() => (isEditingExisting ? fromSavedAddress(bookingOrder.receiverAddress) : emptyAddress(quoteInput?.destinationCountryCode || '')));
+  const [contentsDescription, setContentsDescription] = useState(isEditingExisting ? bookingOrder.contentsDescription || '' : '');
+  const [declaredValue, setDeclaredValue] = useState(isEditingExisting && bookingOrder.declaredValue ? String(bookingOrder.declaredValue) : '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -131,14 +138,8 @@ export default function Details() {
     // If an order already exists from a prior visit to this step (e.g. the
     // customer went back and changed something, or staff are editing an
     // existing booking), update it in place rather than creating a
-    // duplicate order. But a completed order (already past payment)
-    // left over in context from a previous booking — e.g. the customer
-    // started a new quote without explicitly finishing the last one —
-    // must NOT be treated as "still being edited": only staff can edit an
-    // already-settled order; for anyone else, still awaiting payment
-    // (UNFINISHED, or PENDING_PAYMENT once staff have priced a pickup
-    // booking) is what actually means "this is the same in-progress booking."
-    const isEditingExisting = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role));
+    // duplicate order — see isEditingExisting above for what counts as
+    // "the same in-progress booking" vs. a stale completed one.
     const { data } = isEditingExisting
       ? await client.patch(`/orders/${bookingOrder.id}/details`, payload)
       : await client.post('/orders', payload);

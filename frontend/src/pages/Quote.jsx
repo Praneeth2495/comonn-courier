@@ -79,6 +79,13 @@ export default function Quote() {
   // over whatever's already in context.
   const [resumeInput] = useState(parseResumeParam);
   const quoteInput = resumeInput || contextQuoteInput;
+  // A completed (paid/labeled) order left over in context from a previous,
+  // already-finished booking must NOT bleed into a new one — only an
+  // order still actually in progress (or one staff are deliberately
+  // editing) should carry forward to prefill Details.jsx. Otherwise a
+  // guest starting a second booking in the same tab sees the previous
+  // customer's name/address auto-filled, which looks like a data leak.
+  const carryOverOrder = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role)) ? bookingOrder : null;
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || '');
   const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || '');
@@ -232,7 +239,7 @@ export default function Quote() {
         // Preserve an in-progress order (e.g. an admin/staff "Edit order"
         // session, or a customer resubmitting after navigating back) rather
         // than always starting a fresh booking.
-        order: bookingOrder || null,
+        order: carryOverOrder,
       });
       navigate('/details');
       return;
@@ -259,7 +266,7 @@ export default function Quote() {
         originState: originPicked?.state,
       },
       selectedQuote: selected,
-      order: bookingOrder || null,
+      order: carryOverOrder,
     });
     navigate('/details');
   }
