@@ -145,12 +145,21 @@ const ORDER_TABS = [
 // the booking flow (Quote/Details/Payment) already knows how to hydrate from,
 // so "Edit order" can reuse that flow instead of a separate edit UI.
 function toQuoteInput(order, destinationCountryName) {
+  // Pickup postcode/suburb/state feed the Quote page's origin-zone pricing
+  // and autocomplete — without these, editing an order silently reverts to
+  // wildcard pricing and shows a blank pincode field.
+  const origin = {
+    originPostcode: order.senderAddress?.postcode || undefined,
+    originSuburb: order.senderAddress?.city || undefined,
+    originState: order.senderAddress?.state || undefined,
+  };
   if (order.pricingPending) {
     return {
       destinationCountryCode: order.receiverAddress.countryCode,
       destinationCountryName: destinationCountryName || order.receiverAddress.countryCode,
       items: order.items.map((it) => ({ itemType: it.itemType, quantity: it.quantity })),
       pricingPending: true,
+      ...origin,
     };
   }
   return {
@@ -163,6 +172,7 @@ function toQuoteInput(order, destinationCountryName) {
       heightCm: Number(it.heightCm),
       quantity: it.quantity,
     })),
+    ...origin,
   };
 }
 
