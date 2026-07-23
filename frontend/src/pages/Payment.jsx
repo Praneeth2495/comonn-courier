@@ -70,6 +70,7 @@ export default function Payment() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [sendLinkStatus, setSendLinkStatus] = useState('');
 
   const didInitialSync = useRef(false);
   const addonsSeqRef = useRef(0);
@@ -147,6 +148,16 @@ export default function Payment() {
     }
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2500);
+  }
+
+  async function sendPaymentLinkEmail() {
+    setSendLinkStatus('sending');
+    try {
+      await client.post(`/orders/${order.id}/send-payment-link-email`);
+      setSendLinkStatus('sent');
+    } catch (err) {
+      setSendLinkStatus(err.response?.data?.error || 'Could not send the email.');
+    }
   }
 
   async function sendOtp() {
@@ -493,18 +504,6 @@ export default function Payment() {
               ← Back
             </button>
 
-            {['ADMIN', 'STAFF'].includes(user?.role) && (
-              <div className="card" style={{ padding: 22, marginBottom: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                <div>
-                  <h3 style={{ marginBottom: 4 }}>Share payment link</h3>
-                  <p className="lead" style={{ fontSize: 13.5 }}>Send this to the customer so they can complete payment themselves.</p>
-                </div>
-                <button type="button" className="btn btn-outline btn-sm" onClick={copyPaymentLink}>
-                  {linkCopied ? 'Copied ✓' : 'Copy link'}
-                </button>
-              </div>
-            )}
-
             <div className="card" style={{ padding: 26 }}>
               <h3 style={{ marginBottom: 4 }}>Dangerous goods declaration</h3>
               <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>
@@ -599,6 +598,31 @@ export default function Payment() {
                 {otpError && <div className="error-text" style={{ marginTop: 8 }}>{otpError}</div>}
               </div>
             </div>
+
+            {['ADMIN', 'STAFF'].includes(user?.role) && (
+              <div className="card" style={{ padding: 22, marginTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h3 style={{ marginBottom: 4 }}>Share payment link</h3>
+                  <p className="lead" style={{ fontSize: 13.5 }}>Send this to the customer so they can complete payment themselves.</p>
+                  {sendLinkStatus === 'sent' && <p style={{ fontSize: 12.5, color: 'var(--success)', marginTop: 6 }}>✓ Emailed to {otpEmail}</p>}
+                  {sendLinkStatus && sendLinkStatus !== 'sent' && sendLinkStatus !== 'sending' && <p className="error-text" style={{ marginTop: 6 }}>{sendLinkStatus}</p>}
+                </div>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button type="button" className="btn btn-outline btn-sm" onClick={copyPaymentLink}>
+                    {linkCopied ? 'Copied ✓' : 'Copy link'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    disabled={!otpVerified || sendLinkStatus === 'sending'}
+                    onClick={sendPaymentLinkEmail}
+                    title={!otpVerified ? 'Verify the customer\'s email first' : ''}
+                  >
+                    {sendLinkStatus === 'sending' ? 'Sending…' : 'Send to verified email'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {!pricingPending && (
               <div className="card" style={{ padding: 26, marginTop: 22 }}>

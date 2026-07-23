@@ -17,6 +17,7 @@ const {
   verifyOtp,
   applyPromo,
   getOrderForPayment,
+  sendPaymentLinkEmail,
 } = require('../controllers/order.controller');
 
 // Prevents OTP-spam abuse (each call sends a real email / checks a guess).
@@ -43,5 +44,6 @@ router.patch('/:id/addons', optionalAuth, updateAddons);
 router.post('/:id/send-otp', otpLimiter, optionalAuth, sendOtp);
 router.post('/:id/verify-otp', otpLimiter, optionalAuth, verifyOtp);
 router.post('/:id/promo', optionalAuth, applyPromo);
+router.post('/:id/send-payment-link-email', otpLimiter, requireAuth, requireRole('ADMIN', 'STAFF'), sendPaymentLinkEmail);
 
 module.exports = router;

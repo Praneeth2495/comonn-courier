@@ -236,7 +236,6 @@ export default function Details() {
             {pricingPending ? (
               <div className="item-line" style={{ borderTop: '1px dashed var(--line)', marginTop: 10, paddingTop: 14 }}>
                 <div className="tag-group"><span>Pickup booking — weight &amp; price assessed at pickup</span></div>
-                <div className="price" style={{ fontSize: 14 }}>Pay cash on collection</div>
               </div>
             ) : (
               <div className="item-line" style={{ borderTop: '1px dashed var(--line)', marginTop: 10, paddingTop: 14 }}>

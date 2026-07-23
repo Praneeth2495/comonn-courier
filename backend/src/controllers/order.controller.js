@@ -730,6 +730,34 @@ async function verifyOtp(req, res, next) {
   }
 }
 
+/** POST /api/orders/:id/send-payment-link-email — ADMIN/STAFF: emails the pay-by-link URL to the customer's OTP-verified email */
+async function sendPaymentLinkEmail(req, res, next) {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (!PAYABLE_STATUSES.includes(order.status)) {
+      return res.status(409).json({ error: 'Order is no longer awaiting payment' });
+    }
+    if (!order.otpEmail || !order.otpVerifiedAt) {
+      return res.status(400).json({ error: 'Verify the customer\'s email first' });
+    }
+
+    const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
+    const link = `${base}/pay/${order.id}`;
+
+    await sendEmail({
+      to: order.otpEmail,
+      from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
+      subject: `Complete payment for order ${order.orderNumber}`,
+      html: `<div style="font-family:sans-serif;"><p>Your Comonn order <b>${order.orderNumber}</b> is ready for payment.</p><p><a href="${link}" style="display:inline-block;padding:12px 20px;background:#FF5A36;color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Complete payment</a></p><p style="color:#8A93A6;font-size:13px;">Or copy this link: ${link}</p></div>`,
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** POST /api/orders/:id/promo */
 async function applyPromo(req, res, next) {
   try {
@@ -775,6 +803,7 @@ module.exports = {
   updateAddons,
   sendOtp,
   verifyOtp,
+  sendPaymentLinkEmail,
   applyPromo,
   getOrderForPayment,
   round2,

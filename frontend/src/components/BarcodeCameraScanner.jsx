@@ -19,7 +19,18 @@ export default function BarcodeCameraScanner({ onScan, onClose }) {
 
     reader
       .decodeFromConstraints(
-        { video: { facingMode: 'environment' } },
+        {
+          video: {
+            facingMode: 'environment',
+            // Barcode decoding needs real resolution and sharp focus — the
+            // browser's default constraints can pick a low-res, fixed-focus
+            // stream that's fine for a video call but too soft/small to
+            // resolve individual bars on a printed shipping label.
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            advanced: [{ focusMode: 'continuous' }],
+          },
+        },
         videoRef.current,
         (result) => {
           if (cancelled || !result) return;
