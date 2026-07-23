@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
@@ -169,6 +169,13 @@ export default function Home() {
   const [originSuggestions, setOriginSuggestions] = useState([]);
   const [originPicked, setOriginPicked] = useState(null);
   const originDebounceRef = useRef(null);
+  const [countries, setCountries] = useState([]);
+  const [destinationCountryCode, setDestinationCountryCode] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    client.get('/quote/countries').then(({ data }) => setCountries(data.countries)).catch(() => {});
+  }, []);
 
   // Same India-only postcode suggestion dataset used on the Details page —
   // offered here too so the pickup pincode carries forward to the Book
@@ -195,12 +202,22 @@ export default function Home() {
   }
 
   // Home's instant-booking box is a teaser for the Book page's full form —
-  // whatever's been entered here (origin pincode, item weight/dims/qty)
-  // carries over as quoteInput so Book page opens pre-filled instead of
-  // making the customer start over. Used by both "Get Instant Quote" and
-  // "+ Add another item", since both just hand off to the real form.
+  // whatever's been entered here (origin pincode, destination, item
+  // weight/dims/qty) carries over as quoteInput so Book page opens
+  // pre-filled instead of making the customer start over. Used by both
+  // "Get Instant Quote" and "+ Add another item", since both just hand off
+  // to the real form. If all three (origin, destination, weight) are
+  // already filled in, autoFetch tells the Book page to fetch and show
+  // services immediately rather than making the customer click again.
   function goToBook(e) {
     e.preventDefault();
+    setError('');
+
+    if (originPostcode && destinationCountryCode && !weightPreset) {
+      setError('Please choose a weight.');
+      return;
+    }
+
     const quoteInput = {};
     let hasData = false;
     if (originPostcode) {
@@ -209,11 +226,18 @@ export default function Home() {
       quoteInput.originState = originPicked?.state;
       hasData = true;
     }
+    if (destinationCountryCode) {
+      const countryObj = countries.find((c) => c.countryCode === destinationCountryCode);
+      quoteInput.destinationCountryCode = destinationCountryCode;
+      quoteInput.destinationCountryName = countryObj?.countryName || destinationCountryCode;
+      hasData = true;
+    }
+    const hasWeight = weightPreset && weightPreset !== 'Not sure';
     if (weightPreset === 'Not sure') {
       quoteInput.items = [{ itemType: 'Box', quantity: qty }];
       quoteInput.pricingPending = true;
       hasData = true;
-    } else if (weightPreset) {
+    } else if (hasWeight) {
       quoteInput.items = [{
         itemType: 'Box',
         actualWeightKg: Number(weightPreset.replace(' kg', '')),
@@ -223,6 +247,9 @@ export default function Home() {
         quantity: qty,
       }];
       hasData = true;
+    }
+    if (originPostcode && destinationCountryCode && hasWeight) {
+      quoteInput.autoFetch = true;
     }
     if (hasData) setBooking({ quoteInput });
     navigate('/quote');
@@ -289,18 +316,12 @@ export default function Home() {
 
               <div className="field" style={{ marginBottom: 14 }}>
                 <label>Destination</label>
-                <div className="input-group">
-                  <select className="flag" defaultValue="🇦🇺 AU">
-                    <option>🇦🇺 AU</option>
-                    <option>🇨🇦 CA</option>
-                    <option>🇳🇿 NZ</option>
-                    <option>🇬🇧 GB</option>
-                    <option>🇺🇸 US</option>
-                    <option>🇪🇺 EU</option>
-                    <option>🇮🇳 IN</option>
-                  </select>
-                  <input placeholder="Enter delivery location" />
-                </div>
+                <select className="select" value={destinationCountryCode} onChange={(e) => setDestinationCountryCode(e.target.value)}>
+                  <option value="">Select destination…</option>
+                  {countries.map((c) => (
+                    <option key={c.countryCode} value={c.countryCode}>{c.countryName} — {c.zone.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="field" style={{ marginBottom: 6 }}>
@@ -356,6 +377,8 @@ export default function Home() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
                 <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={goToBook}>+ Add another item</a>
               </div>
+
+              {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
               <button className="btn btn-primary block" style={{ marginTop: 18, padding: 13 }}>Get Instant Quote</button>
               <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--slate-light)', marginTop: 12 }}>📞 Enquiries: +91 91080 38783 (24/7)</p>

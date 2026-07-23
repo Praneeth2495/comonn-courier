@@ -93,6 +93,17 @@ export default function Quote() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // If the customer already filled in origin, destination, and weight on
+  // the Home page instant-booking box, don't make them click "Get instant
+  // quote" again here — fetch and show services right away.
+  useEffect(() => {
+    if (!quoteInput?.autoFetch || !destinationCountryCode || !originPostcode) return;
+    const parsedItems = buildItemsPayload();
+    if (parsedItems) fetchQuotes(parsedItems);
+    setBooking({ quoteInput: { ...quoteInput, autoFetch: false } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function updateItem(idx, field, value) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
   }
@@ -149,6 +160,22 @@ export default function Quote() {
     return parsed;
   }
 
+  // Shared by the form submit and the auto-fetch-on-arrival effect below —
+  // both need the exact same "fetch and display services" behavior.
+  async function fetchQuotes(parsedItems) {
+    setLoading(true);
+    setQuotes(null);
+    setSelected(null);
+    try {
+      const { data } = await client.post('/quote', { destinationCountryCode, items: parsedItems, originPostcode: originPostcode || undefined });
+      setQuotes(data.quotes);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not get a quote — please check the details and try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function submitQuote(e) {
     e.preventDefault();
     setError('');
@@ -193,17 +220,7 @@ export default function Quote() {
       return;
     }
 
-    setLoading(true);
-    setQuotes(null);
-    setSelected(null);
-    try {
-      const { data } = await client.post('/quote', { destinationCountryCode, items: parsedItems, originPostcode: originPostcode || undefined });
-      setQuotes(data.quotes);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not get a quote — please check the details and try again.');
-    } finally {
-      setLoading(false);
-    }
+    await fetchQuotes(parsedItems);
   }
 
   function continueToDetails() {
