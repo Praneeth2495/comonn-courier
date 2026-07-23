@@ -2,13 +2,66 @@ const { generateQuote } = require('../services/pricingEngine');
 const { sendEmail } = require('../services/emailService');
 const { prisma } = require('../config/db');
 
-// Mirrors the Book page's Instant Booking box + "Choose a service" row so
-// the email reads like a snapshot of what the customer saw on screen.
-function renderQuoteEmailHtml(quote, { originText, resumeUrl }) {
-  const itemRows = quote.items
+// Service has no natural sort column, so order explicitly (Express first,
+// then Economy, then anything else) whenever showing a comparison list.
+const SERVICE_ORDER = ['EXPRESS', 'ECONOMY'];
+
+/** Quotes every active service for the same destination/items/origin, skipping any with no rate card rather than failing the whole comparison. */
+async function quoteAllServices({ destinationCountryCode, items, declaredValue, originPostcode }) {
+  const services = await prisma.service.findMany({ where: { isActive: true }, select: { code: true } });
+  services.sort((a, b) => {
+    const ai = SERVICE_ORDER.indexOf(a.code);
+    const bi = SERVICE_ORDER.indexOf(b.code);
+    return (ai === -1 ? SERVICE_ORDER.length : ai) - (bi === -1 ? SERVICE_ORDER.length : bi);
+  });
+
+  const quotes = [];
+  for (const s of services) {
+    try {
+      const quote = await generateQuote({
+        serviceCode: s.code,
+        destinationCountryCode,
+        items,
+        declaredValue,
+        originCountryCode: originPostcode ? 'IN' : undefined,
+        originPostcode,
+      });
+      quotes.push(quote);
+    } catch (innerErr) {
+      if (innerErr.code === 'RATE_CARD_NOT_FOUND') continue;
+      throw innerErr;
+    }
+  }
+  return quotes;
+}
+
+// Mirrors the Book page's Instant Booking box + "Choose a service" list
+// (all available services, not just one) so the email reads like a
+// snapshot of what the customer saw on screen.
+function renderQuoteEmailHtml(quotes, { originText, resumeUrl }) {
+  const first = quotes[0];
+  const itemRows = first.items
     .map(
       (it) =>
         `<tr><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.itemType} x${it.quantity}</td><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.lengthCm && it.widthCm && it.heightCm ? `${it.lengthCm}×${it.widthCm}×${it.heightCm} cm` : '—'}</td><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.actualWeightKg} kg each</td></tr>`
+    )
+    .join('');
+
+  const serviceRows = quotes
+    .map(
+      (q) => `
+        <table style="width:100%;border-collapse:collapse;border:1px solid #E7E3DA;border-radius:10px;margin-bottom:10px;">
+          <tr>
+            <td style="padding:14px 16px;">
+              <div style="font-weight:700;font-size:14px;color:#171C2C;">${q.service.name}</div>
+              <div style="font-size:12px;color:#8A93A6;margin-top:2px;">${q.service.transitDays} business days · ${q.zone.name}</div>
+            </td>
+            <td style="padding:14px 16px;text-align:right;white-space:nowrap;">
+              <div style="font-size:20px;font-weight:700;color:#0E1B3D;">₹${q.pricing.grandTotal.toFixed(2)}</div>
+              <div style="font-size:11px;color:#8A93A6;margin-top:2px;">${q.weight.chargeableWeightKg} kg billed</div>
+            </td>
+          </tr>
+        </table>`
     )
     .join('');
 
@@ -31,7 +84,7 @@ function renderQuoteEmailHtml(quote, { originText, resumeUrl }) {
             </td>
             <td style="width:50%;vertical-align:top;">
               <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Destination</div>
-              <div style="font-size:14px;font-weight:600;">${quote.zone.name}</div>
+              <div style="font-size:14px;font-weight:600;">${first.zone.name}</div>
             </td>
           </tr>
         </table>
@@ -45,18 +98,7 @@ function renderQuoteEmailHtml(quote, { originText, resumeUrl }) {
 
       <div style="background:#fff;border-radius:14px;padding:20px 22px;margin-top:16px;border:1px solid #E7E3DA;">
         <h3 style="margin:0 0 14px;font-size:15px;color:#171C2C;">Choose a service</h3>
-        <table style="width:100%;border-collapse:collapse;border:1.5px solid #2451FF;border-radius:10px;">
-          <tr>
-            <td style="padding:14px 16px;">
-              <div style="font-weight:700;font-size:14px;color:#171C2C;">${quote.service.name}</div>
-              <div style="font-size:12px;color:#8A93A6;margin-top:2px;">${quote.service.transitDays} business days · ${quote.zone.name}</div>
-            </td>
-            <td style="padding:14px 16px;text-align:right;white-space:nowrap;">
-              <div style="font-size:20px;font-weight:700;color:#0E1B3D;">₹${quote.pricing.grandTotal.toFixed(2)}</div>
-              <div style="font-size:11px;color:#8A93A6;margin-top:2px;">${quote.weight.chargeableWeightKg} kg billed</div>
-            </td>
-          </tr>
-        </table>
+        ${serviceRows}
       </div>
 
       ${resumeUrl ? `<a href="${resumeUrl}" style="display:block;text-align:center;margin-top:18px;background:#FF5A36;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:10px;font-size:15px;">Continue booking →</a>` : ''}
@@ -91,39 +133,21 @@ async function getInstantQuote(req, res, next) {
     }
 
     // If no service specified, quote every active service so the frontend
-    // can render a comparison list. Service has no natural sort column, so
-    // order explicitly (Express first, then Economy, then anything else).
-    const SERVICE_ORDER = ['EXPRESS', 'ECONOMY'];
-    let services;
+    // can render a comparison list.
+    let quotes;
     if (serviceCode) {
-      services = [{ code: serviceCode }];
-    } else {
-      services = await prisma.service.findMany({ where: { isActive: true }, select: { code: true } });
-      services.sort((a, b) => {
-        const ai = SERVICE_ORDER.indexOf(a.code);
-        const bi = SERVICE_ORDER.indexOf(b.code);
-        return (ai === -1 ? SERVICE_ORDER.length : ai) - (bi === -1 ? SERVICE_ORDER.length : bi);
-      });
-    }
-
-    const quotes = [];
-    for (const s of services) {
-      try {
-        const quote = await generateQuote({
-          serviceCode: s.code,
+      quotes = [
+        await generateQuote({
+          serviceCode,
           destinationCountryCode,
           items,
           declaredValue,
           originCountryCode: originPostcode ? 'IN' : undefined,
           originPostcode,
-        });
-        quotes.push(quote);
-      } catch (innerErr) {
-        // Skip services that don't have a rate card for this zone rather
-        // than failing the whole comparison list.
-        if (innerErr.code === 'RATE_CARD_NOT_FOUND') continue;
-        throw innerErr;
-      }
+        }),
+      ];
+    } else {
+      quotes = await quoteAllServices({ destinationCountryCode, items, declaredValue, originPostcode });
     }
 
     if (quotes.length === 0) {
@@ -188,20 +212,16 @@ async function postcodeSuggestions(req, res, next) {
  */
 async function emailQuote(req, res, next) {
   try {
-    const { email, serviceCode, destinationCountryCode, items, declaredValue, originPostcode, originSuburb, originState } = req.body;
+    const { email, destinationCountryCode, items, declaredValue, originPostcode, originSuburb, originState } = req.body;
 
-    if (!email || !serviceCode || !destinationCountryCode || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'email, serviceCode, destinationCountryCode and items are required' });
+    if (!email || !destinationCountryCode || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'email, destinationCountryCode and items are required' });
     }
 
-    const quote = await generateQuote({
-      serviceCode,
-      destinationCountryCode,
-      items,
-      declaredValue,
-      originCountryCode: originPostcode ? 'IN' : undefined,
-      originPostcode,
-    });
+    const quotes = await quoteAllServices({ destinationCountryCode, items, declaredValue, originPostcode });
+    if (quotes.length === 0) {
+      return res.status(422).json({ error: 'No service available for this destination/weight' });
+    }
 
     const originText = originPostcode ? [originPostcode, originSuburb, originState].filter(Boolean).join(', ') : undefined;
 
@@ -213,8 +233,8 @@ async function emailQuote(req, res, next) {
 
     await sendEmail({
       to: email,
-      subject: `Your Comonn quote — ${quote.service.name} to ${quote.zone.name}`,
-      html: renderQuoteEmailHtml(quote, { originText, resumeUrl }),
+      subject: `Your Comonn quote — to ${quotes[0].zone.name}`,
+      html: renderQuoteEmailHtml(quotes, { originText, resumeUrl }),
     });
 
     res.json({ ok: true });

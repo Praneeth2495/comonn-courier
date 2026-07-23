@@ -277,7 +277,6 @@ export default function Quote() {
     try {
       await client.post('/quote/email', {
         email: emailAddress,
-        serviceCode: selected.service.code,
         destinationCountryCode,
         items: parsedItems,
         originPostcode: originPostcode || undefined,
