@@ -289,7 +289,22 @@ export default function Quote() {
 
           {items.map((it, idx) => (
             <div className="field" style={{ marginTop: 14 }} key={idx}>
-              <label>Item {idx + 1}</label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label>Item {idx + 1}</label>
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(idx)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4, width: 'fit-content',
+                      background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                      color: '#DC2626', fontSize: 12, fontWeight: 700,
+                    }}
+                  >
+                    🗑 Remove
+                  </button>
+                )}
+              </div>
               <div className="item-row equal">
                 <select className="select" value={it.itemType} onChange={(e) => updateItem(idx, 'itemType', e.target.value)}>
                   <option>Box</option>
@@ -340,10 +355,6 @@ export default function Quote() {
                     </p>
                   )}
                 </>
-              )}
-
-              {items.length > 1 && (
-                <button type="button" className="btn btn-outline btn-sm" style={{ marginTop: 8 }} onClick={() => removeItem(idx)}>Remove item</button>
               )}
             </div>
           ))}
