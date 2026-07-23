@@ -213,7 +213,14 @@ export default function Details() {
           <div className="card summary-card">
             <div className="summary-top"><h3>Booking summary</h3></div>
             <div className="addr-grid">
-              <div className="addr-block"><div className="lbl">Origin</div><p>India</p></div>
+              <div className="addr-block">
+                <div className="lbl">Origin</div>
+                <p>
+                  {quoteInput.originPostcode
+                    ? [quoteInput.originPostcode, quoteInput.originSuburb, quoteInput.originState].filter(Boolean).join(', ')
+                    : 'India'}
+                </p>
+              </div>
               <div className="addr-block"><div className="lbl">Destination</div><p>{pricingPending ? quoteInput.destinationCountryName : selectedQuote.zone.name}</p></div>
             </div>
 
