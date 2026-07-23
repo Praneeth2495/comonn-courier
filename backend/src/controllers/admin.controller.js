@@ -189,10 +189,26 @@ async function upsertRateCard(req, res, next) {
       perKgOverage,
       currency,
       isActive,
+      transitDaysMin,
+      transitDaysMax,
     } = req.body;
     // Base price is optional — a bracket can be priced purely per-kg
-    // (perKgOverage * weight) with no flat component.
-    const data = { serviceId, zoneId, fromZoneId: fromZoneId || null, weightFromKg, weightToKg, basePrice: basePrice === '' || basePrice === undefined || basePrice === null ? 0 : basePrice, perKgOverage, currency, isActive };
+    // (perKgOverage * weight) with no flat component. Delivery timeframe is
+    // also optional — an unset bracket falls back to the Service's own
+    // transitDaysMin/Max (see pricingEngine.js).
+    const data = {
+      serviceId,
+      zoneId,
+      fromZoneId: fromZoneId || null,
+      weightFromKg,
+      weightToKg,
+      basePrice: basePrice === '' || basePrice === undefined || basePrice === null ? 0 : basePrice,
+      perKgOverage,
+      currency,
+      isActive,
+      transitDaysMin: transitDaysMin === '' || transitDaysMin === undefined ? null : Number(transitDaysMin),
+      transitDaysMax: transitDaysMax === '' || transitDaysMax === undefined ? null : Number(transitDaysMax),
+    };
     const rateCard = id
       ? await prisma.rateCard.update({ where: { id }, data })
       : await prisma.rateCard.create({ data });

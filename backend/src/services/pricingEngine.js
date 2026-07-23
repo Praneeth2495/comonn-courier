@@ -249,8 +249,13 @@ async function generateQuote(input) {
   const taxTotal = round2((baseFreight + surchargesTotal) * taxRate);
   const grandTotal = round2(baseFreight + surchargesTotal + taxTotal);
 
+  // A bracket can override the service's default delivery timeframe (e.g.
+  // a rural-origin bracket taking longer than the service's usual window).
+  const transitDaysMin = bracket.transitDaysMin ?? service.transitDaysMin;
+  const transitDaysMax = bracket.transitDaysMax ?? service.transitDaysMax;
+
   return {
-    service: { code: service.code, name: service.name, transitDays: `${service.transitDaysMin}-${service.transitDaysMax}` },
+    service: { code: service.code, name: service.name, transitDays: `${transitDaysMin}-${transitDaysMax}` },
     zone: { code: zone.code, name: zone.name },
     items: pricedItems.map(({ actualWeightKgTotal, volumetricWeightKgTotal, ...rest }) => rest),
     weight: {

@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
+import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 
 export default function Labels() {
   const { order, clearBooking } = useBooking();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [labels, setLabels] = useState(null);
   const [invoice, setInvoice] = useState(null);
@@ -83,13 +85,7 @@ export default function Labels() {
               </div>
             )}
 
-            <button
-              className="btn btn-outline block"
-              style={{ marginTop: 22 }}
-              onClick={() => { clearBooking(); navigate('/dashboard'); }}
-            >
-              Go to my orders
-            </button>
+            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} />
           </>
         )}
 
@@ -140,16 +136,39 @@ export default function Labels() {
               </div>
             )}
 
-            <button
-              className="btn btn-outline block"
-              style={{ marginTop: 22 }}
-              onClick={() => { clearBooking(); navigate('/dashboard'); }}
-            >
-              Go to my orders
-            </button>
+            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} />
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// Logged-in customers go to their dashboard as before. Guests have no
+// dashboard to go to — a booking-time account was created for them behind
+// the scenes (see accountProvisioning.js), so point them at setting a
+// password instead, prefilling the email they already verified.
+function GuestOrDashboardCta({ user, order, clearBooking, navigate }) {
+  if (user) {
+    return (
+      <button className="btn btn-outline block" style={{ marginTop: 22 }} onClick={() => { clearBooking(); navigate('/dashboard'); }}>
+        Go to my orders
+      </button>
+    );
+  }
+
+  const email = order.otpEmail;
+  return (
+    <div style={{ marginTop: 22 }}>
+      <p style={{ fontSize: 13, color: 'var(--slate)', textAlign: 'center', marginBottom: 10 }}>
+        {email ? <>You can track this order any time from your account — <b>{email}</b>. Set a password to get started.</> : 'You can track this order any time by setting up a password for your account.'}
+      </p>
+      <button
+        className="btn btn-outline block"
+        onClick={() => { clearBooking(); navigate(`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`); }}
+      >
+        Set up my password →
+      </button>
     </div>
   );
 }

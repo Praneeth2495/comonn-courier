@@ -878,7 +878,7 @@ function InventoryPanel() {
   );
 }
 
-const EMPTY_RATE_FORM = { id: null, serviceId: '', zoneId: '', fromZoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR' };
+const EMPTY_RATE_FORM = { id: null, serviceId: '', fromZoneId: '', zoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR', transitDaysMin: '', transitDaysMax: '' };
 
 // Document Express and Pickup Booking aren't priced via weight/zone rate
 // brackets (Document is retired, Pickup is priced by staff at collection) —
@@ -912,13 +912,15 @@ function RatesPanel() {
     setForm({
       id: r.id,
       serviceId: r.serviceId,
-      zoneId: r.zoneId,
       fromZoneId: r.fromZoneId || '',
+      zoneId: r.zoneId,
       weightFromKg: String(r.weightFromKg),
       weightToKg: String(r.weightToKg),
       basePrice: String(r.basePrice),
       perKgOverage: String(r.perKgOverage),
       currency: r.currency,
+      transitDaysMin: r.transitDaysMin === null || r.transitDaysMin === undefined ? '' : String(r.transitDaysMin),
+      transitDaysMax: r.transitDaysMax === null || r.transitDaysMax === undefined ? '' : String(r.transitDaysMax),
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -951,7 +953,7 @@ function RatesPanel() {
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>{form.id ? 'Edit rate bracket' : 'Add a rate bracket'}</h4>
-        <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, alignItems: 'end' }}>
+        <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 10, alignItems: 'end' }}>
           <div className="field">
             <label>Service</label>
             <select className="select" required value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })}>
@@ -962,23 +964,25 @@ function RatesPanel() {
             </select>
           </div>
           <div className="field">
-            <label>To zone</label>
-            <select className="select" required value={form.zoneId} onChange={(e) => setForm({ ...form, zoneId: e.target.value })}>
-              <option value="">—</option>
-              {zones.map((z) => <option key={z.id} value={z.id}>{z.code}</option>)}
-            </select>
-          </div>
-          <div className="field">
             <label>From zone (optional)</label>
             <select className="select" value={form.fromZoneId} onChange={(e) => setForm({ ...form, fromZoneId: e.target.value })}>
               <option value="">Any</option>
               {originZones.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
             </select>
           </div>
+          <div className="field">
+            <label>To zone</label>
+            <select className="select" required value={form.zoneId} onChange={(e) => setForm({ ...form, zoneId: e.target.value })}>
+              <option value="">—</option>
+              {zones.map((z) => <option key={z.id} value={z.id}>{z.code}</option>)}
+            </select>
+          </div>
           <div className="field"><label>From kg</label><input className="input" type="number" step="0.01" required value={form.weightFromKg} onChange={(e) => setForm({ ...form, weightFromKg: e.target.value })} /></div>
           <div className="field"><label>To kg</label><input className="input" type="number" step="0.01" required value={form.weightToKg} onChange={(e) => setForm({ ...form, weightToKg: e.target.value })} /></div>
           <div className="field"><label>Base price (optional)</label><input className="input" type="number" step="0.01" placeholder="0" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} /></div>
           <div className="field"><label>₹/kg overage</label><input className="input" type="number" step="0.01" required value={form.perKgOverage} onChange={(e) => setForm({ ...form, perKgOverage: e.target.value })} /></div>
+          <div className="field"><label>Delivery days from (optional)</label><input className="input" type="number" step="1" min="0" placeholder="Service default" value={form.transitDaysMin} onChange={(e) => setForm({ ...form, transitDaysMin: e.target.value })} /></div>
+          <div className="field"><label>Delivery days to (optional)</label><input className="input" type="number" step="1" min="0" placeholder="Service default" value={form.transitDaysMax} onChange={(e) => setForm({ ...form, transitDaysMax: e.target.value })} /></div>
           <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
             <button className="btn btn-primary btn-sm">{form.id ? 'Update bracket' : 'Add bracket'}</button>
             {form.id && <button type="button" className="btn btn-outline btn-sm" onClick={cancelEdit}>Cancel</button>}
@@ -988,16 +992,17 @@ function RatesPanel() {
 
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Service</th><th>To zone</th><th>From zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th></th></tr></thead>
+          <thead><tr><th>Service</th><th>From zone</th><th>To zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th>Delivery days</th><th></th></tr></thead>
           <tbody>
             {rateCards.map((r) => (
               <tr key={r.id}>
                 <td>{r.service.name}</td>
-                <td>{r.zone.code}</td>
                 <td>{r.fromZone ? r.fromZone.name : <span style={{ color: 'var(--slate-light)' }}>Any</span>}</td>
+                <td>{r.zone.code}</td>
                 <td>{r.weightFromKg} – {r.weightToKg} kg</td>
                 <td>₹{Number(r.basePrice).toFixed(2)}</td>
                 <td>₹{Number(r.perKgOverage).toFixed(2)}</td>
+                <td>{r.transitDaysMin != null && r.transitDaysMax != null ? `${r.transitDaysMin}-${r.transitDaysMax}` : <span style={{ color: 'var(--slate-light)' }}>Service default</span>}</td>
                 <td style={{ display: 'flex', gap: 8 }}>
                   <button className="btn btn-outline btn-sm" onClick={() => startEdit(r)}>Edit</button>
                   <button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button>

@@ -429,7 +429,7 @@ export default function Quote() {
                   <div className="rate-left">
                     <div>
                       <div className="rate-name">{q.service.name}</div>
-                      <div className="rate-meta">{q.service.transitDays} business days · {q.zone.name}</div>
+                      <div className="rate-meta">{q.service.transitDays} business days</div>
                     </div>
                   </div>
                   <div className="rate-price">

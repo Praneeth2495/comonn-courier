@@ -70,6 +70,20 @@ export default function Details() {
   }, [user]);
 
   const pricingPending = Boolean(quoteInput?.pricingPending);
+  // Staff/admin editing an existing booking can still correct a mistyped
+  // sender pincode directly; regular customers must go back to the Book
+  // page (which re-quotes) to change their pickup location.
+  const senderLocked = !['ADMIN', 'STAFF'].includes(user?.role);
+
+  const norm = (s) => (s || '').trim().toLowerCase();
+  // Only surface saved addresses that actually match this quote's chosen
+  // pickup/destination — not the customer's whole address book.
+  const senderSavedAddresses = savedAddresses.filter(
+    (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode) && norm(a.city) === norm(sender.city) && norm(a.state) === norm(sender.state)
+  );
+  const receiverSavedAddresses = savedAddresses.filter(
+    (a) => quoteInput?.destinationCountryCode && a.countryCode === quoteInput.destinationCountryCode
+  );
 
   if (!quoteInput || (!selectedQuote && !pricingPending)) {
     return (
@@ -246,12 +260,12 @@ export default function Details() {
 
             <div className="grid-2" style={{ marginTop: 18 }}>
               <div className="field">
-                <label>Goods description</label>
-                <input className="input" placeholder="Documents, clothes, decorative items" value={contentsDescription} onChange={(e) => setContentsDescription(e.target.value)} />
+                <label>Goods description <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+                <input className="input" required placeholder="Documents, clothes, decorative items" value={contentsDescription} onChange={(e) => setContentsDescription(e.target.value)} />
               </div>
               <div className="field">
-                <label>Value of goods</label>
-                <input className="input" type="number" min="0" placeholder="₹5,000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} />
+                <label>Value of goods <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+                <input className="input" type="number" min="0" required placeholder="₹5,000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} />
               </div>
             </div>
 
@@ -261,7 +275,8 @@ export default function Details() {
               onChange={updateReceiver}
               instructionsLabel="Delivery instructions"
               autoFillNote="Country auto-filled from your quote's destination"
-              savedAddresses={savedAddresses}
+              hideCityStatePlaceholder
+              savedAddresses={receiverSavedAddresses}
               onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setReceiver(fromSavedAddress(a)); }}
             />
           </div>
@@ -272,9 +287,11 @@ export default function Details() {
               value={sender}
               onChange={updateSender}
               instructionsLabel="Instructions"
-              autoFillNote="Country auto-filled from your quote's origin"
-              savedAddresses={savedAddresses}
+              autoFillNote={senderLocked ? "Locked to your quote's pickup postcode — go back to the Book page to change it" : "Country auto-filled from your quote's origin"}
+              savedAddresses={senderSavedAddresses}
               onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setSender(fromSavedAddress(a)); }}
+              lockedFields={senderLocked ? ['postcode', 'city', 'state', 'countryCode'] : []}
+              enforceIndianPhone
             />
           </div>
 
@@ -309,9 +326,10 @@ export default function Details() {
   );
 }
 
-function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved }) {
+function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved, lockedFields = [], hideCityStatePlaceholder = false, enforceIndianPhone = false }) {
   const [pinSuggestions, setPinSuggestions] = useState([]);
   const debounceRef = useRef(null);
+  const isLocked = (field) => lockedFields.includes(field);
 
   function handlePostcodeChange(v) {
     onChange('postcode', v);
@@ -331,6 +349,10 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
     onChange('city', s.suburb);
     onChange('state', s.state);
     setPinSuggestions([]);
+  }
+
+  function handlePhoneChange(v) {
+    onChange('phoneNumber', enforceIndianPhone ? v.replace(/\D/g, '').slice(0, 10) : v);
   }
 
   return (
@@ -357,7 +379,13 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
             <select className="flag" value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
               {COUNTRY_CODES.map((c) => <option key={c}>{c}</option>)}
             </select>
-            <input placeholder="00000 00000" required value={value.phoneNumber} onChange={(e) => onChange('phoneNumber', e.target.value)} />
+            <input
+              placeholder={enforceIndianPhone ? '10 digit number' : '00000 00000'}
+              required
+              value={value.phoneNumber}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              {...(enforceIndianPhone ? { maxLength: 10, inputMode: 'numeric', pattern: '\\d{10}', title: 'Enter exactly 10 digits' } : {})}
+            />
           </div>
         </div>
         <div className="field">
@@ -382,17 +410,30 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
       <div className="grid-2" style={{ marginTop: 14 }}>
         <div className="field">
           <label>City / Town</label>
-          <input className="input" placeholder="Hyderabad" required value={value.city} onChange={(e) => onChange('city', e.target.value)} />
+          <input
+            className="input"
+            placeholder={hideCityStatePlaceholder ? '' : 'Hyderabad'}
+            required
+            disabled={isLocked('city')}
+            value={value.city}
+            onChange={(e) => onChange('city', e.target.value)}
+          />
         </div>
         <div className="field">
           <label>State</label>
-          <input className="input" placeholder="Telangana" value={value.state} onChange={(e) => onChange('state', e.target.value)} />
+          <input
+            className="input"
+            placeholder={hideCityStatePlaceholder ? '' : 'Telangana'}
+            disabled={isLocked('state')}
+            value={value.state}
+            onChange={(e) => onChange('state', e.target.value)}
+          />
         </div>
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
         <div className="field" style={{ maxWidth: 220, position: 'relative' }}>
           <label>Pin code</label>
-          <input className="input" required value={value.postcode} onChange={(e) => handlePostcodeChange(e.target.value)} />
+          <input className="input" required disabled={isLocked('postcode')} value={value.postcode} onChange={(e) => handlePostcodeChange(e.target.value)} />
           {pinSuggestions.length > 0 && (
             <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
               {pinSuggestions.map((s, i) => (
@@ -410,7 +451,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         </div>
         <div className="field" style={{ maxWidth: 220 }}>
           <label>Country code</label>
-          <input className="input" required maxLength={2} value={value.countryCode} onChange={(e) => onChange('countryCode', e.target.value.toUpperCase())} />
+          <input className="input" required maxLength={2} disabled={isLocked('countryCode')} value={value.countryCode} onChange={(e) => onChange('countryCode', e.target.value.toUpperCase())} />
         </div>
       </div>
       <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>✓ {autoFillNote}</p>

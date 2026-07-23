@@ -223,6 +223,11 @@ model RateCard {
   basePrice      Decimal  @db.Decimal(10, 2) // INR
   perKgOverage   Decimal  @db.Decimal(10, 2) // price per kg once weight exceeds weightToKg of the last bracket
   currency       String   @default("INR")
+  // Optional per-bracket delivery timeframe override — falls back to the
+  // Service's own transitDaysMin/Max (see pricingEngine.js) when unset, so
+  // existing rate cards keep working unchanged.
+  transitDaysMin Int?
+  transitDaysMax Int?
   effectiveFrom  DateTime @default(now())
   effectiveTo    DateTime?
   isActive       Boolean  @default(true)

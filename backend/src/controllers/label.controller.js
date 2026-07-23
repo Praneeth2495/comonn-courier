@@ -136,29 +136,66 @@ function addressBlockHtml(addr) {
   `;
 }
 
+// Mirrors the quote email's card layout (renderQuoteEmailHtml in
+// quote.controller.js) — rounded white cards on a paper background, a
+// top-right status pill, and a two-column info table — so every
+// transactional email reads as one visual system.
 function renderBookingConfirmationHtml(order, accountInfo) {
   const sender = order.senderAddress;
   const receiver = order.receiverAddress;
+  const trackUrl = siteUrl(`/track?id=${encodeURIComponent(order.trackingNumber || '')}`);
+
   return `
-    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#171C2C;">
-      <h2 style="color:#0E1B3D;margin-bottom:4px;">Booking confirmed</h2>
-      <p style="color:#5B6478;font-size:13.5px;">Order <b>${order.orderNumber}</b> · Tracking <b>${order.trackingNumber}</b></p>
-
-      <div style="margin-top:18px;">
-        <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8A93A6;font-weight:600;">Sender</p>
-        <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;">${addressBlockHtml(sender)}</div>
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#171C2C;background:#F7F5F0;padding:22px;">
+      <div style="background:#fff;border-radius:14px;padding:22px;border:1px solid #E7E3DA;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+          <tr>
+            <td style="font-size:17px;font-weight:700;color:#171C2C;">Booking confirmed</td>
+            <td style="text-align:right;">
+              <span style="background:#E9F9EE;color:#1E8E3E;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">✓ Confirmed</span>
+            </td>
+          </tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:6px;">
+          <tr>
+            <td style="width:50%;vertical-align:top;padding-right:10px;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Order</div>
+              <div style="font-size:14px;font-weight:600;">${order.orderNumber}</div>
+            </td>
+            <td style="width:50%;vertical-align:top;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Tracking</div>
+              <div style="font-size:14px;font-weight:600;">${order.trackingNumber}</div>
+            </td>
+          </tr>
+        </table>
       </div>
 
-      <div style="margin-top:14px;">
-        <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8A93A6;font-weight:600;">Receiver</p>
-        <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;">${addressBlockHtml(receiver)}</div>
+      <div style="background:#fff;border-radius:14px;padding:20px 22px;margin-top:16px;border:1px solid #E7E3DA;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="width:50%;vertical-align:top;padding-right:10px;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Sender</div>
+              ${addressBlockHtml(sender)}
+            </td>
+            <td style="width:50%;vertical-align:top;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Receiver</div>
+              ${addressBlockHtml(receiver)}
+            </td>
+          </tr>
+        </table>
       </div>
 
-      <p style="font-size:13.5px;color:#5B6478;line-height:1.6;margin-top:20px;">
-        Since the weight wasn't known at booking, our courier will weigh and measure your shipment in person${order.pickupDate ? ` at pickup on <b>${order.pickupDate}</b>` : ' at pickup'}, confirm the final price, and collect payment in cash. Shipping labels will be printed and attached by the courier at that time.
-      </p>
+      <div style="background:#fff;border-radius:14px;padding:18px 22px;margin-top:16px;border:1px solid #E7E3DA;">
+        <p style="font-size:13.5px;color:#5B6478;line-height:1.6;margin:0;">
+          Since the weight wasn't known at booking, our courier will weigh and measure your shipment in person${order.pickupDate ? ` at pickup on <b>${order.pickupDate}</b>` : ' at pickup'}, confirm the final price, and collect payment in cash. Shipping labels will be printed and attached by the courier at that time.
+        </p>
+      </div>
+
       ${accountBlockHtml(accountInfo)}
-      <p style="font-size:12px;color:#8A93A6;margin-top:20px;">Questions about your pickup? Reply to this email or contact us at support@comonn.in.</p>
+
+      <a href="${trackUrl}" style="display:block;text-align:center;margin-top:18px;background:#FF5A36;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:10px;font-size:15px;">Track order →</a>
+
+      <p style="font-size:12px;color:#8A93A6;text-align:center;margin-top:16px;">Questions about your pickup? Reply to this email or contact us at support@comonn.in.</p>
     </div>
   `;
 }
