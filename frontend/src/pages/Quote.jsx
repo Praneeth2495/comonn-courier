@@ -256,6 +256,7 @@ export default function Quote() {
         serviceCode: selected.service.code,
         destinationCountryCode,
         items: parsedItems,
+        originPostcode: originPostcode || undefined,
       });
       setEmailStatus('sent');
     } catch (err) {

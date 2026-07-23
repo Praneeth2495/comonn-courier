@@ -149,13 +149,20 @@ async function postcodeSuggestions(req, res, next) {
  */
 async function emailQuote(req, res, next) {
   try {
-    const { email, serviceCode, destinationCountryCode, items, declaredValue } = req.body;
+    const { email, serviceCode, destinationCountryCode, items, declaredValue, originPostcode } = req.body;
 
     if (!email || !serviceCode || !destinationCountryCode || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'email, serviceCode, destinationCountryCode and items are required' });
     }
 
-    const quote = await generateQuote({ serviceCode, destinationCountryCode, items, declaredValue });
+    const quote = await generateQuote({
+      serviceCode,
+      destinationCountryCode,
+      items,
+      declaredValue,
+      originCountryCode: originPostcode ? 'IN' : undefined,
+      originPostcode,
+    });
 
     await sendEmail({
       to: email,
