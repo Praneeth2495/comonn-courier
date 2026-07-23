@@ -73,9 +73,13 @@ async function resolveFromZoneForPostcode(countryCode, postcode) {
 
 /**
  * Find the correct rate bracket for a given service/zone/chargeable weight.
- * Brackets are contiguous, non-overlapping [weightFromKg, weightToKg] ranges.
- * If the weight is heavier than the top bracket, we extrapolate using that
- * bracket's perKgOverage rate.
+ * Brackets may be contiguous ranges (old-style, e.g. 0-0.5, 0.5-1, 1-2.5...)
+ * or single-point brackets used for linear per-kg pricing (e.g. 1-1, 5-5,
+ * 10-10...). If the weight doesn't land exactly inside any bracket — either
+ * because it's above every bracket, or in a gap between two single-point
+ * brackets — we extrapolate from the nearest bracket *below* it using that
+ * bracket's perKgOverage rate, not just whichever bracket happens to be
+ * first or last.
  *
  * If fromZoneId resolves to an origin zone (see resolveFromZoneForPostcode)
  * and brackets exist scoped to it, those are preferred; otherwise falls
@@ -91,14 +95,18 @@ async function findRateBracket({ serviceId, zoneId, fromZoneId, chargeableWeight
     );
     if (exact) return { bracket: exact, extrapolated: false };
 
-    // heavier than every defined bracket -> extrapolate off the top bracket
-    const top = brackets[brackets.length - 1];
-    if (chargeableWeightKg > Number(top.weightToKg)) {
-      return { bracket: top, extrapolated: true };
+    // no exact match -> extrapolate from the nearest bracket whose ceiling
+    // is still below the requested weight (covers both "heavier than every
+    // bracket" and "falls in a gap between two brackets")
+    let nearestLower = null;
+    for (const b of brackets) {
+      if (Number(b.weightToKg) <= chargeableWeightKg) {
+        if (!nearestLower || Number(b.weightToKg) > Number(nearestLower.weightToKg)) nearestLower = b;
+      }
     }
+    if (nearestLower) return { bracket: nearestLower, extrapolated: true };
 
-    // lighter than the smallest bracket floor (shouldn't normally happen
-    // since brackets should start at 0) -> fall back to the lowest bracket
+    // lighter than every bracket's floor -> fall back to the lowest bracket
     return { bracket: brackets[0], extrapolated: false };
   }
 
