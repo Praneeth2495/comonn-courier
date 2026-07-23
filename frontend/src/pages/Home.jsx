@@ -194,11 +194,37 @@ export default function Home() {
     setOriginSuggestions([]);
   }
 
-  function handleGetQuote(e) {
+  // Home's instant-booking box is a teaser for the Book page's full form —
+  // whatever's been entered here (origin pincode, item weight/dims/qty)
+  // carries over as quoteInput so Book page opens pre-filled instead of
+  // making the customer start over. Used by both "Get Instant Quote" and
+  // "+ Add another item", since both just hand off to the real form.
+  function goToBook(e) {
     e.preventDefault();
+    const quoteInput = {};
+    let hasData = false;
     if (originPostcode) {
-      setBooking({ quoteInput: { originPostcode, originSuburb: originPicked?.suburb, originState: originPicked?.state } });
+      quoteInput.originPostcode = originPostcode;
+      quoteInput.originSuburb = originPicked?.suburb;
+      quoteInput.originState = originPicked?.state;
+      hasData = true;
     }
+    if (weightPreset === 'Not sure') {
+      quoteInput.items = [{ itemType: 'Box', quantity: qty }];
+      quoteInput.pricingPending = true;
+      hasData = true;
+    } else if (weightPreset) {
+      quoteInput.items = [{
+        itemType: 'Box',
+        actualWeightKg: Number(weightPreset.replace(' kg', '')),
+        lengthCm: lengthCm ? Number(lengthCm) : undefined,
+        widthCm: widthCm ? Number(widthCm) : undefined,
+        heightCm: heightCm ? Number(heightCm) : undefined,
+        quantity: qty,
+      }];
+      hasData = true;
+    }
+    if (hasData) setBooking({ quoteInput });
     navigate('/quote');
   }
 
@@ -227,7 +253,7 @@ export default function Home() {
             </div>
           </div>
 
-          <form className="card" style={{ overflow: 'hidden' }} onSubmit={handleGetQuote}>
+          <form className="card" style={{ overflow: 'hidden' }} onSubmit={goToBook}>
             <div className="airmail-edge" />
             <div style={{ padding: 26 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
@@ -328,7 +354,7 @@ export default function Home() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-                <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={(e) => e.preventDefault()}>+ Add another item</a>
+                <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={goToBook}>+ Add another item</a>
               </div>
 
               <button className="btn btn-primary block" style={{ marginTop: 18, padding: 13 }}>Get Instant Quote</button>
