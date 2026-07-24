@@ -4,25 +4,11 @@ const { prisma } = require('../config/db');
 const { generateLabelPdf, STORAGE_DIR } = require('../services/labelService');
 const { generateInvoicePdf } = require('../services/invoiceService');
 const { sendEmail } = require('../services/emailService');
-const { ensureCustomerAccount, passwordSetUrl } = require('../services/accountProvisioning');
+const { ensureCustomerAccount } = require('../services/accountProvisioning');
 
 function siteUrl(pathname) {
   const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
   return `${base}${pathname}`;
-}
-
-function accountBlockHtml(accountInfo) {
-  if (!accountInfo?.isNewAccount) return '';
-  return `
-    <div style="margin-top:24px;padding:18px 20px;background:#F2F6FF;border-radius:12px;">
-      <p style="margin:0 0 8px;font-weight:700;color:#0E1B3D;font-size:14.5px;">We've created an account for you!</p>
-      <p style="margin:0 0 10px;font-size:13px;color:#5B6478;line-height:1.6;">To make managing your international shipments easier, we've set up a private customer portal for you. Use it to track packages live, download labels and invoices, and manage your saved addresses.</p>
-      <p style="margin:0 0 4px;font-size:13px;"><b>Username:</b> ${accountInfo.user.email}</p>
-      <p style="margin:0 0 14px;font-size:13px;"><b>Password:</b> Not set yet — for your security</p>
-      <p style="margin:0 0 6px;"><a href="${passwordSetUrl(accountInfo.rawToken)}" style="background:#FF5A36;color:#fff;padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13.5px;display:inline-block;">Set your password →</a></p>
-      <p style="margin:10px 0 0;font-size:11.5px;color:#8A93A6;">This secure link expires in 24 hours. If it expires, just visit our login page and click &quot;Forgot password?&quot; to receive a new one.</p>
-    </div>
-  `;
 }
 
 async function sendReceiverBookingNotification(order) {
@@ -89,7 +75,7 @@ function buildPackages(order) {
   return packages;
 }
 
-async function emailLabelsAndInvoice(order, labels, invoice, accountInfo) {
+async function emailLabelsAndInvoice(order, labels, invoice) {
   if (!order.otpEmail) return;
   try {
     const attachments = [
@@ -105,12 +91,9 @@ async function emailLabelsAndInvoice(order, labels, invoice, accountInfo) {
     await sendEmail({
       to: order.otpEmail,
       from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
-      subject: accountInfo?.isNewAccount
-        ? `Confirmed: Order #${order.orderNumber} + Your Account Details`
-        : `Your Comonn shipping label${labels.length > 1 ? 's' : ''} and invoice — Order ${order.orderNumber}`,
+      subject: `Your Comonn shipping label${labels.length > 1 ? 's' : ''} and invoice — Order ${order.orderNumber}`,
       html: `
         <p>Your shipping label${labels.length > 1 ? 's are' : ' is'} attached for order ${order.orderNumber}, along with your invoice. Print the label(s) and attach one to each package before pickup.</p>
-        ${accountBlockHtml(accountInfo)}
       `,
       attachments,
     });
@@ -140,7 +123,7 @@ function addressBlockHtml(addr) {
 // quote.controller.js) — rounded white cards on a paper background, a
 // top-right status pill, and a two-column info table — so every
 // transactional email reads as one visual system.
-function renderBookingConfirmationHtml(order, accountInfo) {
+function renderBookingConfirmationHtml(order) {
   const sender = order.senderAddress;
   const receiver = order.receiverAddress;
   const trackUrl = siteUrl(`/track?id=${encodeURIComponent(order.trackingNumber || '')}`);
@@ -191,8 +174,6 @@ function renderBookingConfirmationHtml(order, accountInfo) {
         </p>
       </div>
 
-      ${accountBlockHtml(accountInfo)}
-
       <a href="${trackUrl}" style="display:block;text-align:center;margin-top:18px;background:#FF5A36;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:10px;font-size:15px;">Track order →</a>
 
       <p style="font-size:12px;color:#8A93A6;text-align:center;margin-top:16px;">Questions about your pickup? Reply to this email or contact us at support@comonn.in.</p>
@@ -200,15 +181,13 @@ function renderBookingConfirmationHtml(order, accountInfo) {
   `;
 }
 
-async function sendBookingConfirmationEmail(order, to, accountInfo) {
+async function sendBookingConfirmationEmail(order, to) {
   try {
     await sendEmail({
       to,
       from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
-      subject: accountInfo?.isNewAccount
-        ? `Confirmed: Order #${order.orderNumber} + Your Account Details`
-        : `Booking confirmed — Order ${order.orderNumber}`,
-      html: renderBookingConfirmationHtml(order, accountInfo),
+      subject: `Booking confirmed — Order ${order.orderNumber}`,
+      html: renderBookingConfirmationHtml(order),
     });
   } catch (err) {
     console.error('sendBookingConfirmationEmail failed:', err.message);
@@ -252,8 +231,12 @@ async function generateLabel(req, res, next) {
     if (order.pricingPending) {
       const emailedTo = order.senderAddress?.email || order.otpEmail || null;
       if (!order.confirmationEmailSentAt && emailedTo) {
-        const accountInfo = await ensureCustomerAccount(order);
-        await sendBookingConfirmationEmail(order, emailedTo, accountInfo);
+        // Still creates/links the guest's account (needed for the Labels
+        // page's "Set up my password" button and the delayed account-setup
+        // follow-up email) — just no longer embeds account-creation details
+        // in this confirmation email itself.
+        await ensureCustomerAccount(order);
+        await sendBookingConfirmationEmail(order, emailedTo);
         await prisma.order.update({ where: { id: order.id }, data: { confirmationEmailSentAt: new Date() } });
       }
       return res.json({ pricingPending: true, emailedTo });
@@ -317,8 +300,12 @@ async function generateLabel(req, res, next) {
       },
     });
 
-    const accountInfo = await ensureCustomerAccount(order);
-    await emailLabelsAndInvoice(order, labels, invoice, accountInfo);
+    // Still creates/links the guest's account (needed for the Labels page's
+    // "Set up my password" button and the delayed account-setup follow-up
+    // email) — just no longer embeds account-creation details in this
+    // labels/invoice email itself.
+    await ensureCustomerAccount(order);
+    await emailLabelsAndInvoice(order, labels, invoice);
     await sendReceiverBookingNotification(order);
 
     res.status(201).json({

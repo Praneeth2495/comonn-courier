@@ -24,6 +24,11 @@ async function register(req, res, next) {
         phone,
         company,
         role: 'CUSTOMER',
+        // Self-registered — the password is real from the moment of
+        // creation (unlike a guest-checkout account's random placeholder
+        // one), so this never becomes a candidate for the account-setup
+        // follow-up email.
+        passwordSetAt: new Date(),
       },
     });
 
@@ -179,8 +184,18 @@ async function setPassword(req, res, next) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await prisma.user.update({ where: { id: record.userId }, data: { passwordHash } });
-    await prisma.passwordSetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
+    const user = await prisma.user.update({ where: { id: record.userId }, data: { passwordHash, passwordSetAt: new Date() } });
+    // Invalidate every other still-usable token for this user — e.g. a
+    // guest who has both the print-labels-page "Set up my password" link
+    // and the delayed account-setup email's link outstanding at once —
+    // so a stale second link can't silently overwrite the password again
+    // after this one has already taken effect. A genuinely new
+    // forgot-password request afterward is unaffected since it mints its
+    // own fresh token row that doesn't exist yet at this point.
+    await prisma.passwordSetToken.updateMany({
+      where: { userId: record.userId, usedAt: null },
+      data: { usedAt: new Date() },
+    });
 
     const jwtToken = signUserToken(user);
     res.json({

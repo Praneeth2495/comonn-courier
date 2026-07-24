@@ -22,6 +22,7 @@ const inventoryRoutes = require('./routes/inventory.routes');
 const batchRoutes = require('./routes/batch.routes');
 const locationRoutes = require('./routes/location.routes');
 const { startDriverAutoUnassignJob } = require('./services/driverAutoUnassign');
+const { startAccountSetupFollowupJob } = require('./services/accountSetupFollowup');
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 startDriverAutoUnassignJob();
+startAccountSetupFollowupJob();
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
