@@ -152,14 +152,8 @@ model PostcodeZone {
   postcode    String
   zoneId      String
   zone        Zone    @relation(fields: [zoneId], references: [id])
-  // Optional human-facing sub-area name for this postcode (e.g.
-  // "Hyderabad", "Vijayawada") — independent of `zone` (which drives
-  // pricing). Powers the admin Pickup-orders panel's origin
-  // state/region filters; null for postcodes with no region assigned.
-  region      String?
 
   @@unique([countryCode, postcode])
-  @@index([countryCode, region])
 }
 
 // Admin-controlled: which STAFF accounts can see/filter Pickup & Delivery
@@ -190,13 +184,19 @@ model CountryZone {
 // suggestion list). One postcode maps to many suburbs, so lookups return a
 // list for the customer to pick from rather than a single match.
 model PostcodeSuggestion {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   countryCode String // ISO alpha-2, e.g. "IN"
   postcode    String
   suburb      String
-  state       String
+  state       String?
+  // Optional human-facing sub-area name for this postcode/suburb (e.g.
+  // "Hyderabad", "Vijayawada") — independent of pricing. Powers the admin
+  // Pickup-orders panel's origin state/region filters; null where the
+  // source data doesn't assign one (currently only populated for India).
+  region      String?
 
   @@index([countryCode, postcode])
+  @@index([countryCode, region])
 }
 
 // A Service is a product line: Express, Economy, Freight, Documents...

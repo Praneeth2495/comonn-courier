@@ -212,12 +212,12 @@ async function buildOrdersWhere(req) {
 
   // Origin (pickup) state/region — independent of the destination zoneCode
   // filter above. Region has no direct column on Order/Address, so it's
-  // resolved to the set of matching postcodes via PostcodeZone.region first.
+  // resolved to the set of matching postcodes via PostcodeSuggestion.region.
   if (originState || originRegion) {
     const senderFilter = {};
     if (originState) senderFilter.state = originState;
     if (originRegion) {
-      const regionPostcodes = await prisma.postcodeZone.findMany({
+      const regionPostcodes = await prisma.postcodeSuggestion.findMany({
         where: { region: originRegion },
         select: { postcode: true },
       });

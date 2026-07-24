@@ -11,6 +11,14 @@ const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i
 // actual-weight price (final pricing still runs server-side on the Quote page).
 const STANDARD_DIVISOR = 5000;
 
+// Converts an ISO alpha-2 country code into its flag emoji (regional
+// indicator symbols), so the destination field can show a flag the same
+// way the origin field's fixed "🇮🇳 IN" does, for any country.
+function countryFlagEmoji(code) {
+  if (!code || code.length !== 2) return '';
+  return [...code.toUpperCase()].map((c) => String.fromCodePoint(127397 + c.charCodeAt(0))).join('');
+}
+
 function maxDimsHint(weightPreset) {
   if (!weightPreset || weightPreset === 'Not sure') return null;
   const weightKg = Number(weightPreset.replace(' kg', ''));
@@ -185,6 +193,11 @@ export default function Home() {
   const originDebounceRef = useRef(null);
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState('');
+  const [destinationPostcode, setDestinationPostcode] = useState('');
+  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [destinationPicked, setDestinationPicked] = useState(null);
+  const [destinationFocused, setDestinationFocused] = useState(false);
+  const destinationDebounceRef = useRef(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -215,6 +228,38 @@ export default function Home() {
     setOriginSuggestions([]);
   }
 
+  // Destination postcode autocomplete — same pattern as origin, but scoped
+  // to whichever country is selected. Real postcode data only exists for
+  // India (origin side) so far; other countries will just show no matches
+  // until their data is imported, which is expected for now.
+  function handleDestinationCountryChange(code) {
+    setDestinationCountryCode(code);
+    setDestinationPostcode('');
+    setDestinationPicked(null);
+    setDestinationSuggestions([]);
+  }
+
+  function handleDestinationPostcodeChange(v) {
+    setDestinationPostcode(v);
+    setDestinationPicked(null);
+    clearTimeout(destinationDebounceRef.current);
+    if (v.trim().length < 3 || !destinationCountryCode) {
+      setDestinationSuggestions([]);
+      return;
+    }
+    destinationDebounceRef.current = setTimeout(() => {
+      client.get('/quote/postcode-suggestions', { params: { postcode: v, countryCode: destinationCountryCode } })
+        .then(({ data }) => setDestinationSuggestions(data.suggestions))
+        .catch(() => setDestinationSuggestions([]));
+    }, 400);
+  }
+
+  function pickDestinationSuggestion(s) {
+    setDestinationPostcode(s.postcode);
+    setDestinationPicked(s);
+    setDestinationSuggestions([]);
+  }
+
   // Home's instant-booking box is a teaser for the Book page's full form —
   // whatever's been entered here (origin pincode, destination, item
   // weight/dims/qty) carries over as quoteInput so Book page opens
@@ -226,6 +271,11 @@ export default function Home() {
   function goToBook(e) {
     e.preventDefault();
     setError('');
+
+    if (destinationCountryCode && !destinationPostcode) {
+      setError('Please enter the destination postcode.');
+      return;
+    }
 
     if (originPostcode && destinationCountryCode && !weightPreset) {
       setError('Please choose a weight.');
@@ -244,6 +294,9 @@ export default function Home() {
       const countryObj = countries.find((c) => c.countryCode === destinationCountryCode);
       quoteInput.destinationCountryCode = destinationCountryCode;
       quoteInput.destinationCountryName = countryObj?.countryName || destinationCountryCode;
+      quoteInput.destinationPostcode = destinationPostcode;
+      quoteInput.destinationSuburb = destinationPicked?.suburb;
+      quoteInput.destinationState = destinationPicked?.state;
       hasData = true;
     }
     const hasWeight = weightPreset && weightPreset !== 'Not sure';
@@ -262,7 +315,7 @@ export default function Home() {
       }];
       hasData = true;
     }
-    if (originPostcode && destinationCountryCode && hasWeight) {
+    if (originPostcode && destinationCountryCode && destinationPostcode && hasWeight) {
       quoteInput.autoFetch = true;
     }
     if (hasData) setBooking({ quoteInput });
@@ -327,14 +380,33 @@ export default function Home() {
 
               <div className="route-line" />
 
-              <div className="field" style={{ marginBottom: 14 }}>
+              <div className="field" style={{ marginBottom: 14, position: 'relative' }}>
                 <label>Destination</label>
-                <select className="select" value={destinationCountryCode} onChange={(e) => setDestinationCountryCode(e.target.value)}>
-                  <option value="">Select destination…</option>
-                  {countries.map((c) => (
-                    <option key={c.countryCode} value={c.countryCode}>{c.countryName} — {c.zone.name}</option>
-                  ))}
-                </select>
+                <div className="input-group">
+                  <select className="flag" value={destinationCountryCode} onChange={(e) => handleDestinationCountryChange(e.target.value)}>
+                    <option value="">Select country…</option>
+                    {countries.map((c) => (
+                      <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryName}</option>
+                    ))}
+                  </select>
+                  <input
+                    placeholder="Destination postcode"
+                    disabled={!destinationCountryCode}
+                    value={destinationFocused || !destinationPicked ? destinationPostcode : `${destinationPostcode}, ${destinationPicked.suburb}, ${destinationPicked.state}`}
+                    onChange={(e) => handleDestinationPostcodeChange(e.target.value)}
+                    onFocus={() => setDestinationFocused(true)}
+                    onBlur={() => setDestinationFocused(false)}
+                  />
+                </div>
+                {destinationSuggestions.length > 0 && (
+                  <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
+                    {destinationSuggestions.map((s, i) => (
+                      <button type="button" key={i} className="acct-menu-item" onClick={() => pickDestinationSuggestion(s)}>
+                        {s.postcode}, {s.suburb}, {s.state}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="field" style={{ marginBottom: 6 }}>

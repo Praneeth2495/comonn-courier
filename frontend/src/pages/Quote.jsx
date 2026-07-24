@@ -26,6 +26,14 @@ function volumetricWeightNote(it) {
   return { l, w, h, actualWeightKg, volumetricWeightKg };
 }
 
+// Converts an ISO alpha-2 country code into its flag emoji (regional
+// indicator symbols), so the destination field can show a flag the same
+// way the origin field's fixed "🇮🇳 IN" does, for any country.
+function countryFlagEmoji(code) {
+  if (!code || code.length !== 2) return '';
+  return [...code.toUpperCase()].map((c) => String.fromCodePoint(127397 + c.charCodeAt(0))).join('');
+}
+
 function maxDimsHint(weightPreset) {
   if (!weightPreset || weightPreset === 'NOT_SURE') return null;
   const weightKg = Number(weightPreset.replace(' kg', ''));
@@ -102,6 +110,11 @@ export default function Quote() {
   const carryOverOrder = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role)) ? bookingOrder : null;
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || '');
+  const [destinationPostcode, setDestinationPostcode] = useState(quoteInput?.destinationPostcode || '');
+  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [destinationPicked, setDestinationPicked] = useState(quoteInput?.destinationSuburb ? { suburb: quoteInput.destinationSuburb, state: quoteInput.destinationState } : null);
+  const [destinationFocused, setDestinationFocused] = useState(false);
+  const destinationDebounceRef = useRef(null);
   const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || '');
   const [originSuggestions, setOriginSuggestions] = useState([]);
   const [originPicked, setOriginPicked] = useState(quoteInput?.originSuburb ? { suburb: quoteInput.originSuburb, state: quoteInput.originState } : null);
@@ -142,7 +155,7 @@ export default function Quote() {
   // here — fetch and show services right away.
   useEffect(() => {
     if (resumeInput) window.history.replaceState({}, '', '/quote');
-    if (!quoteInput?.autoFetch || !destinationCountryCode || !originPostcode) return;
+    if (!quoteInput?.autoFetch || !destinationCountryCode || !destinationPostcode || !originPostcode) return;
     const parsedItems = buildItemsPayload();
     if (parsedItems) fetchQuotes(parsedItems);
     setBooking({ quoteInput: { ...quoteInput, autoFetch: false } });
@@ -161,6 +174,7 @@ export default function Quote() {
   const pricingSignature = JSON.stringify({
     originPostcode,
     destinationCountryCode,
+    destinationPostcode,
     items: items.map((it) => ({
       itemType: it.itemType,
       weightPreset: it.weightPreset,
@@ -203,6 +217,38 @@ export default function Quote() {
   function pickOriginSuggestion(s) {
     setOriginPicked(s);
     setOriginSuggestions([]);
+  }
+
+  // Destination postcode autocomplete — same pattern as origin, but scoped
+  // to whichever country is selected. Real postcode data only exists for
+  // India (origin side) so far; other countries will just show no matches
+  // until their data is imported, which is expected for now.
+  function handleDestinationCountryChange(code) {
+    setDestinationCountryCode(code);
+    setDestinationPostcode('');
+    setDestinationPicked(null);
+    setDestinationSuggestions([]);
+  }
+
+  function handleDestinationPostcodeChange(v) {
+    setDestinationPostcode(v);
+    setDestinationPicked(null);
+    clearTimeout(destinationDebounceRef.current);
+    if (v.trim().length < 3 || !destinationCountryCode) {
+      setDestinationSuggestions([]);
+      return;
+    }
+    destinationDebounceRef.current = setTimeout(() => {
+      client.get('/quote/postcode-suggestions', { params: { postcode: v, countryCode: destinationCountryCode } })
+        .then(({ data }) => setDestinationSuggestions(data.suggestions))
+        .catch(() => setDestinationSuggestions([]));
+    }, 400);
+  }
+
+  function pickDestinationSuggestion(s) {
+    setDestinationPostcode(s.postcode);
+    setDestinationPicked(s);
+    setDestinationSuggestions([]);
   }
 
   function addItem() {
@@ -264,6 +310,11 @@ export default function Quote() {
       return;
     }
 
+    if (!destinationPostcode) {
+      setError('Please enter the destination postcode.');
+      return;
+    }
+
     if (isPickupOnly) {
       const pickupItems = items.map((it) => ({ itemType: it.itemType, quantity: Number(it.quantity) || 1 }));
       const countryObj = countries.find((c) => c.countryCode === destinationCountryCode);
@@ -271,6 +322,9 @@ export default function Quote() {
         quoteInput: {
           destinationCountryCode,
           destinationCountryName: countryObj?.countryName || destinationCountryCode,
+          destinationPostcode,
+          destinationSuburb: destinationPicked?.suburb,
+          destinationState: destinationPicked?.state,
           items: pickupItems,
           pricingPending: true,
           originPostcode: originPostcode || undefined,
@@ -302,6 +356,9 @@ export default function Quote() {
     setBooking({
       quoteInput: {
         destinationCountryCode,
+        destinationPostcode,
+        destinationSuburb: destinationPicked?.suburb,
+        destinationState: destinationPicked?.state,
         items: parsedItems,
         originPostcode: originPostcode || undefined,
         originSuburb: originPicked?.suburb,
@@ -327,6 +384,9 @@ export default function Quote() {
       await client.post('/quote/email', {
         email: emailAddress,
         destinationCountryCode,
+        destinationPostcode,
+        destinationSuburb: destinationPicked?.suburb,
+        destinationState: destinationPicked?.state,
         items: parsedItems,
         originPostcode: originPostcode || undefined,
         originSuburb: originPicked?.suburb,
@@ -372,14 +432,33 @@ export default function Quote() {
                 </div>
               )}
             </div>
-            <div className="field">
+            <div className="field" style={{ position: 'relative' }}>
               <label>Destination</label>
-              <select className="select" required value={destinationCountryCode} onChange={(e) => setDestinationCountryCode(e.target.value)}>
-                <option value="">Select destination…</option>
-                {countries.map((c) => (
-                  <option key={c.countryCode} value={c.countryCode}>{c.countryName} — {c.zone.name}</option>
-                ))}
-              </select>
+              <div className="input-group">
+                <select className="flag" required value={destinationCountryCode} onChange={(e) => handleDestinationCountryChange(e.target.value)}>
+                  <option value="">Select country…</option>
+                  {countries.map((c) => (
+                    <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryName}</option>
+                  ))}
+                </select>
+                <input
+                  placeholder="Destination postcode"
+                  disabled={!destinationCountryCode}
+                  value={destinationFocused || !destinationPicked ? destinationPostcode : `${destinationPostcode}, ${destinationPicked.suburb}, ${destinationPicked.state}`}
+                  onChange={(e) => handleDestinationPostcodeChange(e.target.value)}
+                  onFocus={() => setDestinationFocused(true)}
+                  onBlur={() => setDestinationFocused(false)}
+                />
+              </div>
+              {destinationSuggestions.length > 0 && (
+                <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
+                  {destinationSuggestions.map((s, i) => (
+                    <button type="button" key={i} className="acct-menu-item" onClick={() => pickDestinationSuggestion(s)}>
+                      {s.postcode}, {s.suburb}, {s.state}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

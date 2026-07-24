@@ -184,20 +184,39 @@ async function listServices(req, res, next) {
 }
 
 /**
- * GET /api/quote/postcode-suggestions?postcode=532001 — India-only for now.
- * One postcode can map to several suburbs (different post offices sharing
- * the same PIN), so this returns every match for the customer to pick from.
+ * GET /api/quote/postcode-suggestions?postcode=532001&countryCode=IN
+ * countryCode defaults to IN (origin — pickup is always domestic). India
+ * postcodes are a fixed 6 digits and looked up by exact match, since one
+ * PIN can map to several suburbs (different post offices sharing the same
+ * code) — every match is returned for the customer to pick from. Other
+ * countries (used for the destination field) don't have a fixed postcode
+ * length here yet, so any partial entry of 3+ characters is matched as a
+ * prefix; this returns [] for any country whose postcode data hasn't been
+ * imported yet (currently everything except India).
  */
 async function postcodeSuggestions(req, res, next) {
   try {
+    const countryCode = (req.query.countryCode || 'IN').toUpperCase();
     const postcode = (req.query.postcode || '').trim();
-    if (postcode.length !== 6 || !/^\d{6}$/.test(postcode)) {
-      return res.json({ suggestions: [] });
+
+    if (countryCode === 'IN') {
+      if (postcode.length !== 6 || !/^\d{6}$/.test(postcode)) {
+        return res.json({ suggestions: [] });
+      }
+      const suggestions = await prisma.postcodeSuggestion.findMany({
+        where: { countryCode: 'IN', postcode },
+        select: { postcode: true, suburb: true, state: true },
+        orderBy: { suburb: 'asc' },
+      });
+      return res.json({ suggestions });
     }
+
+    if (postcode.length < 3) return res.json({ suggestions: [] });
     const suggestions = await prisma.postcodeSuggestion.findMany({
-      where: { countryCode: 'IN', postcode },
-      select: { suburb: true, state: true },
-      orderBy: { suburb: 'asc' },
+      where: { countryCode, postcode: { startsWith: postcode.toUpperCase() } },
+      select: { postcode: true, suburb: true, state: true },
+      orderBy: [{ postcode: 'asc' }, { suburb: 'asc' }],
+      take: 20,
     });
     res.json({ suggestions });
   } catch (err) {

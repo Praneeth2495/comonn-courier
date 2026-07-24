@@ -40,43 +40,23 @@ async function dashboardStats(req, res, next) {
 /**
  * GET /api/admin/pickup-origins — distinct origin (pickup) states and, per
  * state, the distinct regions assigned to postcodes within it. Powers the
- * Pickup-orders panel's origin State/Region filter chips. States come from
- * PostcodeSuggestion (which carries state); regions come from
- * PostcodeZone.region — cross-referenced by shared (countryCode, postcode)
- * since the two tables aren't formally related to each other.
+ * Pickup-orders panel's origin State/Region filter chips. Both state and
+ * region live on PostcodeSuggestion, so this is a single query.
  */
 async function listPickupOrigins(req, res, next) {
   try {
     const countryCode = req.query.countryCode || 'IN';
 
-    const [statesRows, regionRows] = await Promise.all([
-      prisma.postcodeSuggestion.findMany({
-        where: { countryCode },
-        distinct: ['state'],
-        select: { state: true },
-        orderBy: { state: 'asc' },
-      }),
-      prisma.postcodeZone.findMany({
-        where: { countryCode, region: { not: null } },
-        select: { postcode: true, region: true },
-      }),
-    ]);
-    const states = statesRows.map((s) => s.state).filter(Boolean);
-
-    if (regionRows.length === 0) return res.json({ states, regionsByState: {} });
-
-    const postcodes = [...new Set(regionRows.map((r) => r.postcode))];
-    const stateByPostcodeRows = await prisma.postcodeSuggestion.findMany({
-      where: { countryCode, postcode: { in: postcodes } },
-      distinct: ['postcode'],
-      select: { postcode: true, state: true },
+    const rows = await prisma.postcodeSuggestion.findMany({
+      where: { countryCode },
+      select: { state: true, region: true },
     });
-    const stateByPostcode = Object.fromEntries(stateByPostcodeRows.map((r) => [r.postcode, r.state]));
+
+    const states = [...new Set(rows.map((r) => r.state).filter(Boolean))].sort();
 
     const regionSetByState = {};
-    for (const { postcode, region } of regionRows) {
-      const state = stateByPostcode[postcode];
-      if (!state) continue;
+    for (const { state, region } of rows) {
+      if (!state || !region) continue;
       (regionSetByState[state] ||= new Set()).add(region);
     }
     const regionsByState = Object.fromEntries(

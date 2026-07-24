@@ -64,7 +64,16 @@ export default function Details() {
     if (quoteInput?.originState) base.state = quoteInput.originState;
     return base;
   });
-  const [receiver, setReceiver] = useState(() => (isEditingExisting ? fromSavedAddress(bookingOrder.receiverAddress) : emptyAddress(quoteInput?.destinationCountryCode || '')));
+  const [receiver, setReceiver] = useState(() => {
+    if (isEditingExisting) return fromSavedAddress(bookingOrder.receiverAddress);
+    // Pre-fill from the destination postcode entered on the Quote page's
+    // Destination field, if the customer picked a suggestion there.
+    const base = emptyAddress(quoteInput?.destinationCountryCode || '');
+    if (quoteInput?.destinationPostcode) base.postcode = quoteInput.destinationPostcode;
+    if (quoteInput?.destinationSuburb) base.city = quoteInput.destinationSuburb;
+    if (quoteInput?.destinationState) base.state = quoteInput.destinationState;
+    return base;
+  });
   const [contentsDescription, setContentsDescription] = useState(isEditingExisting ? bookingOrder.contentsDescription || '' : '');
   const [declaredValue, setDeclaredValue] = useState(isEditingExisting && bookingOrder.declaredValue ? String(bookingOrder.declaredValue) : '');
   const [loading, setLoading] = useState(false);
