@@ -6,6 +6,7 @@ const { generateInvoiceNumber } = require('../utils/invoiceNumber');
 const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addonCatalog');
 const { sendEmail } = require('../services/emailService');
 const { sendReceiverBookingNotification } = require('./label.controller');
+const { ensureCustomerAccount, issuePasswordSetToken } = require('../services/accountProvisioning');
 
 // UNFINISHED: a customer created a quote + entered details but hasn't
 // completed payment yet — the resting status for every newly-created order.
@@ -321,6 +322,38 @@ async function getOrderForPayment(req, res, next) {
       return res.status(404).json({ error: 'This payment link is no longer valid.' });
     }
     res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/orders/:id/password-set-link — public, order-id-scoped (same
+ * trust model as GET /:id/pay: the order id is only ever known to whoever
+ * actually completed that checkout). Lets the just-finished Labels page
+ * send a guest straight into the "create password" screen — the same one
+ * used from the account-creation email — without a separate
+ * email-round-trip like /auth/forgot-password. Requires the order's email
+ * to have actually been OTP-verified during checkout, so this can't be
+ * used to hijack an arbitrary account by guessing an order id.
+ */
+async function issuePasswordSetLink(req, res, next) {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (!order.otpEmail || !order.otpVerifiedAt) {
+      return res.status(400).json({ error: 'This order has no verified email to set a password for.' });
+    }
+
+    let userId = order.userId;
+    if (!userId) {
+      const accountInfo = await ensureCustomerAccount(order);
+      userId = accountInfo?.user?.id;
+    }
+    if (!userId) return res.status(404).json({ error: 'No account found for this order.' });
+
+    const token = await issuePasswordSetToken(userId);
+    res.json({ token });
   } catch (err) {
     next(err);
   }
@@ -806,6 +839,7 @@ module.exports = {
   sendPaymentLinkEmail,
   applyPromo,
   getOrderForPayment,
+  issuePasswordSetLink,
   round2,
   PAYABLE_STATUSES,
 };

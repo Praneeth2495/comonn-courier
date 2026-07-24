@@ -20,6 +20,19 @@ function maxDimsHint(weightPreset) {
   return `${sumCm} cm (sum of length + width + height)`;
 }
 
+// Mirrors Quote.jsx's volumetricWeightNote / pricingEngine.js's
+// calcVolumetricWeightKg exactly (ceil to the nearest whole kg) so this
+// preview matches the price actually quoted on the Book page.
+function volumetricWeightNote({ showDims, weightPreset, lengthCm, widthCm, heightCm }) {
+  if (!showDims || !weightPreset || weightPreset === 'Not sure') return null;
+  const l = Number(lengthCm), w = Number(widthCm), h = Number(heightCm);
+  const actualWeightKg = Number(weightPreset.replace(' kg', ''));
+  if (!l || !w || !h || !actualWeightKg) return null;
+  const volumetricWeightKg = Math.ceil((l * w * h) / STANDARD_DIVISOR);
+  if (volumetricWeightKg <= actualWeightKg) return null;
+  return { l, w, h, actualWeightKg, volumetricWeightKg };
+}
+
 function IndiaChakra() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="18" height="12">
@@ -351,20 +364,31 @@ export default function Home() {
                       </p>
                     )}
                     {showDims ? (
-                      <div className="item-row equal" style={{ marginTop: 8 }}>
-                        <div>
-                          <div className="lbl" style={{ marginBottom: 4 }}>Length (cm)</div>
-                          <input className="input" type="number" min="1" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)} />
+                      <>
+                        <div className="item-row equal" style={{ marginTop: 8 }}>
+                          <div>
+                            <div className="lbl" style={{ marginBottom: 4 }}>Length (cm)</div>
+                            <input className="input" type="number" min="1" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)} />
+                          </div>
+                          <div>
+                            <div className="lbl" style={{ marginBottom: 4 }}>Width (cm)</div>
+                            <input className="input" type="number" min="1" value={widthCm} onChange={(e) => setWidthCm(e.target.value)} />
+                          </div>
+                          <div>
+                            <div className="lbl" style={{ marginBottom: 4 }}>Height (cm)</div>
+                            <input className="input" type="number" min="1" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
+                          </div>
                         </div>
-                        <div>
-                          <div className="lbl" style={{ marginBottom: 4 }}>Width (cm)</div>
-                          <input className="input" type="number" min="1" value={widthCm} onChange={(e) => setWidthCm(e.target.value)} />
-                        </div>
-                        <div>
-                          <div className="lbl" style={{ marginBottom: 4 }}>Height (cm)</div>
-                          <input className="input" type="number" min="1" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
-                        </div>
-                      </div>
+                        {(() => {
+                          const note = volumetricWeightNote({ showDims, weightPreset, lengthCm, widthCm, heightCm });
+                          if (!note) return null;
+                          return (
+                            <p style={{ fontSize: 12.5, color: 'var(--danger)', marginTop: 8, fontWeight: 600 }}>
+                              Volumetric weight ({note.l} × {note.w} × {note.h}) / {STANDARD_DIVISOR} = {note.volumetricWeightKg} kg is greater than actual weight of {note.actualWeightKg} kg. So, chargeable weight is {note.volumetricWeightKg} kg.
+                            </p>
+                          );
+                        })()}
+                      </>
                     ) : (
                       <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>
                         (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); setShowDims(true); }}>Click here</a>, if dimensions are known)

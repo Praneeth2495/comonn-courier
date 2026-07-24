@@ -18,6 +18,7 @@ const {
   applyPromo,
   getOrderForPayment,
   sendPaymentLinkEmail,
+  issuePasswordSetLink,
 } = require('../controllers/order.controller');
 
 // Prevents OTP-spam abuse (each call sends a real email / checks a guess).
@@ -45,5 +46,9 @@ router.post('/:id/send-otp', otpLimiter, optionalAuth, sendOtp);
 router.post('/:id/verify-otp', otpLimiter, optionalAuth, verifyOtp);
 router.post('/:id/promo', optionalAuth, applyPromo);
 router.post('/:id/send-payment-link-email', otpLimiter, requireAuth, requireRole('ADMIN', 'STAFF'), sendPaymentLinkEmail);
+// Public, order-id-scoped (see issuePasswordSetLink) — lets the just-finished
+// Labels page send a guest straight into "create password" without an
+// email round-trip.
+router.post('/:id/password-set-link', otpLimiter, issuePasswordSetLink);
 
 module.exports = router;

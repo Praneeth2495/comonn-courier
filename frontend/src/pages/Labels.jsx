@@ -146,9 +146,15 @@ export default function Labels() {
 
 // Logged-in customers go to their dashboard as before. Guests have no
 // dashboard to go to — a booking-time account was created for them behind
-// the scenes (see accountProvisioning.js), so point them at setting a
-// password instead, prefilling the email they already verified.
+// the scenes (see accountProvisioning.js). Rather than sending them through
+// the forgot-password email round-trip, jump straight to the same "create
+// password" screen used from the account-creation email — the order id
+// itself (see issuePasswordSetLink) is enough to prove they just completed
+// this checkout with a verified email, so a fresh token is issued instantly.
 function GuestOrDashboardCta({ user, order, clearBooking, navigate }) {
+  const [issuing, setIssuing] = useState(false);
+  const [error, setError] = useState('');
+
   if (user) {
     return (
       <button className="btn btn-outline block" style={{ marginTop: 22 }} onClick={() => { clearBooking(); navigate('/dashboard'); }}>
@@ -157,18 +163,29 @@ function GuestOrDashboardCta({ user, order, clearBooking, navigate }) {
     );
   }
 
+  async function setUpPassword() {
+    setIssuing(true);
+    setError('');
+    try {
+      const { data } = await client.post(`/orders/${order.id}/password-set-link`);
+      clearBooking();
+      navigate(`/set-password?token=${encodeURIComponent(data.token)}`);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not start account setup — please use the link from your confirmation email instead.');
+      setIssuing(false);
+    }
+  }
+
   const email = order.otpEmail;
   return (
     <div style={{ marginTop: 22 }}>
       <p style={{ fontSize: 13, color: 'var(--slate)', textAlign: 'center', marginBottom: 10 }}>
         {email ? <>You can track this order any time from your account — <b>{email}</b>. Set a password to get started.</> : 'You can track this order any time by setting up a password for your account.'}
       </p>
-      <button
-        className="btn btn-outline block"
-        onClick={() => { clearBooking(); navigate(`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ''}`); }}
-      >
-        Set up my password →
+      <button className="btn btn-outline block" disabled={issuing} onClick={setUpPassword}>
+        {issuing ? 'One moment…' : 'Set up my password →'}
       </button>
+      {error && <p className="error-text" style={{ marginTop: 8, textAlign: 'center' }}>{error}</p>}
     </div>
   );
 }

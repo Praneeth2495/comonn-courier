@@ -23,7 +23,7 @@ function volumetricWeightNote(it) {
   if (!l || !w || !h || !actualWeightKg) return null;
   const volumetricWeightKg = Math.ceil((l * w * h) / STANDARD_DIVISOR);
   if (volumetricWeightKg <= actualWeightKg) return null;
-  return { l, w, h, volumetricWeightKg };
+  return { l, w, h, actualWeightKg, volumetricWeightKg };
 }
 
 function maxDimsHint(weightPreset) {
@@ -422,7 +422,7 @@ export default function Quote() {
                         if (!note) return null;
                         return (
                           <p style={{ fontSize: 12.5, color: 'var(--danger)', marginTop: 8, fontWeight: 600 }}>
-                            Your volumetric weight is greater than actual weight. ({note.l} × {note.w} × {note.h}) / {STANDARD_DIVISOR} = {note.volumetricWeightKg} kg. So, chargeable weight is {note.volumetricWeightKg} kg.
+                            Volumetric weight ({note.l} × {note.w} × {note.h}) / {STANDARD_DIVISOR} = {note.volumetricWeightKg} kg is greater than actual weight of {note.actualWeightKg} kg. So, chargeable weight is {note.volumetricWeightKg} kg.
                           </p>
                         );
                       })()}

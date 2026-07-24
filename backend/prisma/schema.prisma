@@ -31,27 +31,33 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  fullName     String
-  phone        String?
-  company      String?
-  role         Role     @default(CUSTOMER)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                      String    @id @default(uuid())
+  email                   String    @unique
+  passwordHash            String
+  fullName                String
+  phone                   String?
+  company                 String?
+  role                    Role      @default(CUSTOMER)
+  isActive                Boolean   @default(true)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  // Null for a guest-checkout account auto-created with an unusable random
+  // password (see accountProvisioning.js) until the customer actually
+  // chooses one; set immediately for self-registered accounts. Drives the
+  // 1-hour account-setup follow-up email (see accountSetupFollowup.js).
+  passwordSetAt           DateTime?
+  accountSetupEmailSentAt DateTime?
 
-  addresses Address[]
-  orders    Order[]
-  auditLogs AuditLog[]
-  zoneAssignments StaffZoneAssignment[]
+  addresses         Address[]
+  orders            Order[]
+  auditLogs         AuditLog[]
+  zoneAssignments   StaffZoneAssignment[]
   passwordSetTokens PasswordSetToken[]
-  orderComments OrderComment[]
-  driverJobs Order[] @relation("OrderDriver")
-  inventoryUpdates InventoryItem[]
-  scanBatches ScanBatch[]
-  scanLocations ScanLocation[]
+  orderComments     OrderComment[]
+  driverJobs        Order[]               @relation("OrderDriver")
+  inventoryUpdates  InventoryItem[]
+  scanBatches       ScanBatch[]
+  scanLocations     ScanLocation[]
 
   @@index([email])
 }
@@ -88,23 +94,23 @@ model PasswordSetToken {
 }
 
 model Address {
-  id         String   @id @default(uuid())
-  userId     String?
-  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  label      String? // "Home", "Warehouse", etc.
-  contactName String
-  phone      String
-  email      String?
+  id           String   @id @default(uuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String? // "Home", "Warehouse", etc.
+  contactName  String
+  phone        String
+  email        String?
   instructions String? // pickup instructions (sender) or delivery instructions (receiver)
-  line1      String
-  line2      String?
-  city       String
-  state      String?
-  postcode   String
-  countryCode String  // ISO 3166-1 alpha-2, e.g. "AU"
-  isDefault  Boolean  @default(false)
-  isSaved    Boolean  @default(false) // true = user's address book entry; false = a per-order snapshot
-  createdAt  DateTime @default(now())
+  line1        String
+  line2        String?
+  city         String
+  state        String?
+  postcode     String
+  countryCode  String // ISO 3166-1 alpha-2, e.g. "AU"
+  isDefault    Boolean  @default(false)
+  isSaved      Boolean  @default(false) // true = user's address book entry; false = a per-order snapshot
+  createdAt    DateTime @default(now())
 
   ordersAsSender   Order[] @relation("SenderAddress")
   ordersAsReceiver Order[] @relation("ReceiverAddress")
@@ -117,22 +123,22 @@ model Address {
 // (typical for international courier pricing: Zone A = neighbouring
 // region, Zone B = wider region, Zone C = rest of world, etc).
 model Zone {
-  id             String   @id @default(uuid())
-  code           String   @unique // "ZONE_A"
-  name           String            // "Zone A — Asia Pacific"
+  id               String                @id @default(uuid())
+  code             String                @unique // "ZONE_A"
+  name             String // "Zone A — Asia Pacific"
   // "destination" = customer-facing shipping zone, matched via CountryZone
   // and used as RateCard.zoneId. "origin" = domestic India pickup-postcode
   // classification (e.g. "India-urban"), matched via PostcodeZone and used
   // as RateCard.fromZoneId — kept distinct so the admin's destination-zone
   // dropdown never gets polluted with origin-only zones.
-  kind           String   @default("destination")
-  countries      CountryZone[]
-  postcodeZones  PostcodeZone[]
-  rateCards      RateCard[] @relation("RateCardZone")
-  rateCardsFrom  RateCard[] @relation("RateCardFromZone")
+  kind             String                @default("destination")
+  countries        CountryZone[]
+  postcodeZones    PostcodeZone[]
+  rateCards        RateCard[]            @relation("RateCardZone")
+  rateCardsFrom    RateCard[]            @relation("RateCardFromZone")
   staffAssignments StaffZoneAssignment[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
 }
 
 // Maps a domestic India pickup postcode to an origin Zone (kind="origin"),
@@ -189,16 +195,16 @@ model PostcodeSuggestion {
 
 // A Service is a product line: Express, Economy, Freight, Documents...
 model Service {
-  id            String   @id @default(uuid())
-  code          String   @unique // "EXPRESS"
-  name          String            // "Express Worldwide"
-  description   String?
-  transitDaysMin Int
-  transitDaysMax Int
-  volumetricDivisor Int  @default(5000) // cm3 per kg, industry-standard default
-  isActive      Boolean  @default(true)
-  rateCards     RateCard[]
-  orders        Order[]
+  id                String     @id @default(uuid())
+  code              String     @unique // "EXPRESS"
+  name              String // "Express Worldwide"
+  description       String?
+  transitDaysMin    Int
+  transitDaysMax    Int
+  volumetricDivisor Int        @default(5000) // cm3 per kg, industry-standard default
+  isActive          Boolean    @default(true)
+  rateCards         RateCard[]
+  orders            Order[]
 }
 
 // RateCard = one weight-break price for a given service + destination zone,
@@ -206,31 +212,31 @@ model Service {
 // e.g. Service=EXPRESS, Zone=ZONE_A, 0-0.5kg => $18.50 base,
 // then perKgAbove for weight beyond the bracket ceiling.
 model RateCard {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   serviceId      String
-  service        Service  @relation(fields: [serviceId], references: [id])
+  service        Service   @relation(fields: [serviceId], references: [id])
   zoneId         String
-  zone           Zone     @relation("RateCardZone", fields: [zoneId], references: [id])
+  zone           Zone      @relation("RateCardZone", fields: [zoneId], references: [id])
   // Optional origin (pickup) zone — e.g. a bracket that only applies when
   // picking up from an "India-rural" postcode. NULL matches any origin, so
   // every existing rate card (with no origin dimension) keeps working
   // unchanged; a bracket with a specific fromZoneId is preferred over a
   // NULL one when both match (see pricingEngine.js's findRateBracket).
   fromZoneId     String?
-  fromZone       Zone?    @relation("RateCardFromZone", fields: [fromZoneId], references: [id])
-  weightFromKg   Decimal  @db.Decimal(10, 3) // inclusive lower bound
-  weightToKg     Decimal  @db.Decimal(10, 3) // inclusive upper bound
-  basePrice      Decimal  @db.Decimal(10, 2) // INR
-  perKgOverage   Decimal  @db.Decimal(10, 2) // price per kg once weight exceeds weightToKg of the last bracket
-  currency       String   @default("INR")
+  fromZone       Zone?     @relation("RateCardFromZone", fields: [fromZoneId], references: [id])
+  weightFromKg   Decimal   @db.Decimal(10, 3) // inclusive lower bound
+  weightToKg     Decimal   @db.Decimal(10, 3) // inclusive upper bound
+  basePrice      Decimal   @db.Decimal(10, 2) // INR
+  perKgOverage   Decimal   @db.Decimal(10, 2) // price per kg once weight exceeds weightToKg of the last bracket
+  currency       String    @default("INR")
   // Optional per-bracket delivery timeframe override — falls back to the
   // Service's own transitDaysMin/Max (see pricingEngine.js) when unset, so
   // existing rate cards keep working unchanged.
   transitDaysMin Int?
   transitDaysMax Int?
-  effectiveFrom  DateTime @default(now())
+  effectiveFrom  DateTime  @default(now())
   effectiveTo    DateTime?
-  isActive       Boolean  @default(true)
+  isActive       Boolean   @default(true)
 
   @@index([serviceId, zoneId, weightFromKg, weightToKg])
   @@index([fromZoneId])
@@ -238,13 +244,13 @@ model RateCard {
 
 // Optional extra fees layered on top of the base rate card lookup
 model Surcharge {
-  id          String   @id @default(uuid())
-  code        String   @unique // "FUEL", "REMOTE_AREA", "OVERSIZE"
-  name        String
-  type        String   // "PERCENT" | "FLAT"
-  value       Decimal  @db.Decimal(10, 4)
+  id                 String  @id @default(uuid())
+  code               String  @unique // "FUEL", "REMOTE_AREA", "OVERSIZE"
+  name               String
+  type               String // "PERCENT" | "FLAT"
+  value              Decimal @db.Decimal(10, 4)
   appliesToServiceId String?
-  isActive    Boolean  @default(true)
+  isActive           Boolean @default(true)
 }
 
 // ------------------------------------------------------------
@@ -259,77 +265,77 @@ model Surcharge {
 // PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, EXCEPTION.
 
 model Order {
-  id             String      @id @default(uuid())
-  orderNumber    String      @unique // human-friendly e.g. CMN-2026-000123
-  userId         String?
-  user           User?       @relation(fields: [userId], references: [id])
+  id          String  @id @default(uuid())
+  orderNumber String  @unique // human-friendly e.g. CMN-2026-000123
+  userId      String?
+  user        User?   @relation(fields: [userId], references: [id])
 
-  serviceId      String
-  service        Service     @relation(fields: [serviceId], references: [id])
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
 
   senderAddressId   String
-  senderAddress     Address  @relation("SenderAddress", fields: [senderAddressId], references: [id])
+  senderAddress     Address @relation("SenderAddress", fields: [senderAddressId], references: [id])
   receiverAddressId String
-  receiverAddress   Address  @relation("ReceiverAddress", fields: [receiverAddressId], references: [id])
+  receiverAddress   Address @relation("ReceiverAddress", fields: [receiverAddressId], references: [id])
 
   // parcel physical details — totals across all OrderItem lines (a shipment
   // can have multiple items; per-item dims/weight live on OrderItem)
-  actualWeightKg    Decimal  @db.Decimal(10, 3)
-  volumetricWeightKg Decimal @db.Decimal(10, 3)
-  chargeableWeightKg Decimal @db.Decimal(10, 3) // sum of each item's max(actual, volumetric) * quantity
-  declaredValue      Decimal @db.Decimal(10, 2) @default(0)
+  actualWeightKg      Decimal     @db.Decimal(10, 3)
+  volumetricWeightKg  Decimal     @db.Decimal(10, 3)
+  chargeableWeightKg  Decimal     @db.Decimal(10, 3) // sum of each item's max(actual, volumetric) * quantity
+  declaredValue       Decimal     @default(0) @db.Decimal(10, 2)
   contentsDescription String?
   items               OrderItem[]
 
   // pricing snapshot (never recompute historical orders off live rate cards)
-  zoneCode        String
-  baseFreight     Decimal @db.Decimal(10, 2)
-  surchargesTotal Decimal @db.Decimal(10, 2) @default(0)
-  addonsTotal     Decimal @db.Decimal(10, 2) @default(0)
-  discountTotal   Decimal @db.Decimal(10, 2) @default(0)
-  taxRate         Decimal @db.Decimal(6, 4) @default(0)
-  taxTotal        Decimal @db.Decimal(10, 2) @default(0)
-  grandTotal      Decimal @db.Decimal(10, 2)
-  currency        String  @default("INR")
-  pricingBreakdown Json?  // full itemised breakdown for transparency/audit
+  zoneCode         String
+  baseFreight      Decimal @db.Decimal(10, 2)
+  surchargesTotal  Decimal @default(0) @db.Decimal(10, 2)
+  addonsTotal      Decimal @default(0) @db.Decimal(10, 2)
+  discountTotal    Decimal @default(0) @db.Decimal(10, 2)
+  taxRate          Decimal @default(0) @db.Decimal(6, 4)
+  taxTotal         Decimal @default(0) @db.Decimal(10, 2)
+  grandTotal       Decimal @db.Decimal(10, 2)
+  currency         String  @default("INR")
+  pricingBreakdown Json? // full itemised breakdown for transparency/audit
 
-  addons          OrderAddon[]
-  promoCode       String?
+  addons    OrderAddon[]
+  promoCode String?
 
   // "Not sure, book pickup": weight/dimensions unknown at booking time, so
   // no price is computed — courier assesses and collects cash at pickup.
   // No label/invoice is generated for these; a booking-confirmation email
   // goes to the sender instead (confirmationEmailSentAt guards against
   // re-sending it on page reload, since these orders never get a Label row).
-  pricingPending  Boolean   @default(false)
+  pricingPending          Boolean   @default(false)
   confirmationEmailSentAt DateTime?
 
   // pre-payment gates (Payment page)
-  dgAcknowledged  Boolean   @default(false) // dangerous-goods declaration
-  pickupDate      String?
-  otpEmail        String?
-  otpCode         String?   // never returned to the client
-  otpExpiresAt    DateTime?
-  otpVerifiedAt   DateTime?
+  dgAcknowledged Boolean   @default(false) // dangerous-goods declaration
+  pickupDate     String?
+  otpEmail       String?
+  otpCode        String? // never returned to the client
+  otpExpiresAt   DateTime?
+  otpVerifiedAt  DateTime?
 
-  status          String      @default("DRAFT")
-  trackingNumber  String?     @unique
-  invoiceNumber   String?     @unique // "IN1", "IN2"... assigned at booking time, resets only on calendar year change
+  status         String  @default("DRAFT")
+  trackingNumber String? @unique
+  invoiceNumber  String? @unique // "IN1", "IN2"... assigned at booking time, resets only on calendar year change
 
   // Physical pickup dispatch: staff/admin send a pickup job directly to a
   // driver account, who then sees it in their own portal and marks it
   // PICKED_UP once collected in person.
   assignedDriverId String?
-  assignedDriver   User?      @relation("OrderDriver", fields: [assignedDriverId], references: [id])
+  assignedDriver   User?     @relation("OrderDriver", fields: [assignedDriverId], references: [id])
   driverAssignedAt DateTime?
   driverArrivedAt  DateTime? // driver marked "Arrived for pickup"
   pickedUpAt       DateTime? // driver marked "Pickup completed" (distinct from updatedAt, which later status changes would otherwise shift)
 
-  payment         Payment?
-  labels          Label[]
-  invoice         Invoice?
-  trackingEvents  TrackingEvent[]
-  comments        OrderComment[]
+  payment        Payment?
+  labels         Label[]
+  invoice        Invoice?
+  trackingEvents TrackingEvent[]
+  comments       OrderComment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -341,17 +347,17 @@ model Order {
 
 // One physical package within a (possibly multi-item) shipment.
 model OrderItem {
-  id                 String  @id @default(uuid())
+  id                 String   @id @default(uuid())
   orderId            String
-  order              Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  itemType           String  // "Box" | "Pallet"
-  actualWeightKg     Decimal @db.Decimal(10, 3) // per single unit
-  lengthCm           Decimal @db.Decimal(10, 2)
-  widthCm            Decimal @db.Decimal(10, 2)
-  heightCm           Decimal @db.Decimal(10, 2)
-  quantity           Int     @default(1)
-  volumetricWeightKg Decimal @db.Decimal(10, 3) // per single unit
-  chargeableWeightKg Decimal @db.Decimal(10, 3) // max(actual, volumetric) * quantity, this line's total
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemType           String // "Box" | "Pallet"
+  actualWeightKg     Decimal  @db.Decimal(10, 3) // per single unit
+  lengthCm           Decimal  @db.Decimal(10, 2)
+  widthCm            Decimal  @db.Decimal(10, 2)
+  heightCm           Decimal  @db.Decimal(10, 2)
+  quantity           Int      @default(1)
+  volumetricWeightKg Decimal  @db.Decimal(10, 3) // per single unit
+  chargeableWeightKg Decimal  @db.Decimal(10, 3) // max(actual, volumetric) * quantity, this line's total
   createdAt          DateTime @default(now())
 
   @@index([orderId])
@@ -360,14 +366,14 @@ model OrderItem {
 // Extra-protection add-on selected on the Payment page (transit warranty
 // tier, heavy-duty cardboard, packing/wrapping service).
 model OrderAddon {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  code      String  // "WARRANTY" | "CARDBOARD" | "PACKING" | "WRAPPING"
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  code      String // "WARRANTY" | "CARDBOARD" | "PACKING" | "WRAPPING"
   label     String
-  quantity  Int     @default(1)
-  unitPrice Decimal @db.Decimal(10, 2)
-  amount    Decimal @db.Decimal(10, 2) // unitPrice * quantity
+  quantity  Int      @default(1)
+  unitPrice Decimal  @db.Decimal(10, 2)
+  amount    Decimal  @db.Decimal(10, 2) // unitPrice * quantity
   createdAt DateTime @default(now())
 
   @@index([orderId])
@@ -376,7 +382,7 @@ model OrderAddon {
 model PromoCode {
   id             String    @id @default(uuid())
   code           String    @unique
-  type           String    // "PERCENT" | "FLAT"
+  type           String // "PERCENT" | "FLAT"
   value          Decimal   @db.Decimal(10, 4)
   isActive       Boolean   @default(true)
   expiresAt      DateTime?
@@ -398,19 +404,19 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id                    String   @id @default(uuid())
-  orderId               String   @unique
-  order                 Order    @relation(fields: [orderId], references: [id])
-  provider              String   @default("razorpay")
-  providerOrderId       String?  // Razorpay Order id (order_xxx)
-  providerPaymentId     String?  // Razorpay Payment id (pay_xxx), set once captured
-  amount                Decimal  @db.Decimal(10, 2)
-  currency              String   @default("INR")
-  status                PaymentStatus @default(REQUIRES_PAYMENT)
-  method                String?  // "card" | "paypal" | ...
-  rawWebhookPayload     Json?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                String        @id @default(uuid())
+  orderId           String        @unique
+  order             Order         @relation(fields: [orderId], references: [id])
+  provider          String        @default("razorpay")
+  providerOrderId   String? // Razorpay Order id (order_xxx)
+  providerPaymentId String? // Razorpay Payment id (pay_xxx), set once captured
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(REQUIRES_PAYMENT)
+  method            String? // "card" | "paypal" | ...
+  rawWebhookPayload Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 // ------------------------------------------------------------
@@ -425,7 +431,7 @@ model Label {
   order        Order    @relation(fields: [orderId], references: [id])
   packageIndex Int
   itemType     String
-  fileUrl      String   // path/URL to generated PDF
+  fileUrl      String // path/URL to generated PDF
   barcodeValue String   @unique
   generatedAt  DateTime @default(now())
 
@@ -444,13 +450,13 @@ model Invoice {
 // Tracking
 // ------------------------------------------------------------
 model TrackingEvent {
-  id        String      @id @default(uuid())
-  orderId   String
-  order     Order       @relation(fields: [orderId], references: [id])
-  status    String
-  location  String?
-  note      String?
-  occurredAt DateTime   @default(now())
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  status     String
+  location   String?
+  note       String?
+  occurredAt DateTime @default(now())
 }
 
 // ------------------------------------------------------------
@@ -514,11 +520,11 @@ model ScanBatchItem {
 // literal new Order.status on every matched order (e.g. "Sorted at hub"),
 // and logs the same text as a comment with who scanned it and when.
 model ScanLocation {
-  id           String       @id @default(uuid())
-  name         String       // "Warehouse A - Inbound", "Van 3"...
-  barcodeValue String       @unique
-  label        String       // also the literal status applied when scanned
+  id           String   @id @default(uuid())
+  name         String // "Warehouse A - Inbound", "Van 3"...
+  barcodeValue String   @unique
+  label        String // also the literal status applied when scanned
   createdById  String
-  createdBy    User         @relation(fields: [createdById], references: [id])
-  createdAt    DateTime     @default(now())
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
 }
