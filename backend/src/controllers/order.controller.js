@@ -169,7 +169,7 @@ async function createOrder(req, res, next) {
  * (customers see only their own orders, staff only their assigned zones).
  */
 async function buildOrdersWhere(req) {
-  const { status, notStatus, zoneCode, hasUser, q, from, to } = req.query;
+  const { status, notStatus, zoneCode, hasUser, q, from, to, originState, originRegion } = req.query;
   const where = {};
 
   if (req.user.role === 'CUSTOMER') where.userId = req.user.id;
@@ -208,6 +208,22 @@ async function buildOrdersWhere(req) {
     where.createdAt = {};
     if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000Z`);
     if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999Z`);
+  }
+
+  // Origin (pickup) state/region — independent of the destination zoneCode
+  // filter above. Region has no direct column on Order/Address, so it's
+  // resolved to the set of matching postcodes via PostcodeZone.region first.
+  if (originState || originRegion) {
+    const senderFilter = {};
+    if (originState) senderFilter.state = originState;
+    if (originRegion) {
+      const regionPostcodes = await prisma.postcodeZone.findMany({
+        where: { region: originRegion },
+        select: { postcode: true },
+      });
+      senderFilter.postcode = { in: regionPostcodes.map((p) => p.postcode) };
+    }
+    where.senderAddress = senderFilter;
   }
 
   return where;

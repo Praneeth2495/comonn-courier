@@ -6,6 +6,8 @@ router.use(requireAuth, requireRole('ADMIN', 'STAFF'));
 
 router.get('/dashboard', admin.dashboardStats);
 
+router.get('/pickup-origins', admin.listPickupOrigins);
+
 router.get('/zones', admin.listZones);
 router.post('/zones', requireRole('ADMIN'), admin.createZone);
 router.post('/zones/countries', requireRole('ADMIN'), admin.upsertCountryMapping);

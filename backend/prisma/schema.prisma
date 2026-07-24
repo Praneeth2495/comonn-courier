@@ -147,13 +147,19 @@ model Zone {
 // PostcodeSuggestion. A postcode not found here has no origin-zone
 // restriction (matches any RateCard, i.e. treated as the baseline/default).
 model PostcodeZone {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   countryCode String // ISO alpha-2, e.g. "IN"
   postcode    String
   zoneId      String
-  zone        Zone   @relation(fields: [zoneId], references: [id])
+  zone        Zone    @relation(fields: [zoneId], references: [id])
+  // Optional human-facing sub-area name for this postcode (e.g.
+  // "Hyderabad", "Vijayawada") — independent of `zone` (which drives
+  // pricing). Powers the admin Pickup-orders panel's origin
+  // state/region filters; null for postcodes with no region assigned.
+  region      String?
 
   @@unique([countryCode, postcode])
+  @@index([countryCode, region])
 }
 
 // Admin-controlled: which STAFF accounts can see/filter Pickup & Delivery

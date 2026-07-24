@@ -206,6 +206,12 @@ function OrdersPanel() {
   const [tab, setTab] = useState('pickup');
   const [zones, setZones] = useState([]);
   const [zoneCode, setZoneCode] = useState('');
+  // Pickup tab only: origin (sender) state/region — independent of the
+  // destination zoneCode filter above.
+  const [pickupStates, setPickupStates] = useState([]);
+  const [pickupRegionsByState, setPickupRegionsByState] = useState({});
+  const [originState, setOriginState] = useState('');
+  const [originRegion, setOriginRegion] = useState('');
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -231,15 +237,36 @@ function OrdersPanel() {
     if (tab === 'pickup' && drivers.length === 0) {
       client.get('/admin/drivers').then(({ data }) => setDrivers(data.drivers)).catch(() => {});
     }
+    if (tab === 'pickup' && pickupStates.length === 0) {
+      client.get('/admin/pickup-origins').then(({ data }) => {
+        setPickupStates(data.states);
+        setPickupRegionsByState(data.regionsByState);
+      }).catch(() => {});
+    }
     setSelectedIds([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  // Picking a different state clears any region filter from the previous
+  // state's list — a region name is only meaningful within its own state.
+  function selectOriginState(state) {
+    setOriginState(state);
+    setOriginRegion('');
+    setPage(1);
+  }
 
   function load() {
     setLoading(true);
     const seq = ++seqRef.current;
     const tabDef = ORDER_TABS.find(([key]) => key === tab);
-    const params = { q: q || undefined, page, pageSize, zoneCode: zoneCode || undefined };
+    const params = {
+      q: q || undefined,
+      page,
+      pageSize,
+      zoneCode: zoneCode || undefined,
+      originState: tab === 'pickup' ? originState || undefined : undefined,
+      originRegion: tab === 'pickup' ? originRegion || undefined : undefined,
+    };
     if (tabDef[2]) params.status = tabDef[2].join(',');
     else if (tabDef[3] === 'hasUser') params.hasUser = 'true';
     // 'all' mode (Bookings tab): no status/hasUser filter — every booking.
@@ -251,7 +278,7 @@ function OrdersPanel() {
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
-  useEffect(load, [tab, zoneCode, page]);
+  useEffect(load, [tab, zoneCode, page, originState, originRegion]);
 
   function search(e) {
     e.preventDefault();
@@ -354,6 +381,28 @@ function OrdersPanel() {
           </div>
         ))}
       </div>
+
+      {tab === 'pickup' && pickupStates.length > 0 && (
+        <div className="chip-filter-row">
+          <div className={`chip-filter ${!originState ? 'active' : ''}`} onClick={() => selectOriginState('')}>All States</div>
+          {pickupStates.map((s) => (
+            <div key={s} className={`chip-filter ${originState === s ? 'active' : ''}`} onClick={() => selectOriginState(s)}>
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'pickup' && originState && (pickupRegionsByState[originState] || []).length > 0 && (
+        <div className="chip-filter-row">
+          <div className={`chip-filter ${!originRegion ? 'active' : ''}`} onClick={() => { setOriginRegion(''); setPage(1); }}>All Regions</div>
+          {pickupRegionsByState[originState].map((r) => (
+            <div key={r} className={`chip-filter ${originRegion === r ? 'active' : ''}`} onClick={() => { setOriginRegion(r); setPage(1); }}>
+              {r}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="dash-toolbar">
         <form className="search-box" onSubmit={search}>
