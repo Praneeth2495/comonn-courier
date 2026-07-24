@@ -13,6 +13,19 @@ const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 // actual-weight price (final pricing still runs server-side per service).
 const STANDARD_DIVISOR = 5000;
 
+// Mirrors pricingEngine.js's calcVolumetricWeightKg exactly (ceil to the
+// nearest whole kg — standard courier billing convention) so this preview
+// matches the price actually quoted server-side.
+function volumetricWeightNote(it) {
+  if (!it.showDims || it.weightPreset === 'NOT_SURE' || !it.weightPreset) return null;
+  const l = Number(it.lengthCm), w = Number(it.widthCm), h = Number(it.heightCm);
+  const actualWeightKg = Number(it.weightPreset.replace(' kg', ''));
+  if (!l || !w || !h || !actualWeightKg) return null;
+  const volumetricWeightKg = Math.ceil((l * w * h) / STANDARD_DIVISOR);
+  if (volumetricWeightKg <= actualWeightKg) return null;
+  return { l, w, h, volumetricWeightKg };
+}
+
 function maxDimsHint(weightPreset) {
   if (!weightPreset || weightPreset === 'NOT_SURE') return null;
   const weightKg = Number(weightPreset.replace(' kg', ''));
@@ -389,20 +402,31 @@ export default function Quote() {
                     </p>
                   )}
                   {it.showDims ? (
-                    <div className="item-row equal" style={{ marginTop: 8 }}>
-                      <div>
-                        <div className="lbl" style={{ marginBottom: 4 }}>Length (cm)</div>
-                        <input className="input" type="number" min="1" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
+                    <>
+                      <div className="item-row equal" style={{ marginTop: 8 }}>
+                        <div>
+                          <div className="lbl" style={{ marginBottom: 4 }}>Length (cm)</div>
+                          <input className="input" type="number" min="1" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
+                        </div>
+                        <div>
+                          <div className="lbl" style={{ marginBottom: 4 }}>Width (cm)</div>
+                          <input className="input" type="number" min="1" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
+                        </div>
+                        <div>
+                          <div className="lbl" style={{ marginBottom: 4 }}>Height (cm)</div>
+                          <input className="input" type="number" min="1" value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
+                        </div>
                       </div>
-                      <div>
-                        <div className="lbl" style={{ marginBottom: 4 }}>Width (cm)</div>
-                        <input className="input" type="number" min="1" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
-                      </div>
-                      <div>
-                        <div className="lbl" style={{ marginBottom: 4 }}>Height (cm)</div>
-                        <input className="input" type="number" min="1" value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
-                      </div>
-                    </div>
+                      {(() => {
+                        const note = volumetricWeightNote(it);
+                        if (!note) return null;
+                        return (
+                          <p style={{ fontSize: 12.5, color: 'var(--danger)', marginTop: 8, fontWeight: 600 }}>
+                            Your volumetric weight is greater than actual weight. ({note.l} × {note.w} × {note.h}) / {STANDARD_DIVISOR} = {note.volumetricWeightKg} kg. So, chargeable weight is {note.volumetricWeightKg} kg.
+                          </p>
+                        );
+                      })()}
+                    </>
                   ) : (
                     <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>
                       (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); updateItem(idx, 'showDims', true); }}>Click here</a>, if dimensions are known)
