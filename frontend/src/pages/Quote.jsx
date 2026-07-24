@@ -77,10 +77,11 @@ function hydrateItems(quoteInput) {
     widthCm: it.widthCm ? String(it.widthCm) : '',
     heightCm: it.heightCm ? String(it.heightCm) : '',
     quantity: it.quantity,
-    // Always start collapsed behind "(Click here, if dimensions are
-    // known)" — even if dimensions were already entered/persisted — rather
-    // than auto-expanding just because a value happens to be present.
-    showDims: false,
+    // Keep the dimensions box expanded if it was already open (i.e.
+    // dimensions were actually entered) — collapsing it on a back-navigation
+    // would hide the volumetric-weight notice even though the data is
+    // still there.
+    showDims: Boolean(it.lengthCm && it.widthCm && it.heightCm),
   }));
 }
 
@@ -151,6 +152,34 @@ export default function Quote() {
   function updateItem(idx, field, value) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
   }
+
+  // Any edit to a pricing-relevant field after quotes are already shown
+  // invalidates them — the displayed services/prices no longer match what's
+  // in the form, so hide them until the customer re-requests a quote.
+  // showDims (just expanding the dimensions box, before typing anything) is
+  // deliberately excluded — that alone doesn't change what would be priced.
+  const pricingSignature = JSON.stringify({
+    originPostcode,
+    destinationCountryCode,
+    items: items.map((it) => ({
+      itemType: it.itemType,
+      weightPreset: it.weightPreset,
+      quantity: it.quantity,
+      lengthCm: it.lengthCm,
+      widthCm: it.widthCm,
+      heightCm: it.heightCm,
+    })),
+  });
+  const skipNextInvalidateRef = useRef(true);
+  useEffect(() => {
+    if (skipNextInvalidateRef.current) {
+      skipNextInvalidateRef.current = false;
+      return;
+    }
+    setQuotes(null);
+    setSelected(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pricingSignature]);
 
   // Origin (pickup) postcode autocomplete — same India-only suggestion
   // dataset used on the Details page's address forms, offered here too so
