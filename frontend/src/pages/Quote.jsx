@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
+import LoadingLogo from '../components/LoadingLogo';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 
@@ -112,11 +113,13 @@ export default function Quote() {
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || 'AU');
   const [destinationPostcode, setDestinationPostcode] = useState(quoteInput?.destinationPostcode || '');
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [destinationSuggestLoading, setDestinationSuggestLoading] = useState(false);
   const [destinationPicked, setDestinationPicked] = useState(quoteInput?.destinationSuburb ? { suburb: quoteInput.destinationSuburb, state: quoteInput.destinationState } : null);
   const [destinationFocused, setDestinationFocused] = useState(false);
   const destinationDebounceRef = useRef(null);
   const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || '');
   const [originSuggestions, setOriginSuggestions] = useState([]);
+  const [originSuggestLoading, setOriginSuggestLoading] = useState(false);
   const [originPicked, setOriginPicked] = useState(quoteInput?.originSuburb ? { suburb: quoteInput.originSuburb, state: quoteInput.originState } : null);
   const [originFocused, setOriginFocused] = useState(false);
   const originDebounceRef = useRef(null);
@@ -210,12 +213,15 @@ export default function Quote() {
     clearTimeout(originDebounceRef.current);
     if (!/^\d{6}$/.test(v)) {
       setOriginSuggestions([]);
+      setOriginSuggestLoading(false);
       return;
     }
+    setOriginSuggestLoading(true);
     originDebounceRef.current = setTimeout(() => {
       client.get('/quote/postcode-suggestions', { params: { postcode: v } })
         .then(({ data }) => setOriginSuggestions(data.suggestions))
-        .catch(() => setOriginSuggestions([]));
+        .catch(() => setOriginSuggestions([]))
+        .finally(() => setOriginSuggestLoading(false));
     }, 400);
   }
 
@@ -233,6 +239,8 @@ export default function Quote() {
     setDestinationPostcode('');
     setDestinationPicked(null);
     setDestinationSuggestions([]);
+    setDestinationSuggestLoading(false);
+    clearTimeout(destinationDebounceRef.current);
   }
 
   function handleDestinationPostcodeChange(v) {
@@ -241,12 +249,15 @@ export default function Quote() {
     clearTimeout(destinationDebounceRef.current);
     if (v.trim().length < 3 || !destinationCountryCode) {
       setDestinationSuggestions([]);
+      setDestinationSuggestLoading(false);
       return;
     }
+    setDestinationSuggestLoading(true);
     destinationDebounceRef.current = setTimeout(() => {
       client.get('/quote/postcode-suggestions', { params: { postcode: v, countryCode: destinationCountryCode } })
         .then(({ data }) => setDestinationSuggestions(data.suggestions))
-        .catch(() => setDestinationSuggestions([]));
+        .catch(() => setDestinationSuggestions([]))
+        .finally(() => setDestinationSuggestLoading(false));
     }, 400);
   }
 
@@ -422,7 +433,7 @@ export default function Quote() {
           <div className="grid-2">
             <div className="field" style={{ position: 'relative' }}>
               <label>Origin</label>
-              <div className="input-group">
+              <div className="input-group" style={{ position: 'relative' }}>
                 <select className="flag" disabled defaultValue="🇮🇳 IN"><option>🇮🇳 IN</option></select>
                 <input
                   placeholder="Pickup pincode"
@@ -431,6 +442,11 @@ export default function Quote() {
                   onFocus={() => setOriginFocused(true)}
                   onBlur={() => setOriginFocused(false)}
                 />
+                {originSuggestLoading && (
+                  <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}>
+                    <LoadingLogo size={18} style={{ padding: 0 }} />
+                  </div>
+                )}
               </div>
               {originSuggestions.length > 0 && (
                 <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
@@ -444,7 +460,7 @@ export default function Quote() {
             </div>
             <div className="field" style={{ position: 'relative' }}>
               <label>Destination</label>
-              <div className="input-group">
+              <div className="input-group" style={{ position: 'relative' }}>
                 <select className="flag" required value={destinationCountryCode} onChange={(e) => handleDestinationCountryChange(e.target.value)}>
                   {countries.map((c) => (
                     <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryCode}</option>
@@ -458,6 +474,11 @@ export default function Quote() {
                   onFocus={() => setDestinationFocused(true)}
                   onBlur={() => setDestinationFocused(false)}
                 />
+                {destinationSuggestLoading && (
+                  <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)' }}>
+                    <LoadingLogo size={18} style={{ padding: 0 }} />
+                  </div>
+                )}
               </div>
               {destinationSuggestions.length > 0 && (
                 <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
