@@ -109,7 +109,7 @@ export default function Quote() {
   // customer's name/address auto-filled, which looks like a data leak.
   const carryOverOrder = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role)) ? bookingOrder : null;
   const [countries, setCountries] = useState([]);
-  const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || '');
+  const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || 'AU');
   const [destinationPostcode, setDestinationPostcode] = useState(quoteInput?.destinationPostcode || '');
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [destinationPicked, setDestinationPicked] = useState(quoteInput?.destinationSuburb ? { suburb: quoteInput.destinationSuburb, state: quoteInput.destinationState } : null);
@@ -436,9 +436,8 @@ export default function Quote() {
               <label>Destination</label>
               <div className="input-group">
                 <select className="flag" required value={destinationCountryCode} onChange={(e) => handleDestinationCountryChange(e.target.value)}>
-                  <option value="">Select country…</option>
                   {countries.map((c) => (
-                    <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryName}</option>
+                    <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryCode}</option>
                   ))}
                 </select>
                 <input

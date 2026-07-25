@@ -192,7 +192,7 @@ export default function Home() {
   const [originFocused, setOriginFocused] = useState(false);
   const originDebounceRef = useRef(null);
   const [countries, setCountries] = useState([]);
-  const [destinationCountryCode, setDestinationCountryCode] = useState('');
+  const [destinationCountryCode, setDestinationCountryCode] = useState('AU');
   const [destinationPostcode, setDestinationPostcode] = useState('');
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [destinationPicked, setDestinationPicked] = useState(null);
@@ -384,9 +384,8 @@ export default function Home() {
                 <label>Destination</label>
                 <div className="input-group">
                   <select className="flag" value={destinationCountryCode} onChange={(e) => handleDestinationCountryChange(e.target.value)}>
-                    <option value="">Select country…</option>
                     {countries.map((c) => (
-                      <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryName}</option>
+                      <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryCode}</option>
                     ))}
                   </select>
                   <input
