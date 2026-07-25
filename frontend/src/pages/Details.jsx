@@ -90,6 +90,11 @@ export default function Details() {
   // sender pincode directly; regular customers must go back to the Book
   // page (which re-quotes) to change their pickup location.
   const senderLocked = !['ADMIN', 'STAFF'].includes(user?.role);
+  // Same lock for the receiver's postcode/suburb/state — these come from
+  // the destination autocomplete picked on the Book page, which is what
+  // the price was actually calculated against, so a regular customer can't
+  // silently edit them here and end up with a mismatched shipment.
+  const receiverLocked = !['ADMIN', 'STAFF'].includes(user?.role);
 
   const norm = (s) => (s || '').trim().toLowerCase();
   // Only surface saved addresses that actually match this quote's chosen
@@ -97,9 +102,16 @@ export default function Details() {
   const senderSavedAddresses = savedAddresses.filter(
     (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode) && norm(a.city) === norm(sender.city) && norm(a.state) === norm(sender.state)
   );
-  const receiverSavedAddresses = savedAddresses.filter(
-    (a) => quoteInput?.destinationCountryCode && a.countryCode === quoteInput.destinationCountryCode
-  );
+  // When receiver fields are locked, a saved address must also match the
+  // quote's postcode/city/state — otherwise picking one would silently
+  // overwrite the locked (disabled-but-still-controlled) fields with a
+  // different address than what was actually priced. Staff/admin editing
+  // freely aren't bound by that — country match is enough for them.
+  const receiverSavedAddresses = savedAddresses.filter((a) => {
+    if (!quoteInput?.destinationCountryCode || a.countryCode !== quoteInput.destinationCountryCode) return false;
+    if (!receiverLocked) return true;
+    return receiver.postcode && norm(a.postcode) === norm(receiver.postcode) && norm(a.city) === norm(receiver.city) && norm(a.state) === norm(receiver.state);
+  });
 
   if (!quoteInput || (!selectedQuote && !pricingPending)) {
     return (
@@ -284,10 +296,11 @@ export default function Details() {
               value={receiver}
               onChange={updateReceiver}
               instructionsLabel="Delivery instructions"
-              autoFillNote="Country auto-filled from your quote's destination"
+              autoFillNote={receiverLocked ? "Locked to your quote's destination postcode — go back to the Book page to change it" : "Country auto-filled from your quote's destination"}
               hideCityStatePlaceholder
               savedAddresses={receiverSavedAddresses}
               onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setReceiver(fromSavedAddress(a)); }}
+              lockedFields={receiverLocked ? ['postcode', 'city', 'state'] : []}
             />
           </div>
 
