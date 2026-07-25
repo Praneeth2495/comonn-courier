@@ -57,6 +57,53 @@ function AccountMenu({ name, onOpen, onLogout }) {
   );
 }
 
+// Compact stand-in for the Login/Register button pair on narrow screens,
+// where those two buttons plus the logo don't fit on one line and push the
+// whole header into an awkward extra row. Mirrors AccountMenu's circular
+// avatar + dropdown, just with a generic person icon (no name yet) and
+// Login/Register as the menu options instead of profile/logout.
+function GuestMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+      >
+        <span
+          style={{
+            width: 34, height: 34, borderRadius: '50%', background: 'var(--navy)', color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none',
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </span>
+        <span style={{ fontSize: 12, color: 'var(--slate)' }}>▾</span>
+      </button>
+      {open && (
+        <div className="card" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 160, zIndex: 50 }}>
+          <Link to="/login" className="acct-menu-item" onClick={() => setOpen(false)}>Login</Link>
+          <Link to="/register" className="acct-menu-item" onClick={() => setOpen(false)}>Register</Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Where "Dashboard" in the header should go for a logged-in user, by role.
 function dashboardPath(role) {
   if (role === 'ADMIN' || role === 'STAFF') return '/admin';
@@ -101,8 +148,13 @@ export function SiteHeader({ onOpenAccount }) {
             />
           ) : (
             <>
-              <Link to="/login" className="btn btn-ghost btn-sm">Login</Link>
-              <Link to="/register" className="btn btn-primary btn-sm">Register</Link>
+              <div className="guest-actions-desktop">
+                <Link to="/login" className="btn btn-ghost btn-sm">Login</Link>
+                <Link to="/register" className="btn btn-primary btn-sm">Register</Link>
+              </div>
+              <div className="guest-actions-mobile">
+                <GuestMenu />
+              </div>
             </>
           )}
         </div>
