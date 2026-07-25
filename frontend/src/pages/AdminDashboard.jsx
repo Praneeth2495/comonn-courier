@@ -524,10 +524,16 @@ function AccountsPanel() {
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
+  const [detailOrder, setDetailOrder] = useState(null);
   const now = useState(() => new Date())[0];
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
   const [toDate, setToDate] = useState(isoDate(monthEnd(now)));
   const seqRef = useRef(0);
+
+  async function openDetail(id) {
+    const { data } = await client.get(`/orders/${id}`);
+    setDetailOrder(data.order);
+  }
 
   function load() {
     setLoading(true);
@@ -595,7 +601,7 @@ function AccountsPanel() {
             const { amountPaid, due } = paidAndDue(o);
             return (
               <div className="t-row accounts-row" key={o.id}>
-                <div className="mono">{o.orderNumber}</div>
+                <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
                 <div className="mono">{o.invoiceNumber || '—'}</div>
                 <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
                 <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
@@ -613,6 +619,8 @@ function AccountsPanel() {
           {orders.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--slate-light)' }}>No bookings yet.</div>}
         </div>
       )}
+
+      {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
     </div>
   );
 }
