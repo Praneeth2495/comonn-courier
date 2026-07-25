@@ -558,19 +558,14 @@ table.data-table tr:hover td{background:#FAFAF7;}
 }
 
 .loading-logo-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;}
-.loading-logo{animation:loading-logo-pulse 1.8s ease-in-out infinite;}
-.loading-logo-tick{stroke-dasharray:75;stroke-dashoffset:75;animation:loading-logo-draw 1.8s ease-in-out infinite;}
+.loading-logo{position:relative;overflow:hidden;}
+.loading-logo img{display:block;width:100%;height:100%;object-fit:contain;clip-path:inset(0 100% 0 0);animation:loading-logo-draw 1.8s cubic-bezier(.65,0,.35,1) infinite;}
 .loading-logo-label{font-size:12.5px;font-weight:600;color:var(--slate);letter-spacing:.02em;}
 @keyframes loading-logo-draw{
-  0%{stroke-dashoffset:75;}
-  45%,55%{stroke-dashoffset:0;}
-  100%{stroke-dashoffset:-75;}
-}
-@keyframes loading-logo-pulse{
-  0%,100%{transform:scale(.96);opacity:.88;}
-  50%{transform:scale(1);opacity:1;}
+  0%{clip-path:inset(0 100% 0 0);}
+  45%,55%{clip-path:inset(0 0 0 0);}
+  100%{clip-path:inset(0 0 0 100%);}
 }
 @media(prefers-reduced-motion:reduce){
-  .loading-logo,.loading-logo-tick{animation:none;}
-  .loading-logo-tick{stroke-dashoffset:0;}
+  .loading-logo img{animation:none;clip-path:none;}
 }

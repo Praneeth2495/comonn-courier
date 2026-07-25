@@ -1,13 +1,14 @@
-// Animated stand-in for the "Loading…" text — draws the brand checkmark
-// (stroke-dasharray/dashoffset) in a loop instead of leaving the page
-// blank or showing plain text while data is fetched.
+import logoIcon from '../assets/logo-icon.png';
+
+// Animated stand-in for the "Loading…" text — the actual brand mark
+// (logo-icon.png), wiped in from left to right on a loop like it's being
+// drawn, instead of leaving the page blank or showing plain text.
 export default function LoadingLogo({ size = 56, label, style }) {
   return (
     <div className="loading-logo-wrap" style={style}>
-      <svg className="loading-logo" width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={label || 'Loading'}>
-        <circle className="loading-logo-circle" cx="50" cy="50" r="46" fill="#F0871E" />
-        <polyline className="loading-logo-tick" points="28,52 43,68 74,30" fill="none" stroke="#fff" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <div className="loading-logo" style={{ width: size, height: size }}>
+        <img src={logoIcon} width={size} height={size} alt={label || 'Loading'} />
+      </div>
       {label && <p className="loading-logo-label">{label}</p>}
     </div>
   );
