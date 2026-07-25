@@ -47,24 +47,41 @@ function parseCombinedPostcode(raw) {
   return { postcode, suburb: parts.slice(1, -1).join(', '), state: parts[parts.length - 1] };
 }
 
+// Some rows in this dataset use non-ISO "country" codes: the UK is split
+// into its four constituent parts (ENG/SCT/WLS/NIR) instead of the single
+// ISO code (GB) used everywhere else in this app, and Guernsey/Isle of Man
+// use ONS geography codes instead of their real ISO codes. Per explicit
+// instruction: merge the four UK parts into GB, and drop Guernsey/Isle of
+// Man entirely (not needed) — along with one literal header-row leak
+// ("field5"/"field2"/"field3" as data) found in this file.
+const COUNTRY_CODE_REMAP = { ENG: 'GB', SCT: 'GB', WLS: 'GB', NIR: 'GB' };
+const EXCLUDED_COUNTRY_CODES = new Set(['L93000001', 'M83000003', 'field5']);
+
 async function importSuggestions(db) {
-  // Canada alone is ~900K of the ~1.13M rows here — importing it last means
-  // a disk-space (or any other) failure partway through still leaves every
-  // other, much smaller country's data intact rather than losing everything
-  // to whichever country happens to import first.
+  // Canada (~900K) used to be the largest single country here, so it
+  // imported last for disk-space safety. The four UK parts combined
+  // (merged into GB below) are now far bigger (~1.83M) — push those even
+  // later, so a disk-space (or any other) failure partway through still
+  // leaves every smaller country's data intact.
   const rows = db.prepare(`
     SELECT "Country Code" as countryCode, "Postcode" as combined, "Region" as region
     FROM "Total Zones - Suggestion List"
-    ORDER BY CASE WHEN "Country Code" = 'CA' THEN 1 ELSE 0 END, "Country Code"
+    ORDER BY CASE
+      WHEN "Country Code" IN ('ENG','SCT','WLS','NIR') THEN 2
+      WHEN "Country Code" = 'CA' THEN 1
+      ELSE 0
+    END, "Country Code"
   `).all();
 
   const parsed = [];
   for (const { countryCode, combined, region } of rows) {
     if (!countryCode || !combined) continue;
+    if (EXCLUDED_COUNTRY_CODES.has(countryCode)) continue;
+    const resolvedCountryCode = COUNTRY_CODE_REMAP[countryCode] || countryCode;
     const p = parseCombinedPostcode(combined);
     if (!p || !p.postcode || !p.suburb) continue; // malformed row — skip rather than guess
     parsed.push({
-      countryCode,
+      countryCode: resolvedCountryCode,
       postcode: p.postcode,
       suburb: p.suburb,
       state: p.state,
