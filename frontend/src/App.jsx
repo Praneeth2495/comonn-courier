@@ -17,7 +17,6 @@ import Payment from './pages/Payment';
 import PaymentByLink from './pages/PaymentByLink';
 import Labels from './pages/Labels';
 import Track from './pages/Track';
-import LoadingPreview from './pages/LoadingPreview';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import DriverDashboard from './pages/DriverDashboard';
@@ -45,7 +44,6 @@ export default function App() {
             <Route path="/pay/:orderId" element={withLayout(<PaymentByLink />)} />
             <Route path="/labels" element={withLayout(<Labels />)} />
             <Route path="/track" element={withLayout(<Track />)} />
-            <Route path="/loading-preview" element={withLayout(<LoadingPreview />)} />
 
             <Route
               path="/dashboard"
