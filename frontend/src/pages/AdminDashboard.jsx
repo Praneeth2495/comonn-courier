@@ -264,6 +264,7 @@ function OrdersPanel() {
       page,
       pageSize,
       zoneCode: zoneCode || undefined,
+      scope: tab === 'pickup' ? 'pickup' : undefined,
       originState: tab === 'pickup' ? originState || undefined : undefined,
       originRegion: tab === 'pickup' ? originRegion || undefined : undefined,
     };
@@ -1069,7 +1070,11 @@ function UsersPanel() {
   const [users, setUsers] = useState([]);
   const [zones, setZones] = useState([]);
   const [staffZones, setStaffZones] = useState({}); // userId -> [zone,...]
-  const [editingStaff, setEditingStaff] = useState(null); // { id, fullName }
+  const [editingStaffZones, setEditingStaffZones] = useState(null); // { id, fullName }
+  const [pickupStates, setPickupStates] = useState([]);
+  const [pickupRegionsByState, setPickupRegionsByState] = useState({});
+  const [staffRegions, setStaffRegions] = useState({}); // userId -> [{id,state,region},...]
+  const [editingStaffRegions, setEditingStaffRegions] = useState(null); // { id, fullName }
 
   function load() {
     client.get('/admin/users').then(({ data }) => setUsers(data.users));
@@ -1078,6 +1083,15 @@ function UsersPanel() {
       const map = {};
       data.staff.forEach((s) => { map[s.id] = s.zones; });
       setStaffZones(map);
+    });
+    client.get('/admin/pickup-origins').then(({ data }) => {
+      setPickupStates(data.states);
+      setPickupRegionsByState(data.regionsByState);
+    });
+    client.get('/admin/staff-regions').then(({ data }) => {
+      const map = {};
+      data.staff.forEach((s) => { map[s.id] = s.regions; });
+      setStaffRegions(map);
     });
   }
   useEffect(load, []);
@@ -1090,7 +1104,19 @@ function UsersPanel() {
   async function saveZones(userId, zoneIds) {
     const { data } = await client.put(`/admin/staff-zones/${userId}`, { zoneIds });
     setStaffZones((prev) => ({ ...prev, [userId]: data.zones }));
-    setEditingStaff(null);
+    setEditingStaffZones(null);
+  }
+
+  async function saveRegions(userId, assignments) {
+    const { data } = await client.put(`/admin/staff-regions/${userId}`, { assignments });
+    setStaffRegions((prev) => ({ ...prev, [userId]: data.regions }));
+    setEditingStaffRegions(null);
+  }
+
+  // A region row means "just that region"; a state with no per-region rows
+  // (or a dedicated whole-state row) reads as "the whole state".
+  function regionPillLabel(r) {
+    return r.region ? `${r.state} · ${r.region}` : `${r.state} (all)`;
   }
 
   return (
@@ -1098,7 +1124,7 @@ function UsersPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Users</h1>
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Zones</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Delivery zones</th><th>Pickup states/regions</th></tr></thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
@@ -1122,7 +1148,21 @@ function UsersPanel() {
                       ) : (
                         (staffZones[u.id] || []).map((z) => <span key={z.id} className="pill pill-navy" style={{ fontSize: 11 }}>{z.code}</span>)
                       )}
-                      <button className="btn btn-outline btn-sm" onClick={() => setEditingStaff({ id: u.id, fullName: u.fullName })}>Edit</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingStaffZones({ id: u.id, fullName: u.fullName })}>Edit</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
+                <td>
+                  {u.role === 'STAFF' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(staffRegions[u.id] || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>None assigned</span>
+                      ) : (
+                        (staffRegions[u.id] || []).map((r) => <span key={r.id} className="pill pill-cobalt" style={{ fontSize: 11 }}>{regionPillLabel(r)}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingStaffRegions({ id: u.id, fullName: u.fullName })}>Edit</button>
                     </div>
                   ) : (
                     <span style={{ color: 'var(--slate-light)' }}>—</span>
@@ -1131,19 +1171,30 @@ function UsersPanel() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {editingStaff && (
+      {editingStaffZones && (
         <StaffZoneModal
-          staff={editingStaff}
+          staff={editingStaffZones}
           zones={zones}
-          currentZoneIds={(staffZones[editingStaff.id] || []).map((z) => z.id)}
-          onSave={(zoneIds) => saveZones(editingStaff.id, zoneIds)}
-          onClose={() => setEditingStaff(null)}
+          currentZoneIds={(staffZones[editingStaffZones.id] || []).map((z) => z.id)}
+          onSave={(zoneIds) => saveZones(editingStaffZones.id, zoneIds)}
+          onClose={() => setEditingStaffZones(null)}
+        />
+      )}
+
+      {editingStaffRegions && (
+        <StaffRegionModal
+          staff={editingStaffRegions}
+          states={pickupStates}
+          regionsByState={pickupRegionsByState}
+          currentAssignments={(staffRegions[editingStaffRegions.id] || []).map((r) => ({ state: r.state, region: r.region }))}
+          onSave={(assignments) => saveRegions(editingStaffRegions.id, assignments)}
+          onClose={() => setEditingStaffRegions(null)}
         />
       )}
     </div>
@@ -1168,11 +1219,11 @@ function StaffZoneModal({ staff, zones, currentZoneIds, onSave, onClose }) {
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h3 style={{ fontSize: 17 }}>Zones for {staff.fullName}</h3>
+          <h3 style={{ fontSize: 17 }}>Delivery zones for {staff.fullName}</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
-          This staff account will only see and filter Pickup/Delivery orders in the zones checked below.
+          This staff account will only see and filter Delivery orders in the zones checked below.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
           {zones.map((z) => (
@@ -1184,6 +1235,102 @@ function StaffZoneModal({ staff, zones, currentZoneIds, onSave, onClose }) {
         </div>
         <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
           {saving ? 'Saving…' : 'Save zones'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Pickup-order scoping by origin state/region — a checkbox tree grouped by
+// state (collapsible, since some states have many regions), each with its
+// own "whole state" checkbox plus one checkbox per region within it.
+// Checking the whole state supersedes/disables its individual regions
+// rather than storing both (avoids redundant, conflicting assignment rows).
+function StaffRegionModal({ staff, states, regionsByState, currentAssignments, onSave, onClose }) {
+  const [selected, setSelected] = useState(currentAssignments);
+  const [expanded, setExpanded] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  function isWholeState(state) {
+    return selected.some((a) => a.state === state && !a.region);
+  }
+  function isRegionSelected(state, region) {
+    return selected.some((a) => a.state === state && a.region === region);
+  }
+  function toggleWholeState(state) {
+    setSelected((prev) =>
+      isWholeState(state) ? prev.filter((a) => a.state !== state) : [...prev.filter((a) => a.state !== state), { state, region: null }]
+    );
+  }
+  function toggleRegion(state, region) {
+    setSelected((prev) =>
+      isRegionSelected(state, region) ? prev.filter((a) => !(a.state === state && a.region === region)) : [...prev, { state, region }]
+    );
+  }
+  function toggleExpand(state) {
+    setExpanded((prev) => ({ ...prev, [state]: !prev[state] }));
+  }
+
+  async function save() {
+    setSaving(true);
+    await onSave(selected);
+    setSaving(false);
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <h3 style={{ fontSize: 17 }}>Pickup states/regions for {staff.fullName}</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
+          This staff account will only see and filter Pickup orders from the origin states/regions checked below. Check a state for every pickup in it, or expand it (▸) to pick specific regions instead.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 360, overflowY: 'auto' }}>
+          {states.map((state) => {
+            const regions = regionsByState[state] || [];
+            const wholeState = isWholeState(state);
+            const isOpen = !!expanded[state];
+            return (
+              <div key={state} style={{ borderBottom: '1px solid var(--line)', paddingBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {regions.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(state)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--slate)', width: 18, padding: 0 }}
+                    >
+                      {isOpen ? '▾' : '▸'}
+                    </button>
+                  ) : (
+                    <span style={{ width: 18 }} />
+                  )}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer', flex: 1, padding: '6px 0' }}>
+                    <input type="checkbox" checked={wholeState} onChange={() => toggleWholeState(state)} />
+                    {state} <span style={{ color: 'var(--slate-light)', fontSize: 11.5 }}>(all regions)</span>
+                  </label>
+                </div>
+                {isOpen && regions.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginLeft: 26, marginTop: 4 }}>
+                    {regions.map((region) => (
+                      <label
+                        key={region}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: wholeState ? 'not-allowed' : 'pointer', color: wholeState ? 'var(--slate-light)' : 'inherit' }}
+                      >
+                        <input type="checkbox" disabled={wholeState} checked={wholeState || isRegionSelected(state, region)} onChange={() => toggleRegion(state, region)} />
+                        {region}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {states.length === 0 && <span style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No pickup states available yet.</span>}
+        </div>
+        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
+          {saving ? 'Saving…' : 'Save states/regions'}
         </button>
       </div>
     </div>

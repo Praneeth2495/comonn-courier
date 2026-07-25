@@ -52,6 +52,7 @@ model User {
   orders            Order[]
   auditLogs         AuditLog[]
   zoneAssignments   StaffZoneAssignment[]
+  regionAssignments StaffRegionAssignment[]
   passwordSetTokens PasswordSetToken[]
   orderComments     OrderComment[]
   driverJobs        Order[]               @relation("OrderDriver")
@@ -156,10 +157,11 @@ model PostcodeZone {
   @@unique([countryCode, postcode])
 }
 
-// Admin-controlled: which STAFF accounts can see/filter Pickup & Delivery
-// orders in which zones. A staff member with no rows here sees no orders
-// (opt-in, so admin explicitly divides zones among staff rather than
-// everyone seeing everything by default).
+// Admin-controlled: which STAFF accounts can see/filter Delivery orders in
+// which (destination) zones. A staff member with no rows here sees no
+// orders (opt-in, so admin explicitly divides zones among staff rather than
+// everyone seeing everything by default). Pickup orders are scoped by
+// origin state/region instead — see StaffRegionAssignment.
 model StaffZoneAssignment {
   id        String   @id @default(uuid())
   userId    String
@@ -169,6 +171,23 @@ model StaffZoneAssignment {
   createdAt DateTime @default(now())
 
   @@unique([userId, zoneId])
+}
+
+// Admin-controlled: which STAFF accounts can see/filter Pickup orders from
+// which origin (sender) state/region — pickups are about where a parcel is
+// collected from, not the destination zone, so they're scoped separately
+// from StaffZoneAssignment. region=null means "the whole state" (every
+// region within it); a non-null region narrows to just that one. Same
+// opt-in model as zone assignment: no rows here = no pickup orders visible.
+model StaffRegionAssignment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state     String
+  region    String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, state, region])
 }
 
 model CountryZone {

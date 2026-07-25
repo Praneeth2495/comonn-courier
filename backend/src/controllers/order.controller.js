@@ -164,14 +164,32 @@ async function createOrder(req, res, next) {
   }
 }
 
+// Resolves a list of { state, region } assignments (region=null meaning
+// "the whole state") into a Prisma OR array of Address filters. Shared by
+// the STAFF pickup-scope restriction and the plain originState/originRegion
+// request filter, which both narrow on the same senderAddress shape.
+async function resolveOriginFilters(assignments) {
+  const regionNames = assignments.filter((a) => a.region).map((a) => a.region);
+  const regionRows = regionNames.length
+    ? await prisma.postcodeSuggestion.findMany({ where: { region: { in: regionNames } }, select: { region: true, postcode: true } })
+    : [];
+  const postcodesByRegion = {};
+  for (const { region, postcode } of regionRows) (postcodesByRegion[region] ||= []).push(postcode);
+
+  return assignments.map((a) =>
+    a.region ? { state: a.state, postcode: { in: postcodesByRegion[a.region] || [] } } : { state: a.state }
+  );
+}
+
 /**
  * Shared filter-building logic for both the paginated order list and the
  * Accounts summary — both need the exact same role-scoped visibility rules
- * (customers see only their own orders, staff only their assigned zones).
+ * (customers see only their own orders, staff only their assigned zones/regions).
  */
 async function buildOrdersWhere(req) {
-  const { status, notStatus, zoneCode, hasUser, q, from, to, originState, originRegion } = req.query;
+  const { status, notStatus, zoneCode, hasUser, q, from, to, originState, originRegion, scope } = req.query;
   const where = {};
+  const andConditions = [];
 
   if (req.user.role === 'CUSTOMER') where.userId = req.user.id;
   // status may be a single value or a comma-separated list (for admin tab groupings)
@@ -186,10 +204,20 @@ async function buildOrdersWhere(req) {
   if (hasUser === 'true') where.userId = { not: null };
   if (hasUser === 'false') where.userId = null;
 
-  // Admin-controlled zone visibility: STAFF only ever see orders in zones
-  // they've been individually assigned, regardless of what zoneCode
-  // filter is requested (a staff member with no assignments sees none).
-  if (req.user.role === 'STAFF') {
+  // Pickup orders are scoped by origin (sender) state/region instead of
+  // destination zone — a pickup is about where the parcel is collected
+  // from, which has nothing to do with the destination-zone assignment
+  // used everywhere else. Only STAFF are restricted; ADMIN sees everything.
+  if (req.user.role === 'STAFF' && scope === 'pickup') {
+    const assignments = await prisma.staffRegionAssignment.findMany({
+      where: { userId: req.user.id },
+      select: { state: true, region: true },
+    });
+    andConditions.push({ senderAddress: { OR: await resolveOriginFilters(assignments) } });
+  } else if (req.user.role === 'STAFF') {
+    // Admin-controlled zone visibility: STAFF only ever see orders in zones
+    // they've been individually assigned, regardless of what zoneCode
+    // filter is requested (a staff member with no assignments sees none).
     const assignments = await prisma.staffZoneAssignment.findMany({
       where: { userId: req.user.id },
       select: { zone: { select: { code: true } } },
@@ -211,21 +239,21 @@ async function buildOrdersWhere(req) {
     if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999Z`);
   }
 
-  // Origin (pickup) state/region — independent of the destination zoneCode
-  // filter above. Region has no direct column on Order/Address, so it's
-  // resolved to the set of matching postcodes via PostcodeSuggestion.region.
+  // Origin (pickup) state/region filter requested via the UI — independent
+  // of (and composes with, via andConditions) the STAFF pickup-scope
+  // restriction above. Region has no direct column on Order/Address, so
+  // it's resolved to the set of matching postcodes via PostcodeSuggestion.region.
   if (originState || originRegion) {
     const senderFilter = {};
     if (originState) senderFilter.state = originState;
     if (originRegion) {
-      const regionPostcodes = await prisma.postcodeSuggestion.findMany({
-        where: { region: originRegion },
-        select: { postcode: true },
-      });
-      senderFilter.postcode = { in: regionPostcodes.map((p) => p.postcode) };
+      const [resolved] = await resolveOriginFilters([{ state: originState, region: originRegion }]);
+      Object.assign(senderFilter, resolved);
     }
-    where.senderAddress = senderFilter;
+    andConditions.push({ senderAddress: senderFilter });
   }
+
+  if (andConditions.length) where.AND = andConditions;
 
   return where;
 }

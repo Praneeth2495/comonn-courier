@@ -15,6 +15,9 @@ router.post('/zones/countries', requireRole('ADMIN'), admin.upsertCountryMapping
 router.get('/staff-zones', requireRole('ADMIN'), admin.listStaffZoneAssignments);
 router.put('/staff-zones/:userId', requireRole('ADMIN'), admin.setStaffZoneAssignments);
 
+router.get('/staff-regions', requireRole('ADMIN'), admin.listStaffRegionAssignments);
+router.put('/staff-regions/:userId', requireRole('ADMIN'), admin.setStaffRegionAssignments);
+
 router.get('/services', admin.listServicesAdmin);
 router.post('/services', requireRole('ADMIN'), admin.upsertService);
 

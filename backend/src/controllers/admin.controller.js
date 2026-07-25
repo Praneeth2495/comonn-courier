@@ -153,6 +153,71 @@ async function setStaffZoneAssignments(req, res, next) {
   }
 }
 
+// ---------------- Staff region assignments (Pickup orders scoping) ----------------
+/** GET /api/admin/staff-regions — ADMIN only: every STAFF user with their currently assigned origin states/regions */
+async function listStaffRegionAssignments(req, res, next) {
+  try {
+    const staff = await prisma.user.findMany({
+      where: { role: 'STAFF' },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        regionAssignments: { select: { id: true, state: true, region: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    res.json({
+      staff: staff.map((s) => ({
+        id: s.id,
+        fullName: s.fullName,
+        email: s.email,
+        regions: s.regionAssignments,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PUT /api/admin/staff-regions/:userId — ADMIN only: replace a staff
+ * member's origin state/region assignments wholesale (scopes what they see
+ * on the Pickup orders tab). Body: { assignments: [{ state, region? }] } —
+ * a row with no `region` grants the whole state.
+ */
+async function setStaffRegionAssignments(req, res, next) {
+  try {
+    const { assignments } = req.body;
+    if (!Array.isArray(assignments)) return res.status(400).json({ error: 'assignments must be an array' });
+    for (const a of assignments) {
+      if (!a || !a.state) return res.status(400).json({ error: 'Each assignment needs a state' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.params.userId } });
+    if (!user || user.role !== 'STAFF') return res.status(404).json({ error: 'Staff account not found' });
+
+    await prisma.$transaction([
+      prisma.staffRegionAssignment.deleteMany({ where: { userId: req.params.userId } }),
+      ...(assignments.length
+        ? [
+            prisma.staffRegionAssignment.createMany({
+              data: assignments.map((a) => ({ userId: req.params.userId, state: a.state, region: a.region || null })),
+            }),
+          ]
+        : []),
+    ]);
+
+    const regions = await prisma.staffRegionAssignment.findMany({
+      where: { userId: req.params.userId },
+      select: { id: true, state: true, region: true },
+    });
+    res.json({ regions });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function upsertCountryMapping(req, res, next) {
   try {
     const { countryCode, countryName, zoneId } = req.body;
@@ -329,6 +394,8 @@ module.exports = {
   createZone,
   listStaffZoneAssignments,
   setStaffZoneAssignments,
+  listStaffRegionAssignments,
+  setStaffRegionAssignments,
   upsertCountryMapping,
   listServicesAdmin,
   upsertService,
