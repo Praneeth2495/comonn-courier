@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
+import LoadingLogo from '../components/LoadingLogo';
 
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
@@ -96,7 +97,7 @@ export default function UserDashboard() {
             🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
           </form>
 
-          {loading && <p className="lead">Loading orders…</p>}
+          {loading && <LoadingLogo label="Loading orders…" />}
           {!loading && orders.length === 0 && (
             <div className="empty-state card">
               <p>No {tab === 'history' ? 'past' : 'active'} orders yet.</p>
@@ -204,7 +205,7 @@ function SavedAddresses() {
     }
   }
 
-  if (loading) return <p className="lead">Loading addresses…</p>;
+  if (loading) return <LoadingLogo label="Loading addresses…" />;
 
   return (
     <div>

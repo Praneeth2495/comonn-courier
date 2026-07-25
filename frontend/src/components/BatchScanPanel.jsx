@@ -1,6 +1,7 @@
 import { useEffect, lazy, Suspense, useState } from 'react';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
+import LoadingLogo from './LoadingLogo';
 
 // Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
 // the (mostly public) app bundle when only staff/admin/driver ever open it.
@@ -359,7 +360,7 @@ export default function BatchScanPanel() {
       )}
 
       <h3 className="h-md" style={{ marginBottom: 12 }}>Saved batches</h3>
-      {loadingBatches ? <p className="lead">Loading…</p> : (
+      {loadingBatches ? <LoadingLogo /> : (
         <div className="table-wrap">
           <table className="data-table">
             <thead><tr><th>Name</th><th>Status applied</th><th>Items</th><th>Created by</th><th>Date</th><th></th></tr></thead>

@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
+import LoadingLogo from '../components/LoadingLogo';
 import logoFooter from '../assets/logo-footer.png';
 
 const STATUS_LABEL = {
@@ -149,7 +150,7 @@ function MyJobs({ userName }) {
       </div>
 
       {loading ? (
-        <p className="lead">Loading…</p>
+        <LoadingLogo />
       ) : jobs.length === 0 ? (
         <p className="lead">No pickup jobs assigned to you right now.</p>
       ) : (

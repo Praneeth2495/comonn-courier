@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import Payment from './Payment';
+import LoadingLogo from '../components/LoadingLogo';
 
 // Public entry point for a shared payment link (see order.controller.js's
 // getOrderForPayment) — fetches the order fresh and hydrates BookingContext
@@ -26,7 +27,7 @@ export default function PaymentByLink() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
-  if (loading) return <p className="lead" style={{ textAlign: 'center', marginTop: 60 }}>Loading…</p>;
+  if (loading) return <LoadingLogo style={{ marginTop: 60 }} />;
   if (error) {
     return (
       <div className="wrap section-narrow" style={{ textAlign: 'center' }}>

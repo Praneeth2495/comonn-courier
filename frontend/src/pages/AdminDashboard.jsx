@@ -5,6 +5,7 @@ import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
 import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
+import LoadingLogo from '../components/LoadingLogo';
 import logoFooter from '../assets/logo-footer.png';
 
 export default function AdminDashboard() {
@@ -68,7 +69,7 @@ function Overview() {
     client.get('/admin/dashboard').then(({ data }) => setData(data));
   }, []);
 
-  if (!data) return <p className="lead">Loading…</p>;
+  if (!data) return <LoadingLogo />;
   const { totals, recentOrders } = data;
 
   return (
@@ -433,7 +434,7 @@ function OrdersPanel() {
         </div>
       )}
 
-      {loading ? <p className="lead">Loading…</p> : (
+      {loading ? <LoadingLogo /> : (
         <div className="table-wrap">
           <div className={`t-row t-head orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''}`}>
             {tab === 'pickup' && <div></div>}
@@ -594,7 +595,7 @@ function AccountsPanel() {
         </div>
       </div>
 
-      {loading ? <p className="lead">Loading…</p> : (
+      {loading ? <LoadingLogo /> : (
         <div className="table-wrap">
           <div className="t-row t-head accounts-row">
             <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>To Address</div><div>Paid / To pay</div>
@@ -777,7 +778,7 @@ function OrderCommentsModal({ order, onClose }) {
         </div>
 
         {loading ? (
-          <p className="lead" style={{ fontSize: 13.5 }}>Loading…</p>
+          <LoadingLogo size={40} />
         ) : comments.length === 0 ? (
           <p className="lead" style={{ fontSize: 13.5 }}>No comments yet.</p>
         ) : (
@@ -894,7 +895,7 @@ function InventoryPanel() {
         {error && <div className="error-text" style={{ marginTop: 10 }}>{error}</div>}
       </div>
 
-      {loading ? <p className="lead">Loading…</p> : (
+      {loading ? <LoadingLogo /> : (
         <div className="table-wrap">
           <table className="data-table">
             <thead><tr><th>Name</th><th>Unit</th><th>Quantity</th><th>Last updated by</th><th></th></tr></thead>
