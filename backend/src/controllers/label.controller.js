@@ -11,6 +11,92 @@ function siteUrl(pathname) {
   return `${base}${pathname}`;
 }
 
+// Mirrors the quote email / booking confirmation card layout (see
+// renderQuoteEmailHtml in quote.controller.js and renderBookingConfirmationHtml
+// below) — rounded white cards on a paper background, a top-right status
+// pill, a two-column info table. Shows the receiver their own delivery
+// details exactly as the sender entered them (name/phone/email/address) so
+// they can flag anything wrong before it ships, plus who it's coming from
+// and what's in it.
+function renderReceiverNotificationHtml(order) {
+  const sender = order.senderAddress;
+  const receiver = order.receiverAddress;
+  const trackUrl = siteUrl(`/track?id=${encodeURIComponent(order.trackingNumber || '')}`);
+
+  const itemRows = Array.isArray(order.items) && order.items.length
+    ? order.items
+        .map(
+          (it) =>
+            `<tr><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.itemType} x${it.quantity}</td><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.lengthCm && it.widthCm && it.heightCm ? `${it.lengthCm}×${it.widthCm}×${it.heightCm} cm` : '—'}</td><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.actualWeightKg ? `${it.actualWeightKg} kg each` : 'Weighed at pickup'}</td></tr>`
+        )
+        .join('')
+    : '';
+
+  return `
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#171C2C;background:#F7F5F0;padding:22px;">
+      <div style="background:#fff;border-radius:14px;padding:22px;border:1px solid #E7E3DA;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+          <tr>
+            <td style="font-size:17px;font-weight:700;color:#171C2C;">A parcel has been booked for you</td>
+            <td style="text-align:right;">
+              <span style="background:#EAF0FF;color:#2451FF;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">On its way</span>
+            </td>
+          </tr>
+        </table>
+        <p style="font-size:13.5px;color:#5B6478;line-height:1.6;margin:0 0 14px;">Hi ${receiver?.contactName || ''}, ${sender?.contactName || 'someone'} has booked a shipment to you via Comonn. Here are the details on file:</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="width:50%;vertical-align:top;padding-right:10px;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Order</div>
+              <div style="font-size:14px;font-weight:600;">${order.orderNumber}</div>
+            </td>
+            <td style="width:50%;vertical-align:top;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Tracking</div>
+              <div style="font-size:14px;font-weight:600;">${order.trackingNumber || 'Assigned at pickup'}</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:20px 22px;margin-top:16px;border:1px solid #E7E3DA;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="width:50%;vertical-align:top;padding-right:10px;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">From</div>
+              ${addressBlockHtml(sender)}
+            </td>
+            <td style="width:50%;vertical-align:top;">
+              <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your delivery details</div>
+              ${addressBlockHtml(receiver)}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      ${itemRows ? `
+      <div style="background:#fff;border-radius:14px;padding:18px 22px;margin-top:16px;border:1px solid #E7E3DA;">
+        <div style="font-size:11px;color:#8A93A6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">What's being shipped</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="text-align:left;color:#8A93A6;font-size:11px;text-transform:uppercase;">
+            <th style="padding:0 10px 6px;">Item</th><th style="padding:0 10px 6px;">Dimensions</th><th style="padding:0 10px 6px;">Weight</th>
+          </tr></thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+      </div>` : ''}
+
+      <div style="background:#fff;border-radius:14px;padding:18px 22px;margin-top:16px;border:1px solid #E7E3DA;">
+        <p style="font-size:13.5px;color:#5B6478;line-height:1.6;margin:0;">
+          If any of your details above are incorrect, reply to this email or contact us before the parcel ships so we can update them.
+        </p>
+      </div>
+
+      <a href="${trackUrl}" style="display:block;text-align:center;margin-top:18px;background:#FF5A36;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:10px;font-size:15px;">Track order →</a>
+
+      <p style="font-size:12px;color:#8A93A6;text-align:center;margin-top:16px;">Questions about this shipment? Email us at support@comonn.in.</p>
+    </div>
+  `;
+}
+
 async function sendReceiverBookingNotification(order) {
   const to = order.receiverAddress?.email;
   if (!to) return;
@@ -19,19 +105,7 @@ async function sendReceiverBookingNotification(order) {
       to,
       from: process.env.EMAIL_FROM_ALERTS || 'Comonn Alerts <alerts@comonn.in>',
       subject: `A parcel is on its way to you — Order ${order.orderNumber}`,
-      html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
-          <h2 style="color:#0E1B3D;margin-bottom:6px;">A parcel has been booked for you</h2>
-          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">Hi ${order.receiverAddress?.contactName || ''},</p>
-          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">${order.senderAddress?.contactName || 'Someone'} has booked a shipment to you via COMONN. Here are the details:</p>
-          <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;margin:16px 0;">
-            <p style="margin:0 0 4px;font-size:13px;"><b>Order number:</b> ${order.orderNumber}</p>
-            ${order.trackingNumber ? `<p style="margin:0;font-size:13px;"><b>Tracking number:</b> ${order.trackingNumber}</p>` : ''}
-          </div>
-          <p style="margin:22px 0;"><a href="${siteUrl(`/track?id=${encodeURIComponent(order.trackingNumber || '')}`)}" style="background:#FF5A36;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Track order →</a></p>
-          <p style="font-size:12px;color:#8A93A6;">Questions about this shipment? Email us at support@comonn.in.</p>
-        </div>
-      `,
+      html: renderReceiverNotificationHtml(order),
     });
   } catch (err) {
     console.error('sendReceiverBookingNotification failed:', err.message);

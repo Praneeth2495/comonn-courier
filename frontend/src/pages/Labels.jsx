@@ -47,7 +47,7 @@ export default function Labels() {
 
   return (
     <div>
-      <div id="stepper-labels"><Stepper activeKey="labels" /></div>
+      <div id="stepper-labels"><Stepper activeKey="labels" interactive={false} /></div>
       <div className="section" style={{ paddingTop: 20, maxWidth: 960, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <span className="pill pill-success" style={{ marginBottom: 14 }}>✓ Booking confirmed</span>

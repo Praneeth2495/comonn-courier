@@ -387,7 +387,7 @@ export default function Quote() {
 
   async function emailQuote(e) {
     e.preventDefault();
-    if (!selected || !emailAddress) return;
+    if (!emailAddress) return;
     const parsedItems = buildItemsPayload();
     setEmailStatus('sending');
     try {
@@ -595,24 +595,28 @@ export default function Quote() {
               );
             })}
 
-            {selected && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 18, paddingTop: 18, borderTop: '1px dashed var(--line)', flexWrap: 'wrap', gap: 16 }}>
-                <span style={{ fontSize: 13, color: 'var(--slate)', paddingTop: 4 }}>Total for this shipment</span>
-                <div style={{ textAlign: 'right' }}>
-                  <div className="mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--navy)' }}>₹{selected.pricing.grandTotal.toFixed(2)}</div>
-                  <div style={{ fontSize: 12, color: 'var(--slate-light)' }}>{selected.weight.chargeableWeightKg.toFixed(2)} kg billed</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 18, paddingTop: 18, borderTop: '1px dashed var(--line)', flexWrap: 'wrap', gap: 16 }}>
+              <span style={{ fontSize: 13, color: 'var(--slate)', paddingTop: 4 }}>
+                {selected ? 'Total for this shipment' : 'Select a service to see the total'}
+              </span>
+              <div style={{ textAlign: 'right' }}>
+                {selected && (
+                  <>
+                    <div className="mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--navy)' }}>₹{selected.pricing.grandTotal.toFixed(2)}</div>
+                    <div style={{ fontSize: 12, color: 'var(--slate-light)' }}>{selected.weight.chargeableWeightKg.toFixed(2)} kg billed</div>
+                  </>
+                )}
 
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 14, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                    <button type="button" className="btn btn-outline" onClick={openEmailModal}>
-                      ✉️ Email quote
-                    </button>
-                    <button type="button" className="btn btn-primary" style={{ padding: '14px 32px' }} onClick={continueToDetails}>
-                      Continue to details →
-                    </button>
-                  </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 14, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  <button type="button" className="btn btn-outline" onClick={openEmailModal}>
+                    ✉️ Email quote
+                  </button>
+                  <button type="button" className="btn btn-primary" style={{ padding: '14px 32px' }} onClick={continueToDetails} disabled={!selected}>
+                    {selected ? 'Continue to details →' : 'Select to continue'}
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>
