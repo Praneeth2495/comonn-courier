@@ -392,39 +392,59 @@ async function generateLabel(req, res, next) {
   }
 }
 
-/**
- * GET /api/labels/download/:labelId — streams a label PDF.
- * `?inline=1` (used by the admin/staff Bookings "View label" button) opens
- * it in the browser tab instead of forcing a download.
- */
+// Shared by every "serve this label's PDF" entry point (by id, by barcode).
+// `?inline=1` opens it in the browser tab instead of forcing a download —
+// used by the admin/staff Bookings "View label" button and the Print
+// Label panel.
+async function serveLabelFile(label, req, res) {
+  const filePath = path.resolve(path.join(STORAGE_DIR, label.fileUrl));
+  // Local disk doesn't persist across backend redeploys — regenerate on
+  // the fly (same deterministic filename) if the file has gone missing.
+  if (!fs.existsSync(filePath)) {
+    const order = await prisma.order.findUnique({
+      where: { id: label.orderId },
+      include: { items: true, service: true, senderAddress: true, receiverAddress: true },
+    });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    const packages = buildPackages(order);
+    const totalPackages = packages.length || 1;
+    await generateLabelPdf(order, {
+      packageIndex: label.packageIndex,
+      totalPackages,
+      item: packages[label.packageIndex - 1] || packages[0],
+      barcodeValue: label.barcodeValue,
+    });
+  }
+  if (req.query.inline) {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+    return res.sendFile(filePath);
+  }
+  res.download(filePath);
+}
+
+/** GET /api/labels/download/:labelId — streams a label PDF by its internal id. */
 async function downloadLabel(req, res, next) {
   try {
     const label = await prisma.label.findUnique({ where: { id: req.params.labelId } });
     if (!label) return res.status(404).json({ error: 'Label not found' });
-    const filePath = path.resolve(path.join(STORAGE_DIR, label.fileUrl));
-    // Local disk doesn't persist across backend redeploys — regenerate on
-    // the fly (same deterministic filename) if the file has gone missing.
-    if (!fs.existsSync(filePath)) {
-      const order = await prisma.order.findUnique({
-        where: { id: label.orderId },
-        include: { items: true, service: true, senderAddress: true, receiverAddress: true },
-      });
-      if (!order) return res.status(404).json({ error: 'Order not found' });
-      const packages = buildPackages(order);
-      const totalPackages = packages.length || 1;
-      await generateLabelPdf(order, {
-        packageIndex: label.packageIndex,
-        totalPackages,
-        item: packages[label.packageIndex - 1] || packages[0],
-        barcodeValue: label.barcodeValue,
-      });
-    }
-    if (req.query.inline) {
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
-      return res.sendFile(filePath);
-    }
-    res.download(filePath);
+    await serveLabelFile(label, req, res);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/labels/download/barcode/:barcodeValue — streams a label PDF by
+ * its printed barcode value, for the admin/staff Print Label panel (staff
+ * enter or scan a label's barcode to reprint it without hunting down the
+ * order first).
+ */
+async function downloadLabelByBarcode(req, res, next) {
+  try {
+    const label = await prisma.label.findUnique({ where: { barcodeValue: req.params.barcodeValue.trim() } });
+    if (!label) return res.status(404).json({ error: 'No label found for this barcode' });
+    await serveLabelFile(label, req, res);
   } catch (err) {
     next(err);
   }
@@ -461,4 +481,4 @@ async function downloadInvoice(req, res, next) {
   }
 }
 
-module.exports = { generateLabel, downloadLabel, downloadInvoice, sendReceiverBookingNotification };
+module.exports = { generateLabel, downloadLabel, downloadLabelByBarcode, downloadInvoice, sendReceiverBookingNotification };

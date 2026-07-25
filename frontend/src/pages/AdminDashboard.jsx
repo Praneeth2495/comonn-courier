@@ -5,6 +5,7 @@ import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
 import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
+import PrintLabelPanel from '../components/PrintLabelPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import logoFooter from '../assets/logo-footer.png';
 
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
     ...(isAdmin ? [['accounts', 'Accounts']] : []),
     ['inventory', 'Inventory'],
     ['batchscan', 'Scan'],
+    ['printlabel', 'Print Label'],
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
     ['account', 'Profile'],
@@ -54,6 +56,7 @@ export default function AdminDashboard() {
         {tab === 'accounts' && isAdmin && <AccountsPanel />}
         {tab === 'inventory' && <InventoryPanel />}
         {tab === 'batchscan' && <BatchScanPanel />}
+        {tab === 'printlabel' && <PrintLabelPanel />}
         {tab === 'rates' && isAdmin && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
         {tab === 'account' && <ChangePassword />}
