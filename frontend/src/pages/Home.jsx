@@ -25,7 +25,7 @@ function maxDimsHint(weightPreset) {
   if (!weightKg) return null;
   const side = Math.cbrt(weightKg * STANDARD_DIVISOR);
   const sumCm = Math.round(side * 3 * 10) / 10;
-  return `${sumCm} cm (sum of length + width + height)`;
+  return `${sumCm} cm (Length + Width + Height)`;
 }
 
 // Mirrors Quote.jsx's volumetricWeightNote / pricingEngine.js's
