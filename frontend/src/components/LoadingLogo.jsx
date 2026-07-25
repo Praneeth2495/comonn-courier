@@ -5,7 +5,8 @@ import logoIcon from '../assets/logo-icon.png';
 // variant="wipe" (default, "Design 1"): wiped in left-to-right on a loop,
 // like it's being drawn. variant="ring" ("Design 2"): logo stays fully
 // visible with a gentle breathing pulse, orbited by a rotating brand-color
-// arc — a more classic spinner feel.
+// arc — a more classic spinner feel. variant="bounce" ("Design 3"): the
+// logo hops up and down over a squashing shadow, like a parcel bouncing.
 export default function LoadingLogo({ size = 56, label, style, variant = 'wipe' }) {
   return (
     <div className="loading-logo-wrap" style={style}>
