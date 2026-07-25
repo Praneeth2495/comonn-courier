@@ -56,6 +56,26 @@ async function resolveZoneForCountry(countryCode) {
 }
 
 /**
+ * Resolve a destination country+postcode to its pricing Zone. Some
+ * countries (currently AU/NZ/CA) have postcode-level zones imported into
+ * PostcodeZone (e.g. "Australia 2") that are more specific than the
+ * single country-wide CountryZone mapping — those take priority when the
+ * postcode is known. Falls back to the country-level zone (resolveZoneForCountry)
+ * when no postcode was supplied, or the postcode isn't in the imported data
+ * (e.g. a typo, or a country without postcode-level data at all).
+ */
+async function resolveZoneForDestination(countryCode, postcode) {
+  if (postcode) {
+    const mapping = await prisma.postcodeZone.findUnique({
+      where: { countryCode_postcode: { countryCode: countryCode.toUpperCase(), postcode: String(postcode).trim() } },
+      include: { zone: true },
+    });
+    if (mapping) return mapping.zone;
+  }
+  return resolveZoneForCountry(countryCode);
+}
+
+/**
  * Resolve a pickup (origin) postcode to its origin Zone id, e.g.
  * "India-urban" — used to optionally narrow RateCard selection by
  * fromZoneId. Returns null if the postcode isn't known (or wasn't
@@ -190,11 +210,14 @@ function priceItem(item, divisor) {
  *   only known once the Details step is filled in, not at the initial
  *   instant-quote-preview stage
  * @param {string} [input.originPostcode]  sender's pickup postcode
+ * @param {string} [input.destinationPostcode]  receiver's postcode — used
+ *   for postcode-level zone resolution where available (see resolveZoneForDestination)
  */
 async function generateQuote(input) {
   const {
     serviceCode,
     destinationCountryCode,
+    destinationPostcode,
     items,
     declaredValue = 0,
     taxRate = 0,
@@ -217,7 +240,7 @@ async function generateQuote(input) {
     throw err;
   }
 
-  const zone = await resolveZoneForCountry(destinationCountryCode);
+  const zone = await resolveZoneForDestination(destinationCountryCode, destinationPostcode);
 
   const pricedItems = items.map((it) => priceItem(it, service.volumetricDivisor));
 
@@ -323,6 +346,7 @@ module.exports = {
   calcVolumetricWeightKg,
   calcChargeableWeightKg,
   resolveZoneForCountry,
+  resolveZoneForDestination,
   resolveFromZoneForPostcode,
   findRateBracket,
   applySurcharges,

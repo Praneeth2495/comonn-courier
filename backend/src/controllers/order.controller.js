@@ -109,6 +109,7 @@ async function createOrder(req, res, next) {
       const quote = await generateQuote({
         serviceCode,
         destinationCountryCode: receiver.countryCode,
+        destinationPostcode: receiver.postcode,
         items,
         declaredValue,
         taxRate,
@@ -602,6 +603,7 @@ async function updateOrderDetails(req, res, next) {
       const quote = await generateQuote({
         serviceCode,
         destinationCountryCode: receiver.countryCode,
+        destinationPostcode: receiver.postcode,
         items,
         declaredValue,
         taxRate: Number(order.taxRate) || 0,

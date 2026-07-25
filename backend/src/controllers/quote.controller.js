@@ -7,7 +7,7 @@ const { prisma } = require('../config/db');
 const SERVICE_ORDER = ['EXPRESS', 'ECONOMY'];
 
 /** Quotes every active service for the same destination/items/origin, skipping any with no rate card rather than failing the whole comparison. */
-async function quoteAllServices({ destinationCountryCode, items, declaredValue, originPostcode }) {
+async function quoteAllServices({ destinationCountryCode, destinationPostcode, items, declaredValue, originPostcode }) {
   const services = await prisma.service.findMany({ where: { isActive: true }, select: { code: true } });
   services.sort((a, b) => {
     const ai = SERVICE_ORDER.indexOf(a.code);
@@ -21,6 +21,7 @@ async function quoteAllServices({ destinationCountryCode, items, declaredValue, 
       const quote = await generateQuote({
         serviceCode: s.code,
         destinationCountryCode,
+        destinationPostcode,
         items,
         declaredValue,
         originCountryCode: originPostcode ? 'IN' : undefined,
@@ -119,7 +120,7 @@ function renderQuoteEmailHtml(quotes, { originText, resumeUrl }) {
  */
 async function getInstantQuote(req, res, next) {
   try {
-    const { serviceCode, destinationCountryCode, items, declaredValue, originPostcode } = req.body;
+    const { serviceCode, destinationCountryCode, destinationPostcode, items, declaredValue, originPostcode } = req.body;
 
     if (!destinationCountryCode || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
@@ -140,6 +141,7 @@ async function getInstantQuote(req, res, next) {
         await generateQuote({
           serviceCode,
           destinationCountryCode,
+          destinationPostcode,
           items,
           declaredValue,
           originCountryCode: originPostcode ? 'IN' : undefined,
@@ -147,7 +149,7 @@ async function getInstantQuote(req, res, next) {
         }),
       ];
     } else {
-      quotes = await quoteAllServices({ destinationCountryCode, items, declaredValue, originPostcode });
+      quotes = await quoteAllServices({ destinationCountryCode, destinationPostcode, items, declaredValue, originPostcode });
     }
 
     if (quotes.length === 0) {
@@ -231,13 +233,13 @@ async function postcodeSuggestions(req, res, next) {
  */
 async function emailQuote(req, res, next) {
   try {
-    const { email, destinationCountryCode, items, declaredValue, originPostcode, originSuburb, originState } = req.body;
+    const { email, destinationCountryCode, destinationPostcode, destinationSuburb, destinationState, items, declaredValue, originPostcode, originSuburb, originState } = req.body;
 
     if (!email || !destinationCountryCode || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'email, destinationCountryCode and items are required' });
     }
 
-    const quotes = await quoteAllServices({ destinationCountryCode, items, declaredValue, originPostcode });
+    const quotes = await quoteAllServices({ destinationCountryCode, destinationPostcode, items, declaredValue, originPostcode });
     if (quotes.length === 0) {
       return res.status(422).json({ error: 'No service available for this destination/weight' });
     }
@@ -246,7 +248,17 @@ async function emailQuote(req, res, next) {
 
     // "Continue booking" resumes the Book page with everything pre-filled
     // and auto-fetches services immediately, same as the Home page handoff.
-    const resumePayload = { destinationCountryCode, items, originPostcode, originSuburb, originState, autoFetch: true };
+    const resumePayload = {
+      destinationCountryCode,
+      destinationPostcode,
+      destinationSuburb,
+      destinationState,
+      items,
+      originPostcode,
+      originSuburb,
+      originState,
+      autoFetch: true,
+    };
     const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
     const resumeUrl = `${base}/quote?resume=${Buffer.from(JSON.stringify(resumePayload)).toString('base64url')}`;
 

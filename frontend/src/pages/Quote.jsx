@@ -139,7 +139,12 @@ export default function Quote() {
   useEffect(() => {
     if (!quoteInput || quoteInput.pricingPending || !selectedQuote) return;
     client
-      .post('/quote', { destinationCountryCode: quoteInput.destinationCountryCode, items: quoteInput.items, originPostcode: quoteInput.originPostcode })
+      .post('/quote', {
+        destinationCountryCode: quoteInput.destinationCountryCode,
+        destinationPostcode: quoteInput.destinationPostcode,
+        items: quoteInput.items,
+        originPostcode: quoteInput.originPostcode,
+      })
       .then(({ data }) => {
         setQuotes(data.quotes);
         const match = data.quotes.find((q) => q.service.code === selectedQuote.service.code);
@@ -286,7 +291,12 @@ export default function Quote() {
     setQuotes(null);
     setSelected(null);
     try {
-      const { data } = await client.post('/quote', { destinationCountryCode, items: parsedItems, originPostcode: originPostcode || undefined });
+      const { data } = await client.post('/quote', {
+        destinationCountryCode,
+        destinationPostcode,
+        items: parsedItems,
+        originPostcode: originPostcode || undefined,
+      });
       setQuotes(data.quotes);
     } catch (err) {
       setError(err.response?.data?.error || 'Could not get a quote — please check the details and try again.');
