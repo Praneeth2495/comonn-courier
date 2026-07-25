@@ -60,18 +60,35 @@ async function resolveZoneForCountry(countryCode) {
  * countries (currently AU/NZ/CA) have postcode-level zones imported into
  * PostcodeZone (e.g. "Australia 2") that are more specific than the
  * single country-wide CountryZone mapping — those take priority when the
- * postcode is known. Falls back to the country-level zone (resolveZoneForCountry)
- * when no postcode was supplied, or the postcode isn't in the imported data
- * (e.g. a typo, or a country without postcode-level data at all).
+ * postcode is known.
+ *
+ * For a country that HAS postcode-level data, an unmatched/missing postcode
+ * does NOT fall back to the country-level zone — that flat rate doesn't
+ * reflect the real regional pricing the postcode data was imported for, so
+ * instead we block with a message telling the customer to call in rather
+ * than silently mis-price the shipment. Only countries with no postcode-level
+ * data at all (e.g. US, Germany, Singapore...) use the plain country-level
+ * zone, unchanged from before.
  */
 async function resolveZoneForDestination(countryCode, postcode) {
+  const cc = countryCode.toUpperCase();
+
   if (postcode) {
     const mapping = await prisma.postcodeZone.findUnique({
-      where: { countryCode_postcode: { countryCode: countryCode.toUpperCase(), postcode: String(postcode).trim() } },
+      where: { countryCode_postcode: { countryCode: cc, postcode: String(postcode).trim() } },
       include: { zone: true },
     });
     if (mapping) return mapping.zone;
   }
+
+  const hasPostcodeZoneData = (await prisma.postcodeZone.count({ where: { countryCode: cc } })) > 0;
+  if (hasPostcodeZoneData) {
+    const err = new Error('Postcode issue, please contact +919108038783 to complete booking.');
+    err.status = 422;
+    err.code = 'POSTCODE_ZONE_NOT_FOUND';
+    throw err;
+  }
+
   return resolveZoneForCountry(countryCode);
 }
 
