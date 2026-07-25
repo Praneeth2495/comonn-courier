@@ -606,8 +606,3 @@ table.data-table tr:hover td{background:#FAFAF7;}
   0%,100%{transform:translateX(-50%) scale(1);opacity:.5;}
   50%{transform:translateX(-50%) scale(.6);opacity:.2;}
 }
-
-@media(prefers-reduced-motion:reduce){
-  .loading-logo img{animation:none!important;clip-path:none!important;}
-  .loading-logo.ring::before,.loading-logo.bounce::after{animation:none!important;}
-}
