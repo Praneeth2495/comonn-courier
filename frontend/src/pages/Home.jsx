@@ -190,6 +190,10 @@ export default function Home() {
   const [originPostcode, setOriginPostcode] = useState('');
   const [originSuggestions, setOriginSuggestions] = useState([]);
   const [originSuggestLoading, setOriginSuggestLoading] = useState(false);
+  // Set once a full 6-digit pincode was actually looked up and came back
+  // with zero matches in the Suggestion List data — distinct from "haven't
+  // finished typing yet" or "picked a suggestion already".
+  const [originPostcodeNotFound, setOriginPostcodeNotFound] = useState(false);
   const [originPicked, setOriginPicked] = useState(null);
   const [originFocused, setOriginFocused] = useState(false);
   const originDebounceRef = useRef(null);
@@ -214,6 +218,7 @@ export default function Home() {
   function handleOriginPostcodeChange(v) {
     setOriginPostcode(v);
     setOriginPicked(null);
+    setOriginPostcodeNotFound(false);
     clearTimeout(originDebounceRef.current);
     if (!/^\d{6}$/.test(v)) {
       setOriginSuggestions([]);
@@ -223,7 +228,10 @@ export default function Home() {
     setOriginSuggestLoading(true);
     originDebounceRef.current = setTimeout(() => {
       client.get('/quote/postcode-suggestions', { params: { postcode: v } })
-        .then(({ data }) => setOriginSuggestions(data.suggestions))
+        .then(({ data }) => {
+          setOriginSuggestions(data.suggestions);
+          setOriginPostcodeNotFound(data.suggestions.length === 0);
+        })
         .catch(() => setOriginSuggestions([]))
         .finally(() => setOriginSuggestLoading(false));
     }, 400);
@@ -232,6 +240,7 @@ export default function Home() {
   function pickOriginSuggestion(s) {
     setOriginPicked(s);
     setOriginSuggestions([]);
+    setOriginPostcodeNotFound(false);
   }
 
   // Destination postcode autocomplete — same pattern as origin, but scoped
@@ -282,6 +291,11 @@ export default function Home() {
   function goToBook(e) {
     e.preventDefault();
     setError('');
+
+    if (originPostcodeNotFound) {
+      setError('Postcode issue, please contact +919108038783.');
+      return;
+    }
 
     if (destinationCountryCode && !destinationPostcode) {
       setError('Please enter the destination postcode.');
@@ -391,6 +405,9 @@ export default function Home() {
                       </button>
                     ))}
                   </div>
+                )}
+                {originPostcodeNotFound && (
+                  <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 6 }}>Postcode issue, please contact +919108038783.</p>
                 )}
               </div>
 
