@@ -3,6 +3,7 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 
 const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
+const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
 
 function ensureStorageDir() {
   if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR, { recursive: true });
@@ -41,8 +42,15 @@ async function generateInvoicePdf(order) {
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
 
-    doc.font('Helvetica-Bold').fontSize(20).text('COMONN', { continued: true });
-    doc.font('Helvetica').fontSize(11).text('  International Courier');
+    if (fs.existsSync(LOGO_PATH)) {
+      const headerTop = doc.y;
+      doc.image(LOGO_PATH, 50, headerTop, { width: 110 });
+      doc.font('Helvetica').fontSize(11).text('International Courier', 165, headerTop + 6);
+      doc.y = headerTop + 32;
+    } else {
+      doc.font('Helvetica-Bold').fontSize(20).text('COMONN', { continued: true });
+      doc.font('Helvetica').fontSize(11).text('  International Courier');
+    }
     doc.moveDown(0.3);
     doc.font('Helvetica-Bold').fontSize(14).text('Tax Invoice');
     doc.moveDown(1);

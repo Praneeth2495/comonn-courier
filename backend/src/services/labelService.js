@@ -4,6 +4,7 @@ const PDFDocument = require('pdfkit');
 const bwipjs = require('bwip-js');
 
 const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
+const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
 
 function ensureStorageDir() {
   if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR, { recursive: true });
@@ -43,8 +44,16 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
     doc.pipe(stream);
 
     // Header
-    doc.font('Helvetica-Bold').fontSize(16).text('COMONN', { continued: true });
-    doc.font('Helvetica').fontSize(9).text('  International Courier', { align: 'left' });
+    if (fs.existsSync(LOGO_PATH)) {
+      const headerLeft = doc.x;
+      const headerTop = doc.y;
+      doc.image(LOGO_PATH, headerLeft, headerTop, { width: 80 });
+      doc.font('Helvetica').fontSize(8).text('International Courier', headerLeft + 84, headerTop + 5);
+      doc.y = headerTop + 20;
+    } else {
+      doc.font('Helvetica-Bold').fontSize(16).text('COMONN', { continued: true });
+      doc.font('Helvetica').fontSize(9).text('  International Courier', { align: 'left' });
+    }
     doc.moveDown(0.3);
     doc.fontSize(9).text(`Service: ${order.service.name}`);
     doc.text(`Order: ${order.orderNumber}`);
