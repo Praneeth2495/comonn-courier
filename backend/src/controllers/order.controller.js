@@ -809,10 +809,62 @@ async function verifyOtp(req, res, next) {
   }
 }
 
+// Mirrors the quote/booking-confirmation email card style (rounded white
+// cards on a paper background) — just an order summary and a pay button,
+// since by the time staff send this the customer has nothing left to fill
+// in (DG ack/add-ons/email verification are already done).
+function renderPaymentLinkEmailHtml(order, link) {
+  const itemRows = order.items
+    .map(
+      (it) =>
+        `<tr><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.itemType} x${it.quantity}</td><td style="padding:6px 10px;border-bottom:1px solid #EDEAE2;font-size:13px;">${it.actualWeightKg ? `${it.actualWeightKg} kg each` : 'Weighed at pickup'}</td></tr>`
+    )
+    .join('');
+
+  const addonRows = order.addons
+    .map((a) => `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span>${a.label}</span><span>₹${Number(a.amount).toFixed(2)}</span></div>`)
+    .join('');
+
+  return `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;background:#F7F5F0;padding:22px;">
+      <div style="background:#fff;border-radius:14px;padding:22px;border:1px solid #E7E3DA;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+          <tr>
+            <td style="font-size:17px;font-weight:700;color:#171C2C;">Ready for payment</td>
+            <td style="text-align:right;">
+              <span style="background:#EAF0FF;color:#2451FF;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">Order ${order.orderNumber}</span>
+            </td>
+          </tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;border-top:1px dashed #E7E3DA;padding-top:10px;">
+          <thead><tr style="text-align:left;color:#8A93A6;font-size:11px;text-transform:uppercase;">
+            <th style="padding:8px 10px 6px;">Item</th><th style="padding:8px 10px 6px;">Weight</th>
+          </tr></thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:20px 22px;margin-top:16px;border:1px solid #E7E3DA;">
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;"><span>${order.service?.name || 'Shipping'} (incl. GST)</span><span>₹${(Number(order.baseFreight) + Number(order.surchargesTotal)).toFixed(2)}</span></div>
+        ${addonRows}
+        ${Number(order.discountTotal) > 0 ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:#1E8E3E;"><span>Discount${order.promoCode ? ` (${order.promoCode})` : ''}</span><span>−₹${Number(order.discountTotal).toFixed(2)}</span></div>` : ''}
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:10px 0 0;margin-top:8px;border-top:1px dashed #E7E3DA;"><span>Total</span><span>₹${Number(order.grandTotal).toFixed(2)}</span></div>
+      </div>
+
+      <a href="${link}" style="display:block;text-align:center;margin-top:18px;background:#FF5A36;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:10px;font-size:15px;">Complete payment →</a>
+
+      <p style="font-size:12px;color:#8A93A6;text-align:center;margin-top:16px;">Or copy this link: ${link}</p>
+    </div>
+  `;
+}
+
 /** POST /api/orders/:id/send-payment-link-email — ADMIN/STAFF: emails the pay-by-link URL to the customer's OTP-verified email */
 async function sendPaymentLinkEmail(req, res, next) {
   try {
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { service: true, items: true, addons: true },
+    });
     if (!order) return res.status(404).json({ error: 'Order not found' });
     if (!PAYABLE_STATUSES.includes(order.status)) {
       return res.status(409).json({ error: 'Order is no longer awaiting payment' });
@@ -828,7 +880,7 @@ async function sendPaymentLinkEmail(req, res, next) {
       to: order.otpEmail,
       from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
       subject: `Complete payment for order ${order.orderNumber}`,
-      html: `<div style="font-family:sans-serif;"><p>Your Comonn order <b>${order.orderNumber}</b> is ready for payment.</p><p><a href="${link}" style="display:inline-block;padding:12px 20px;background:#FF5A36;color:#fff;text-decoration:none;border-radius:6px;font-weight:700;">Complete payment</a></p><p style="color:#8A93A6;font-size:13px;">Or copy this link: ${link}</p></div>`,
+      html: renderPaymentLinkEmailHtml(order, link),
     });
 
     res.json({ ok: true });

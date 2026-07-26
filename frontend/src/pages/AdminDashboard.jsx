@@ -157,6 +157,14 @@ function toQuoteInput(order, destinationCountryName) {
     originSuburb: order.senderAddress?.city || undefined,
     originState: order.senderAddress?.state || undefined,
   };
+  // Same for the destination postcode — without it, the Destination field
+  // on the Book page shows blank (and the postcode-zone pricing resolves
+  // as if nothing was entered) when editing an existing order.
+  const destination = {
+    destinationPostcode: order.receiverAddress?.postcode || undefined,
+    destinationSuburb: order.receiverAddress?.city || undefined,
+    destinationState: order.receiverAddress?.state || undefined,
+  };
   if (order.pricingPending) {
     return {
       destinationCountryCode: order.receiverAddress.countryCode,
@@ -164,6 +172,7 @@ function toQuoteInput(order, destinationCountryName) {
       items: order.items.map((it) => ({ itemType: it.itemType, quantity: it.quantity })),
       pricingPending: true,
       ...origin,
+      ...destination,
     };
   }
   return {
@@ -177,6 +186,7 @@ function toQuoteInput(order, destinationCountryName) {
       quantity: it.quantity,
     })),
     ...origin,
+    ...destination,
   };
 }
 

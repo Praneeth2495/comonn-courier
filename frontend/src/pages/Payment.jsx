@@ -99,9 +99,29 @@ export default function Payment() {
     // order") is shown as a read-only updated invoice further down — don't
     // reset its live add-ons/DG-ack back to defaults.
     if (!PAYABLE_STATUSES.includes(bookingOrder.status)) return;
+    // Already prepped by staff (DG ack + add-ons + email verification done
+    // before sending the customer a payment link) — load the real values
+    // instead of resetting to defaults, so the customer visiting via that
+    // link goes straight to order summary + payment, not back through DG/
+    // add-ons/verification staff already handled.
+    if (bookingOrder.otpVerifiedAt && bookingOrder.dgAcknowledged) {
+      setDgAcknowledged(true);
+      setOtpVerified(true);
+      setOtpSent(true);
+      if (bookingOrder.otpEmail) setOtpEmail(bookingOrder.otpEmail);
+      if (bookingOrder.pickupDate) setPickupDate(bookingOrder.pickupDate);
+      return;
+    }
     syncDefaultAddons(bookingOrder.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingOrder?.id]);
+
+  // The DG/Add-ons/Verification cards are for staff to fill in while
+  // preparing an order before sending the customer a payment link — once
+  // that's done (dgAcknowledged + otpVerifiedAt both set) and it's the
+  // customer viewing via that link (not staff themselves), skip straight
+  // to order summary + payment options.
+  const isPreppedForCustomer = Boolean(bookingOrder?.otpVerifiedAt && bookingOrder?.dgAcknowledged) && !['ADMIN', 'STAFF'].includes(user?.role);
 
   async function syncAddons(overrides) {
     const payload = {
@@ -504,6 +524,8 @@ export default function Payment() {
               ← Back
             </button>
 
+            {!isPreppedForCustomer && (
+            <>
             <div className="card" style={{ padding: 26 }}>
               <h3 style={{ marginBottom: 4 }}>Dangerous goods declaration</h3>
               <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>
@@ -598,6 +620,8 @@ export default function Payment() {
                 {otpError && <div className="error-text" style={{ marginTop: 8 }}>{otpError}</div>}
               </div>
             </div>
+            </>
+            )}
 
             {['ADMIN', 'STAFF'].includes(user?.role) && (
               <div className="card" style={{ padding: 22, marginTop: 22, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
@@ -614,9 +638,9 @@ export default function Payment() {
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
-                    disabled={!otpVerified || sendLinkStatus === 'sending'}
+                    disabled={!otpVerified || !dgAcknowledged || sendLinkStatus === 'sending'}
                     onClick={sendPaymentLinkEmail}
-                    title={!otpVerified ? 'Verify the customer\'s email first' : ''}
+                    title={!otpVerified ? 'Verify the customer\'s email first' : !dgAcknowledged ? 'Acknowledge the dangerous goods declaration first' : ''}
                   >
                     {sendLinkStatus === 'sending' ? 'Sending…' : 'Send to verified email'}
                   </button>
