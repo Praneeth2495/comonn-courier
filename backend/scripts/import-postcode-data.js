@@ -119,18 +119,42 @@ async function importZones(db) {
     }
   }
 
-  const parsed = rows.map((r) => ({
-    countryCode: r.countryCode,
-    postcode: r.postcode,
-    zoneId: r.countryCode === 'IN' ? indiaZoneId : zoneIdByKey[`${r.countryCode}:${r.zoneName}`],
-  })).filter((r) => r.zoneId);
+  // The source sheet has a handful of (country, postcode) keys entered more
+  // than once — usually harmless exact duplicates, but sometimes the same
+  // postcode was assigned to two different zones (a real conflict in the
+  // source data, not something safe to resolve by guessing). Dedupe the
+  // former; drop + report the latter rather than silently picking one.
+  const zoneNamesByKey = new Map(); // `${countryCode}:${postcode}` -> Set<zoneName>
+  for (const r of rows) {
+    const key = `${r.countryCode}:${r.postcode.trim().toUpperCase()}`;
+    if (!zoneNamesByKey.has(key)) zoneNamesByKey.set(key, new Set());
+    zoneNamesByKey.get(key).add(r.zoneName);
+  }
+  const conflicts = [...zoneNamesByKey.entries()].filter(([, names]) => names.size > 1);
+  if (conflicts.length) {
+    console.log(`\nWARNING: ${conflicts.length} postcode(s) map to more than one zone in the source data — skipping these, resolve manually:`);
+    for (const [key, names] of conflicts) console.log(`  ${key} -> ${[...names].join(' / ')}`);
+    console.log('');
+  }
+  const conflictKeys = new Set(conflicts.map(([key]) => key));
 
-  console.log(`Zones: parsed ${parsed.length} of ${rows.length} rows.`);
+  const seenKeys = new Set();
+  const parsed = [];
+  for (const r of rows) {
+    const key = `${r.countryCode}:${r.postcode.trim().toUpperCase()}`;
+    if (conflictKeys.has(key) || seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    const zoneId = r.countryCode === 'IN' ? indiaZoneId : zoneIdByKey[`${r.countryCode}:${r.zoneName}`];
+    if (!zoneId) continue;
+    parsed.push({ countryCode: r.countryCode, postcode: r.postcode, zoneId });
+  }
+
+  console.log(`Zones: parsed ${parsed.length} of ${rows.length} rows (${conflictKeys.size} conflicting keys skipped).`);
 
   await prisma.postcodeZone.deleteMany({});
   const BATCH = 5000;
   for (let i = 0; i < parsed.length; i += BATCH) {
-    await prisma.postcodeZone.createMany({ data: parsed.slice(i, i + BATCH) });
+    await prisma.postcodeZone.createMany({ data: parsed.slice(i, i + BATCH), skipDuplicates: true });
     process.stdout.write(`\rZones imported ${Math.min(i + BATCH, parsed.length)}/${parsed.length}`);
   }
   console.log('');
@@ -146,9 +170,13 @@ async function main() {
   db.close();
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(() => prisma.$disconnect());
+module.exports = { importZones, importSuggestions };
+
+if (require.main === module) {
+  main()
+    .catch((err) => {
+      console.error(err);
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}

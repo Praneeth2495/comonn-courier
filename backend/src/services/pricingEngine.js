@@ -55,10 +55,35 @@ async function resolveZoneForCountry(countryCode) {
   return mapping.zone;
 }
 
+// PostcodeZone.postcode is stored at whatever granularity the source Total
+// Zones - Zones file used per country (see import-postcode-data.js) — a full
+// postcode for AU/NZ, but a shorter prefix for others: Canada's 3-character
+// FSA ("V1X"), a UK outward code ("EC1A", "E1" — i.e. everything except the
+// fixed 3-character inward code), or a US ZIP3 ("995"). A customer always
+// types/selects their *full* postcode, so it must be reduced to the same key
+// the zone data was imported at before looking it up — otherwise an exact
+// match against, say, a full 6-character Canadian postcode would never hit
+// the 3-character FSA row that's actually there.
+function extractZoneMatchKey(countryCode, postcode) {
+  const compact = String(postcode || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (!compact) return compact;
+  switch (countryCode.toUpperCase()) {
+    case 'CA':
+    case 'US':
+      return compact.slice(0, 3);
+    case 'GB':
+      // UK inward code is always exactly 3 characters (digit+letter+letter);
+      // everything before it is the outward code/zone key, 2-4 characters.
+      return compact.length > 3 ? compact.slice(0, -3) : compact;
+    default:
+      return compact;
+  }
+}
+
 /**
  * Resolve a destination country+postcode to its pricing Zone. Some
- * countries (currently AU/NZ/CA) have postcode-level zones imported into
- * PostcodeZone (e.g. "Australia 2") that are more specific than the
+ * countries (currently AU/NZ/CA/GB/US) have postcode-level zones imported
+ * into PostcodeZone (e.g. "Australia 2") that are more specific than the
  * single country-wide CountryZone mapping — those take priority when the
  * postcode is known.
  *
@@ -67,15 +92,16 @@ async function resolveZoneForCountry(countryCode) {
  * reflect the real regional pricing the postcode data was imported for, so
  * instead we block with a message telling the customer to call in rather
  * than silently mis-price the shipment. Only countries with no postcode-level
- * data at all (e.g. US, Germany, Singapore...) use the plain country-level
- * zone, unchanged from before.
+ * data at all (e.g. Germany, Singapore...) use the plain country-level zone,
+ * unchanged from before.
  */
 async function resolveZoneForDestination(countryCode, postcode) {
   const cc = countryCode.toUpperCase();
 
   if (postcode) {
+    const matchKey = extractZoneMatchKey(cc, postcode);
     const mapping = await prisma.postcodeZone.findUnique({
-      where: { countryCode_postcode: { countryCode: cc, postcode: String(postcode).trim() } },
+      where: { countryCode_postcode: { countryCode: cc, postcode: matchKey } },
       include: { zone: true },
     });
     if (mapping) return mapping.zone;
@@ -363,6 +389,7 @@ module.exports = {
   calcVolumetricWeightKg,
   calcChargeableWeightKg,
   resolveZoneForCountry,
+  extractZoneMatchKey,
   resolveZoneForDestination,
   resolveFromZoneForPostcode,
   findRateBracket,

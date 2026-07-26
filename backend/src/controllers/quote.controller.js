@@ -165,10 +165,10 @@ async function getInstantQuote(req, res, next) {
 // Destination dropdown is limited to the countries actually covered by the
 // Total Zones - Zones source file (postcode-level pricing data) — IN is in
 // that file too, but only as an origin/pickup country, not a destination.
-// Other CountryZone rows (US, UK, Germany...) are left in the database
+// Other CountryZone rows (Germany, Singapore...) are left in the database
 // untouched, just not offered here, since they have no postcode-level data
 // backing them.
-const DESTINATION_COUNTRY_CODES = ['AU', 'NZ', 'CA'];
+const DESTINATION_COUNTRY_CODES = ['AU', 'NZ', 'CA', 'GB', 'US'];
 
 /** GET /api/quote/countries — for the destination dropdown, grouped by zone */
 async function listCountries(req, res, next) {
