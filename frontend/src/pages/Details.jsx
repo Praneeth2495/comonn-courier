@@ -98,19 +98,24 @@ export default function Details() {
 
   const norm = (s) => (s || '').trim().toLowerCase();
   // Only surface saved addresses that actually match this quote's chosen
-  // pickup/destination — not the customer's whole address book.
+  // pickup/destination — not the customer's whole address book. Matched by
+  // postcode alone (the actual pricing-critical field), not also city/state
+  // — those are just descriptive strings that often don't match verbatim
+  // between an autofilled suggestion ("Victoria") and however an address
+  // was saved previously ("Vic"), which made this filter exclude clearly-
+  // relevant saved addresses in practice.
   const senderSavedAddresses = savedAddresses.filter(
-    (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode) && norm(a.city) === norm(sender.city) && norm(a.state) === norm(sender.state)
+    (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode)
   );
   // When receiver fields are locked, a saved address must also match the
-  // quote's postcode/city/state — otherwise picking one would silently
-  // overwrite the locked (disabled-but-still-controlled) fields with a
-  // different address than what was actually priced. Staff/admin editing
-  // freely aren't bound by that — country match is enough for them.
+  // quote's postcode — otherwise picking one would silently overwrite the
+  // locked (disabled-but-still-controlled) fields with a different address
+  // than what was actually priced. Staff/admin editing freely aren't bound
+  // by that — country match is enough for them.
   const receiverSavedAddresses = savedAddresses.filter((a) => {
     if (!quoteInput?.destinationCountryCode || a.countryCode !== quoteInput.destinationCountryCode) return false;
     if (!receiverLocked) return true;
-    return receiver.postcode && norm(a.postcode) === norm(receiver.postcode) && norm(a.city) === norm(receiver.city) && norm(a.state) === norm(receiver.state);
+    return receiver.postcode && norm(a.postcode) === norm(receiver.postcode);
   });
 
   if (!quoteInput || (!selectedQuote && !pricingPending)) {
