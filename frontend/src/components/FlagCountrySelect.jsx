@@ -59,7 +59,7 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
       // wider than "IN" in this font, crowding the fixed-position chevron
       // background-image with no gap — a few extra px here fixes that for
       // every code rather than just the one that happened to be showing.
-      style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer', width: 88 }}
+      style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer', width: 80 }}
     >
       <button
         type="button"
