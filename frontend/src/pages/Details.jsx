@@ -107,16 +107,29 @@ export default function Details() {
   const senderSavedAddresses = savedAddresses.filter(
     (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode)
   );
-  // When receiver fields are locked, a saved address must also match the
-  // quote's postcode — otherwise picking one would silently overwrite the
-  // locked (disabled-but-still-controlled) fields with a different address
-  // than what was actually priced. Staff/admin editing freely aren't bound
-  // by that — country match is enough for them.
-  const receiverSavedAddresses = savedAddresses.filter((a) => {
-    if (!quoteInput?.destinationCountryCode || a.countryCode !== quoteInput.destinationCountryCode) return false;
-    if (!receiverLocked) return true;
-    return receiver.postcode && norm(a.postcode) === norm(receiver.postcode);
-  });
+  // Matched by destination country only — requiring an exact postcode
+  // match too meant the dropdown only ever appeared for a destination
+  // postcode shipped to before, making it effectively invisible for any
+  // new destination. Postcode-mismatch safety for locked receivers is
+  // handled at selection time instead (see pickSavedReceiverAddress) by
+  // never letting the pick touch the locked postcode/city/state/country.
+  const receiverSavedAddresses = savedAddresses.filter(
+    (a) => quoteInput?.destinationCountryCode && a.countryCode === quoteInput.destinationCountryCode
+  );
+
+  // When receiver fields are locked (regular customers), only reuse the
+  // saved address's contact details — keep the locked postcode/city/state/
+  // country exactly as quoted/priced, so picking a saved address can never
+  // silently drift the destination away from what was actually priced.
+  function pickSavedReceiverAddress(id) {
+    const a = savedAddresses.find((s) => s.id === id);
+    if (!a) return;
+    if (!receiverLocked) {
+      setReceiver(fromSavedAddress(a));
+      return;
+    }
+    setReceiver((prev) => ({ ...fromSavedAddress(a), postcode: prev.postcode, city: prev.city, state: prev.state, countryCode: prev.countryCode }));
+  }
 
   if (!quoteInput || (!selectedQuote && !pricingPending)) {
     return (
@@ -304,8 +317,8 @@ export default function Details() {
               autoFillNote={receiverLocked ? "Locked to your quote's destination postcode — go back to the Book page to change it" : "Country auto-filled from your quote's destination"}
               hideCityStatePlaceholder
               savedAddresses={receiverSavedAddresses}
-              onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setReceiver(fromSavedAddress(a)); }}
-              lockedFields={receiverLocked ? ['postcode', 'city', 'state'] : []}
+              onSelectSaved={pickSavedReceiverAddress}
+              lockedFields={receiverLocked ? ['postcode', 'city', 'state', 'countryCode'] : []}
             />
           </div>
 
