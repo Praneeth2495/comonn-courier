@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /driver
+Disallow: /details
+Disallow: /payment
+Disallow: /pay/
+Disallow: /labels
+Disallow: /set-password
+Disallow: /forgot-password
+
+Sitemap: https://www.comonn.in/sitemap.xml
