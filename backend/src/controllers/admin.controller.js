@@ -407,6 +407,43 @@ async function setUserRole(req, res, next) {
       where: { id: req.params.id },
       data: { role, isActive },
     });
+
+    // New (or newly re-promoted) staff start with full visibility into
+    // everything that already exists — every current destination zone and
+    // every current origin state — rather than the strict opt-in blank
+    // slate, so their Bookings/Pickup Orders tabs aren't empty until an
+    // admin manually assigns them. Only applies when they have zero
+    // assignments already, so deliberately narrowing a staff member down
+    // later (e.g. toggling isActive here afterwards) doesn't get silently
+    // undone on a subsequent call.
+    if (role === 'STAFF') {
+      const [zoneCount, regionCount] = await Promise.all([
+        prisma.staffZoneAssignment.count({ where: { userId: user.id } }),
+        prisma.staffRegionAssignment.count({ where: { userId: user.id } }),
+      ]);
+      if (zoneCount === 0) {
+        const zones = await prisma.zone.findMany({ where: { kind: 'destination' } });
+        if (zones.length) {
+          await prisma.staffZoneAssignment.createMany({
+            data: zones.map((z) => ({ userId: user.id, zoneId: z.id })),
+          });
+        }
+      }
+      if (regionCount === 0) {
+        const rows = await prisma.postcodeSuggestion.findMany({
+          where: { countryCode: 'IN' },
+          distinct: ['state'],
+          select: { state: true },
+        });
+        const states = rows.map((r) => r.state).filter(Boolean);
+        if (states.length) {
+          await prisma.staffRegionAssignment.createMany({
+            data: states.map((state) => ({ userId: user.id, state, region: null })),
+          });
+        }
+      }
+    }
+
     res.json({ user });
   } catch (err) {
     next(err);
