@@ -106,16 +106,17 @@ export default function Details() {
   const senderSavedAddresses = savedAddresses.filter(
     (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode) && norm(a.city) === norm(sender.city) && norm(a.state) === norm(sender.state)
   );
-  // Same full-match requirement for the destination: country, postcode,
-  // city, and state must all match.
+  // Destination match: country, postcode, and city/suburb — state is
+  // deliberately excluded here, since it's the field most likely to be
+  // spelled differently between a saved address and the quote's autofill
+  // (e.g. "VIC" vs "Victoria") without actually being a different address.
   const receiverSavedAddresses = savedAddresses.filter(
     (a) =>
       quoteInput?.destinationCountryCode &&
       a.countryCode === quoteInput.destinationCountryCode &&
       receiver.postcode &&
       norm(a.postcode) === norm(receiver.postcode) &&
-      norm(a.city) === norm(receiver.city) &&
-      norm(a.state) === norm(receiver.state)
+      norm(a.city) === norm(receiver.city)
   );
 
   // When receiver fields are locked (regular customers), only reuse the
