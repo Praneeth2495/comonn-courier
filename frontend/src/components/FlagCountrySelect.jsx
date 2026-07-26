@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import CountryFlag from './CountryFlag';
 
 // Replaces a native <select> for a country-code field. Native <option>
@@ -7,17 +8,42 @@ import CountryFlag from './CountryFlag';
 // rectangular flag (see CountryFlag) instead of relying on the OS/browser's
 // flag emoji glyph, which several platforms render as a generic wavy-flag
 // icon rather than a flat rectangle.
+//
+// The option list is rendered into a portal (document.body) rather than as
+// a normal child — this field always sits inside .input-group, which has
+// overflow:hidden for its own rounded-corner divider look, so a normal
+// absolutely-positioned child would be invisibly clipped there.
 export default function FlagCountrySelect({ value, options, onChange, disabled }) {
   const [open, setOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState(null);
   const ref = useRef(null);
 
   useEffect(() => {
     function onClickOutside(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target) && !e.target.closest('[data-flag-select-menu]')) {
+        setOpen(false);
+      }
+    }
+    function onScrollOrResize() {
+      setOpen(false);
     }
     document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+    window.addEventListener('scroll', onScrollOrResize, true);
+    window.addEventListener('resize', onScrollOrResize);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      window.removeEventListener('scroll', onScrollOrResize, true);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
   }, []);
+
+  function toggleOpen() {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setMenuPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    }
+    setOpen((v) => !v);
+  }
 
   function choose(code) {
     setOpen(false);
@@ -25,26 +51,37 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
   }
 
   return (
-    <div ref={ref} className="flag" style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer' }}>
+    <div
+      ref={ref}
+      className="flag"
+      style={{
+        position: 'relative', cursor: disabled ? 'default' : 'pointer',
+        // The chevron background-image on .flag is a native-<select> leftover
+        // (a dropdown-arrow indicator) — this is a custom button now, and it
+        // read as clutter sitting right next to the flag, so drop it here.
+        backgroundImage: 'none', paddingRight: 10,
+      }}
+    >
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleOpen}
         style={{
           display: 'flex', alignItems: 'center', gap: 6, width: '100%', height: '100%',
           background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'inherit',
           cursor: disabled ? 'default' : 'pointer',
         }}
       >
-        <CountryFlag code={value} />
+        <CountryFlag code={value} width={26} height={18} />
         <span>{value || ''}</span>
       </button>
-      {open && !disabled && options?.length > 0 && (
+      {open && !disabled && options?.length > 0 && menuPos && createPortal(
         <div
+          data-flag-select-menu
           className="card"
           style={{
-            position: 'absolute', top: '100%', left: 0, marginTop: 4, padding: 4,
-            minWidth: 120, maxHeight: 220, overflowY: 'auto', zIndex: 30,
+            position: 'fixed', top: menuPos.top, left: menuPos.left, marginTop: 0, padding: 4,
+            width: Math.max(menuPos.width, 92), maxHeight: 220, overflowY: 'auto', zIndex: 500,
           }}
         >
           {options.map((code) => (
@@ -55,11 +92,12 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
               onClick={() => choose(code)}
               style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}
             >
-              <CountryFlag code={code} />
+              <CountryFlag code={code} width={26} height={18} />
               <span>{code}</span>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
