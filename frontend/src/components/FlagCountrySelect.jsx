@@ -54,13 +54,7 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
     <div
       ref={ref}
       className="flag"
-      style={{
-        position: 'relative', cursor: disabled ? 'default' : 'pointer',
-        // The chevron background-image on .flag is a native-<select> leftover
-        // (a dropdown-arrow indicator) — this is a custom button now, and it
-        // read as clutter sitting right next to the flag, so drop it here.
-        backgroundImage: 'none', paddingRight: 10,
-      }}
+      style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer' }}
     >
       <button
         type="button"
@@ -72,7 +66,7 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
           cursor: disabled ? 'default' : 'pointer',
         }}
       >
-        <CountryFlag code={value} width={26} height={18} />
+        <CountryFlag code={value} width={22} height={15} />
         <span>{value || ''}</span>
       </button>
       {open && !disabled && options?.length > 0 && menuPos && createPortal(
@@ -92,7 +86,7 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
               onClick={() => choose(code)}
               style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}
             >
-              <CountryFlag code={code} width={26} height={18} />
+              <CountryFlag code={code} width={22} height={15} />
               <span>{code}</span>
             </button>
           ))}
