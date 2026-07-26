@@ -277,7 +277,14 @@ export default function Details() {
                     : 'India'}
                 </p>
               </div>
-              <div className="addr-block"><div className="lbl">Destination</div><p>{pricingPending ? quoteInput.destinationCountryName : selectedQuote.zone.name}</p></div>
+              <div className="addr-block">
+                <div className="lbl">Destination</div>
+                <p>
+                  {quoteInput.destinationPostcode
+                    ? [quoteInput.destinationPostcode, quoteInput.destinationSuburb, quoteInput.destinationState].filter(Boolean).join(', ')
+                    : pricingPending ? quoteInput.destinationCountryName : selectedQuote.zone.name}
+                </p>
+              </div>
             </div>
 
             {quoteInput.items.map((it, idx) => (

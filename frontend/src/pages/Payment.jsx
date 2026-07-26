@@ -295,7 +295,18 @@ export default function Payment() {
           await client.post(`/payments/${order.id}/confirm`, response);
           const succeeded = await pollForSuccess();
           if (succeeded) {
-            setBooking({});
+            // Merge in the now-PAID status (and anything else that
+            // changed) rather than discarding it — `setBooking({})` here
+            // used to be a no-op (spreading {} onto existing state changes
+            // nothing), silently leaving the order's stale pre-payment
+            // status in context. If the customer then navigated back to
+            // Details, it still looked editable client-side even though
+            // the server had already moved past that — producing "This
+            // order can no longer be edited" on resubmit. Keep the
+            // richer address/items/service data already in context
+            // (this endpoint's response doesn't include those).
+            const { data } = await client.get(`/orders/${order.id}`);
+            setBooking({ order: { ...order, ...data.order } });
             navigate('/labels');
           } else {
             setError('Payment is processing — refresh in a moment or check your order status.');
@@ -401,12 +412,17 @@ export default function Payment() {
     }
     setSubmitting(true);
     try {
-      // Mirrors the Razorpay success handler: keep the full order (with
-      // senderAddress/receiverAddress) already in context from Details.jsx's
-      // creation response rather than overwriting it with this endpoint's
-      // response, which only includes `payment`.
-      await client.post(`/payments/${order.id}/cash`);
-      setBooking({});
+      // Merge in the now-PICKUP_CONFIRMED status (and trackingNumber, etc.)
+      // rather than discarding it — `setBooking({})` here used to be a
+      // no-op (spreading {} onto existing state changes nothing), silently
+      // leaving the order's stale pre-confirmation status in context. If
+      // the customer then navigated back to Details, it still looked
+      // editable client-side even though the server had already moved
+      // past that — producing "This order can no longer be edited" on
+      // resubmit. Keep the richer address/items/service data already in
+      // context (this endpoint's response doesn't include those).
+      const { data } = await client.post(`/payments/${order.id}/cash`);
+      setBooking({ order: { ...order, ...data.order } });
       navigate('/labels');
     } catch (err) {
       setError(err.response?.data?.error || 'Could not confirm the booking.');
