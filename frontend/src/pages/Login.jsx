@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
+import PasswordToggle from '../components/PasswordToggle';
 
 export default function Login() {
   const { login } = useAuth();
@@ -60,9 +61,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <button type="button" className="toggle" onClick={() => setShowPassword((s) => !s)}>
-                {showPassword ? 'HIDE' : 'SHOW'}
-              </button>
+              <PasswordToggle shown={showPassword} onToggle={() => setShowPassword((s) => !s)} />
             </div>
             <span className="form-foot-link"><Link to="/forgot-password">Forgot password?</Link></span>
           </div>
