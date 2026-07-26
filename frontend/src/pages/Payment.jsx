@@ -71,9 +71,34 @@ export default function Payment() {
   const [error, setError] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
   const [sendLinkStatus, setSendLinkStatus] = useState('');
+  const [paymentJustConfirmed, setPaymentJustConfirmed] = useState(false);
 
   const didInitialSync = useRef(false);
   const addonsSeqRef = useRef(0);
+
+  // While staff are on this same order screen after sending (or about to
+  // send) a payment link, poll for the customer actually completing
+  // payment elsewhere — so they see it confirmed here without needing to
+  // navigate away and back. Stops as soon as the order moves past
+  // "awaiting payment" (whether via this Razorpay webhook or any other
+  // route, e.g. staff marking it paid manually).
+  useEffect(() => {
+    if (!['ADMIN', 'STAFF'].includes(user?.role)) return;
+    if (!order?.id || !PAYABLE_STATUSES.includes(order.status)) return;
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await client.get(`/orders/${order.id}`);
+        if (!PAYABLE_STATUSES.includes(data.order.status)) {
+          setOrder(data.order);
+          setPaymentJustConfirmed(true);
+          clearInterval(interval);
+        }
+      } catch {
+        // transient network error — just try again next tick
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [order?.id, order?.status, user?.role]);
 
   // Sync default add-on state (free warranty tier, today's DG ack, first pickup date) to the order.
   async function syncDefaultAddons(orderId) {
@@ -452,10 +477,17 @@ export default function Payment() {
         <div className="section" style={{ paddingTop: 20 }}>
           <div className="wrap" style={{ maxWidth: 560, margin: '0 auto' }}>
             <button type="button" className="btn btn-outline btn-sm" style={{ marginBottom: 16 }} onClick={() => navigate('/details')}>← Back</button>
+            {paymentJustConfirmed && (
+              <div className="card" style={{ padding: '16px 22px', marginBottom: 16, background: '#E9F9EE', border: '1px solid #BEE8CB' }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#1E8E3E' }}>✓ Payment received — the customer just completed payment for this order.</p>
+              </div>
+            )}
             <div className="card" style={{ padding: 26 }}>
-              <h3 style={{ marginBottom: 4 }}>Updated invoice</h3>
+              <h3 style={{ marginBottom: 4 }}>{paymentJustConfirmed ? 'Payment confirmed' : 'Updated invoice'}</h3>
               <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>
-                This booking's details were just edited. Totals below reflect the updated information.
+                {paymentJustConfirmed
+                  ? 'This order is now paid. Totals below reflect the final invoice.'
+                  : "This booking's details were just edited. Totals below reflect the updated information."}
               </p>
               <div className="sum-line"><span>{order.service?.name || 'Shipping'} (incl. GST)</span><span className="v">₹{(Number(order.baseFreight) + Number(order.surchargesTotal)).toFixed(2)}</span></div>
               {order.addons?.map((a) => (
