@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import LoadingLogo from '../components/LoadingLogo';
+import CountryFlag from '../components/CountryFlag';
+import FlagCountrySelect from '../components/FlagCountrySelect';
 
 const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
 
@@ -11,14 +13,6 @@ const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i
 // customer could pack at their chosen weight before it costs more than the
 // actual-weight price (final pricing still runs server-side on the Quote page).
 const STANDARD_DIVISOR = 5000;
-
-// Converts an ISO alpha-2 country code into its flag emoji (regional
-// indicator symbols), so the destination field can show a flag the same
-// way the origin field's fixed "🇮🇳 IN" does, for any country.
-function countryFlagEmoji(code) {
-  if (!code || code.length !== 2) return '';
-  return [...code.toUpperCase()].map((c) => String.fromCodePoint(127397 + c.charCodeAt(0))).join('');
-}
 
 function maxDimsHint(weightPreset) {
   if (!weightPreset || weightPreset === 'Not sure') return null;
@@ -54,99 +48,12 @@ function IndiaChakra() {
   );
 }
 
-function FlagAustralia() {
-  return (
-    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
-      <rect width="60" height="40" fill="#00247D" />
-      <rect x="0" y="0" width="30" height="20" fill="#00247D" />
-      <line x1="0" y1="0" x2="30" y2="20" stroke="#FFFFFF" strokeWidth="4" />
-      <line x1="30" y1="0" x2="0" y2="20" stroke="#FFFFFF" strokeWidth="4" />
-      <line x1="0" y1="0" x2="30" y2="20" stroke="#CF142B" strokeWidth="1.6" />
-      <line x1="30" y1="0" x2="0" y2="20" stroke="#CF142B" strokeWidth="1.6" />
-      <rect x="12" y="0" width="6" height="20" fill="#FFFFFF" />
-      <rect x="0" y="7" width="30" height="6" fill="#FFFFFF" />
-      <rect x="13.5" y="0" width="3" height="20" fill="#CF142B" />
-      <rect x="0" y="8.5" width="30" height="3" fill="#CF142B" />
-      <circle cx="15" cy="29" r="3" fill="#FFFFFF" />
-      <circle cx="46" cy="9" r="2.6" fill="#FFFFFF" />
-      <circle cx="51" cy="18" r="2.6" fill="#FFFFFF" />
-      <circle cx="46" cy="29" r="2.6" fill="#FFFFFF" />
-      <circle cx="39" cy="24" r="2" fill="#FFFFFF" />
-      <circle cx="41" cy="14" r="1.8" fill="#FFFFFF" />
-    </svg>
-  );
-}
-
-function FlagCanada() {
-  return (
-    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
-      <rect width="60" height="40" fill="#FFFFFF" />
-      <rect x="0" y="0" width="15" height="40" fill="#D52B1E" />
-      <rect x="45" y="0" width="15" height="40" fill="#D52B1E" />
-      <path d="M30 8 L32 15 L38 13 L34 19 L39 22 L33 23 L34 30 L30 26 L26 30 L27 23 L21 22 L26 19 L22 13 L28 15 Z" fill="#D52B1E" />
-    </svg>
-  );
-}
-
-function FlagNewZealand() {
-  return (
-    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
-      <rect width="60" height="40" fill="#00247D" />
-      <rect x="0" y="0" width="30" height="20" fill="#00247D" />
-      <line x1="0" y1="0" x2="30" y2="20" stroke="#FFFFFF" strokeWidth="4" />
-      <line x1="30" y1="0" x2="0" y2="20" stroke="#FFFFFF" strokeWidth="4" />
-      <line x1="0" y1="0" x2="30" y2="20" stroke="#CF142B" strokeWidth="1.6" />
-      <line x1="30" y1="0" x2="0" y2="20" stroke="#CF142B" strokeWidth="1.6" />
-      <rect x="12" y="0" width="6" height="20" fill="#FFFFFF" />
-      <rect x="0" y="7" width="30" height="6" fill="#FFFFFF" />
-      <rect x="13.5" y="0" width="3" height="20" fill="#CF142B" />
-      <rect x="0" y="8.5" width="30" height="3" fill="#CF142B" />
-      <circle cx="46" cy="9" r="2.8" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
-      <circle cx="52" cy="17" r="2.4" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
-      <circle cx="46" cy="27" r="2.8" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
-      <circle cx="41" cy="20" r="2.2" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
-    </svg>
-  );
-}
-
-function FlagUK() {
-  return (
-    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
-      <rect width="60" height="40" fill="#00247D" />
-      <line x1="0" y1="0" x2="60" y2="40" stroke="#FFFFFF" strokeWidth="7" />
-      <line x1="60" y1="0" x2="0" y2="40" stroke="#FFFFFF" strokeWidth="7" />
-      <line x1="0" y1="0" x2="60" y2="40" stroke="#CF142B" strokeWidth="3" />
-      <line x1="60" y1="0" x2="0" y2="40" stroke="#CF142B" strokeWidth="3" />
-      <rect x="24" y="0" width="12" height="40" fill="#FFFFFF" />
-      <rect x="0" y="14" width="60" height="12" fill="#FFFFFF" />
-      <rect x="27" y="0" width="6" height="40" fill="#CF142B" />
-      <rect x="0" y="17" width="60" height="6" fill="#CF142B" />
-    </svg>
-  );
-}
-
-function FlagUSA() {
-  return (
-    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg">
-      <rect width="60" height="40" fill="#FFFFFF" />
-      <rect x="0" y="0" width="60" height="3.08" fill="#B22234" />
-      <rect x="0" y="6.15" width="60" height="3.08" fill="#B22234" />
-      <rect x="0" y="12.3" width="60" height="3.08" fill="#B22234" />
-      <rect x="0" y="18.46" width="60" height="3.08" fill="#B22234" />
-      <rect x="0" y="24.6" width="60" height="3.08" fill="#B22234" />
-      <rect x="0" y="30.77" width="60" height="3.08" fill="#B22234" />
-      <rect x="0" y="36.9" width="60" height="3.08" fill="#B22234" />
-      <rect x="0" y="0" width="26" height="21.5" fill="#3C3B6E" />
-    </svg>
-  );
-}
-
 const COUNTRIES = [
-  { name: 'Australia', Flag: FlagAustralia },
-  { name: 'Canada', Flag: FlagCanada },
-  { name: 'New Zealand', Flag: FlagNewZealand },
-  { name: 'UK', Flag: FlagUK },
-  { name: 'USA', Flag: FlagUSA },
+  { name: 'Australia', code: 'AU' },
+  { name: 'Canada', code: 'CA' },
+  { name: 'New Zealand', code: 'NZ' },
+  { name: 'UK', code: 'GB' },
+  { name: 'USA', code: 'US' },
 ];
 
 const HIW_STEPS = [
@@ -383,7 +290,7 @@ export default function Home() {
               <div className="field" style={{ position: 'relative' }}>
                 <label>Origin</label>
                 <div className="input-group" style={{ position: 'relative' }}>
-                  <select className="flag" disabled defaultValue="🇮🇳 IN"><option>🇮🇳 IN</option></select>
+                  <FlagCountrySelect value="IN" options={['IN']} disabled />
                   <input
                     placeholder="Pickup pincode"
                     value={originFocused || !originPicked ? originPostcode : `${originPostcode}, ${originPicked.suburb}, ${originPicked.state}`}
@@ -416,11 +323,11 @@ export default function Home() {
               <div className="field" style={{ marginBottom: 14, position: 'relative' }}>
                 <label>Destination</label>
                 <div className="input-group" style={{ position: 'relative' }}>
-                  <select className="flag" value={destinationCountryCode} onChange={(e) => handleDestinationCountryChange(e.target.value)}>
-                    {countries.map((c) => (
-                      <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryCode}</option>
-                    ))}
-                  </select>
+                  <FlagCountrySelect
+                    value={destinationCountryCode}
+                    options={countries.map((c) => c.countryCode)}
+                    onChange={handleDestinationCountryChange}
+                  />
                   <input
                     placeholder="Destination postcode"
                     disabled={!destinationCountryCode}
@@ -559,9 +466,9 @@ export default function Home() {
           <h2 className="h-md">Countries we're servicing</h2>
         </div>
         <div className="wrap country-row">
-          {COUNTRIES.map(({ name, Flag }) => (
+          {COUNTRIES.map(({ name, code }) => (
             <div className="country-card" key={name}>
-              <div className="flag-img"><Flag /></div>
+              <div className="flag-img"><CountryFlag code={code} width="100%" height="100%" /></div>
               <span>{name}</span>
             </div>
           ))}

@@ -5,6 +5,7 @@ import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import LoadingLogo from '../components/LoadingLogo';
+import FlagCountrySelect from '../components/FlagCountrySelect';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 
@@ -25,14 +26,6 @@ function volumetricWeightNote(it) {
   const volumetricWeightKg = Math.ceil((l * w * h) / STANDARD_DIVISOR);
   if (volumetricWeightKg <= actualWeightKg) return null;
   return { l, w, h, actualWeightKg, volumetricWeightKg };
-}
-
-// Converts an ISO alpha-2 country code into its flag emoji (regional
-// indicator symbols), so the destination field can show a flag the same
-// way the origin field's fixed "🇮🇳 IN" does, for any country.
-function countryFlagEmoji(code) {
-  if (!code || code.length !== 2) return '';
-  return [...code.toUpperCase()].map((c) => String.fromCodePoint(127397 + c.charCodeAt(0))).join('');
 }
 
 function maxDimsHint(weightPreset) {
@@ -447,7 +440,7 @@ export default function Quote() {
             <div className="field" style={{ position: 'relative' }}>
               <label>Origin</label>
               <div className="input-group" style={{ position: 'relative' }}>
-                <select className="flag" disabled defaultValue="🇮🇳 IN"><option>🇮🇳 IN</option></select>
+                <FlagCountrySelect value="IN" options={['IN']} disabled />
                 <input
                   placeholder="Pickup pincode"
                   value={originFocused || !originPicked ? originPostcode : `${originPostcode}, ${originPicked.suburb}, ${originPicked.state}`}
@@ -477,11 +470,11 @@ export default function Quote() {
             <div className="field" style={{ position: 'relative' }}>
               <label>Destination</label>
               <div className="input-group" style={{ position: 'relative' }}>
-                <select className="flag" required value={destinationCountryCode} onChange={(e) => handleDestinationCountryChange(e.target.value)}>
-                  {countries.map((c) => (
-                    <option key={c.countryCode} value={c.countryCode}>{countryFlagEmoji(c.countryCode)} {c.countryCode}</option>
-                  ))}
-                </select>
+                <FlagCountrySelect
+                  value={destinationCountryCode}
+                  options={countries.map((c) => c.countryCode)}
+                  onChange={handleDestinationCountryChange}
+                />
                 <input
                   placeholder="Destination postcode"
                   disabled={!destinationCountryCode}
