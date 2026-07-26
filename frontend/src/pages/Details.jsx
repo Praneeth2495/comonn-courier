@@ -97,24 +97,25 @@ export default function Details() {
   const receiverLocked = !['ADMIN', 'STAFF'].includes(user?.role);
 
   const norm = (s) => (s || '').trim().toLowerCase();
-  // Only surface saved addresses that actually match this quote's chosen
-  // pickup/destination — not the customer's whole address book. Matched by
-  // postcode alone (the actual pricing-critical field), not also city/state
-  // — those are just descriptive strings that often don't match verbatim
-  // between an autofilled suggestion ("Victoria") and however an address
-  // was saved previously ("Vic"), which made this filter exclude clearly-
-  // relevant saved addresses in practice.
+  // Only surface saved addresses that fully match this quote's chosen
+  // pickup — postcode, city, and state all have to match (case/whitespace
+  // normalized). Note: this means a saved address whose city/state was
+  // typed differently from however the quote's postcode-suggestion autofill
+  // spells it (e.g. "Vic" vs "Victoria") won't show up even though it's the
+  // same real address — known and intentional per explicit request.
   const senderSavedAddresses = savedAddresses.filter(
-    (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode)
+    (a) => sender.postcode && norm(a.postcode) === norm(sender.postcode) && norm(a.city) === norm(sender.city) && norm(a.state) === norm(sender.state)
   );
-  // Matched by destination country only — requiring an exact postcode
-  // match too meant the dropdown only ever appeared for a destination
-  // postcode shipped to before, making it effectively invisible for any
-  // new destination. Postcode-mismatch safety for locked receivers is
-  // handled at selection time instead (see pickSavedReceiverAddress) by
-  // never letting the pick touch the locked postcode/city/state/country.
+  // Same full-match requirement for the destination: country, postcode,
+  // city, and state must all match.
   const receiverSavedAddresses = savedAddresses.filter(
-    (a) => quoteInput?.destinationCountryCode && a.countryCode === quoteInput.destinationCountryCode
+    (a) =>
+      quoteInput?.destinationCountryCode &&
+      a.countryCode === quoteInput.destinationCountryCode &&
+      receiver.postcode &&
+      norm(a.postcode) === norm(receiver.postcode) &&
+      norm(a.city) === norm(receiver.city) &&
+      norm(a.state) === norm(receiver.state)
   );
 
   // When receiver fields are locked (regular customers), only reuse the
