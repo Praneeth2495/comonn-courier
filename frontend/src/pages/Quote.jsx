@@ -6,6 +6,7 @@ import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import LoadingLogo from '../components/LoadingLogo';
 import FlagCountrySelect from '../components/FlagCountrySelect';
+import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 
@@ -203,7 +204,8 @@ export default function Quote() {
   // dataset used on the Details page's address forms, offered here too so
   // the quote can reflect origin-zone pricing from the start, and so
   // Details.jsx can pre-fill the sender's postcode/city/state from it.
-  function handleOriginPostcodeChange(v) {
+  function handleOriginPostcodeChange(raw) {
+    const v = sanitizePostcode(raw, 'IN');
     setOriginPostcode(v);
     setOriginPicked(null);
     setOriginPostcodeNotFound(false);
@@ -244,7 +246,8 @@ export default function Quote() {
     clearTimeout(destinationDebounceRef.current);
   }
 
-  function handleDestinationPostcodeChange(v) {
+  function handleDestinationPostcodeChange(raw) {
+    const v = sanitizePostcode(raw, destinationCountryCode);
     setDestinationPostcode(v);
     setDestinationPicked(null);
     clearTimeout(destinationDebounceRef.current);
@@ -463,8 +466,10 @@ export default function Quote() {
                   ))}
                 </div>
               )}
-              {originPostcodeNotFound && (
+              {originPostcodeNotFound ? (
                 <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 6 }}>Postcode issue, please contact +919108038783.</p>
+              ) : (
+                <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>{getPostcodeRule('IN').hint}</p>
               )}
             </div>
             <div className="field" style={{ position: 'relative' }}>
@@ -497,6 +502,9 @@ export default function Quote() {
                     </button>
                   ))}
                 </div>
+              )}
+              {destinationCountryCode && (
+                <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>{getPostcodeRule(destinationCountryCode).hint}</p>
               )}
             </div>
           </div>

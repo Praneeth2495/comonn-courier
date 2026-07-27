@@ -5,6 +5,7 @@ import { useBooking } from '../api/BookingContext';
 import LoadingLogo from '../components/LoadingLogo';
 import CountryFlag from '../components/CountryFlag';
 import FlagCountrySelect from '../components/FlagCountrySelect';
+import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
 
 const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
 
@@ -122,7 +123,8 @@ export default function Home() {
   // offered here too so the pickup pincode carries forward to the Book
   // page (and from there, pre-fills the sender's address) instead of
   // having to be re-entered.
-  function handleOriginPostcodeChange(v) {
+  function handleOriginPostcodeChange(raw) {
+    const v = sanitizePostcode(raw, 'IN');
     setOriginPostcode(v);
     setOriginPicked(null);
     setOriginPostcodeNotFound(false);
@@ -163,7 +165,8 @@ export default function Home() {
     clearTimeout(destinationDebounceRef.current);
   }
 
-  function handleDestinationPostcodeChange(v) {
+  function handleDestinationPostcodeChange(raw) {
+    const v = sanitizePostcode(raw, destinationCountryCode);
     setDestinationPostcode(v);
     setDestinationPicked(null);
     clearTimeout(destinationDebounceRef.current);
@@ -313,8 +316,10 @@ export default function Home() {
                     ))}
                   </div>
                 )}
-                {originPostcodeNotFound && (
+                {originPostcodeNotFound ? (
                   <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 6 }}>Postcode issue, please contact +919108038783.</p>
+                ) : (
+                  <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>{getPostcodeRule('IN').hint}</p>
                 )}
               </div>
 
@@ -350,6 +355,9 @@ export default function Home() {
                       </button>
                     ))}
                   </div>
+                )}
+                {destinationCountryCode && (
+                  <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>{getPostcodeRule(destinationCountryCode).hint}</p>
                 )}
               </div>
 
@@ -433,7 +441,7 @@ export default function Home() {
             <h4>📦 Track your order</h4>
             <p>Punch in your order ID for live status, ETA and delivery proof.</p>
             <form className="track-inline" onSubmit={handleTrack}>
-              <input placeholder="Enter Order ID" value={trackId} onChange={(e) => setTrackId(e.target.value)} />
+              <input placeholder="Enter Order ID" inputMode="numeric" value={trackId} onChange={(e) => setTrackId(e.target.value.replace(/\D/g, ''))} />
               <button className="btn btn-primary btn-sm">Track</button>
             </form>
           </div>

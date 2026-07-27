@@ -6,6 +6,7 @@ import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
 import { PHONE_OPTIONS, getPhoneMeta } from '../utils/phoneCodes';
+import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
 
 const emptyAddress = (countryCode) => ({
   contactName: '',
@@ -384,7 +385,8 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
   const isLocked = (field) => lockedFields.includes(field);
   const phoneMeta = getPhoneMeta(value.dialCode);
 
-  function handlePostcodeChange(v) {
+  function handlePostcodeChange(raw) {
+    const v = sanitizePostcode(raw, value.countryCode);
     onChange('postcode', v);
     clearTimeout(debounceRef.current);
     if (!/^\d{6}$/.test(v) || value.countryCode !== 'IN') {
@@ -503,6 +505,9 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
                 </button>
               ))}
             </div>
+          )}
+          {!isLocked('postcode') && (
+            <p style={{ fontSize: 11, color: 'var(--slate-light)', marginTop: 4 }}>{getPostcodeRule(value.countryCode).hint}</p>
           )}
         </div>
         <div className="field" style={{ maxWidth: 220 }}>
