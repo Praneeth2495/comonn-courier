@@ -71,10 +71,10 @@ async function generateInvoicePdf(order) {
 
     doc.fontSize(10);
     doc.font('Helvetica-Bold').text('Invoice #  ', 50, doc.y, { continued: true });
-    doc.font('Helvetica').text(`INV-${order.orderNumber}      `, { continued: true });
-    doc.font('Helvetica-Bold').text('Order #  ', { continued: true });
-    doc.font('Helvetica').text(`${order.orderNumber}      `, { continued: true });
-    doc.font('Helvetica-Bold').text('Date  ', { continued: true });
+    doc.font('Helvetica').text(`INV-${order.orderNumber}`);
+    doc.font('Helvetica-Bold').text('Order #  ', 50, doc.y, { continued: true });
+    doc.font('Helvetica').text(`${order.orderNumber}`);
+    doc.font('Helvetica-Bold').text('Date  ', 50, doc.y, { continued: true });
     doc.font('Helvetica').text(new Date(order.createdAt).toLocaleDateString('en-IN'));
     doc.moveDown(1);
 
