@@ -5,10 +5,11 @@ import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
-import { getPhoneMeta } from '../utils/phoneCodes';
+import { PHONE_OPTIONS, getPhoneMeta } from '../utils/phoneCodes';
 
 const emptyAddress = (countryCode) => ({
   contactName: '',
+  dialCode: getPhoneMeta(countryCode).code,
   phoneNumber: '',
   email: '',
   instructions: '',
@@ -21,10 +22,14 @@ const emptyAddress = (countryCode) => ({
 });
 
 function fromSavedAddress(saved) {
-  const dial = getPhoneMeta(saved.countryCode).dial;
-  const phoneNumber = saved.phone?.startsWith(dial) ? saved.phone.slice(dial.length).trim() : saved.phone || '';
+  const byCountry = getPhoneMeta(saved.countryCode);
+  const meta = saved.phone?.startsWith(byCountry.dial)
+    ? byCountry
+    : PHONE_OPTIONS.find((p) => saved.phone?.startsWith(p.dial)) || byCountry;
+  const phoneNumber = saved.phone?.startsWith(meta.dial) ? saved.phone.slice(meta.dial.length).trim() : saved.phone || '';
   return {
     contactName: saved.contactName,
+    dialCode: meta.code,
     phoneNumber,
     email: saved.email || '',
     instructions: saved.instructions || '',
@@ -149,7 +154,7 @@ export default function Details() {
   function toAddressPayload(addr) {
     return {
       contactName: addr.contactName,
-      phone: `${getPhoneMeta(addr.countryCode).dial} ${addr.phoneNumber}`.trim(),
+      phone: `${getPhoneMeta(addr.dialCode).dial} ${addr.phoneNumber}`.trim(),
       email: addr.email,
       instructions: addr.instructions,
       line1: addr.line1,
@@ -377,7 +382,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
   const [pinSuggestions, setPinSuggestions] = useState([]);
   const debounceRef = useRef(null);
   const isLocked = (field) => lockedFields.includes(field);
-  const phoneMeta = getPhoneMeta(value.countryCode);
+  const phoneMeta = getPhoneMeta(value.dialCode);
 
   function handlePostcodeChange(v) {
     onChange('postcode', v);
@@ -424,7 +429,9 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         <div className="field">
           <label>Phone <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <div className="input-group">
-            <div className="dial-badge" title={getCountryName(value.countryCode)}>{phoneMeta.flag} {phoneMeta.dial}</div>
+            <select className="flag" value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
+              {PHONE_OPTIONS.map((p) => <option key={p.code} value={p.code}>{p.flag} {p.dial}</option>)}
+            </select>
             <input
               placeholder={`${phoneMeta.digits} digit number`}
               required
