@@ -425,7 +425,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
           <input className="input" placeholder="Enter full name" required value={value.contactName} onChange={(e) => onChange('contactName', e.target.value)} />
         </div>
         <div className="field">
-          <label>Phone</label>
+          <label>Phone <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <div className="input-group">
             <select className="flag" value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
               {COUNTRY_CODES.map((c) => <option key={c}>{c}</option>)}
