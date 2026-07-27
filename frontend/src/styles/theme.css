@@ -90,12 +90,6 @@ input,select,textarea{font-family:inherit;}
 .input,.select{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:11px 13px;font-size:14px;color:var(--ink);width:100%;outline:none;transition:border-color .12s,box-shadow .12s;}
 .input:focus,.select:focus{border-color:var(--cobalt);box-shadow:0 0 0 4px rgba(36,81,255,.1);}
 .input::placeholder{color:#AAB1C4;}
-/* iOS Safari auto-zooms the page on focus of any form control with a
-   computed font-size under 16px — bump every input/select to 16px on
-   mobile only, so focusing a field doesn't zoom the whole page in. */
-@media(max-width:640px){
-  .input,.select,.input-group input,.input-group .flag,.track-inline input,.track-box input,.search-box input{font-size:16px;}
-}
 .grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
 .form-stack{display:flex;flex-direction:column;gap:16px;}
@@ -618,4 +612,15 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @keyframes loading-logo-shadow{
   0%,100%{transform:translateX(-50%) scale(1);opacity:.5;}
   50%{transform:translateX(-50%) scale(.6);opacity:.2;}
+}
+
+/* iOS Safari auto-zooms the page on focus of any form control with a
+   computed font-size under 16px — bump every input/select to 16px on
+   mobile only, so focusing a field doesn't zoom the whole page in.
+   Kept at the very end of the file: several equal-specificity rules
+   above (.input-group input, .track-inline input, etc.) declare their
+   own smaller font-size, and CSS resolves ties by source order, so an
+   earlier override here would just lose to those later declarations. */
+@media(max-width:640px){
+  .input,.select,.input-group input,.input-group .flag,.track-inline input,.track-box input,.search-box input{font-size:16px;}
 }
