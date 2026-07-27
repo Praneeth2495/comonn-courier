@@ -378,7 +378,7 @@ export default function Home() {
 
                 {weightPreset === 'Not sure' ? (
                   <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
-                    We'll weigh and measure this at pickup, then collect payment in cash.
+                    We'll weigh and measure this at pickup, then collect payment.
                   </p>
                 ) : (
                   <>
