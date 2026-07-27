@@ -14,6 +14,7 @@ export default function Labels() {
   const [invoice, setInvoice] = useState(null);
   const [emailedTo, setEmailedTo] = useState(null);
   const [pricingPending, setPricingPending] = useState(false);
+  const [hasPassword, setHasPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const didGenerate = useRef(false);
@@ -24,6 +25,7 @@ export default function Labels() {
     client
       .post(`/labels/${order.id}/generate`)
       .then(({ data }) => {
+        setHasPassword(Boolean(data.hasPassword));
         if (data.pricingPending) {
           setPricingPending(true);
           setEmailedTo(data.emailedTo);
@@ -86,7 +88,7 @@ export default function Labels() {
               </div>
             )}
 
-            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} />
+            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} hasPassword={hasPassword} />
           </>
         )}
 
@@ -137,7 +139,7 @@ export default function Labels() {
               </div>
             )}
 
-            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} />
+            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} hasPassword={hasPassword} />
           </>
         )}
       </div>
@@ -152,7 +154,7 @@ export default function Labels() {
 // password" screen used from the account-creation email — the order id
 // itself (see issuePasswordSetLink) is enough to prove they just completed
 // this checkout with a verified email, so a fresh token is issued instantly.
-function GuestOrDashboardCta({ user, order, clearBooking, navigate }) {
+function GuestOrDashboardCta({ user, order, clearBooking, navigate, hasPassword }) {
   const [issuing, setIssuing] = useState(false);
   const [error, setError] = useState('');
 
@@ -161,6 +163,27 @@ function GuestOrDashboardCta({ user, order, clearBooking, navigate }) {
       <button className="btn btn-outline block" style={{ marginTop: 22 }} onClick={() => { clearBooking(); navigate('/dashboard'); }}>
         Go to my orders
       </button>
+    );
+  }
+
+  // The order's email already belongs to an account with a real,
+  // user-chosen password (either self-registered, or a guest account from
+  // an earlier order that already completed setup) — "Set up my password"
+  // would be confusing/wrong here, so send them to log in instead.
+  if (hasPassword) {
+    const email = order.otpEmail;
+    return (
+      <div style={{ marginTop: 22 }}>
+        <p style={{ fontSize: 13, color: 'var(--slate)', textAlign: 'center', marginBottom: 10 }}>
+          {email ? <>You already have an account with <b>{email}</b> — log in to track this order.</> : 'You already have an account — log in to track this order.'}
+        </p>
+        <button
+          className="btn btn-outline block"
+          onClick={() => { clearBooking(); navigate(email ? `/login?email=${encodeURIComponent(email)}` : '/login'); }}
+        >
+          Login →
+        </button>
+      </div>
     );
   }
 

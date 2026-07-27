@@ -5,12 +5,10 @@ import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
-
-const COUNTRY_CODES = ['🇮🇳 +91', '🇦🇺 +61', '🇨🇦 +1', '🇳🇿 +64', '🇬🇧 +44', '🇺🇸 +1', '🇪🇺 +32'];
+import { getPhoneMeta } from '../utils/phoneCodes';
 
 const emptyAddress = (countryCode) => ({
   contactName: '',
-  dialCode: COUNTRY_CODES[0],
   phoneNumber: '',
   email: '',
   instructions: '',
@@ -23,11 +21,10 @@ const emptyAddress = (countryCode) => ({
 });
 
 function fromSavedAddress(saved) {
-  const dial = COUNTRY_CODES.find((c) => saved.phone?.startsWith(c.split(' ')[1])) || COUNTRY_CODES[0];
-  const phoneNumber = saved.phone?.startsWith(dial.split(' ')[1]) ? saved.phone.slice(dial.split(' ')[1].length).trim() : saved.phone || '';
+  const dial = getPhoneMeta(saved.countryCode).dial;
+  const phoneNumber = saved.phone?.startsWith(dial) ? saved.phone.slice(dial.length).trim() : saved.phone || '';
   return {
     contactName: saved.contactName,
-    dialCode: dial,
     phoneNumber,
     email: saved.email || '',
     instructions: saved.instructions || '',
@@ -152,7 +149,7 @@ export default function Details() {
   function toAddressPayload(addr) {
     return {
       contactName: addr.contactName,
-      phone: `${addr.dialCode.split(' ')[1]} ${addr.phoneNumber}`.trim(),
+      phone: `${getPhoneMeta(addr.countryCode).dial} ${addr.phoneNumber}`.trim(),
       email: addr.email,
       instructions: addr.instructions,
       line1: addr.line1,
@@ -342,7 +339,6 @@ export default function Details() {
               savedAddresses={senderSavedAddresses}
               onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setSender(fromSavedAddress(a)); }}
               lockedFields={senderLocked ? ['postcode', 'city', 'state', 'countryCode'] : []}
-              enforceIndianPhone
             />
           </div>
 
@@ -377,10 +373,11 @@ export default function Details() {
   );
 }
 
-function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved, lockedFields = [], hideCityStatePlaceholder = false, enforceIndianPhone = false }) {
+function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved, lockedFields = [], hideCityStatePlaceholder = false }) {
   const [pinSuggestions, setPinSuggestions] = useState([]);
   const debounceRef = useRef(null);
   const isLocked = (field) => lockedFields.includes(field);
+  const phoneMeta = getPhoneMeta(value.countryCode);
 
   function handlePostcodeChange(v) {
     onChange('postcode', v);
@@ -403,7 +400,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
   }
 
   function handlePhoneChange(v) {
-    onChange('phoneNumber', enforceIndianPhone ? v.replace(/\D/g, '').slice(0, 10) : v);
+    onChange('phoneNumber', v.replace(/\D/g, '').slice(0, phoneMeta.digits));
   }
 
   return (
@@ -427,15 +424,16 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         <div className="field">
           <label>Phone <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <div className="input-group">
-            <select className="flag" value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
-              {COUNTRY_CODES.map((c) => <option key={c}>{c}</option>)}
-            </select>
+            <div className="dial-badge" title={getCountryName(value.countryCode)}>{phoneMeta.flag} {phoneMeta.dial}</div>
             <input
-              placeholder={enforceIndianPhone ? '10 digit number' : '00000 00000'}
+              placeholder={`${phoneMeta.digits} digit number`}
               required
               value={value.phoneNumber}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              {...(enforceIndianPhone ? { maxLength: 10, inputMode: 'numeric', pattern: '\\d{10}', title: 'Enter exactly 10 digits' } : {})}
+              maxLength={phoneMeta.digits}
+              inputMode="numeric"
+              pattern={`\\d{${phoneMeta.digits}}`}
+              title={`Enter exactly ${phoneMeta.digits} digits`}
             />
           </div>
         </div>

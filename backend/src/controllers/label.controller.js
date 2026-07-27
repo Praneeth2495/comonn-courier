@@ -288,6 +288,7 @@ async function generateLabel(req, res, next) {
         items: true,
         addons: true,
         payment: true,
+        user: true,
       },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
@@ -305,16 +306,18 @@ async function generateLabel(req, res, next) {
     // Label row, so the labels.length check below doesn't apply to them).
     if (order.pricingPending) {
       const emailedTo = order.senderAddress?.email || order.otpEmail || null;
+      let accountUser = order.user;
       if (!order.confirmationEmailSentAt && emailedTo) {
         // Still creates/links the guest's account (needed for the Labels
         // page's "Set up my password" button and the delayed account-setup
         // follow-up email) — just no longer embeds account-creation details
         // in this confirmation email itself.
-        await ensureCustomerAccount(order);
+        const accountInfo = await ensureCustomerAccount(order);
+        if (accountInfo?.user) accountUser = accountInfo.user;
         await sendBookingConfirmationEmail(order, emailedTo);
         await prisma.order.update({ where: { id: order.id }, data: { confirmationEmailSentAt: new Date() } });
       }
-      return res.json({ pricingPending: true, emailedTo });
+      return res.json({ pricingPending: true, emailedTo, hasPassword: Boolean(accountUser?.passwordSetAt) });
     }
 
     if (order.labels.length > 0) {
@@ -337,6 +340,7 @@ async function generateLabel(req, res, next) {
         labels: order.labels.map(toLabelResponse),
         invoice: toInvoiceResponse(invoice),
         emailedTo: order.otpEmail || null,
+        hasPassword: Boolean(order.user?.passwordSetAt),
       });
     }
 
@@ -379,7 +383,7 @@ async function generateLabel(req, res, next) {
     // "Set up my password" button and the delayed account-setup follow-up
     // email) — just no longer embeds account-creation details in this
     // labels/invoice email itself.
-    await ensureCustomerAccount(order);
+    const accountInfo = await ensureCustomerAccount(order);
     await emailLabelsAndInvoice(order, labels, invoice);
     await sendReceiverBookingNotification(order);
 
@@ -387,6 +391,7 @@ async function generateLabel(req, res, next) {
       labels: labels.map(toLabelResponse),
       invoice: toInvoiceResponse(invoice),
       emailedTo: order.otpEmail || null,
+      hasPassword: Boolean(accountInfo?.user?.passwordSetAt),
     });
   } catch (err) {
     next(err);
