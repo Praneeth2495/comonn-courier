@@ -66,14 +66,16 @@ async function generateInvoicePdf(order) {
       doc.font('Helvetica-Bold').fontSize(16).text('COMONN', 50, headerTop, { align: 'right', width: 495 });
     }
     doc.font('Helvetica-Bold').fontSize(20).text('Tax Invoice', 50, headerTop + 4);
-    doc.font('Helvetica').fontSize(10).text('International Courier', 50, doc.y + 2);
-    doc.y = headerTop + 50;
+    doc.y = headerTop + 36;
     doc.moveDown(1);
 
-    doc.font('Helvetica').fontSize(10);
-    line(doc, 'Invoice #', `INV-${order.orderNumber}`);
-    line(doc, 'Order #', order.orderNumber);
-    line(doc, 'Date', new Date(order.createdAt).toLocaleDateString('en-IN'));
+    doc.fontSize(10);
+    doc.font('Helvetica-Bold').text('Invoice #  ', 50, doc.y, { continued: true });
+    doc.font('Helvetica').text(`INV-${order.orderNumber}      `, { continued: true });
+    doc.font('Helvetica-Bold').text('Order #  ', { continued: true });
+    doc.font('Helvetica').text(`${order.orderNumber}      `, { continued: true });
+    doc.font('Helvetica-Bold').text('Date  ', { continued: true });
+    doc.font('Helvetica').text(new Date(order.createdAt).toLocaleDateString('en-IN'));
     doc.moveDown(1);
 
     const colTop = doc.y;
