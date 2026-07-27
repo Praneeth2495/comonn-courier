@@ -38,6 +38,12 @@ export default function BatchScanPanel() {
   const [showCamera, setShowCamera] = useState(false);
   const [preview, setPreview] = useState({}); // barcodeValue -> { matched, orderNumber, destination }
 
+  // Scanning a location's barcode from the saved-batches table to
+  // re-apply that location's status, without going through the full
+  // create/scan flow above.
+  const [scanningBatchId, setScanningBatchId] = useState(null);
+  const [batchScanLastCode, setBatchScanLastCode] = useState(null);
+
   // Live-resolves scanned codes to their orders as they're typed/scanned, so
   // a typo that happens to collide with a different real order is visible
   // immediately (before Apply), not just reported as an "updated" count.
@@ -215,6 +221,29 @@ export default function BatchScanPanel() {
     }
   }
 
+  function openBatchStatusScan(id) {
+    setBatchScanLastCode(null);
+    setScanningBatchId(id);
+  }
+
+  // Only location barcodes make sense here — a saved batch's status is one
+  // string applied to every item in it, unlike the create/scan flow which
+  // resolves individual shipment barcodes into batch items. Guards against
+  // re-alerting on the same unmatched code while the camera keeps scanning.
+  function handleBatchStatusScan(code) {
+    if (!scanningBatchId || !code || code === batchScanLastCode) return;
+    setBatchScanLastCode(code);
+    const loc = locations.find((l) => l.barcodeValue === code);
+    if (!loc) {
+      alert("That barcode doesn't match any saved location. Scan a location's barcode (see Barcode locations) to update status this way.");
+      return;
+    }
+    const id = scanningBatchId;
+    setScanningBatchId(null);
+    setBatchScanLastCode(null);
+    changeBatchStatus(id, loc.label);
+  }
+
   async function viewBatch(id) {
     setLoadingView(true);
     try {
@@ -369,16 +398,27 @@ export default function BatchScanPanel() {
                 <tr key={b.id}>
                   <td>{b.name}</td>
                   <td>
-                    <select
-                      className="select"
-                      style={{ padding: '6px 8px', fontSize: 12.5 }}
-                      value={b.status}
-                      disabled={changingId === b.id}
-                      onChange={(e) => changeBatchStatus(b.id, e.target.value)}
-                    >
-                      {!ORDER_STATUSES.includes(b.status) && <option value={b.status}>{b.status}</option>}
-                      {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
-                    </select>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <select
+                        className="select"
+                        style={{ padding: '6px 8px', fontSize: 12.5 }}
+                        value={b.status}
+                        disabled={changingId === b.id}
+                        onChange={(e) => changeBatchStatus(b.id, e.target.value)}
+                      >
+                        {!ORDER_STATUSES.includes(b.status) && <option value={b.status}>{b.status}</option>}
+                        {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                      </select>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        title="Scan a barcode location to set its status"
+                        disabled={changingId === b.id}
+                        onClick={() => openBatchStatusScan(b.id)}
+                      >
+                        📷
+                      </button>
+                    </div>
                   </td>
                   <td>{b._count.items}</td>
                   <td>{b.createdBy?.fullName || '—'}</td>
@@ -487,6 +527,9 @@ export default function BatchScanPanel() {
       <Suspense fallback={null}>
         {showCamera && (
           <BarcodeCameraScanner onScan={handleScannedCode} onClose={() => setShowCamera(false)} />
+        )}
+        {scanningBatchId && (
+          <BarcodeCameraScanner onScan={handleBatchStatusScan} onClose={() => setScanningBatchId(null)} />
         )}
       </Suspense>
     </div>
