@@ -102,13 +102,19 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
 
     // Barcode — position text explicitly below the image's fitted height,
     // since moveDown() is line-height-based and doesn't know the image size.
+    // x/width are explicit throughout (rather than relying on doc.x) because
+    // the badge's text() call above leaves doc.x parked at the badge's left
+    // edge, not the page margin — align:'center' alone would center within
+    // that leftover narrower box and push everything off to the right.
+    const contentLeft = doc.page.margins.left;
+    const contentWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const barcodeTop = doc.y;
     const barcodeHeight = 80;
-    doc.image(barcodePng, { fit: [256, barcodeHeight], align: 'center' });
+    doc.image(barcodePng, contentLeft, barcodeTop, { fit: [contentWidth, barcodeHeight], align: 'center' });
     doc.y = barcodeTop + barcodeHeight + 10;
-    doc.font('Helvetica-Bold').fontSize(12).text(barcodeValue, { align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(12).text(barcodeValue, contentLeft, doc.y, { width: contentWidth, align: 'center' });
     if (totalPackages > 1) {
-      doc.font('Helvetica').fontSize(8).text(`Shipment tracking: ${order.trackingNumber}`, { align: 'center' });
+      doc.font('Helvetica').fontSize(8).text(`Shipment tracking: ${order.trackingNumber}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
     }
 
     doc.end();
