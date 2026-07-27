@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import client from '../api/client';
 
 const SERVICES = [
   { icon: '⚡', bg: 'var(--warn-bg)', pill: 'pill-warn', pillLabel: '3–5 days', title: 'Express Delivery', body: 'Premium, time-definite delivery to all major destinations. A dedicated round-the-clock team manages every milestone — from rapid pickup to customs clearance and final-mile delivery.' },
@@ -21,6 +22,37 @@ const WHY_US = [
 ];
 
 export default function Services() {
+  const [showTalkModal, setShowTalkModal] = useState(false);
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  function openTalkModal() {
+    setSubject('');
+    setDescription('');
+    setContactEmail('');
+    setSent(false);
+    setError('');
+    setShowTalkModal(true);
+  }
+
+  async function sendTalkMessage(e) {
+    e.preventDefault();
+    setSending(true);
+    setError('');
+    try {
+      await client.post('/contact', { subject, description, email: contactEmail });
+      setSent(true);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not send your message — please try again.');
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <div>
       <div className="svc-hero">
@@ -44,7 +76,7 @@ export default function Services() {
             <div className="svc-card-top"><div className="icon-circle" style={{ background: 'rgba(255,255,255,.1)' }}>💬</div></div>
             <h3 style={{ color: '#fff' }}>Not sure which service fits?</h3>
             <p style={{ color: '#AEB6D2' }}>Tell us your shipment size and timeline — we'll recommend the right option.</p>
-            <Link to="/quote" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>Talk to us</Link>
+            <button type="button" className="btn btn-primary" style={{ alignSelf: 'flex-start' }} onClick={openTalkModal}>Talk to us</button>
           </div>
         </div>
       </div>
@@ -75,6 +107,58 @@ export default function Services() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className={`modal-overlay ${showTalkModal ? 'open' : ''}`} onClick={() => setShowTalkModal(false)}>
+        {showTalkModal && (
+          <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+            {sent ? (
+              <>
+                <h3 style={{ marginBottom: 8 }}>✓ Message sent</h3>
+                <p style={{ fontSize: 13.5, color: 'var(--slate)', marginBottom: 20 }}>
+                  Thanks — our team will get back to you shortly.
+                </p>
+                <button className="btn btn-primary block" onClick={() => setShowTalkModal(false)}>Close</button>
+              </>
+            ) : (
+              <>
+                <h3 style={{ marginBottom: 4 }}>Talk to us</h3>
+                <p style={{ fontSize: 13.5, color: 'var(--slate)', marginBottom: 18 }}>
+                  Tell us what you need — we'll reply by email.
+                </p>
+                <form onSubmit={sendTalkMessage} className="form-stack">
+                  <div className="field">
+                    <label>Subject</label>
+                    <input className="input" required value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="e.g. Bulk shipment pricing" />
+                  </div>
+                  <div className="field">
+                    <label>Description</label>
+                    <textarea
+                      className="input"
+                      required
+                      rows={4}
+                      style={{ resize: 'vertical', minHeight: 100 }}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Tell us a bit more…"
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Email</label>
+                    <input className="input" type="email" required value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="you@email.com" />
+                  </div>
+                  {error && <div className="error-text">{error}</div>}
+                  <button className="btn btn-primary block" style={{ padding: 12 }} disabled={sending}>
+                    {sending ? 'Sending…' : 'Send'}
+                  </button>
+                </form>
+                <p style={{ fontSize: 12.5, color: 'var(--slate-light)', textAlign: 'center', marginTop: 18 }}>
+                  Contact: +919108038783
+                </p>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

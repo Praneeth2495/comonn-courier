@@ -21,6 +21,7 @@ const driverRoutes = require('./routes/driver.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
 const batchRoutes = require('./routes/batch.routes');
 const locationRoutes = require('./routes/location.routes');
+const contactRoutes = require('./routes/contact.routes');
 const { startDriverAutoUnassignJob } = require('./services/driverAutoUnassign');
 const { startAccountSetupFollowupJob } = require('./services/accountSetupFollowup');
 
@@ -54,6 +55,7 @@ app.use('/api/driver', driverRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/locations', locationRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Static download of generated label PDFs (also served explicitly via
 // /api/labels/:orderId/download for access-controlled downloads)
