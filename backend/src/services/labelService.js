@@ -44,17 +44,15 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
 
-    // Header — logo sits top-right so it never pushes the info column down;
-    // the info column starts at the very top of the content area instead.
-    const headerLeft = doc.x;
+    // Header — logo sits top-right; the info column starts at the very top
+    // of the content area on the left, with no COMONN text duplicating it.
     const headerTop = doc.y;
     const pageRight = doc.page.width - doc.page.margins.right;
     if (fs.existsSync(LOGO_PATH)) {
       const logoWidth = 70;
       doc.image(LOGO_PATH, pageRight - logoWidth, headerTop, { width: logoWidth });
     }
-    doc.font('Helvetica-Bold').fontSize(11).text('COMONN', headerLeft, headerTop, { width: 150 });
-    doc.y = headerTop + 20;
+    doc.y = headerTop;
     doc.fontSize(8).font('Helvetica');
     doc.text(`Service: ${order.service.name}`);
     doc.text(`Order: ${order.orderNumber}`);
@@ -87,6 +85,20 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
     );
     if (order.contentsDescription) doc.text(`Contents: ${order.contentsDescription}`);
     doc.moveDown(0.6);
+
+    // Destination country badge — black rectangle, white bold text,
+    // centered above the barcode so it's the first thing a sorter sees.
+    const countryCode = order.receiverAddress.countryCode;
+    if (countryCode) {
+      const badgeWidth = 50;
+      const badgeHeight = 22;
+      const badgeX = (doc.page.width - badgeWidth) / 2;
+      const badgeY = doc.y;
+      doc.rect(badgeX, badgeY, badgeWidth, badgeHeight).fill('black');
+      doc.fillColor('white').font('Helvetica-Bold').fontSize(14).text(countryCode, badgeX, badgeY + 5, { width: badgeWidth, align: 'center' });
+      doc.fillColor('black');
+      doc.y = badgeY + badgeHeight + 8;
+    }
 
     // Barcode — position text explicitly below the image's fitted height,
     // since moveDown() is line-height-based and doesn't know the image size.
