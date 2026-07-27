@@ -190,6 +190,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .input-group input{border:none;flex:1;min-width:0;padding:11px 13px;outline:none;font-size:14px;}
 
 .item-row{display:grid;grid-template-columns:1.4fr .9fr .7fr;gap:10px;}
+.item-row>*{min-width:0;}
 .item-row.equal{grid-template-columns:1fr 1fr 1fr;}
 .qty-stepper{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;height:44px;}
 .qty-stepper button{background:var(--paper);border:none;width:34px;height:100%;font-size:17px;color:var(--navy);font-weight:700;flex:none;}

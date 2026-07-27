@@ -271,10 +271,10 @@ function SavedAddresses() {
 function OrderDetailModal({ order, onClose }) {
   return (
     <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(14,27,61,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(14,27,61,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: 20 }}
       onClick={onClose}
     >
-      <div className="card" style={{ padding: 28, width: 460, maxHeight: '80vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+      <div className="card" style={{ padding: 28, width: '100%', maxWidth: 460, maxHeight: '80vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
         <h3 className="h-md" style={{ marginBottom: 4 }}>{order.orderNumber}</h3>
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{order.trackingNumber || 'Tracking number pending payment'}</p>
 

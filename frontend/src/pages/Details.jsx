@@ -421,7 +421,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
       )}
       <div className="grid-2">
         <div className="field">
-          <label>Name</label>
+          <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <input className="input" placeholder="Enter full name" required value={value.contactName} onChange={(e) => onChange('contactName', e.target.value)} />
         </div>
         <div className="field">
@@ -440,8 +440,8 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
           </div>
         </div>
         <div className="field">
-          <label>Email</label>
-          <input className="input" type="email" placeholder="example@gmail.com" value={value.email} onChange={(e) => onChange('email', e.target.value)} />
+          <label>Email <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+          <input className="input" type="email" placeholder="example@gmail.com" required value={value.email} onChange={(e) => onChange('email', e.target.value)} />
         </div>
         <div className="field">
           <label>{instructionsLabel}</label>
@@ -450,7 +450,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
         <div className="field">
-          <label>Address Line 1</label>
+          <label>Address Line 1 <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <input className="input" placeholder="House / street" required value={value.line1} onChange={(e) => onChange('line1', e.target.value)} />
         </div>
         <div className="field">
