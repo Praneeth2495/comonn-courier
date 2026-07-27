@@ -54,21 +54,16 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
       doc.image(LOGO_PATH, pageRight - logoWidth, headerTop, { width: logoWidth });
     }
     doc.font('Helvetica-Bold').fontSize(11).text('COMONN', headerLeft, headerTop, { width: 150 });
-    doc.font('Helvetica').fontSize(7).text('International Courier', headerLeft, doc.y);
-    doc.y = headerTop + 24;
+    doc.y = headerTop + 20;
     doc.fontSize(8).font('Helvetica');
     doc.text(`Service: ${order.service.name}`);
     doc.text(`Order: ${order.orderNumber}`);
     doc.text(`Package ${packageIndex} of ${totalPackages}`);
     doc.moveDown(0.5);
 
-    // Sender / Receiver — "To" is the delivery address and is what matters
-    // most on the package, so it's rendered noticeably larger/bolder than
-    // "From".
-    doc.font('Helvetica-Bold').fontSize(8).fillColor('#6B7280').text('FROM');
-    doc.font('Helvetica').fontSize(8).fillColor('#6B7280').text(formatAddress(order.senderAddress));
-    doc.fillColor('black');
-    doc.moveDown(0.4);
+    // Receiver / Sender — "To" is the delivery address and is what matters
+    // most on the package, so it's rendered first and noticeably
+    // larger/bolder than "From".
     doc.font('Helvetica-Bold').fontSize(13).text('TO');
     doc.font('Helvetica-Bold').fontSize(13).text(formatAddress(order.receiverAddress));
     if (order.receiverAddress.instructions) {
@@ -76,6 +71,10 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
       doc.font('Helvetica-Bold').fontSize(8).text('Delivery instructions', { continued: false });
       doc.font('Helvetica').fontSize(8).text(order.receiverAddress.instructions, { width: 256 });
     }
+    doc.moveDown(0.4);
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#6B7280').text('FROM');
+    doc.font('Helvetica').fontSize(8).fillColor('#6B7280').text(formatAddress(order.senderAddress));
+    doc.fillColor('black');
     doc.moveDown(0.5);
 
     // This package's details — dims are optional at booking time, so omit
