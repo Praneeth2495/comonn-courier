@@ -60,21 +60,24 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
       // background-image with no gap — a few extra px here fixes that for
       // every code rather than just the one that happened to be showing.
       //
-      // onClick lives here (not on the inner button) so the whole box is
-      // clickable, including the chevron/padding area to the right of the
-      // flag+code — that region sits in this div's own padding, outside
-      // the button's 100%-of-content-box bounds, so it was previously a
-      // dead zone that looked like part of the dropdown but didn't open it.
-      onClick={() => !disabled && toggleOpen()}
       style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer', width: 80 }}
     >
       <button
         type="button"
         disabled={disabled}
+        onClick={toggleOpen}
+        // Covers the div's full box, including its own padding-right (where
+        // the chevron background-image sits) — not just the content box —
+        // so the whole thing is clickable. This has to be the click target
+        // itself, not the outer div: the dropdown menu below is rendered
+        // via createPortal, and React's synthetic events bubble through the
+        // *component* tree regardless of portal DOM placement, so a click on
+        // a menu option would otherwise also bubble to a div-level handler
+        // and immediately reopen what choose() just closed.
         style={{
-          display: 'flex', alignItems: 'center', gap: 6, width: '100%', height: '100%',
-          background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'inherit',
-          cursor: disabled ? 'default' : 'pointer',
+          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 6,
+          width: '100%', height: '100%', background: 'none', border: 'none', padding: '0 26px 0 10px',
+          font: 'inherit', color: 'inherit', cursor: disabled ? 'default' : 'pointer',
         }}
       >
         <CountryFlag code={value} width={22} height={15} />
