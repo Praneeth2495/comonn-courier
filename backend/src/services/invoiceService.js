@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+const { getCountryName } = require('../utils/countryNames');
 
 const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
 const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
+const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
 
 function ensureStorageDir() {
   if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR, { recursive: true });
@@ -23,9 +25,21 @@ function line(doc, label, value, opts = {}) {
 }
 
 function formatAddress(addr) {
-  return [addr.contactName, addr.line1, addr.line2, `${addr.city}${addr.state ? ', ' + addr.state : ''} ${addr.postcode}`, addr.countryCode]
+  return [addr.contactName, addr.line1, addr.line2, `${addr.city}${addr.state ? ', ' + addr.state : ''} ${addr.postcode}`, getCountryName(addr.countryCode)]
     .filter(Boolean)
     .join('\n');
+}
+
+// Large, faint icon centered on the page, behind everything else — drawn
+// first (pdfkit has no z-index, later draws sit on top) so all subsequent
+// text remains fully legible over it.
+function drawWatermark(doc) {
+  if (!fs.existsSync(LOGO_ICON_PATH)) return;
+  const size = 320;
+  const x = (doc.page.width - size) / 2;
+  const y = (doc.page.height - size) / 2;
+  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
+  doc.opacity(1);
 }
 
 /**
@@ -42,17 +56,18 @@ async function generateInvoicePdf(order) {
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
 
+    drawWatermark(doc);
+
+    const headerTop = doc.y;
     if (fs.existsSync(LOGO_PATH)) {
-      const headerTop = doc.y;
-      doc.image(LOGO_PATH, 50, headerTop, { width: 110 });
-      doc.font('Helvetica').fontSize(11).text('International Courier', 165, headerTop + 6);
-      doc.y = headerTop + 32;
+      const logoWidth = 110;
+      doc.image(LOGO_PATH, 545 - logoWidth, headerTop, { width: logoWidth });
     } else {
-      doc.font('Helvetica-Bold').fontSize(20).text('COMONN', { continued: true });
-      doc.font('Helvetica').fontSize(11).text('  International Courier');
+      doc.font('Helvetica-Bold').fontSize(16).text('COMONN', 50, headerTop, { align: 'right', width: 495 });
     }
-    doc.moveDown(0.3);
-    doc.font('Helvetica-Bold').fontSize(14).text('Tax Invoice');
+    doc.font('Helvetica-Bold').fontSize(20).text('Tax Invoice', 50, headerTop + 4);
+    doc.font('Helvetica').fontSize(10).text('International Courier', 50, doc.y + 2);
+    doc.y = headerTop + 50;
     doc.moveDown(1);
 
     doc.font('Helvetica').fontSize(10);

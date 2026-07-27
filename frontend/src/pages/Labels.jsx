@@ -98,8 +98,8 @@ export default function Labels() {
               {labels.map((l) => (
                 <div className="label-row" key={l.id}>
                   <div className="oid">{order.orderNumber}{labels.length > 1 ? ` (${l.packageIndex}/${labels.length})` : ''}</div>
-                  <div className="addr"><b>Pickup</b>{order.senderAddress?.city}, {order.senderAddress?.countryCode}</div>
-                  <div className="addr"><b>Delivery</b>{order.receiverAddress?.city}, {order.receiverAddress?.countryCode}</div>
+                  <div className="addr"><b>Pickup</b>{order.senderAddress?.city}, {getCountryName(order.senderAddress?.countryCode)}</div>
+                  <div className="addr"><b>Delivery</b>{order.receiverAddress?.city}, {getCountryName(order.receiverAddress?.countryCode)}</div>
                   <div>
                     <a
                       className="btn btn-dark btn-sm"

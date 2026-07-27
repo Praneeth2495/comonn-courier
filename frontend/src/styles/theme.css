@@ -391,6 +391,12 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .addon-row .txt p{font-size:12.5px;color:var(--slate);}
 .addon-row .right{display:flex;align-items:center;gap:16px;flex:none;}
 .addon-row .price-tag{font-family:'IBM Plex Mono';font-size:13.5px;font-weight:600;color:var(--navy);}
+.addon-row .txt select.addon-select{margin-top:8px;max-width:260px;width:100%;}
+@media(max-width:640px){
+  .addon-row{flex-direction:column;align-items:stretch;gap:12px;}
+  .addon-row .txt select.addon-select{max-width:none;}
+  .addon-row .right{width:100%;justify-content:space-between;}
+}
 
 .pay-method-row{display:flex;gap:12px;margin-bottom:20px;}
 .pay-method{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:13.5px;color:var(--slate);cursor:pointer;background:#fff;}

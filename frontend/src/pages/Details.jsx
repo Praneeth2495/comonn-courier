@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
+import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
 
 const COUNTRY_CODES = ['🇮🇳 +91', '🇦🇺 +61', '🇨🇦 +1', '🇳🇿 +64', '🇬🇧 +44', '🇺🇸 +1', '🇪🇺 +32'];
 
@@ -413,7 +414,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
           <select className="select" defaultValue="" onChange={(e) => { if (e.target.value) onSelectSaved(e.target.value); e.target.value = ''; }}>
             <option value="">Select a saved address…</option>
             {savedAddresses.map((a) => (
-              <option key={a.id} value={a.id}>{a.label || a.contactName} — {a.city}, {a.countryCode}</option>
+              <option key={a.id} value={a.id}>{a.label || a.contactName} — {a.city}, {getCountryName(a.countryCode)}</option>
             ))}
           </select>
         </div>
@@ -500,8 +501,17 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
           )}
         </div>
         <div className="field" style={{ maxWidth: 220 }}>
-          <label>Country code</label>
-          <input className="input" required maxLength={2} disabled={isLocked('countryCode')} value={value.countryCode} onChange={(e) => onChange('countryCode', e.target.value.toUpperCase())} />
+          <label>Country</label>
+          {isLocked('countryCode') ? (
+            <input className="input" disabled value={getCountryName(value.countryCode)} />
+          ) : (
+            <select className="input" required value={value.countryCode} onChange={(e) => onChange('countryCode', e.target.value)}>
+              <option value="" disabled>Select country</option>
+              {Object.entries(COUNTRY_NAMES).map(([code, name]) => (
+                <option key={code} value={code}>{name}</option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
       <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>✓ {autoFillNote}</p>

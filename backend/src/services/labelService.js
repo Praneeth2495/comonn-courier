@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const bwipjs = require('bwip-js');
+const { getCountryName } = require('../utils/countryNames');
 
 const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
 const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
@@ -43,30 +44,39 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
 
-    // Header
+    // Header — logo sits top-right so it never pushes the info column down;
+    // the info column starts at the very top of the content area instead.
+    const headerLeft = doc.x;
+    const headerTop = doc.y;
+    const pageRight = doc.page.width - doc.page.margins.right;
     if (fs.existsSync(LOGO_PATH)) {
-      const headerLeft = doc.x;
-      const headerTop = doc.y;
-      doc.image(LOGO_PATH, headerLeft, headerTop, { width: 80 });
-      doc.font('Helvetica').fontSize(8).text('International Courier', headerLeft + 84, headerTop + 5);
-      doc.y = headerTop + 20;
-    } else {
-      doc.font('Helvetica-Bold').fontSize(16).text('COMONN', { continued: true });
-      doc.font('Helvetica').fontSize(9).text('  International Courier', { align: 'left' });
+      const logoWidth = 70;
+      doc.image(LOGO_PATH, pageRight - logoWidth, headerTop, { width: logoWidth });
     }
-    doc.moveDown(0.3);
-    doc.fontSize(9).text(`Service: ${order.service.name}`);
+    doc.font('Helvetica-Bold').fontSize(11).text('COMONN', headerLeft, headerTop, { width: 150 });
+    doc.font('Helvetica').fontSize(7).text('International Courier', headerLeft, doc.y);
+    doc.y = headerTop + 24;
+    doc.fontSize(8).font('Helvetica');
+    doc.text(`Service: ${order.service.name}`);
     doc.text(`Order: ${order.orderNumber}`);
     doc.text(`Package ${packageIndex} of ${totalPackages}`);
-    doc.moveDown(0.6);
+    doc.moveDown(0.5);
 
-    // Sender / Receiver
-    doc.font('Helvetica-Bold').fontSize(9).text('FROM');
-    doc.font('Helvetica').fontSize(9).text(formatAddress(order.senderAddress));
+    // Sender / Receiver — "To" is the delivery address and is what matters
+    // most on the package, so it's rendered noticeably larger/bolder than
+    // "From".
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#6B7280').text('FROM');
+    doc.font('Helvetica').fontSize(8).fillColor('#6B7280').text(formatAddress(order.senderAddress));
+    doc.fillColor('black');
     doc.moveDown(0.4);
-    doc.font('Helvetica-Bold').fontSize(11).text('TO');
-    doc.font('Helvetica-Bold').fontSize(11).text(formatAddress(order.receiverAddress));
-    doc.moveDown(0.6);
+    doc.font('Helvetica-Bold').fontSize(13).text('TO');
+    doc.font('Helvetica-Bold').fontSize(13).text(formatAddress(order.receiverAddress));
+    if (order.receiverAddress.instructions) {
+      doc.moveDown(0.15);
+      doc.font('Helvetica-Bold').fontSize(8).text('Delivery instructions', { continued: false });
+      doc.font('Helvetica').fontSize(8).text(order.receiverAddress.instructions, { width: 256 });
+    }
+    doc.moveDown(0.5);
 
     // This package's details — dims are optional at booking time, so omit
     // that segment entirely rather than printing "0x0x0 cm".
@@ -104,7 +114,7 @@ function formatAddress(addr) {
     addr.line1,
     addr.line2,
     `${addr.city}${addr.state ? ', ' + addr.state : ''} ${addr.postcode}`,
-    addr.countryCode,
+    getCountryName(addr.countryCode),
     addr.phone,
   ]
     .filter(Boolean)

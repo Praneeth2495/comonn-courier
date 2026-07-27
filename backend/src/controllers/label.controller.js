@@ -5,6 +5,7 @@ const { generateLabelPdf, STORAGE_DIR } = require('../services/labelService');
 const { generateInvoicePdf } = require('../services/invoiceService');
 const { sendEmail } = require('../services/emailService');
 const { ensureCustomerAccount } = require('../services/accountProvisioning');
+const { getCountryName } = require('../utils/countryNames');
 
 function siteUrl(pathname) {
   const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
@@ -184,7 +185,7 @@ function addressBlockHtml(addr) {
     addr.line1,
     addr.line2,
     `${addr.city || ''}${addr.state ? ', ' + addr.state : ''} ${addr.postcode || ''}`.trim(),
-    addr.countryCode,
+    getCountryName(addr.countryCode),
   ].filter(Boolean);
   return `
     <p style="margin:0 0 2px;font-size:13.5px;"><b>${addr.contactName || ''}</b></p>

@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
+import { getCountryName } from '../utils/countryNames';
 
 // UNFINISHED: fresh order, not yet paid. PENDING_PAYMENT: a pickup-booking
 // order staff have just priced, ready for actual payment. Both mean "still
@@ -373,7 +374,7 @@ export default function Payment() {
             return;
           }
           const results = await Promise.all(allOrders.map(async (o) => {
-            const destination = o.receiverAddress ? `${o.receiverAddress.city}, ${o.receiverAddress.countryCode}` : '—';
+            const destination = o.receiverAddress ? `${o.receiverAddress.city}, ${getCountryName(o.receiverAddress.countryCode)}` : '—';
             try {
               const { data } = await client.post(`/labels/${o.id}/generate`);
               return { orderId: o.id, orderNumber: o.orderNumber, destination, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending };
@@ -575,7 +576,7 @@ export default function Payment() {
             {!isPreppedForCustomer && (
             <>
             <div className="card" style={{ padding: 26 }}>
-              <h3 style={{ marginBottom: 4 }}>Dangerous goods declaration</h3>
+              <h3 style={{ marginBottom: 4 }}>Dangerous goods declaration <span style={{ color: 'var(--warn, #D9534F)' }}>*</span></h3>
               <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>
                 Some goods are restricted across our network —{' '}
                 <a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => { e.preventDefault(); setShowDgModal(true); }}>see examples →</a>
@@ -591,7 +592,7 @@ export default function Payment() {
                 <div className="addon-row">
                   <div className="txt">
                     <h4>Transit warranty</h4>
-                    <select className="select" style={{ marginTop: 8, maxWidth: 260 }} value={warrantyCoverage} onChange={(e) => changeWarranty(Number(e.target.value))}>
+                    <select className="select addon-select" value={warrantyCoverage} onChange={(e) => changeWarranty(Number(e.target.value))}>
                       {WARRANTY_TIERS.map((t) => <option key={t.coverage} value={t.coverage}>{t.label}</option>)}
                     </select>
                   </div>
