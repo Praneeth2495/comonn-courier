@@ -306,8 +306,17 @@ export default function Payment() {
             // order can no longer be edited" on resubmit. Keep the
             // richer address/items/service data already in context
             // (this endpoint's response doesn't include those).
-            const { data } = await client.get(`/orders/${order.id}`);
-            setBooking({ order: { ...order, ...data.order } });
+            try {
+              const { data } = await client.get(`/orders/${order.id}`);
+              setBooking({ order: { ...order, ...data.order } });
+            } catch {
+              // GET /orders/:id requires a logged-in session — guest
+              // checkout has no token, so this refetch 401s. Fall back to
+              // a local merge; pollForSuccess() above already confirmed
+              // (via the guest-accessible /payments/:id endpoint) that the
+              // order is PAID server-side, so this isn't guessing.
+              setBooking({ order: { ...order, status: 'PAID', trackingNumber: order.orderNumber } });
+            }
             navigate('/labels');
           } else {
             setError('Payment is processing — refresh in a moment or check your order status.');
