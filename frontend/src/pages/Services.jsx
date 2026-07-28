@@ -26,6 +26,7 @@ export default function Services() {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
@@ -34,6 +35,7 @@ export default function Services() {
     setSubject('');
     setDescription('');
     setContactEmail('');
+    setContactPhone('');
     setSent(false);
     setError('');
     setShowTalkModal(true);
@@ -44,7 +46,7 @@ export default function Services() {
     setSending(true);
     setError('');
     try {
-      await client.post('/contact', { subject, description, email: contactEmail });
+      await client.post('/contact', { subject, description, email: contactEmail, phone: contactPhone });
       setSent(true);
     } catch (err) {
       setError(err.response?.data?.error || 'Could not send your message — please try again.');
@@ -114,6 +116,9 @@ export default function Services() {
           <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
             {sent ? (
               <>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setShowTalkModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+                </div>
                 <h3 style={{ marginBottom: 8 }}>✓ Message sent</h3>
                 <p style={{ fontSize: 13.5, color: 'var(--slate)', marginBottom: 20 }}>
                   Thanks — our team will get back to you shortly.
@@ -122,7 +127,10 @@ export default function Services() {
               </>
             ) : (
               <>
-                <h3 style={{ marginBottom: 4 }}>Talk to us</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                  <h3>Talk to us</h3>
+                  <button onClick={() => setShowTalkModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+                </div>
                 <p style={{ fontSize: 13.5, color: 'var(--slate)', marginBottom: 18 }}>
                   Tell us what you need — we'll reply by email.
                 </p>
@@ -146,6 +154,10 @@ export default function Services() {
                   <div className="field">
                     <label>Email</label>
                     <input className="input" type="email" required value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="you@email.com" />
+                  </div>
+                  <div className="field">
+                    <label>Mobile</label>
+                    <input className="input" type="tel" required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+91 98765 43210" />
                   </div>
                   {error && <div className="error-text">{error}</div>}
                   <button className="btn btn-primary block" style={{ padding: 12 }} disabled={sending}>
