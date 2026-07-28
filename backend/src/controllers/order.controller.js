@@ -766,8 +766,9 @@ async function updateAddons(req, res, next) {
 /** POST /api/orders/:id/send-otp — emails a 6-digit code, valid for 10 minutes */
 async function sendOtp(req, res, next) {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: 'email is required' });
+    const { email: rawEmail } = req.body;
+    if (!rawEmail) return res.status(400).json({ error: 'email is required' });
+    const email = rawEmail.toLowerCase().trim();
 
     const order = await prisma.order.findUnique({ where: { id: req.params.id } });
     if (!order) return res.status(404).json({ error: 'Order not found' });
