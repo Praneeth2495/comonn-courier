@@ -110,7 +110,7 @@ export default function Labels() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      ⬇ Download
+                      ⬇ Download label
                     </a>
                   </div>
                 </div>
