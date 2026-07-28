@@ -24,4 +24,16 @@ async function generateInvoiceNumber() {
   return `IN${seq}`;
 }
 
-module.exports = { generateInvoiceNumber };
+/**
+ * Generates RIN<seq>/PIN<seq> for Receivable/Payable invoices — same
+ * yearly-resetting counter mechanism as generateInvoiceNumber, just keyed
+ * separately per direction so the two sequences don't interleave.
+ */
+async function generatePartyInvoiceNumber(direction) {
+  const kind = direction === 'PAYABLE' ? 'payable' : 'receivable';
+  const prefix = direction === 'PAYABLE' ? 'PIN' : 'RIN';
+  const seq = await nextYearlySequence(kind, new Date());
+  return `${prefix}${seq}`;
+}
+
+module.exports = { generateInvoiceNumber, generatePartyInvoiceNumber };
