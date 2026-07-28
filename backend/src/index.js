@@ -24,9 +24,12 @@ const locationRoutes = require('./routes/location.routes');
 const contactRoutes = require('./routes/contact.routes');
 const v1Routes = require('./routes/v1.routes');
 const merchantAdminRoutes = require('./routes/merchant.routes');
+const partyInvoiceRoutes = require('./routes/partyInvoice.routes');
+const customsClientRoutes = require('./routes/customsClient.routes');
 const { startDriverAutoUnassignJob } = require('./services/driverAutoUnassign');
 const { startAccountSetupFollowupJob } = require('./services/accountSetupFollowup');
 const { startMerchantInvoiceGenerationJob } = require('./services/merchantInvoiceGenerator');
+const { startPartyInvoiceRecurrenceJob } = require('./services/partyInvoiceRecurrence');
 
 const app = express();
 
