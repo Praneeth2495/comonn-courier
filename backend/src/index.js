@@ -22,8 +22,11 @@ const inventoryRoutes = require('./routes/inventory.routes');
 const batchRoutes = require('./routes/batch.routes');
 const locationRoutes = require('./routes/location.routes');
 const contactRoutes = require('./routes/contact.routes');
+const v1Routes = require('./routes/v1.routes');
+const merchantAdminRoutes = require('./routes/merchant.routes');
 const { startDriverAutoUnassignJob } = require('./services/driverAutoUnassign');
 const { startAccountSetupFollowupJob } = require('./services/accountSetupFollowup');
+const { startMerchantInvoiceGenerationJob } = require('./services/merchantInvoiceGenerator');
 
 const app = express();
 
@@ -56,6 +59,8 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/v1', v1Routes);
+app.use('/api/admin/merchants', merchantAdminRoutes);
 
 // Static download of generated label PDFs (also served explicitly via
 // /api/labels/:orderId/download for access-controlled downloads)
@@ -66,6 +71,7 @@ app.use(errorHandler);
 
 startDriverAutoUnassignJob();
 startAccountSetupFollowupJob();
+startMerchantInvoiceGenerationJob();
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

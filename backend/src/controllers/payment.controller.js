@@ -272,6 +272,18 @@ async function handleWebhook(req, res, next) {
       }
     }
 
+    // Merchant consolidated invoice paid via its Razorpay Payment Link
+    // (see merchantInvoiceGenerator.js) — separate from the order-level
+    // payment.captured event above, since a payment link isn't tied to a
+    // single Comonn order/Razorpay order.
+    if (event.event === 'payment_link.paid') {
+      const linkEntity = event.payload.payment_link.entity;
+      await prisma.merchantInvoice.updateMany({
+        where: { paymentLinkId: linkEntity.id, status: 'UNPAID' },
+        data: { status: 'PAID', paymentMethod: 'razorpay_link', paidAt: new Date() },
+      });
+    }
+
     res.json({ received: true });
   } catch (err) {
     next(err);

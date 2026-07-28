@@ -48,17 +48,19 @@ model User {
   passwordSetAt           DateTime?
   accountSetupEmailSentAt DateTime?
 
-  addresses         Address[]
-  orders            Order[]
-  auditLogs         AuditLog[]
-  zoneAssignments   StaffZoneAssignment[]
-  regionAssignments StaffRegionAssignment[]
-  passwordSetTokens PasswordSetToken[]
-  orderComments     OrderComment[]
-  driverJobs        Order[]               @relation("OrderDriver")
-  inventoryUpdates  InventoryItem[]
-  scanBatches       ScanBatch[]
-  scanLocations     ScanLocation[]
+  addresses               Address[]
+  orders                  Order[]
+  auditLogs               AuditLog[]
+  zoneAssignments         StaffZoneAssignment[]
+  regionAssignments       StaffRegionAssignment[]
+  passwordSetTokens       PasswordSetToken[]
+  orderComments           OrderComment[]
+  driverJobs              Order[]                  @relation("OrderDriver")
+  inventoryUpdates        InventoryItem[]
+  scanBatches             ScanBatch[]
+  scanLocations           ScanLocation[]
+  createdMerchants        Merchant[]
+  merchantInvoiceComments MerchantInvoiceComment[]
 
   @@index([email])
 }
@@ -77,6 +79,71 @@ model OrderComment {
   createdAt DateTime @default(now())
 
   @@index([orderId])
+}
+
+// A trusted e-commerce/API partner — manually onboarded, no self-serve
+// signup. Books shipments via POST /v1/shipments (see merchantAuth.js),
+// billed on postpaid credit rather than per-shipment checkout: shipments
+// are created already PAID, then rolled up into a MerchantInvoice once a
+// day (see merchantInvoiceGenerator.js).
+model Merchant {
+  id           String            @id @default(uuid())
+  name         String
+  contactEmail String
+  contactPhone String?
+  // Only the hash is ever stored — the raw key is shown once at creation
+  // time and cannot be retrieved again. apiKeyPrefix lets staff identify a
+  // key in the admin UI without re-revealing the secret.
+  apiKeyHash   String            @unique
+  apiKeyPrefix String
+  isActive     Boolean           @default(true)
+  createdById  String
+  createdBy    User              @relation(fields: [createdById], references: [id])
+  orders       Order[]
+  invoices     MerchantInvoice[]
+  createdAt    DateTime          @default(now())
+}
+
+// One consolidated invoice per merchant per calendar day (IST), covering
+// every shipment they booked that day. "Overdue" (due INVOICE_DUE_DAYS —
+// see merchantInvoiceGenerator.js — after invoiceDate) is computed from
+// invoiceDate at read time, not stored. Once overdue, new shipments are
+// blocked (see findOverdueInvoice in merchantApi.controller.js) until paid.
+model MerchantInvoice {
+  id             String                   @id @default(uuid())
+  merchantId     String
+  merchant       Merchant                 @relation(fields: [merchantId], references: [id])
+  invoiceDate    DateTime
+  totalAmount    Decimal                  @db.Decimal(10, 2)
+  currency       String                   @default("INR")
+  status         String                   @default("UNPAID") // UNPAID | PAID
+  paymentMethod  String? // 'razorpay_link' | 'bank_transfer'
+  paymentLinkUrl String?
+  // Razorpay's payment_link id — matched against the payment_link.paid
+  // webhook event to auto-mark this PAID (see payment.controller.js).
+  paymentLinkId  String?
+  paidAt         DateTime?
+  orders         Order[]
+  comments       MerchantInvoiceComment[]
+  createdAt      DateTime                 @default(now())
+
+  @@unique([merchantId, invoiceDate])
+  @@index([merchantId])
+}
+
+// Same shape/purpose as OrderComment, for merchant invoices — manual
+// status changes (e.g. "marked paid via bank transfer") auto-create one
+// of these, same pattern as updateOrderStatus does for orders.
+model MerchantInvoiceComment {
+  id        String          @id @default(uuid())
+  invoiceId String
+  invoice   MerchantInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User            @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime        @default(now())
+
+  @@index([invoiceId])
 }
 
 // Issued when an account is auto-created for a guest checkout (or when a
@@ -148,11 +215,11 @@ model Zone {
 // PostcodeSuggestion. A postcode not found here has no origin-zone
 // restriction (matches any RateCard, i.e. treated as the baseline/default).
 model PostcodeZone {
-  id          String  @id @default(uuid())
+  id          String @id @default(uuid())
   countryCode String // ISO alpha-2, e.g. "IN"
   postcode    String
   zoneId      String
-  zone        Zone    @relation(fields: [zoneId], references: [id])
+  zone        Zone   @relation(fields: [zoneId], references: [id])
 
   @@unique([countryCode, postcode])
 }
@@ -295,6 +362,15 @@ model Order {
   userId      String?
   user        User?   @relation(fields: [userId], references: [id])
 
+  // Set when this order was booked through the merchant API (POST
+  // /v1/shipments) instead of the consumer checkout flow — see
+  // merchantAuth.js. merchantInvoiceId is filled in once the daily
+  // consolidated-invoice job (merchantInvoiceGenerator.js) picks it up.
+  merchantId        String?
+  merchant          Merchant?        @relation(fields: [merchantId], references: [id])
+  merchantInvoiceId String?
+  merchantInvoice   MerchantInvoice? @relation(fields: [merchantInvoiceId], references: [id])
+
   serviceId String
   service   Service @relation(fields: [serviceId], references: [id])
 
@@ -368,6 +444,8 @@ model Order {
   @@index([status])
   @@index([userId])
   @@index([assignedDriverId])
+  @@index([merchantId])
+  @@index([merchantInvoiceId])
 }
 
 // One physical package within a (possibly multi-item) shipment.
