@@ -149,6 +149,107 @@ model MerchantInvoiceComment {
   @@index([invoiceId])
 }
 
+// ------------------------------------------------------------
+// Receivable / Payable invoicing (independent of Order billing and the
+// merchant-billing system above) — freeform invoices the business raises
+// against a payer (RECEIVABLE, money owed to the business) or that a
+// vendor raises against the business (PAYABLE, money the business owes).
+// Both directions share this one model since their fields/behaviour are
+// identical; only the label, invoice-number prefix (RIN/PIN — see
+// generatePartyInvoiceNumber in utils/invoiceNumber.js) and list filter
+// differ. "Overdue" is computed at read time from dueDate, same as
+// MerchantInvoice, not stored.
+enum InvoiceDirection {
+  RECEIVABLE
+  PAYABLE
+}
+
+enum RecurrenceInterval {
+  NONE
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model PartyInvoice {
+  id            String             @id @default(uuid())
+  direction     InvoiceDirection
+  invoiceNumber String             @unique
+  partyName     String
+  businessName  String?
+  description   String
+  amount        Decimal            @db.Decimal(10, 2)
+  gstPercent    Decimal            @default(0) @db.Decimal(5, 2)
+  totalAmount   Decimal            @db.Decimal(10, 2)
+  currency      String             @default("INR")
+  dueDate       DateTime
+  email         String?
+  phone         String?
+  status        String             @default("UNPAID") // UNPAID | PAID
+  paidAt        DateTime?
+  recurrence    RecurrenceInterval @default(NONE)
+  // Only set (and only meaningful) on the root invoice of a recurring
+  // series — the background job (partyInvoiceRecurrence.js) scans for rows
+  // where this is due, clones a new child invoice, then advances it.
+  // Cloned children always get recurrence=NONE so only the root drives
+  // the schedule.
+  nextRecurrenceAt DateTime?
+  parentInvoiceId  String?
+  parentInvoice    PartyInvoice?         @relation("InvoiceRecurrence", fields: [parentInvoiceId], references: [id])
+  childInvoices    PartyInvoice[]        @relation("InvoiceRecurrence")
+  // Staff-uploaded source document (e.g. a vendor's own bill for a
+  // Payable). Stored as bytes in the DB rather than local disk — unlike
+  // the generated PDF below, this isn't derivable from other DB fields,
+  // so it would be permanently lost on a Railway redeploy if left on disk.
+  attachmentName String?
+  attachmentMime String?
+  attachmentData Bytes?
+  // The system-generated PDF (see partyInvoicePdf.js) — safe to keep on
+  // local disk and regenerate on the fly if missing, same pattern as
+  // Invoice/Label.
+  pdfFileUrl  String?
+  createdById String
+  createdBy   User                  @relation(fields: [createdById], references: [id])
+  comments    PartyInvoiceComment[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([direction])
+  @@index([status])
+  @@index([nextRecurrenceAt])
+}
+
+// Same shape/purpose as OrderComment/MerchantInvoiceComment.
+model PartyInvoiceComment {
+  id        String       @id @default(uuid())
+  invoiceId String
+  invoice   PartyInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User         @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime     @default(now())
+
+  @@index([invoiceId])
+}
+
+// A standalone contact directory for customs-clearance clients — no
+// linkage to Order/shipments requested, just a searchable list.
+model CustomsClient {
+  id           String   @id @default(uuid())
+  name         String
+  businessName String?
+  mobile       String
+  email        String?
+  countryCode  String
+  city         String
+  address      String
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([countryCode])
+}
+
 // Issued when an account is auto-created for a guest checkout (or when a
 // customer requests "Forgot password"). The raw token is emailed to the
 // customer and only its hash is stored, same pattern as the OTP flow.
