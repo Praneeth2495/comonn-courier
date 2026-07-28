@@ -6,6 +6,8 @@ import { useBooking } from '../api/BookingContext';
 import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
 import MerchantsPanel from '../components/MerchantsPanel';
+import PartyInvoicesPanel from '../components/PartyInvoicesPanel';
+import CustomsClientsPanel from '../components/CustomsClientsPanel';
 import PrintLabelPanel from '../components/PrintLabelPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import logoFooter from '../assets/logo-footer.png';
