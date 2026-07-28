@@ -64,6 +64,8 @@ app.use('/api/locations', locationRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/v1', v1Routes);
 app.use('/api/admin/merchants', merchantAdminRoutes);
+app.use('/api/admin/party-invoices', partyInvoiceRoutes);
+app.use('/api/admin/customs-clients', customsClientRoutes);
 
 // Static download of generated label PDFs (also served explicitly via
 // /api/labels/:orderId/download for access-controlled downloads)
