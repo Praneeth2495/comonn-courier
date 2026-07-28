@@ -50,7 +50,6 @@ export default function Payment() {
   const [pickupDates] = useState(nextPickupDates);
 
   const [dgAcknowledged, setDgAcknowledged] = useState(false);
-  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
   const [showDgModal, setShowDgModal] = useState(false);
   const [warrantyCoverage, setWarrantyCoverage] = useState(10000);
   const [selectedAddons, setSelectedAddons] = useState([]);
@@ -111,7 +110,6 @@ export default function Payment() {
         addons: [],
         pickupDate: pickupDates[0],
         dgAcknowledged: false,
-        whatsappOptIn: true,
       });
       if (seq === addonsSeqRef.current) setOrder(data.order);
     } catch {
@@ -138,7 +136,6 @@ export default function Payment() {
       setOtpSent(true);
       if (bookingOrder.otpEmail) setOtpEmail(bookingOrder.otpEmail);
       if (bookingOrder.pickupDate) setPickupDate(bookingOrder.pickupDate);
-      if (bookingOrder.whatsappOptIn !== undefined) setWhatsappOptIn(bookingOrder.whatsappOptIn);
       return;
     }
     syncDefaultAddons(bookingOrder.id);
@@ -158,7 +155,6 @@ export default function Payment() {
       addons: selectedAddons,
       pickupDate,
       dgAcknowledged,
-      whatsappOptIn,
       ...overrides,
     };
     const seq = ++addonsSeqRef.current;
@@ -186,11 +182,6 @@ export default function Payment() {
   function toggleDg(checked) {
     setDgAcknowledged(checked);
     syncAddons({ dgAcknowledged: checked });
-  }
-
-  function changeWhatsappOptIn(optIn) {
-    setWhatsappOptIn(optIn);
-    syncAddons({ whatsappOptIn: optIn });
   }
 
   async function copyPaymentLink() {
@@ -685,31 +676,6 @@ export default function Payment() {
                 </div>
                 {otpVerifying && <p style={{ fontSize: 12, color: 'var(--slate-light)', marginTop: 6 }}>Verifying…</p>}
                 {otpError && <div className="error-text" style={{ marginTop: 8 }}>{otpError}</div>}
-              </div>
-
-              <div className="field" style={{ marginTop: 18 }}>
-                <label>WhatsApp status updates</label>
-                <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 8 }}>
-                  {whatsappOptIn
-                    ? "You'll get a WhatsApp message for order confirmation, pickup, and out for delivery."
-                    : "You'll only get an order confirmation on WhatsApp with a link to track it yourself."}
-                </p>
-                <div className="pay-method-row" style={{ marginBottom: 0, maxWidth: 320 }}>
-                  <button
-                    type="button"
-                    className={`pay-method ${whatsappOptIn ? 'active' : ''}`}
-                    onClick={() => changeWhatsappOptIn(true)}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    className={`pay-method ${!whatsappOptIn ? 'active' : ''}`}
-                    onClick={() => changeWhatsappOptIn(false)}
-                  >
-                    No
-                  </button>
-                </div>
               </div>
             </div>
             </>
