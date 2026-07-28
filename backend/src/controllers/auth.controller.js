@@ -12,13 +12,14 @@ async function register(req, res, next) {
       return res.status(400).json({ error: 'email, password and fullName are required' });
     }
 
-    const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    const normalizedEmail = email.toLowerCase().trim();
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) return res.status(409).json({ error: 'An account with this email already exists' });
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
       data: {
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         passwordHash,
         fullName,
         phone,
