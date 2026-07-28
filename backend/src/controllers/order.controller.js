@@ -7,6 +7,7 @@ const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addo
 const { sendEmail } = require('../services/emailService');
 const { sendReceiverBookingNotification } = require('./label.controller');
 const { ensureCustomerAccount, issuePasswordSetToken } = require('../services/accountProvisioning');
+const { notifyOrderStatusChange } = require('../services/orderNotifications');
 
 // UNFINISHED: a customer created a quote + entered details but hasn't
 // completed payment yet — the resting status for every newly-created order.
@@ -447,6 +448,10 @@ async function updateOrderStatus(req, res, next) {
       await sendReceiverBookingNotification({ ...order, senderAddress: existing.senderAddress, receiverAddress: existing.receiverAddress });
     }
 
+    if (status !== existing.status) {
+      await notifyOrderStatusChange(order.id, status);
+    }
+
     res.json({ order });
   } catch (err) {
     next(err);
@@ -508,8 +513,12 @@ async function cancelOrder(req, res, next) {
     }
     const updated = await prisma.order.update({
       where: { id: req.params.id },
-      data: { status: 'CANCELLED' },
+      data: {
+        status: 'CANCELLED',
+        trackingEvents: { create: { status: 'CANCELLED', note: 'Order cancelled' } },
+      },
     });
+    await notifyOrderStatusChange(updated.id, 'CANCELLED');
     res.json({ order: updated });
   } catch (err) {
     next(err);
@@ -720,7 +729,7 @@ async function updateAddons(req, res, next) {
       return res.status(409).json({ error: 'Order is no longer awaiting payment' });
     }
 
-    const { warrantyCoverage, addons = [], pickupDate, dgAcknowledged } = req.body;
+    const { warrantyCoverage, addons = [], pickupDate, dgAcknowledged, whatsappOptIn } = req.body;
     const totalBoxQty = order.items.reduce((sum, it) => sum + it.quantity, 0) || 1;
 
     const rows = [];
@@ -744,6 +753,7 @@ async function updateAddons(req, res, next) {
     const dataUpdate = {};
     if (pickupDate !== undefined) dataUpdate.pickupDate = pickupDate;
     if (dgAcknowledged !== undefined) dataUpdate.dgAcknowledged = Boolean(dgAcknowledged);
+    if (whatsappOptIn !== undefined) dataUpdate.whatsappOptIn = Boolean(whatsappOptIn);
     if (Object.keys(dataUpdate).length) await prisma.order.update({ where: { id: order.id }, data: dataUpdate });
 
     const updated = await recomputeOrderTotals(order.id);

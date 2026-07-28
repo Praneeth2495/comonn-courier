@@ -414,6 +414,11 @@ model Order {
   // pre-payment gates (Payment page)
   dgAcknowledged Boolean   @default(false) // dangerous-goods declaration
   pickupDate     String?
+  // Customer's choice, asked alongside pickup date/email verification: Yes
+  // gets every status-change WhatsApp update (see orderNotifications.js),
+  // No still gets exactly one order-confirmation message with a Track
+  // order link, just none of the follow-up status updates after that.
+  whatsappOptIn  Boolean   @default(true)
   otpEmail       String?
   otpCode        String? // never returned to the client
   otpExpiresAt   DateTime?

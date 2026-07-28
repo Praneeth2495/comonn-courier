@@ -3,6 +3,7 @@ const { generateQuote } = require('../services/pricingEngine');
 const { generateOrderNumber } = require('../utils/orderNumber');
 const { generateInvoiceNumber } = require('../utils/invoiceNumber');
 const { INVOICE_DUE_DAYS } = require('../services/merchantInvoiceGenerator');
+const { notifyOrderStatusChange } = require('../services/orderNotifications');
 
 // Blocks new shipments once a merchant has any invoice more than
 // INVOICE_DUE_DAYS past its invoiceDate and still unpaid — reinstated only
@@ -154,6 +155,7 @@ async function createShipment(req, res, next) {
     await prisma.trackingEvent.create({
       data: { orderId: order.id, status: 'PAID', note: `Booked via merchant API (${req.merchant.name})` },
     });
+    await notifyOrderStatusChange(order.id, 'PAID');
 
     res.status(201).json({
       orderId: order.id,

@@ -1,4 +1,5 @@
 const { prisma } = require('../config/db');
+const { notifyOrderStatusChange } = require('../services/orderNotifications');
 
 /** GET /api/driver/jobs — pickup jobs assigned to the logged-in driver */
 async function listMyJobs(req, res, next) {
@@ -66,6 +67,7 @@ async function markPickedUp(req, res, next) {
         trackingEvents: { create: { status: 'PICKED_UP', note: 'Picked up by driver' } },
       },
     });
+    await notifyOrderStatusChange(updated.id, 'PICKED_UP');
     res.json({ order: updated });
   } catch (err) {
     next(err);

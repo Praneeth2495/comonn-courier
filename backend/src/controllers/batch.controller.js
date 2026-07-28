@@ -1,4 +1,5 @@
 const { prisma } = require('../config/db');
+const { notifyOrderStatusChange } = require('../services/orderNotifications');
 
 /**
  * Resolves scanned codes to their orders. Tries the Label table first (real
@@ -84,6 +85,7 @@ async function applyStatusToItems(items, status) {
       })
     )
   );
+  await Promise.all(orderIds.map((orderId) => notifyOrderStatusChange(orderId, status)));
   return orderIds.length;
 }
 

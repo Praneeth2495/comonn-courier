@@ -6,6 +6,7 @@ const {
 } = require('../services/paymentService');
 const { sendReceiverBookingNotification } = require('./label.controller');
 const { PAYABLE_STATUSES, round2 } = require('./order.controller');
+const { notifyOrderStatusChange } = require('../services/orderNotifications');
 
 /**
  * Idempotent: Razorpay retries webhooks at-least-once, and the client-side
@@ -51,6 +52,7 @@ async function markOrdersPaidForProviderOrder(providerOrderId, extra = {}) {
       if (order.pricingPending) {
         await sendReceiverBookingNotification({ ...order, trackingNumber: order.orderNumber });
       }
+      await notifyOrderStatusChange(order.id, 'PAID');
     }
   }
 }
@@ -343,6 +345,7 @@ async function confirmCashBooking(req, res, next) {
       await prisma.trackingEvent.create({
         data: { orderId: order.id, status: 'PICKUP_CONFIRMED', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
       });
+      await notifyOrderStatusChange(order.id, 'PICKUP_CONFIRMED');
     }
 
     const updated = await prisma.order.findUnique({ where: { id: order.id }, include: { payment: true } });
