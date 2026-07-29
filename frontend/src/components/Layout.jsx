@@ -123,6 +123,7 @@ export function SiteHeader({ onOpenAccount }) {
     ...(user ? [[dashboardPath(user.role), 'Dashboard']] : []),
     ['/quote', 'Book'],
     ['/track', 'Track'],
+    ['/storage', 'Storage', hideOnMobile],
     ['/services', 'Services', hideOnMobile],
     ['/about', 'About', hideOnMobile],
   ];
