@@ -251,6 +251,90 @@ model CustomsClient {
   @@index([countryCode])
 }
 
+// ------------------------------------------------------------
+// Box Storage — customers rent a numbered physical box at the office
+// (3 sizes, day-based pricing) and get shown "<office address>, Box <N>"
+// to give to e-commerce sellers. Payment is deliberately kept on its own
+// BoxPayment model rather than reusing Payment/Order — the existing
+// webhook/markOrdersPaidForProviderOrder path is hard-coded to Order, and
+// this avoids touching that financially-critical flow at all.
+model BoxSize {
+  id          String   @id @default(uuid())
+  code        String   @unique // "SMALL" | "MEDIUM" | "LARGE"
+  name        String
+  description String?
+  monthlyRate Decimal  @db.Decimal(10, 2)
+  currency    String   @default("INR")
+  isActive    Boolean  @default(true)
+  boxes       Box[]
+  bookings    BoxBooking[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Box {
+  id        String       @id @default(uuid())
+  boxSizeId String
+  boxSize   BoxSize      @relation(fields: [boxSizeId], references: [id])
+  number    Int          // shown to customers as "Box 23"
+  status    String       @default("AVAILABLE") // AVAILABLE | RENTED | RETIRED
+  retiredAt DateTime?
+  bookings  BoxBooking[]
+  createdAt DateTime     @default(now())
+
+  @@unique([boxSizeId, number])
+  @@index([status])
+}
+
+// PENDING = checkout started, no box assigned yet (assignment happens
+// atomically at payment confirmation — see markBoxBookingPaid in
+// boxBooking.controller.js — so an abandoned checkout never holds a
+// physical box hostage). ACTIVE = paid + box assigned. EXPIRED = past
+// endDate, box already returned to the pool. CANCELLED = payment never
+// completed, or the rare box-unavailable race was auto-refunded.
+model BoxBooking {
+  id                   String    @id @default(uuid())
+  boxSizeId            String
+  boxSize              BoxSize   @relation(fields: [boxSizeId], references: [id])
+  boxId                String?
+  box                  Box?      @relation(fields: [boxId], references: [id])
+  customerId           String
+  customer             User      @relation(fields: [customerId], references: [id])
+  days                 Int
+  monthlyRate          Decimal   @db.Decimal(10, 2) // snapshot at booking time
+  totalAmount          Decimal   @db.Decimal(10, 2)
+  currency             String    @default("INR")
+  status               String    @default("PENDING") // PENDING | ACTIVE | EXPIRED | CANCELLED
+  startDate            DateTime?
+  endDate              DateTime?
+  // Set once the "expiring soon" email has gone out (to both the customer
+  // and every admin/staff user) — cleared on renewal so the reminder
+  // cycle restarts against the new endDate. Same dedup idiom as
+  // User.accountSetupEmailSentAt.
+  expiryReminderSentAt DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  payment BoxPayment?
+
+  @@index([customerId])
+  @@index([status])
+  @@index([endDate])
+}
+
+model BoxPayment {
+  id                 String     @id @default(uuid())
+  boxBookingId       String     @unique
+  boxBooking         BoxBooking @relation(fields: [boxBookingId], references: [id])
+  providerOrderId    String     @unique // Razorpay order id
+  providerPaymentId  String?
+  amount             Decimal    @db.Decimal(10, 2)
+  currency           String     @default("INR")
+  status             String     @default("REQUIRES_PAYMENT") // REQUIRES_PAYMENT | SUCCEEDED | FAILED | REFUNDED
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
 // Issued when an account is auto-created for a guest checkout (or when a
 // customer requests "Forgot password"). The raw token is emailed to the
 // customer and only its hash is stored, same pattern as the OTP flow.
