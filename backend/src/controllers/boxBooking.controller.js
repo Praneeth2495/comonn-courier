@@ -363,5 +363,4 @@ module.exports = {
   retireBox,
   releaseBox,
   listAllBookings,
-  REMINDER_DAYS,
 };
