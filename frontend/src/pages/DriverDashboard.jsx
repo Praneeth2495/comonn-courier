@@ -136,8 +136,13 @@ function MyJobs({ userName }) {
   const completedJobs = jobs
     .filter((j) => !ACTIVE_STATUSES.includes(j.status))
     .filter((j) => {
-      if (!j.pickedUpAt) return true;
-      return isoDate(new Date(j.pickedUpAt)) === selectedDate;
+      // Cancelled jobs in particular can reach this bucket without ever
+      // being picked up (pickedUpAt stays null) — fall back to updatedAt
+      // (when the cancellation happened) so every completed job is still
+      // pinned to one specific date, never showing on every date picked.
+      const at = j.pickedUpAt || j.updatedAt;
+      if (!at) return true;
+      return isoDate(new Date(at)) === selectedDate;
     });
 
   return (
