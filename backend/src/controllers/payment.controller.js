@@ -7,6 +7,7 @@ const {
 const { sendReceiverBookingNotification } = require('./label.controller');
 const { PAYABLE_STATUSES, round2 } = require('./order.controller');
 const { notifyOrderStatusChange } = require('../services/orderNotifications');
+const { markBoxBookingPaid } = require('./boxBooking.controller');
 
 /**
  * Idempotent: Razorpay retries webhooks at-least-once, and the client-side
