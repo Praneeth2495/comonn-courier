@@ -2,10 +2,18 @@ const { prisma } = require('../config/db');
 const { round2 } = require('../services/pricingEngine');
 const { createOrder: createRazorpayOrder, verifyPaymentSignature, refundPayment } = require('../services/paymentService');
 
-const REMINDER_DAYS = 3;
+const BOX_STORAGE_ADDRESS = process.env.BOX_STORAGE_ADDRESS || '<office address not configured — set BOX_STORAGE_ADDRESS>';
 
 function computeAmount(monthlyRate, days) {
   return round2((Number(monthlyRate) / 30) * days);
+}
+
+// Adds the customer-facing "<office address>, Box <N>" string whenever a
+// box has been assigned — same BOX_STORAGE_ADDRESS env var boxBookingExpiry.js
+// uses for the expiry-reminder email, so both surfaces always agree.
+function withBoxAddress(booking) {
+  if (!booking?.box) return booking;
+  return { ...booking, boxAddress: `${BOX_STORAGE_ADDRESS}, Box ${booking.box.number}` };
 }
 
 /** GET /api/box-bookings/sizes — public, shows live availability so sold-out sizes can be greyed out. */
