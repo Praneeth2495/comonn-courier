@@ -315,7 +315,7 @@ model BoxBooking {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  payment BoxPayment?
+  payments BoxPayment[]
 
   @@index([customerId])
   @@index([status])
