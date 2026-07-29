@@ -26,10 +26,12 @@ const v1Routes = require('./routes/v1.routes');
 const merchantAdminRoutes = require('./routes/merchant.routes');
 const partyInvoiceRoutes = require('./routes/partyInvoice.routes');
 const customsClientRoutes = require('./routes/customsClient.routes');
+const boxBookingRoutes = require('./routes/boxBooking.routes');
 const { startDriverAutoUnassignJob } = require('./services/driverAutoUnassign');
 const { startAccountSetupFollowupJob } = require('./services/accountSetupFollowup');
 const { startMerchantInvoiceGenerationJob } = require('./services/merchantInvoiceGenerator');
 const { startPartyInvoiceRecurrenceJob } = require('./services/partyInvoiceRecurrence');
+const { startBoxBookingExpiryJob } = require('./services/boxBookingExpiry');
 
 const app = express();
 
