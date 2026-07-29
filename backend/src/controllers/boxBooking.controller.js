@@ -1,7 +1,6 @@
 const { prisma } = require('../config/db');
 const { round2 } = require('../services/pricingEngine');
 const { createOrder: createRazorpayOrder, verifyPaymentSignature, refundPayment } = require('../services/paymentService');
-const { sendEmail } = require('./contact.controller').__esModule ? {} : require('../services/emailService');
 
 const REMINDER_DAYS = 3;
 
