@@ -15,6 +15,7 @@ const STATUS_LABEL = {
   IN_TRANSIT: 'In Transit',
   OUT_FOR_DELIVERY: 'Out For Delivery',
   DELIVERED: 'Delivered',
+  CANCELLED: 'Cancelled',
 };
 
 function formatAddress(a) {
