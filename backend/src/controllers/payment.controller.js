@@ -261,6 +261,13 @@ async function handleWebhook(req, res, next) {
           rawWebhookPayload: event,
           method: entity.method,
         });
+        // Box Storage payments live entirely outside Payment/Order (see
+        // boxBooking.controller.js) — providerOrderId is globally unique
+        // (assigned by Razorpay), so this can never collide with the order
+        // lookup above; it's just an additive branch for the other kind of
+        // payment this same webhook now needs to cover.
+        const boxPayment = await prisma.boxPayment.findUnique({ where: { providerOrderId: entity.order_id } });
+        if (boxPayment) await markBoxBookingPaid(entity.order_id, entity.id);
       }
     }
 
