@@ -208,7 +208,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .banner-card h4{color:#fff;font-size:15px;}
 .banner-card p{color:#C7CEE3;font-size:13px;line-height:1.55;}
 .track-inline{display:flex;gap:10px;}
-.track-inline input{flex:1;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.22);color:#fff;border-radius:10px;padding:11px 13px;font-size:14px;outline:none;}
+.track-inline input{flex:1;min-width:0;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.22);color:#fff;border-radius:10px;padding:11px 13px;font-size:14px;outline:none;}
 .track-inline input::placeholder{color:#8592B4;}
 
 /* how it works */
