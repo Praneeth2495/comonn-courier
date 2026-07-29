@@ -342,7 +342,7 @@ async function listAllBookings(req, res, next) {
       include: { box: true, boxSize: true, customer: { select: { fullName: true, email: true, phone: true } } },
       orderBy: { createdAt: 'desc' },
     });
-    res.json({ bookings });
+    res.json({ bookings: bookings.map(withBoxAddress) });
   } catch (err) {
     next(err);
   }
