@@ -72,6 +72,7 @@ export default function AdminDashboard() {
         {tab === 'receivable' && isAdmin && <PartyInvoicesPanel direction="RECEIVABLE" />}
         {tab === 'payable' && isAdmin && <PartyInvoicesPanel direction="PAYABLE" />}
         {tab === 'customsclients' && isAdmin && <CustomsClientsPanel />}
+        {tab === 'storage' && isAdmin && <StorageAdminPanel />}
         {tab === 'account' && <ChangePassword />}
       </main>
     </div>
