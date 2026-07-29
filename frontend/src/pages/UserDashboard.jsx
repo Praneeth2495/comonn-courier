@@ -22,7 +22,7 @@ const STATUS_PILL = {
 const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
 const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
-const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['addresses', 'Saved addresses']];
+const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['addresses', 'Saved addresses'], ['boxes', 'My Box']];
 
 export default function UserDashboard() {
   const { user } = useAuth();
