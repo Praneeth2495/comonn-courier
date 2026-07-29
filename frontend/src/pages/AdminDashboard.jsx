@@ -32,6 +32,7 @@ export default function AdminDashboard() {
     ...(isAdmin ? [['receivable', 'Receivable']] : []),
     ...(isAdmin ? [['payable', 'Payable']] : []),
     ...(isAdmin ? [['customsclients', 'Customs Client']] : []),
+    ...(isAdmin ? [['storage', 'Storage']] : []),
     ['account', 'Profile'],
   ];
 
