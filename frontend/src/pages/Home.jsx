@@ -311,7 +311,7 @@ export default function Home() {
                   <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
                     {originSuggestions.map((s, i) => (
                       <button type="button" key={i} className="acct-menu-item" onClick={() => pickOriginSuggestion(s)}>
-                        {originPostcode}, {s.suburb}, {s.state}
+                        {originPostcode}, {s.suburb}{s.state ? `, ${s.state}` : ''}
                       </button>
                     ))}
                   </div>
