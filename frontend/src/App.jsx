@@ -59,6 +59,7 @@ export default function App() {
             <Route path="/pay/:orderId" element={withLayout(<PaymentByLink />)} />
             <Route path="/labels" element={withLayout(<Labels />)} />
             <Route path="/track" element={withLayout(<Track />)} />
+            <Route path="/storage" element={withLayout(<Storage />)} />
 
             <Route
               path="/dashboard"
