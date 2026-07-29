@@ -53,42 +53,68 @@ async function createBooking(req, res, next) {
       },
     });
 
-    const rzpOrder = await createRazorpayOrder({
-      amount: totalAmount,
-      currency: size.currency,
-      orderId: booking.id,
-      orderNumber: booking.id,
-    });
+    const { providerOrderId } = await createCheckoutPayment(booking, daysNum, totalAmount, size.currency);
 
-    await prisma.boxPayment.create({
-      data: {
-        boxBookingId: booking.id,
-        providerOrderId: rzpOrder.id,
-        amount: totalAmount,
-        currency: size.currency,
-      },
-    });
-
-    res.status(201).json({ booking, providerOrderId: rzpOrder.id, keyId: process.env.RAZORPAY_KEY_ID });
+    res.status(201).json({ booking, providerOrderId, keyId: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
     next(err);
   }
 }
 
+/** Creates the Razorpay order + matching BoxPayment row — shared by createBooking and renewBooking. */
+async function createCheckoutPayment(booking, daysNum, amount, currency) {
+  const rzpOrder = await createRazorpayOrder({
+    amount,
+    currency,
+    orderId: booking.id,
+    orderNumber: booking.id,
+  });
+  await prisma.boxPayment.create({
+    data: {
+      boxBookingId: booking.id,
+      days: daysNum,
+      providerOrderId: rzpOrder.id,
+      amount,
+      currency,
+    },
+  });
+  return { providerOrderId: rzpOrder.id };
+}
+
 /**
- * The box-assignment critical section — called from both the client-side
- * /confirm call and the shared Razorpay webhook, same idempotent pattern as
- * markOrdersPaidForProviderOrder in payment.controller.js. Box assignment
- * happens here (payment-confirmed time), not at checkout start, so an
- * abandoned checkout never holds a physical box hostage. If two customers
- * race for the last box of a size, the loser gets auto-refunded.
+ * The payment-confirmation critical section — called from both the
+ * client-side /confirm call and the shared Razorpay webhook, same
+ * idempotent pattern as markOrdersPaidForProviderOrder in
+ * payment.controller.js. Handles BOTH the initial payment (booking still
+ * PENDING — assigns a box) and any later renewal payment (booking already
+ * ACTIVE/EXPIRED — just extends endDate), since both share the same
+ * BoxPayment→BoxBooking lookup keyed by providerOrderId.
+ *
+ * Box assignment happens here (payment-confirmed time), not at checkout
+ * start, so an abandoned checkout never holds a physical box hostage. If
+ * two customers race for the last box of a size, the loser gets
+ * auto-refunded.
  */
 async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
   const payment = await prisma.boxPayment.findUnique({ where: { providerOrderId } });
   if (!payment || payment.status === 'SUCCEEDED') return;
 
   const booking = await prisma.boxBooking.findUnique({ where: { id: payment.boxBookingId } });
-  if (!booking || booking.status !== 'PENDING') return;
+  if (!booking) return;
+
+  if (booking.status === 'ACTIVE' || booking.status === 'EXPIRED') {
+    // Renewal payment — box already assigned, just extend the term.
+    const base = booking.status === 'EXPIRED' || !booking.endDate ? new Date() : new Date(booking.endDate);
+    const newEndDate = new Date(base.getTime() + payment.days * 24 * 60 * 60 * 1000);
+    await prisma.boxBooking.update({
+      where: { id: booking.id },
+      data: { status: 'ACTIVE', endDate: newEndDate, expiryReminderSentAt: null },
+    });
+    await prisma.boxPayment.update({ where: { id: payment.id }, data: { status: 'SUCCEEDED', providerPaymentId } });
+    return;
+  }
+
+  if (booking.status !== 'PENDING') return;
 
   const candidateBox = await prisma.box.findFirst({
     where: { boxSizeId: booking.boxSizeId, status: 'AVAILABLE' },
@@ -105,8 +131,8 @@ async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
   }
 
   // Guarded update — if a concurrent call already claimed this exact box,
-  // this affects 0 rows and the caller's booking is left PENDING for a
-  // retry (extremely unlikely at this scale: findFirst just returned it
+  // this affects 0 rows and the booking is left PENDING for a retry
+  // (extremely unlikely at this scale: findFirst just returned it
   // uncontended in the common case).
   const claimed = await prisma.box.updateMany({
     where: { id: candidateBox.id, status: 'AVAILABLE' },
@@ -115,7 +141,7 @@ async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
   if (claimed.count === 0) return;
 
   const startDate = new Date();
-  const endDate = new Date(startDate.getTime() + booking.days * 24 * 60 * 60 * 1000);
+  const endDate = new Date(startDate.getTime() + payment.days * 24 * 60 * 60 * 1000);
 
   await prisma.boxBooking.update({
     where: { id: booking.id },
@@ -124,7 +150,7 @@ async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
   await prisma.boxPayment.update({ where: { id: payment.id }, data: { status: 'SUCCEEDED', providerPaymentId } });
 }
 
-/** POST /api/box-bookings/:id/confirm — client-side call right after Checkout succeeds. */
+/** POST /api/box-bookings/:id/confirm — client-side call right after Checkout succeeds. Also used for renewal confirmation (same booking id, latest payment). */
 async function confirmBookingPayment(req, res, next) {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
@@ -166,7 +192,7 @@ async function listMyBookings(req, res, next) {
   }
 }
 
-/** POST /api/box-bookings/:id/renew — extends the SAME booking/box, doesn't create a new one. */
+/** POST /api/box-bookings/:id/renew — extends the SAME booking/box, doesn't create a new one. Confirmed via the same /confirm endpoint above. */
 async function renewBooking(req, res, next) {
   try {
     const { days } = req.body;
@@ -180,42 +206,9 @@ async function renewBooking(req, res, next) {
     }
 
     const totalAmount = computeAmount(booking.boxSize.monthlyRate, daysNum);
-    const rzpOrder = await createRazorpayOrder({
-      amount: totalAmount,
-      currency: booking.currency,
-      orderId: `renew-${booking.id}-${Date.now()}`,
-      orderNumber: `renew-${booking.id}`,
-    });
+    const { providerOrderId } = await createCheckoutPayment(booking, daysNum, totalAmount, booking.currency);
 
-    res.status(201).json({ providerOrderId: rzpOrder.id, keyId: process.env.RAZORPAY_KEY_ID, amount: totalAmount, days: daysNum });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/** POST /api/box-bookings/:id/renew/confirm */
-async function confirmRenewal(req, res, next) {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, days } = req.body;
-    const daysNum = Number(days);
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !Number.isInteger(daysNum) || daysNum <= 0) {
-      return res.status(400).json({ error: 'Missing Razorpay payment fields or days' });
-    }
-    const valid = verifyPaymentSignature({ razorpay_order_id, razorpay_payment_id, razorpay_signature });
-    if (!valid) return res.status(400).json({ error: 'Invalid payment signature' });
-
-    const booking = await prisma.boxBooking.findUnique({ where: { id: req.params.id } });
-    if (!booking || booking.customerId !== req.user.id) return res.status(404).json({ error: 'Booking not found' });
-
-    const base = booking.status === 'EXPIRED' || !booking.endDate ? new Date() : new Date(booking.endDate);
-    const newEndDate = new Date(base.getTime() + daysNum * 24 * 60 * 60 * 1000);
-
-    const updated = await prisma.boxBooking.update({
-      where: { id: booking.id },
-      data: { status: 'ACTIVE', endDate: newEndDate, expiryReminderSentAt: null },
-      include: { box: true, boxSize: true },
-    });
-    res.json({ booking: updated });
+    res.status(201).json({ providerOrderId, keyId: process.env.RAZORPAY_KEY_ID, amount: totalAmount, days: daysNum });
   } catch (err) {
     next(err);
   }
