@@ -256,7 +256,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .grid-2{grid-template-columns:1fr;}
   .item-row.equal{grid-template-columns:1fr;}
   .item-row.equal .qty-stepper{width:100%;}
-  .banner-grid{grid-template-columns:1fr;}
+  .banner-grid{grid-template-columns:1fr;padding:28px 16px;}
   .grid-3,.grid-5,.why-row,.values-grid,.stat-row,.steps-row{grid-template-columns:1fr!important;}
   .country-row{gap:16px;}
 }
