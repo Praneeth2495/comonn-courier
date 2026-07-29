@@ -64,6 +64,7 @@ model User {
   partyInvoicesCreated    PartyInvoice[]
   partyInvoiceComments    PartyInvoiceComment[]
   customsClientsCreated   CustomsClient[]
+  boxBookings             BoxBooking[]
 
   @@index([email])
 }
