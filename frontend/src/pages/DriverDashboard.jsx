@@ -120,9 +120,20 @@ function MyJobs({ userName }) {
     else if (value === 'PICKED_UP') markPickedUp(id);
   }
 
-  const pendingJobs = jobs.filter((j) => j.status !== 'PICKED_UP' && !['DELIVERED', 'CANCELLED'].includes(j.status));
-  const doneJobs = jobs
-    .filter((j) => j.status === 'PICKED_UP' || ['DELIVERED', 'CANCELLED'].includes(j.status))
+  // Active = the driver still has something to do (arrive/pick up).
+  // Completed = the driver's part is done, regardless of how far the
+  // shipment has since moved (IN_TRANSIT/OUT_FOR_DELIVERY/DELIVERED all
+  // belong here too, not just PICKED_UP — previously those two statuses
+  // fell through neither bucket and wrongly stayed listed as active).
+  const ACTIVE_STATUSES = ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED'];
+  const activeJobs = jobs
+    .filter((j) => ACTIVE_STATUSES.includes(j.status))
+    .filter((j) => {
+      if (!j.driverAssignedAt) return true;
+      return isoDate(new Date(j.driverAssignedAt)) === selectedDate;
+    });
+  const completedJobs = jobs
+    .filter((j) => !ACTIVE_STATUSES.includes(j.status))
     .filter((j) => {
       if (!j.pickedUpAt) return true;
       return isoDate(new Date(j.pickedUpAt)) === selectedDate;
@@ -134,7 +145,7 @@ function MyJobs({ userName }) {
       <p className="lead" style={{ marginBottom: 16 }}>{userName}</p>
 
       <div className="card" style={{ padding: 14, marginBottom: 20, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>View jobs completed on</span>
+        <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>View jobs for</span>
         <input
           className="input"
           type="date"
@@ -157,19 +168,21 @@ function MyJobs({ userName }) {
         <>
           {error && <div className="error-text" style={{ marginBottom: 14 }}>{error}</div>}
 
-          {pendingJobs.length > 0 && (
+          <h3 className="h-md" style={{ marginBottom: 12 }}>Active jobs</h3>
+          {activeJobs.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
-              {pendingJobs.map((j) => (
+              {activeJobs.map((j) => (
                 <JobCard key={j.id} job={j} updating={updatingId === j.id} onStatusChange={(v) => handleStatusChange(j.id, v)} />
               ))}
             </div>
+          ) : (
+            <p className="lead" style={{ fontSize: 13.5, marginBottom: 28 }}>No active jobs on this day.</p>
           )}
 
-          <h3 className="h-md" style={{ marginBottom: 12 }}>Completed</h3>
-
-          {doneJobs.length > 0 ? (
+          <h3 className="h-md" style={{ marginBottom: 12 }}>Completed jobs</h3>
+          {completedJobs.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {doneJobs.map((j) => (
+              {completedJobs.map((j) => (
                 <JobCard key={j.id} job={j} updating={false} onStatusChange={null} />
               ))}
             </div>
