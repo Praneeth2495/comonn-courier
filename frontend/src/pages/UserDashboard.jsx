@@ -157,6 +157,7 @@ export default function UserDashboard() {
       )}
 
       {tab === 'addresses' && <SavedAddresses />}
+      {tab === 'boxes' && <BoxBookings />}
 
       {selected && <OrderDetailModal order={selected} onClose={() => setSelected(null)} />}
     </div>
