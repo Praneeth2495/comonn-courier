@@ -205,7 +205,10 @@ function JobCard({ job, updating, onStatusChange }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
         <div>
           <h3 style={{ fontSize: 16 }}>Order <span className="mono">{job.orderNumber}</span></h3>
-          <span className={`pill ${job.status === 'PICKED_UP' ? 'pill-success' : 'pill-cobalt'}`} style={{ marginTop: 6, display: 'inline-block' }}>
+          <span
+            className={`pill ${job.status === 'CANCELLED' ? 'pill-danger' : ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(job.status) ? 'pill-success' : 'pill-cobalt'}`}
+            style={{ marginTop: 6, display: 'inline-block' }}
+          >
             {STATUS_LABEL[job.status] || job.status}
           </span>
           {stage === 'ARRIVED' && <span className="pill pill-navy" style={{ marginTop: 6, marginLeft: 6, display: 'inline-block' }}>Arrived</span>}
