@@ -18,6 +18,7 @@ import Payment from './pages/Payment';
 import PaymentByLink from './pages/PaymentByLink';
 import Labels from './pages/Labels';
 import Track from './pages/Track';
+import Storage from './pages/Storage';
 import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import DriverDashboard from './pages/DriverDashboard';
