@@ -180,7 +180,7 @@ async function confirmBookingPayment(req, res, next) {
     if (updated.status === 'CANCELLED') {
       return res.status(409).json({ error: 'Sorry, that box was just taken by another customer — you have been refunded.' });
     }
-    res.json({ booking: updated });
+    res.json({ booking: withBoxAddress(updated) });
   } catch (err) {
     next(err);
   }
