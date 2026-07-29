@@ -194,7 +194,7 @@ async function listMyBookings(req, res, next) {
       include: { box: true, boxSize: true },
       orderBy: { createdAt: 'desc' },
     });
-    res.json({ bookings });
+    res.json({ bookings: bookings.map(withBoxAddress) });
   } catch (err) {
     next(err);
   }
