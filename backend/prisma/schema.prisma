@@ -322,17 +322,27 @@ model BoxBooking {
   @@index([endDate])
 }
 
+// One row per checkout attempt against a booking — the initial payment
+// AND every later renewal each get their own row (not a 1:1 with
+// BoxBooking), so the webhook can reconcile a renewal exactly like the
+// initial payment instead of needing a separate, less-safe code path.
+// `days` is carried on the payment itself (not just the booking) so
+// markBoxBookingPaid knows how many days a given payment is for,
+// regardless of whether it's the first payment or a renewal.
 model BoxPayment {
-  id                 String     @id @default(uuid())
-  boxBookingId       String     @unique
-  boxBooking         BoxBooking @relation(fields: [boxBookingId], references: [id])
-  providerOrderId    String     @unique // Razorpay order id
-  providerPaymentId  String?
-  amount             Decimal    @db.Decimal(10, 2)
-  currency           String     @default("INR")
-  status             String     @default("REQUIRES_PAYMENT") // REQUIRES_PAYMENT | SUCCEEDED | FAILED | REFUNDED
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  id                String     @id @default(uuid())
+  boxBookingId      String
+  boxBooking        BoxBooking @relation(fields: [boxBookingId], references: [id])
+  days              Int
+  providerOrderId   String     @unique // Razorpay order id
+  providerPaymentId String?
+  amount            Decimal    @db.Decimal(10, 2)
+  currency          String     @default("INR")
+  status            String     @default("REQUIRES_PAYMENT") // REQUIRES_PAYMENT | SUCCEEDED | FAILED | REFUNDED
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([boxBookingId])
 }
 
 // Issued when an account is auto-created for a guest checkout (or when a
