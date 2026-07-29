@@ -347,7 +347,6 @@ module.exports = {
   markBoxBookingPaid,
   listMyBookings,
   renewBooking,
-  confirmRenewal,
   listBoxSizesAdmin,
   createBoxSize,
   updateBoxSize,
