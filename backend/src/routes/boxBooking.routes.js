@@ -16,6 +16,7 @@ const {
   releaseBox,
   listAllBookings,
   updateBookingDates,
+  reactivateBooking,
 } = require('../controllers/boxBooking.controller');
 
 router.get('/sizes', listBoxSizes);
