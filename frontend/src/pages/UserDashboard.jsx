@@ -173,6 +173,21 @@ export default function UserDashboard() {
 
 const BOX_STATUS_PILL = { PENDING: 'pill-warn', ACTIVE: 'pill-success', EXPIRED: 'pill-danger', CANCELLED: 'pill-navy' };
 
+// Invoice download is auth-protected (not a plain <a href>-able static
+// file), so fetch it as a blob with the normal authenticated client and
+// trigger a save — same pattern used for admin invoice downloads elsewhere.
+async function downloadBoxInvoice(bookingId, filename) {
+  const { data } = await client.get(`/box-bookings/${bookingId}/invoice`, { responseType: 'blob' });
+  const url = URL.createObjectURL(data);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function BoxBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
