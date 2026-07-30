@@ -36,5 +36,6 @@ router.patch('/admin/boxes/:id/retire', requireAuth, requireRole('ADMIN', 'STAFF
 router.patch('/admin/boxes/:id/release', requireAuth, requireRole('ADMIN', 'STAFF'), releaseBox);
 router.get('/admin/bookings', requireAuth, requireRole('ADMIN', 'STAFF'), listAllBookings);
 router.patch('/admin/bookings/:id', requireAuth, requireRole('ADMIN', 'STAFF'), updateBookingDates);
+router.patch('/admin/bookings/:id/reactivate', requireAuth, requireRole('ADMIN', 'STAFF'), reactivateBooking);
 
 module.exports = router;
