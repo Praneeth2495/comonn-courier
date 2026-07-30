@@ -681,7 +681,7 @@ function OrderDetailAdminModal({ order, onClose }) {
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
           <div>
             <h3 style={{ fontSize: 17 }}>Order <span className="mono">{order.orderNumber}</span></h3>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Everything the customer entered at booking</p>
