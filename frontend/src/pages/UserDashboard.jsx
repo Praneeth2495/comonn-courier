@@ -93,11 +93,17 @@ export default function UserDashboard() {
         ))}
       </div>
 
-      {tab !== 'addresses' && tab !== 'boxes' && (
+      {tab !== 'boxes' && (
         <>
           <form className="search-box" style={{ marginBottom: 20, maxWidth: 360 }} onSubmit={search}>
             🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
           </form>
+
+          {!loading && (
+            <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 14 }}>
+              {total} {tab === 'history' ? 'past' : 'active'} order{total === 1 ? '' : 's'}
+            </p>
+          )}
 
           {loading && <LoadingLogo label="Loading orders…" />}
           {!loading && orders.length === 0 && (
