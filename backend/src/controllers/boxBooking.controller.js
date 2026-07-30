@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { prisma } = require('../config/db');
 const { round2 } = require('../services/pricingEngine');
 const { createOrder: createRazorpayOrder, verifyPaymentSignature, refundPayment } = require('../services/paymentService');
