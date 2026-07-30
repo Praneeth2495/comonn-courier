@@ -448,6 +448,7 @@ module.exports = {
   confirmBookingPayment,
   markBoxBookingPaid,
   listMyBookings,
+  downloadInvoice,
   renewBooking,
   listBoxSizesAdmin,
   createBoxSize,
@@ -457,4 +458,5 @@ module.exports = {
   retireBox,
   releaseBox,
   listAllBookings,
+  updateBookingDates,
 };
