@@ -489,4 +489,5 @@ module.exports = {
   releaseBox,
   listAllBookings,
   updateBookingDates,
+  reactivateBooking,
 };
