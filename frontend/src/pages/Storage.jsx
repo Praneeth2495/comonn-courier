@@ -1,10 +1,32 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from '../components/LoadingLogo';
 
 const DAY_PRESETS = [7, 30, 90];
+
+const HOW_IT_WORKS = [
+  ['1', 'Reserve a box', 'Pick a size and how many days you need it for, and pay online in minutes.'],
+  ['2', 'Get your address', "You'll get a real physical address with your own box number — copy it any time from your dashboard."],
+  ['3', 'Sellers ship to you', 'Use that address at checkout on any e-commerce site — your order is held safely in your box.'],
+  ['4', 'Ship when ready', "Once everything's arrived, we'll help you book an international shipment for the whole lot."],
+];
+
+const WHY_STORAGE = [
+  { icon: '🔒', bg: '#EAF0FF', title: 'Kept on-site, securely', sub: "Every box is on our premises, not a shared drop point." },
+  { icon: '🗓️', bg: 'var(--success-bg)', title: 'Pay for just the days you need', sub: 'Day-based pricing off the monthly rate — no fixed-term contracts.' },
+  { icon: '📍', bg: 'var(--warn-bg)', title: 'One address, every seller', sub: 'The same box number works for as many orders as you like.' },
+  { icon: '🔁', bg: '#F3EBFF', title: 'Renew any time', sub: "Running out of days? Extend from your dashboard before it expires." },
+];
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export default function Storage() {
   const { user } = useAuth();
