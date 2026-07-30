@@ -195,31 +195,121 @@ function SizesAndBoxes() {
 function BookingsTable() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewing, setViewing] = useState(null); // booking whose details are shown
+  const [editing, setEditing] = useState(null); // booking whose end date is being edited
 
-  useEffect(() => {
+  function load() {
+    setLoading(true);
     client.get('/box-bookings/admin/bookings').then(({ data }) => { setBookings(data.bookings); setLoading(false); }).catch(() => setLoading(false));
-  }, []);
+  }
+  useEffect(load, []);
 
   if (loading) return <LoadingLogo />;
 
   return (
-    <div className="table-wrap">
-      <table className="data-table">
-        <thead><tr><th>Customer</th><th>Box</th><th>Days</th><th>Amount</th><th>Ends</th><th>Status</th></tr></thead>
-        <tbody>
-          {bookings.map((b) => (
-            <tr key={b.id}>
-              <td>{b.customer.fullName}<div style={{ fontSize: 11.5, color: 'var(--slate-light)' }}>{b.customer.email}</div></td>
-              <td className="mono">{b.boxAddress || `${b.boxSize.name} — Box ${b.box?.number ?? '?'}`}</td>
-              <td>{b.days}</td>
-              <td>₹{Number(b.totalAmount).toFixed(2)}</td>
-              <td>{b.endDate ? new Date(b.endDate).toLocaleDateString('en-IN') : '—'}</td>
-              <td><span className={`pill ${BOOKING_STATUS_PILL[b.status] || 'pill-navy'}`}>{b.status}</span></td>
-            </tr>
-          ))}
-          {bookings.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No bookings yet.</td></tr>}
-        </tbody>
-      </table>
+    <div>
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead><tr><th>Customer</th><th>Box size</th><th>Box #</th><th>Days</th><th>Amount</th><th>Ends</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {bookings.map((b) => (
+              <tr key={b.id}>
+                <td>
+                  <button type="button" className="btn-link" style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cobalt)', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }} onClick={() => setViewing(b)}>
+                    {b.customer.fullName}
+                  </button>
+                  <div style={{ fontSize: 11.5, color: 'var(--slate-light)' }}>{b.customer.email}</div>
+                </td>
+                <td>{b.boxSize.name}</td>
+                <td className="mono">{b.box?.number ?? '—'}</td>
+                <td>{b.days}</td>
+                <td>₹{Number(b.totalAmount).toFixed(2)}</td>
+                <td>{b.endDate ? new Date(b.endDate).toLocaleDateString('en-IN') : '—'}</td>
+                <td><span className={`pill ${BOOKING_STATUS_PILL[b.status] || 'pill-navy'}`}>{b.status}</span></td>
+                <td><button className="btn btn-outline btn-sm" onClick={() => setEditing(b)}>Edit</button></td>
+              </tr>
+            ))}
+            {bookings.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No bookings yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      {viewing && <BookingDetailModal booking={viewing} onClose={() => setViewing(null)} />}
+      {editing && <EditBookingDatesModal booking={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
+    </div>
+  );
+}
+
+function BookingDetailModal({ booking, onClose }) {
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <h3 style={{ fontSize: 17 }}>{booking.customer.fullName}</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+        <div className="form-stack">
+          <Row label="Email" value={booking.customer.email} />
+          <Row label="Mobile" value={booking.customer.phone || '—'} />
+          <Row label="Box size" value={booking.boxSize.name} />
+          <Row label="Box number" value={booking.box?.number ?? '—'} />
+          <Row label="Address" value={booking.boxAddress || '—'} />
+          <Row label="Days" value={booking.days} />
+          <Row label="Amount" value={`₹${Number(booking.totalAmount).toFixed(2)}`} />
+          <Row label="Started" value={booking.startDate ? new Date(booking.startDate).toLocaleDateString('en-IN') : '—'} />
+          <Row label="Ends" value={booking.endDate ? new Date(booking.endDate).toLocaleDateString('en-IN') : '—'} />
+          <Row label="Invoice #" value={booking.invoiceNumber || '—'} />
+          <Row label="Status" value={booking.status} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, padding: '6px 0', borderBottom: '1px solid var(--line-2)' }}>
+      <span style={{ color: 'var(--slate)' }}>{label}</span>
+      <span style={{ fontWeight: 600, color: 'var(--navy)' }}>{value}</span>
+    </div>
+  );
+}
+
+function EditBookingDatesModal({ booking, onClose, onSaved }) {
+  const [endDate, setEndDate] = useState(booking.endDate ? booking.endDate.slice(0, 10) : '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  async function save(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await client.patch(`/box-bookings/admin/bookings/${booking.id}`, { endDate });
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not update this booking.');
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 380 }} onClick={(e) => e.stopPropagation()}>
+        <h3 style={{ marginBottom: 4 }}>Edit end date</h3>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{booking.customer.fullName} — {booking.boxSize.name}, Box {booking.box?.number ?? '—'}</p>
+        <form onSubmit={save} className="form-stack">
+          <div className="field">
+            <label>End date</label>
+            <input className="input" type="date" required value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
