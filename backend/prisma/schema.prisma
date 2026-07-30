@@ -307,6 +307,11 @@ model BoxBooking {
   status               String    @default("PENDING") // PENDING | ACTIVE | EXPIRED | CANCELLED
   startDate            DateTime?
   endDate              DateTime?
+  // Set once, the first time the booking is confirmed paid (never on
+  // renewal — one invoice number covers the booking's whole lifetime,
+  // same "RIN"/"PIN" numbering idiom as PartyInvoice.
+  invoiceNumber        String?   @unique
+  pdfFileUrl           String?
   // Set once the "expiring soon" email has gone out (to both the customer
   // and every admin/staff user) — cleared on renewal so the reminder
   // cycle restarts against the new endDate. Same dedup idiom as
