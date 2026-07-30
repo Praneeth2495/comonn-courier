@@ -444,6 +444,34 @@ async function updateBookingDates(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/box-bookings/admin/bookings/:id/reactivate — undo an
+ * accidental Release/expiry: puts the booking back to ACTIVE and re-rents
+ * its box, as long as nobody else has been assigned that box in the
+ * meantime (guarded — otherwise this would double-book it).
+ */
+async function reactivateBooking(req, res, next) {
+  try {
+    const booking = await prisma.boxBooking.findUnique({ where: { id: req.params.id }, include: { box: true } });
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (booking.status !== 'EXPIRED') return res.status(409).json({ error: 'Only an expired booking can be reactivated' });
+    if (!booking.box) return res.status(409).json({ error: 'This booking has no box assigned' });
+    if (booking.box.status !== 'AVAILABLE') {
+      return res.status(409).json({ error: 'That box is no longer available — it may already be rented to someone else' });
+    }
+
+    await prisma.box.update({ where: { id: booking.box.id }, data: { status: 'RENTED' } });
+    const updated = await prisma.boxBooking.update({
+      where: { id: booking.id },
+      data: { status: 'ACTIVE' },
+      include: { box: true, boxSize: true, customer: { select: { fullName: true, email: true, phone: true } } },
+    });
+    res.json({ booking: withBoxAddress(updated) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   listBoxSizes,
   createBooking,
