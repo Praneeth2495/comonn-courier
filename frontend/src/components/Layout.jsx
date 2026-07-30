@@ -99,6 +99,9 @@ function GuestMenu() {
       </button>
       {open && (
         <div className="card" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 160, zIndex: 50 }}>
+          <Link to="/about" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>About</Link>
+          <Link to="/services" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>Services</Link>
+          <div className="acct-menu-mobile-only" style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
           <Link to="/login" className="acct-menu-item" onClick={() => setOpen(false)}>Login</Link>
           <Link to="/register" className="acct-menu-item" onClick={() => setOpen(false)}>Register</Link>
         </div>
