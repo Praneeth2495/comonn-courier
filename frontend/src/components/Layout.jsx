@@ -6,7 +6,7 @@ import EditProfile from './EditProfile';
 import logoFull from '../assets/logo-full.png';
 import logoFooter from '../assets/logo-footer.png';
 
-function AccountMenu({ name, onOpen, onLogout }) {
+function AccountMenu({ name, onOpen, onLogout, onNavigate }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
