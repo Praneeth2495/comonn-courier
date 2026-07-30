@@ -392,13 +392,15 @@ async function retireBox(req, res, next) {
 
 /**
  * PATCH /api/box-bookings/admin/boxes/:id/release — the manual step after
- * staff physically clears out an expired box. Boxes never auto-return to
- * the pool (see boxBookingExpiry.js) — this is the only way one becomes
- * AVAILABLE again once rented.
+ * staff physically clears out a box, whether its booking already expired on
+ * its own (see boxBookingExpiry.js) or staff are ending it early. Also closes
+ * out any still-ACTIVE booking on this box so it stops showing as active —
+ * Release is the single "this tenancy is over" action.
  */
 async function releaseBox(req, res, next) {
   try {
     const box = await prisma.box.update({ where: { id: req.params.id }, data: { status: 'AVAILABLE', retiredAt: null } });
+    await prisma.boxBooking.updateMany({ where: { boxId: box.id, status: 'ACTIVE' }, data: { status: 'EXPIRED' } });
     res.json({ box });
   } catch (err) {
     next(err);
