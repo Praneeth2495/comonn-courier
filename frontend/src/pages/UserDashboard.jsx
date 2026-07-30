@@ -224,6 +224,15 @@ function BoxBookings() {
                 >
                   Copy address
                 </button>
+                {b.invoiceNumber && (
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => downloadBoxInvoice(b.id, `${b.invoiceNumber}.pdf`)}
+                  >
+                    Download invoice
+                  </button>
+                )}
                 {['ACTIVE', 'EXPIRED'].includes(b.status) && (
                   <button type="button" className="btn btn-primary btn-sm" onClick={() => setRenewing(b)}>Renew</button>
                 )}
