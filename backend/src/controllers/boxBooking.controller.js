@@ -239,6 +239,38 @@ async function listMyBookings(req, res, next) {
   }
 }
 
+/**
+ * GET /api/box-bookings/:id/invoice — customer downloads their own booking's
+ * invoice PDF (admin/staff can download any). Only exists once the booking
+ * has actually been paid (invoiceNumber/pdfFileUrl are set in
+ * markBoxBookingPaid). Regenerates on the fly if the file went missing on
+ * redeploy, same pattern as label/order invoice downloads.
+ */
+async function downloadInvoice(req, res, next) {
+  try {
+    const booking = await prisma.boxBooking.findUnique({
+      where: { id: req.params.id },
+      include: { box: true, boxSize: true, customer: true },
+    });
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    const isOwner = booking.customerId === req.user.id;
+    const isStaff = ['ADMIN', 'STAFF'].includes(req.user.role);
+    if (!isOwner && !isStaff) return res.status(403).json({ error: 'Not authorized to view this invoice' });
+    if (!booking.invoiceNumber) return res.status(404).json({ error: 'No invoice available for this booking yet' });
+
+    const filePath = path.resolve(path.join(STORAGE_DIR, booking.pdfFileUrl || `${booking.invoiceNumber}.pdf`));
+    if (!fs.existsSync(filePath)) await generateBoxBookingInvoicePdf(booking);
+    if (req.query.inline) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+      return res.sendFile(filePath);
+    }
+    res.download(filePath);
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** POST /api/box-bookings/:id/renew — extends the SAME booking/box, doesn't create a new one. Confirmed via the same /confirm endpoint above. */
 async function renewBooking(req, res, next) {
   try {
