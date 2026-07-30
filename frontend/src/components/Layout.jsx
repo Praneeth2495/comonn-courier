@@ -210,7 +210,7 @@ export function PublicLayout({ children }) {
       {accountSection && (
         <div className="modal-overlay open" onClick={() => setAccountSection(null)}>
           <div className="modal-box" style={{ maxWidth: accountSection === 'addresses' ? 640 : 440 }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4, position: 'sticky', top: -28, background: '#fff', paddingTop: 12, marginTop: -12, zIndex: 5 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4, position: 'sticky', top: 0, background: '#fff', zIndex: 5 }}>
               <button
                 onClick={() => setAccountSection(null)}
                 style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 14, color: 'var(--slate)', cursor: 'pointer' }}
