@@ -1,8 +1,34 @@
 const { prisma } = require('../config/db');
 const { round2 } = require('../services/pricingEngine');
 const { createOrder: createRazorpayOrder, verifyPaymentSignature, refundPayment } = require('../services/paymentService');
+const { sendEmail } = require('../services/emailService');
 
 const BOX_STORAGE_ADDRESS = process.env.BOX_STORAGE_ADDRESS || '<office address not configured — set BOX_STORAGE_ADDRESS>';
+
+async function sendBoxBookingConfirmationEmail(booking, box, boxSize, customer) {
+  if (!customer?.email) return;
+  try {
+    await sendEmail({
+      to: customer.email,
+      from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
+      subject: `Storage box confirmed — ${boxSize.name}, Box ${box.number}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
+          <h2 style="color:#0E1B3D;margin-bottom:8px;">Your storage box is booked</h2>
+          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">Hi ${customer.fullName || ''},</p>
+          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">Your ${boxSize.name} box is confirmed and ready to receive packages. Give this address to any e-commerce seller:</p>
+          <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;margin:14px 0;">
+            <p style="margin:0;font-size:14px;font-weight:700;color:#0E1B3D;">${BOX_STORAGE_ADDRESS}, Box ${box.number}</p>
+          </div>
+          <p style="font-size:13px;color:#5B6478;line-height:1.6;">Valid for ${booking.days} days, until ${new Date(booking.endDate).toLocaleDateString('en-IN')}. Amount paid: Rs. ${Number(booking.totalAmount).toFixed(2)}.</p>
+          <p style="font-size:12px;color:#8A93A6;">Manage or renew this box any time from your Comonn dashboard.</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error('sendBoxBookingConfirmationEmail failed:', err.message);
+  }
+}
 
 function computeAmount(monthlyRate, days) {
   return round2((Number(monthlyRate) / 30) * days);
