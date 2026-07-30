@@ -198,9 +198,9 @@ export function SiteFooter() {
 }
 
 export function PublicLayout({ children }) {
-  // null | 'profile' | 'password' — lets the header's account dropdown open
-  // either section as a modal from anywhere in the app, not just the
-  // Dashboard page.
+  // null | 'profile' | 'password' | 'addresses' — lets the header's account
+  // dropdown open any of these as a modal from anywhere in the app, not
+  // just the Dashboard page.
   const [accountSection, setAccountSection] = useState(null);
   return (
     <>
@@ -209,7 +209,7 @@ export function PublicLayout({ children }) {
       <SiteFooter />
       {accountSection && (
         <div className="modal-overlay open" onClick={() => setAccountSection(null)}>
-          <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-box" style={{ maxWidth: accountSection === 'addresses' ? 640 : 440 }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
               <button
                 onClick={() => setAccountSection(null)}
@@ -218,7 +218,9 @@ export function PublicLayout({ children }) {
                 ✕
               </button>
             </div>
-            {accountSection === 'profile' ? <EditProfile /> : <ChangePassword />}
+            {accountSection === 'profile' && <EditProfile />}
+            {accountSection === 'password' && <ChangePassword />}
+            {accountSection === 'addresses' && <SavedAddresses />}
           </div>
         </div>
       )}
