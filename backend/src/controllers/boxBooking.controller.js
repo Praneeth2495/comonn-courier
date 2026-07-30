@@ -575,4 +575,6 @@ module.exports = {
   listAllBookings,
   updateBookingDates,
   reactivateBooking,
+  searchCustomers,
+  createBookingForCustomer,
 };
