@@ -440,7 +440,7 @@ export default function BatchScanPanel() {
       <div className={`modal-overlay ${viewingBatch ? 'open' : ''}`} onClick={() => setViewingBatch(null)}>
         {viewingBatch && (
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+            <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div>
                 <h3 style={{ fontSize: 17 }}>{viewingBatch.name}</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
