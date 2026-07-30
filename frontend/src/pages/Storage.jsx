@@ -205,5 +205,35 @@ export default function Storage() {
         </>
       )}
     </div>
+
+      <div className="section">
+        <div className="wrap" style={{ textAlign: 'center', marginBottom: 36 }}>
+          <h2 className="h-lg">How it works</h2>
+        </div>
+        <div className="wrap steps-row">
+          {HOW_IT_WORKS.map(([n, title, body], i) => (
+            <Fragment key={n}>
+              <div className="hiw-card"><div className="hiw-num">{n}</div><h4>{title}</h4><p>{body}</p></div>
+              {i < HOW_IT_WORKS.length - 1 && <div className="hiw-arrow"><ArrowIcon /></div>}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+
+      <div className="section" style={{ background: '#fff' }}>
+        <div className="wrap" style={{ textAlign: 'center', marginBottom: 32 }}>
+          <h2 className="h-lg">Why store with us</h2>
+        </div>
+        <div className="wrap why-row">
+          {WHY_STORAGE.map((w) => (
+            <div className="why-card" key={w.title}>
+              <div className="icon-circle" style={{ background: w.bg, margin: '0 auto 14px' }}>{w.icon}</div>
+              <h4>{w.title}</h4>
+              <p style={{ fontSize: 13.5, color: 'var(--slate)' }}>{w.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
