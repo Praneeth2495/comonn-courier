@@ -174,7 +174,7 @@ function MerchantDetailModal({ merchantId, onClose, onOpenInvoice, onChanged }) 
       <div className="modal-box" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
         {loading || !merchant ? <LoadingLogo size={40} /> : (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+            <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div>
                 <h3 style={{ fontSize: 17 }}>{merchant.name}</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{merchant.contactEmail}{merchant.contactPhone ? ` · ${merchant.contactPhone}` : ''}</p>
