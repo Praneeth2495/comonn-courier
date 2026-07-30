@@ -307,13 +307,15 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .nav-links{order:3;width:100%;justify-content:center;border-top:1px solid var(--line-2);padding-top:8px;}
   .nav-hide-mobile{display:none;}
   .acct-menu-mobile-only{display:block;}
-}
-.guest-actions-mobile{display:none;}
-.acct-menu-mobile-only{display:none;}
-@media(max-width:640px){
+  /* Services/About move into the GuestMenu dropdown at this same
+     breakpoint (see .nav-hide-mobile above), so the plain Login/Register
+     buttons need to swap for the dropdown avatar here too — otherwise
+     there'd be no way to reach them between 640-900px. */
   .guest-actions-desktop{display:none;}
   .guest-actions-mobile{display:flex;}
 }
+.guest-actions-mobile{display:none;}
+.acct-menu-mobile-only{display:none;}
 
 /* ============================================================
    Redesign additions — Services
