@@ -448,6 +448,87 @@ async function updateBookingDates(req, res, next) {
   }
 }
 
+/** GET /api/box-bookings/admin/customers?search= — customer picker for the walk-in booking flow. */
+async function searchCustomers(req, res, next) {
+  try {
+    const q = (req.query.search || '').trim();
+    const where = {
+      role: 'CUSTOMER',
+      ...(q ? { OR: [
+        { fullName: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+        { phone: { contains: q, mode: 'insensitive' } },
+      ] } : {}),
+    };
+    const customers = await prisma.user.findMany({
+      where,
+      select: { id: true, fullName: true, email: true, phone: true },
+      orderBy: { fullName: 'asc' },
+      take: 20,
+    });
+    res.json({ customers });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/box-bookings/admin/bookings — staff books a box for a walk-in or
+ * phone customer, either picking an existing account (customerId) or
+ * creating one on the spot (newCustomer). A freshly-created account gets the
+ * same unusable random password + "set up your account" email flow as
+ * guest-checkout accounts (see accountProvisioning.js / accountSetupFollowup.js)
+ * — the customer sets their own password later via that emailed link.
+ * Payment still goes through Razorpay, same as a customer's own booking —
+ * this just starts the checkout on their behalf.
+ */
+async function createBookingForCustomer(req, res, next) {
+  try {
+    const { boxSizeId, days, customerId, newCustomer } = req.body;
+    const daysNum = Number(days);
+    if (!boxSizeId || !Number.isInteger(daysNum) || daysNum <= 0) {
+      return res.status(400).json({ error: 'boxSizeId and a positive integer days are required' });
+    }
+
+    let customer;
+    if (customerId) {
+      customer = await prisma.user.findUnique({ where: { id: customerId } });
+      if (!customer) return res.status(404).json({ error: 'Customer not found' });
+    } else if (newCustomer?.email?.trim() && newCustomer?.fullName?.trim()) {
+      const email = newCustomer.email.toLowerCase().trim();
+      customer = await prisma.user.findUnique({ where: { email } });
+      if (!customer) {
+        const passwordHash = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 12);
+        customer = await prisma.user.create({
+          data: { email, passwordHash, fullName: newCustomer.fullName.trim(), phone: newCustomer.phone?.trim() || null, role: 'CUSTOMER' },
+        });
+      }
+    } else {
+      return res.status(400).json({ error: 'customerId or newCustomer{fullName,email} is required' });
+    }
+
+    const size = await prisma.boxSize.findUnique({ where: { id: boxSizeId } });
+    if (!size || !size.isActive) return res.status(404).json({ error: 'Box size not found' });
+    const availableCount = await prisma.box.count({ where: { boxSizeId: size.id, status: 'AVAILABLE' } });
+    if (availableCount <= 0) return res.status(409).json({ error: `No ${size.name} boxes available right now` });
+
+    const totalAmount = computeAmount(size.monthlyRate, daysNum);
+    const booking = await prisma.boxBooking.create({
+      data: { boxSizeId: size.id, customerId: customer.id, days: daysNum, monthlyRate: size.monthlyRate, totalAmount, currency: size.currency, status: 'PENDING' },
+    });
+    const { providerOrderId } = await createCheckoutPayment(booking, daysNum, totalAmount, size.currency);
+
+    res.status(201).json({
+      booking,
+      providerOrderId,
+      keyId: process.env.RAZORPAY_KEY_ID,
+      customer: { id: customer.id, fullName: customer.fullName, email: customer.email, phone: customer.phone },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /**
  * PATCH /api/box-bookings/admin/bookings/:id/reactivate — undo an
  * accidental Release/expiry: puts the booking back to ACTIVE and re-rents
