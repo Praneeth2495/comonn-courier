@@ -183,12 +183,16 @@ async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
 
   const startDate = new Date();
   const endDate = new Date(startDate.getTime() + payment.days * 24 * 60 * 60 * 1000);
+  const invoiceNumber = await generateBoxInvoiceNumber();
 
-  await prisma.boxBooking.update({
+  const updated = await prisma.boxBooking.update({
     where: { id: booking.id },
-    data: { boxId: candidateBox.id, status: 'ACTIVE', startDate, endDate },
+    data: { boxId: candidateBox.id, status: 'ACTIVE', startDate, endDate, invoiceNumber },
   });
   await prisma.boxPayment.update({ where: { id: payment.id }, data: { status: 'SUCCEEDED', providerPaymentId } });
+
+  const { fileName } = await generateBoxBookingInvoicePdf({ ...updated, box: candidateBox, boxSize: booking.boxSize, customer: booking.customer });
+  await prisma.boxBooking.update({ where: { id: booking.id }, data: { pdfFileUrl: fileName } });
 
   await sendBoxBookingConfirmationEmail({ ...booking, startDate, endDate }, candidateBox, booking.boxSize, booking.customer);
 }
