@@ -133,7 +133,10 @@ async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
   const payment = await prisma.boxPayment.findUnique({ where: { providerOrderId } });
   if (!payment || payment.status === 'SUCCEEDED') return;
 
-  const booking = await prisma.boxBooking.findUnique({ where: { id: payment.boxBookingId } });
+  const booking = await prisma.boxBooking.findUnique({
+    where: { id: payment.boxBookingId },
+    include: { boxSize: true, customer: true },
+  });
   if (!booking) return;
 
   if (booking.status === 'ACTIVE' || booking.status === 'EXPIRED') {
