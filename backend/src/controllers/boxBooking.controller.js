@@ -11,9 +11,16 @@ const { generateBoxBookingInvoicePdf, STORAGE_DIR } = require('../services/boxBo
 
 const BOX_STORAGE_ADDRESS = process.env.BOX_STORAGE_ADDRESS || '<office address not configured — set BOX_STORAGE_ADDRESS>';
 
-async function sendBoxBookingConfirmationEmail(booking, box, boxSize, customer) {
+async function sendBoxBookingConfirmationEmail(booking, box, boxSize, customer, invoiceFileName) {
   if (!customer?.email) return;
   try {
+    const attachments = [];
+    if (invoiceFileName) {
+      const filePath = path.join(STORAGE_DIR, invoiceFileName);
+      if (fs.existsSync(filePath)) {
+        attachments.push({ filename: invoiceFileName, content: fs.readFileSync(filePath).toString('base64') });
+      }
+    }
     await sendEmail({
       to: customer.email,
       from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
@@ -26,10 +33,17 @@ async function sendBoxBookingConfirmationEmail(booking, box, boxSize, customer) 
           <div style="background:#F7F5F0;border-radius:12px;padding:14px 16px;margin:14px 0;">
             <p style="margin:0;font-size:14px;font-weight:700;color:#0E1B3D;">${BOX_STORAGE_ADDRESS}, Box ${box.number}</p>
           </div>
-          <p style="font-size:13px;color:#5B6478;line-height:1.6;">Valid for ${booking.days} days, until ${new Date(booking.endDate).toLocaleDateString('en-IN')}. Amount paid: Rs. ${Number(booking.totalAmount).toFixed(2)}.</p>
-          <p style="font-size:12px;color:#8A93A6;">Manage or renew this box any time from your Comonn dashboard.</p>
+          <table style="width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;color:#5B6478;">
+            <tr><td style="padding:4px 0;">Invoice #</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#0E1B3D;">${booking.invoiceNumber || '—'}</td></tr>
+            <tr><td style="padding:4px 0;">Box size</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#0E1B3D;">${boxSize.name}</td></tr>
+            <tr><td style="padding:4px 0;">Duration</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#0E1B3D;">${booking.days} day(s)</td></tr>
+            <tr><td style="padding:4px 0;">Valid until</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#0E1B3D;">${new Date(booking.endDate).toLocaleDateString('en-IN')}</td></tr>
+            <tr><td style="padding:4px 0;">Amount paid</td><td style="padding:4px 0;text-align:right;font-weight:600;color:#0E1B3D;">Rs. ${Number(booking.totalAmount).toFixed(2)}</td></tr>
+          </table>
+          <p style="font-size:12px;color:#8A93A6;">${attachments.length ? 'Your invoice is attached to this email. ' : ''}Manage or renew this box any time from your Comonn dashboard.</p>
         </div>
       `,
+      ...(attachments.length ? { attachments } : {}),
     });
   } catch (err) {
     console.error('sendBoxBookingConfirmationEmail failed:', err.message);
