@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
 import ChangePassword from './ChangePassword';
 import EditProfile from './EditProfile';
+import SavedAddresses from './SavedAddresses';
 import logoFull from '../assets/logo-full.png';
 import logoFooter from '../assets/logo-footer.png';
 
