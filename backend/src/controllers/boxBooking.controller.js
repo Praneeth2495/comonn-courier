@@ -210,7 +210,7 @@ async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
   const { fileName } = await generateBoxBookingInvoicePdf({ ...updated, box: candidateBox, boxSize: booking.boxSize, customer: booking.customer });
   await prisma.boxBooking.update({ where: { id: booking.id }, data: { pdfFileUrl: fileName } });
 
-  await sendBoxBookingConfirmationEmail({ ...booking, startDate, endDate }, candidateBox, booking.boxSize, booking.customer);
+  await sendBoxBookingConfirmationEmail({ ...booking, startDate, endDate, invoiceNumber }, candidateBox, booking.boxSize, booking.customer, fileName);
 }
 
 /** POST /api/box-bookings/:id/confirm — client-side call right after Checkout succeeds. Also used for renewal confirmation (same booking id, latest payment). */
