@@ -22,7 +22,7 @@ const STATUS_PILL = {
 const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
 const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
-const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['addresses', 'Saved addresses'], ['boxes', 'My Box']];
+const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['boxes', 'My Box']];
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -30,6 +30,7 @@ export default function UserDashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState('active');
   const [orders, setOrders] = useState([]);
+  const [total, setTotal] = useState(0);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -42,10 +43,11 @@ export default function UserDashboard() {
     else params.notStatus = HISTORY_STATUSES.join(',');
     client.get('/orders', { params }).then(({ data }) => {
       setOrders(data.orders);
+      setTotal(data.total);
       ensureLabelsForPaidOrders(data.orders);
     }).finally(() => setLoading(false));
   }
-  useEffect(() => { if (tab !== 'addresses' && tab !== 'boxes') loadOrders(); }, [tab]);
+  useEffect(() => { if (tab !== 'boxes') loadOrders(); }, [tab]);
 
   // A paid order only gets its label/invoice generated once the customer
   // lands on the post-payment Labels page — if they never do (closed the
