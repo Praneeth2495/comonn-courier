@@ -17,6 +17,8 @@ const {
   listAllBookings,
   updateBookingDates,
   reactivateBooking,
+  searchCustomers,
+  createBookingForCustomer,
 } = require('../controllers/boxBooking.controller');
 
 router.get('/sizes', listBoxSizes);
