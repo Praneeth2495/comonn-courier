@@ -185,6 +185,8 @@ async function markBoxBookingPaid(providerOrderId, providerPaymentId) {
     data: { boxId: candidateBox.id, status: 'ACTIVE', startDate, endDate },
   });
   await prisma.boxPayment.update({ where: { id: payment.id }, data: { status: 'SUCCEEDED', providerPaymentId } });
+
+  await sendBoxBookingConfirmationEmail({ ...booking, startDate, endDate }, candidateBox, booking.boxSize, booking.customer);
 }
 
 /** POST /api/box-bookings/:id/confirm — client-side call right after Checkout succeeds. Also used for renewal confirmation (same booking id, latest payment). */
