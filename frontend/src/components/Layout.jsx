@@ -51,6 +51,7 @@ function AccountMenu({ name, onOpen, onLogout }) {
           <Link to="/about" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>About</Link>
           <Link to="/services" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>Services</Link>
           <div className="acct-menu-mobile-only" style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
+          <button type="button" className="acct-menu-item" onClick={() => choose('addresses')}>Saved addresses</button>
           <button type="button" className="acct-menu-item" onClick={() => choose('profile')}>Profile details</button>
           <button type="button" className="acct-menu-item" onClick={() => choose('password')}>Change password</button>
           <div style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
