@@ -47,6 +47,9 @@ function AccountMenu({ name, onOpen, onLogout }) {
           className="card"
           style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 180, zIndex: 50 }}
         >
+          <Link to="/about" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>About</Link>
+          <Link to="/services" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>Services</Link>
+          <div className="acct-menu-mobile-only" style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
           <button type="button" className="acct-menu-item" onClick={() => choose('profile')}>Profile details</button>
           <button type="button" className="acct-menu-item" onClick={() => choose('password')}>Change password</button>
           <div style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
