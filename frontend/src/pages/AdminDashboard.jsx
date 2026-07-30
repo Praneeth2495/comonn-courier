@@ -796,7 +796,7 @@ function OrderCommentsModal({ order, onClose }) {
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
             <h3 style={{ fontSize: 17 }}>Comments — <span className="mono">{order.orderNumber}</span></h3>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Internal notes, visible only to admin &amp; staff</p>
