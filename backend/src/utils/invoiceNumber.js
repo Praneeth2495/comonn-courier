@@ -36,4 +36,10 @@ async function generatePartyInvoiceNumber(direction) {
   return `${prefix}${seq}`;
 }
 
-module.exports = { generateInvoiceNumber, generatePartyInvoiceNumber };
+/** Generates SIN<seq> (Storage Invoice Number) for Box Storage bookings, same yearly-resetting idiom. */
+async function generateBoxInvoiceNumber() {
+  const seq = await nextYearlySequence('storage', new Date());
+  return `SIN${seq}`;
+}
+
+module.exports = { generateInvoiceNumber, generatePartyInvoiceNumber, generateBoxInvoiceNumber };
