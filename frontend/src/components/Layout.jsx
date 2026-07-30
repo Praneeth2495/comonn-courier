@@ -121,17 +121,16 @@ export function SiteHeader({ onOpenAccount }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  // Services/About only collapse on mobile when logged in — Dashboard takes
-  // up the extra slot then. Logged-out visitors see all four regardless of
-  // screen size, since there's no Dashboard link competing for space.
-  const hideOnMobile = user ? 'nav-hide-mobile' : '';
+  // On mobile the second nav row is reserved for Book/Track/Storage —
+  // Services/About move into the account dropdown (AccountMenu/GuestMenu)
+  // instead, regardless of login state.
   const links = [
     ...(user ? [[dashboardPath(user.role), 'Dashboard']] : []),
     ['/quote', 'Book'],
     ['/track', 'Track'],
-    ['/storage', 'Storage', hideOnMobile],
-    ['/services', 'Services', hideOnMobile],
-    ['/about', 'About', hideOnMobile],
+    ['/storage', 'Storage'],
+    ['/services', 'Services', 'nav-hide-mobile'],
+    ['/about', 'About', 'nav-hide-mobile'],
   ];
   return (
     <header className="site-header">
