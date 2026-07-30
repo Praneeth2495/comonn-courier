@@ -1,7 +1,11 @@
+const fs = require('fs');
+const path = require('path');
 const { prisma } = require('../config/db');
 const { round2 } = require('../services/pricingEngine');
 const { createOrder: createRazorpayOrder, verifyPaymentSignature, refundPayment } = require('../services/paymentService');
 const { sendEmail } = require('../services/emailService');
+const { generateBoxInvoiceNumber } = require('../utils/invoiceNumber');
+const { generateBoxBookingInvoicePdf, STORAGE_DIR } = require('../services/boxBookingInvoice');
 
 const BOX_STORAGE_ADDRESS = process.env.BOX_STORAGE_ADDRESS || '<office address not configured — set BOX_STORAGE_ADDRESS>';
 
