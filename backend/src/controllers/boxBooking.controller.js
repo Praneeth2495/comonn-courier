@@ -419,6 +419,29 @@ async function listAllBookings(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/box-bookings/admin/bookings/:id — manual correction of a
+ * booking's end date (e.g. a phone/bank-transfer extension staff need to
+ * apply without routing the customer through the pay-and-renew flow).
+ * Deliberately doesn't touch `days` (the original purchased term stays a
+ * fixed historical record) or expiryReminderSentAt is cleared so the
+ * reminder cycle re-fires against the corrected date.
+ */
+async function updateBookingDates(req, res, next) {
+  try {
+    const { endDate } = req.body;
+    if (!endDate) return res.status(400).json({ error: 'endDate is required' });
+    const booking = await prisma.boxBooking.update({
+      where: { id: req.params.id },
+      data: { endDate: new Date(endDate), expiryReminderSentAt: null, status: 'ACTIVE' },
+      include: { box: true, boxSize: true, customer: { select: { fullName: true, email: true, phone: true } } },
+    });
+    res.json({ booking: withBoxAddress(booking) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   listBoxSizes,
   createBooking,
