@@ -64,9 +64,21 @@ const HIW_STEPS = [
 ];
 
 const SHIP_CATEGORIES = [
-  { icon: '🧳', bg: '#EAF0FF', title: 'Personal Cargo', items: ['Clothes & shoes', 'Sweets & pickles', 'Household goods', 'Gifts & packed foods'] },
-  { icon: '📦', bg: 'var(--warn-bg)', title: 'Commercial Cargo', items: ['Goods for resale', 'Raw materials', 'Commercial samples', 'Business equipment'] },
-  { icon: '🎪', bg: 'var(--success-bg)', title: 'Project Cargo', items: ['Events equipment', 'Sports equipment', 'Medical & healthcare cargo'] },
+  {
+    icon: '🧳', bg: '#EAF0FF', accent: 'var(--cobalt)', title: 'Personal Cargo',
+    desc: 'Everyday items and belongings, packed and shipped door to door.',
+    items: ['Clothes & shoes', 'Sweets & pickles', 'Household goods', 'Gifts & packed foods'],
+  },
+  {
+    icon: '📦', bg: 'var(--warn-bg)', accent: 'var(--warn)', title: 'Commercial Cargo',
+    desc: 'B2B shipments and business inventory, handled at scale.',
+    items: ['Goods for resale', 'Raw materials', 'Commercial samples', 'Business equipment'],
+  },
+  {
+    icon: '🎪', bg: 'var(--success-bg)', accent: 'var(--success)', title: 'Project Cargo',
+    desc: 'Specialised equipment for events, sport and healthcare.',
+    items: ['Events equipment', 'Sports equipment', 'Medical & healthcare cargo'],
+  },
 ];
 
 const NEWS = [
