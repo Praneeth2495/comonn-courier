@@ -498,13 +498,15 @@ export default function Home() {
       <div className="section">
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 36 }}>
           <h2 className="h-lg">What we ship</h2>
+          <p className="lead" style={{ marginTop: 8 }}>Whatever you need to send, we've got a lane for it.</p>
         </div>
         <div className="wrap grid-3">
-          {SHIP_CATEGORIES.map(({ icon, bg, title, items }) => (
-            <div className="card ship-card" key={title}>
+          {SHIP_CATEGORIES.map(({ icon, bg, accent, title, desc, items }) => (
+            <div className="card ship-card" key={title} style={{ '--ship-accent': accent }}>
               <div className="icon-circle" style={{ background: bg }}>{icon}</div>
               <h4>{title}</h4>
-              <ul>{items.map((it) => <li key={it}>{it}</li>)}</ul>
+              <p className="ship-desc">{desc}</p>
+              <div className="ship-chips">{items.map((it) => <span className="ship-chip" key={it}>{it}</span>)}</div>
             </div>
           ))}
         </div>
