@@ -115,6 +115,7 @@ export default function Storage() {
   }
 
   return (
+    <div>
     <div className="wrap section-narrow">
       <div style={{ textAlign: 'center', marginBottom: 8 }}>
         <h2 className="h-lg">Reserve a storage box</h2>
