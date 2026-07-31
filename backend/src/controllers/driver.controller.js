@@ -67,7 +67,7 @@ async function markPickedUp(req, res, next) {
         trackingEvents: { create: { status: 'PICKED_UP', note: 'Picked up by driver' } },
       },
     });
-    await notifyOrderStatusChange(updated.id, 'PICKED_UP');
+    notifyOrderStatusChange(updated.id, 'PICKED_UP');
     res.json({ order: updated });
   } catch (err) {
     next(err);
