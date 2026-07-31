@@ -394,17 +394,6 @@ function OrdersPanel() {
         <div className="chip-filter active"><IndiaFlagChip /> India</div>
       </div>
 
-      {tab !== 'pickup' && (
-        <div className="chip-filter-row">
-          <div className={`chip-filter ${!zoneCode ? 'active' : ''}`} onClick={() => { setZoneCode(''); setPage(1); }}>All Zones</div>
-          {zones.map((z) => (
-            <div key={z.id} className={`chip-filter ${zoneCode === z.code ? 'active' : ''}`} onClick={() => { setZoneCode(z.code); setPage(1); }}>
-              {z.code}
-            </div>
-          ))}
-        </div>
-      )}
-
       {tab === 'pickup' && pickupStates.length > 0 && (
         <div className="chip-filter-row">
           <div className={`chip-filter ${!originState ? 'active' : ''}`} onClick={() => selectOriginState('')}>All States</div>
