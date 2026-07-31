@@ -40,6 +40,6 @@ router.get('/admin/customers', requireAuth, requireRole('ADMIN', 'STAFF'), searc
 router.get('/admin/bookings', requireAuth, requireRole('ADMIN', 'STAFF'), listAllBookings);
 router.post('/admin/bookings', requireAuth, requireRole('ADMIN', 'STAFF'), createBookingForCustomer);
 router.patch('/admin/bookings/:id', requireAuth, requireRole('ADMIN', 'STAFF'), updateBookingDates);
-router.patch('/admin/bookings/:id/reactivate', requireAuth, requireRole('ADMIN', 'STAFF'), reactivateBooking);
+router.patch('/admin/bookings/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), updateBookingStatus);
 
 module.exports = router;
