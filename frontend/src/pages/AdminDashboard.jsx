@@ -232,10 +232,7 @@ function IndiaFlagChip() {
 
 function OrdersPanel() {
   const [tab, setTab] = useState('pickup');
-  const [zones, setZones] = useState([]);
-  const [zoneCode, setZoneCode] = useState('');
-  // Pickup tab only: origin (sender) state/region — independent of the
-  // destination zoneCode filter above.
+  // Pickup tab only: origin (sender) state/region.
   const [pickupStates, setPickupStates] = useState([]);
   const [pickupRegionsByState, setPickupRegionsByState] = useState({});
   const [originState, setOriginState] = useState('');
