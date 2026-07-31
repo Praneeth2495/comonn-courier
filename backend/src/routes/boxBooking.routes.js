@@ -16,7 +16,7 @@ const {
   releaseBox,
   listAllBookings,
   updateBookingDates,
-  reactivateBooking,
+  updateBookingStatus,
   searchCustomers,
   createBookingForCustomer,
 } = require('../controllers/boxBooking.controller');
