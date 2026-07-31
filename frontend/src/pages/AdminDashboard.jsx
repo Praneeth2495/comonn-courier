@@ -255,10 +255,6 @@ function OrdersPanel() {
   const { setBooking } = useBooking();
 
   useEffect(() => {
-    client.get('/admin/zones').then(({ data }) => setZones(data.zones)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
     if (tab === 'pickup' && drivers.length === 0) {
       client.get('/admin/drivers').then(({ data }) => setDrivers(data.drivers)).catch(() => {});
     }
