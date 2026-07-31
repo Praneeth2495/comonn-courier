@@ -499,6 +499,86 @@ function Row({ label, value }) {
   );
 }
 
+function BookingCommentsModal({ booking, onClose }) {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [body, setBody] = useState('');
+  const [posting, setPosting] = useState(false);
+  const [error, setError] = useState('');
+
+  function load() {
+    setLoading(true);
+    client.get(`/box-bookings/admin/bookings/${booking.id}/comments`).then(({ data }) => {
+      setComments(data.comments);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }
+  useEffect(load, [booking.id]);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!body.trim()) return;
+    setPosting(true);
+    setError('');
+    try {
+      const { data } = await client.post(`/box-bookings/admin/bookings/${booking.id}/comments`, { body });
+      setComments((prev) => [...prev, data.comment]);
+      setBody('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not add comment.');
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <h3 style={{ fontSize: 17 }}>Comments — {booking.customer.fullName}</h3>
+            <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Internal notes, visible only to admin &amp; staff. Status changes are logged here automatically.</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+
+        {loading ? (
+          <LoadingLogo size={40} />
+        ) : comments.length === 0 ? (
+          <p className="lead" style={{ fontSize: 13.5 }}>No comments yet.</p>
+        ) : (
+          <div style={{ maxHeight: 320, overflowY: 'auto', marginBottom: 16 }}>
+            {comments.map((c) => (
+              <div className="comment-item" key={c.id}>
+                <div className="meta">
+                  <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
+                  <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <p className="body">{c.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <form onSubmit={submit} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', borderTop: '1px solid var(--line-2)', paddingTop: 14 }}>
+          <textarea
+            className="input"
+            placeholder="Add a comment…"
+            rows={2}
+            style={{ resize: 'vertical', flex: 1 }}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+          <button className="btn btn-primary btn-sm" disabled={!body.trim() || posting} style={{ flex: 'none' }}>
+            {posting ? '…' : 'Add comment'}
+          </button>
+        </form>
+        {error && <div className="error-text" style={{ marginTop: 8 }}>{error}</div>}
+      </div>
+    </div>
+  );
+}
+
 function EditBookingDatesModal({ booking, onClose, onSaved }) {
   const [endDate, setEndDate] = useState(booking.endDate ? booking.endDate.slice(0, 10) : '');
   const [saving, setSaving] = useState(false);
