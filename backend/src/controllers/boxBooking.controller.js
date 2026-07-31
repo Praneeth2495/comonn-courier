@@ -568,7 +568,14 @@ async function updateBookingStatus(req, res, next) {
     if (status === 'ACTIVE') {
       if (booking.status !== 'EXPIRED') return res.status(409).json({ error: 'Only an expired booking can be set back to active' });
       if (!booking.box) return res.status(409).json({ error: 'This booking has no box assigned' });
-      if (booking.box.status !== 'AVAILABLE') {
+      // The box may still show RENTED from this very booking (never
+      // released) — that's fine to reclaim. What's NOT fine is another
+      // booking having taken it over since (only possible once it was
+      // actually released back to AVAILABLE and re-rented).
+      const conflict = await prisma.boxBooking.findFirst({
+        where: { boxId: booking.box.id, status: 'ACTIVE', id: { not: booking.id } },
+      });
+      if (conflict) {
         return res.status(409).json({ error: 'That box is no longer available — it may already be rented to someone else' });
       }
       await prisma.box.update({ where: { id: booking.box.id }, data: { status: 'RENTED' } });
