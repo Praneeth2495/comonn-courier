@@ -299,7 +299,7 @@ function OrdersPanel() {
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
-  useEffect(load, [tab, zoneCode, page, originState, originRegion]);
+  useEffect(load, [tab, page, originState, originRegion]);
 
   function search(e) {
     e.preventDefault();
