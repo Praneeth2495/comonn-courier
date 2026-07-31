@@ -6,18 +6,41 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret',
 });
 
+// Razorpay's own API rate limit rejects bursts with a 429 — confirmed under
+// load testing to be transient (an identical retried call right after
+// succeeds immediately). A short exponential backoff absorbs that without
+// making the customer see a failed checkout for something that would have
+// worked a second later.
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withRateLimitRetry(fn, { retries = 3, baseDelayMs = 300 } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isRateLimited = err?.statusCode === 429;
+      if (!isRateLimited || attempt >= retries) throw err;
+      await sleep(baseDelayMs * 2 ** attempt);
+    }
+  }
+}
+
 /**
  * Creates a Razorpay Order for an order's grand total.
  * Amount must be in the smallest currency unit (paise for INR, cents for USD/AUD).
  */
 async function createOrder({ amount, currency, orderId, orderNumber }) {
   const amountInSubunits = Math.round(Number(amount) * 100);
-  return razorpay.orders.create({
-    amount: amountInSubunits,
-    currency: currency.toUpperCase(),
-    receipt: orderNumber,
-    notes: { orderId, orderNumber },
-  });
+  return withRateLimitRetry(() =>
+    razorpay.orders.create({
+      amount: amountInSubunits,
+      currency: currency.toUpperCase(),
+      receipt: orderNumber,
+      notes: { orderId, orderNumber },
+    })
+  );
 }
 
 async function fetchPayment(paymentId) {
