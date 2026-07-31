@@ -518,7 +518,7 @@ async function cancelOrder(req, res, next) {
         trackingEvents: { create: { status: 'CANCELLED', note: 'Order cancelled' } },
       },
     });
-    await notifyOrderStatusChange(updated.id, 'CANCELLED');
+    notifyOrderStatusChange(updated.id, 'CANCELLED');
     res.json({ order: updated });
   } catch (err) {
     next(err);
