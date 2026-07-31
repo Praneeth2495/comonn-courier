@@ -5,7 +5,6 @@ import LoadingLogo from './LoadingLogo';
 const LOW_STOCK_THRESHOLD = 1;
 
 const BOX_STATUS_PILL = { AVAILABLE: 'pill-success', RENTED: 'pill-cobalt', RETIRED: 'pill-danger' };
-const BOOKING_STATUS_PILL = { ACTIVE: 'pill-success', EXPIRED: 'pill-danger' };
 
 export default function StorageAdminPanel() {
   const [subTab, setSubTab] = useState('sizes');
