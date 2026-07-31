@@ -199,7 +199,7 @@ function BookingsTable() {
   const [viewing, setViewing] = useState(null); // booking whose details are shown
   const [editing, setEditing] = useState(null); // booking whose end date is being edited
   const [creating, setCreating] = useState(false); // new-booking modal
-  const [reactivatingId, setReactivatingId] = useState(null);
+  const [statusUpdatingId, setStatusUpdatingId] = useState(null);
   const [error, setError] = useState('');
 
   function load() {
