@@ -49,7 +49,7 @@ app.use(express.json({ limit: '2mb' }));
 const quoteLimiter = rateLimit({ windowMs: 60 * 1000, max: 60 });
 app.use('/api/quote', quoteLimiter);
 
-app.get('/health', (req, res) => res.json({ ok: true, service: 'comonn-backend' }));
+app.get('/health', (req, res) => res.json({ ok: true, service: 'comonn-backend', commit: process.env.RAILWAY_GIT_COMMIT_SHA || null }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/quote', quoteRoutes);
