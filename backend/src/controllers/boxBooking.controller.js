@@ -604,7 +604,7 @@ module.exports = {
   releaseBox,
   listAllBookings,
   updateBookingDates,
-  reactivateBooking,
+  updateBookingStatus,
   searchCustomers,
   createBookingForCustomer,
 };
