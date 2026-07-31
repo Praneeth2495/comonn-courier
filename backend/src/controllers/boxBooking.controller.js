@@ -655,4 +655,6 @@ module.exports = {
   updateBookingStatus,
   searchCustomers,
   createBookingForCustomer,
+  listBookingComments,
+  addBookingComment,
 };
