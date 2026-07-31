@@ -43,5 +43,7 @@ router.get('/admin/bookings', requireAuth, requireRole('ADMIN', 'STAFF'), listAl
 router.post('/admin/bookings', requireAuth, requireRole('ADMIN', 'STAFF'), createBookingForCustomer);
 router.patch('/admin/bookings/:id', requireAuth, requireRole('ADMIN', 'STAFF'), updateBookingDates);
 router.patch('/admin/bookings/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), updateBookingStatus);
+router.get('/admin/bookings/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), listBookingComments);
+router.post('/admin/bookings/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), addBookingComment);
 
 module.exports = router;
