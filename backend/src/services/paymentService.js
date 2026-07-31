@@ -15,14 +15,19 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function withRateLimitRetry(fn, { retries = 3, baseDelayMs = 300 } = {}) {
+// Full jitter, not fixed exponential delay — a synchronized burst (many
+// requests rate-limited in the same instant) would otherwise all retry at
+// the exact same fixed delay and collide again as a group. Randomizing each
+// retry's wait within [0, cap] spreads them out so they don't re-sync.
+async function withRateLimitRetry(fn, { retries = 5, baseDelayMs = 400 } = {}) {
   for (let attempt = 0; ; attempt++) {
     try {
       return await fn();
     } catch (err) {
       const isRateLimited = err?.statusCode === 429;
       if (!isRateLimited || attempt >= retries) throw err;
-      await sleep(baseDelayMs * 2 ** attempt);
+      const cap = baseDelayMs * 2 ** attempt;
+      await sleep(Math.random() * cap);
     }
   }
 }
