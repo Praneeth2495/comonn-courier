@@ -216,7 +216,7 @@ function BookingsTable() {
       .some((v) => String(v).toLowerCase().includes(needle));
   });
 
-async function setBookingStatus(id, status) {
+  async function setBookingStatus(id, status) {
     setStatusUpdatingId(id);
     setError('');
     try {
