@@ -243,7 +243,7 @@ function BookingsTable() {
 
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Customer</th><th>Box size</th><th>Box #</th><th>Days</th><th>Amount</th><th>Ends</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Customer</th><th>Box size</th><th>Box #</th><th>Days</th><th>Amount</th><th>Ends</th><th>Status</th><th>Comments</th><th></th></tr></thead>
           <tbody>
             {filtered.map((b) => (
               <tr key={b.id}>
