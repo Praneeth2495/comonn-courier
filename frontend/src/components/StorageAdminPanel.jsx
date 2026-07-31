@@ -270,12 +270,13 @@ function BookingsTable() {
                     <option value="EXPIRED">EXPIRED</option>
                   </select>
                 </td>
+                <td><button className="btn btn-outline btn-sm" onClick={() => setCommenting(b)}>View</button></td>
                 <td style={{ display: 'flex', gap: 8 }}>
                   <button className="btn btn-outline btn-sm" onClick={() => setEditing(b)}>Edit</button>
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>{bookings.length === 0 ? 'No bookings yet.' : 'No bookings match your search.'}</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>{bookings.length === 0 ? 'No bookings yet.' : 'No bookings match your search.'}</td></tr>}
           </tbody>
         </table>
       </div>
