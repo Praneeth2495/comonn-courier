@@ -449,7 +449,7 @@ async function updateOrderStatus(req, res, next) {
     }
 
     if (status !== existing.status) {
-      await notifyOrderStatusChange(order.id, status);
+      notifyOrderStatusChange(order.id, status);
     }
 
     res.json({ order });
