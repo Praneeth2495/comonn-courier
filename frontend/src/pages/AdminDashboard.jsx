@@ -425,11 +425,18 @@ function OrdersPanel() {
         <form className="search-box" onSubmit={search}>
           🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
         </form>
-        <div className="pager">
-          <span>{total} order{total === 1 ? '' : 's'}</span>
-          <button type="button" className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹</button>
-          <span className="mono" style={{ fontSize: 13 }}>{page} / {pageCount}</span>
-          <button type="button" className="btn btn-outline btn-sm" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>›</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <select className="select" style={{ fontSize: 13, padding: '4px 8px', width: 'auto' }} value={pageSize} onChange={(e) => changePageSize(Number(e.target.value))}>
+            <option value={25}>25 / page</option>
+            <option value={100}>100 / page</option>
+            <option value={500}>500 / page</option>
+          </select>
+          <div className="pager">
+            <span>{total} order{total === 1 ? '' : 's'}</span>
+            <button type="button" className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹</button>
+            <span className="mono" style={{ fontSize: 13 }}>{page} / {pageCount}</span>
+            <button type="button" className="btn btn-outline btn-sm" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>›</button>
+          </div>
         </div>
       </div>
 
