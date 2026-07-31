@@ -155,7 +155,7 @@ async function createShipment(req, res, next) {
     await prisma.trackingEvent.create({
       data: { orderId: order.id, status: 'PAID', note: `Booked via merchant API (${req.merchant.name})` },
     });
-    await notifyOrderStatusChange(order.id, 'PAID');
+    notifyOrderStatusChange(order.id, 'PAID');
 
     res.status(201).json({
       orderId: order.id,
