@@ -216,16 +216,16 @@ function BookingsTable() {
       .some((v) => String(v).toLowerCase().includes(needle));
   });
 
-  async function reactivate(id) {
-    setReactivatingId(id);
+async function setBookingStatus(id, status) {
+    setStatusUpdatingId(id);
     setError('');
     try {
-      await client.patch(`/box-bookings/admin/bookings/${id}/reactivate`);
+      await client.patch(`/box-bookings/admin/bookings/${id}/status`, { status });
       load();
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not reactivate this booking.');
+      setError(err.response?.data?.error || 'Could not update this booking\'s status.');
     } finally {
-      setReactivatingId(null);
+      setStatusUpdatingId(null);
     }
   }
 
