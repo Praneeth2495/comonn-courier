@@ -258,14 +258,20 @@ function BookingsTable() {
                 <td>{b.days}</td>
                 <td>₹{Number(b.totalAmount).toFixed(2)}</td>
                 <td>{b.endDate ? new Date(b.endDate).toLocaleDateString('en-IN') : '—'}</td>
-                <td><span className={`pill ${BOOKING_STATUS_PILL[b.status] || 'pill-navy'}`}>{b.status}</span></td>
+                <td>
+                  <select
+                    className="select"
+                    style={{ fontSize: 12, padding: '4px 8px', width: 'auto' }}
+                    value={b.status}
+                    disabled={statusUpdatingId === b.id}
+                    onChange={(e) => setBookingStatus(b.id, e.target.value)}
+                  >
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="EXPIRED">EXPIRED</option>
+                  </select>
+                </td>
                 <td style={{ display: 'flex', gap: 8 }}>
                   <button className="btn btn-outline btn-sm" onClick={() => setEditing(b)}>Edit</button>
-                  {b.status === 'EXPIRED' && (
-                    <button className="btn btn-outline btn-sm" disabled={reactivatingId === b.id} onClick={() => reactivate(b.id)}>
-                      {reactivatingId === b.id ? 'Reactivating…' : 'Reactivate'}
-                    </button>
-                  )}
                 </td>
               </tr>
             ))}
