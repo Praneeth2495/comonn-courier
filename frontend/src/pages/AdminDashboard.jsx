@@ -284,7 +284,6 @@ function OrdersPanel() {
       q: q || undefined,
       page,
       pageSize,
-      zoneCode: tab === 'pickup' ? undefined : zoneCode || undefined,
       scope: tab === 'pickup' ? 'pickup' : undefined,
       originState: tab === 'pickup' ? originState || undefined : undefined,
       originRegion: tab === 'pickup' ? originRegion || undefined : undefined,
