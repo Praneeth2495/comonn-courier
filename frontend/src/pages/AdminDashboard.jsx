@@ -240,7 +240,7 @@ function OrdersPanel() {
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(25);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [detailOrder, setDetailOrder] = useState(null);
