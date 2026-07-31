@@ -544,25 +544,41 @@ async function createBookingForCustomer(req, res, next) {
 }
 
 /**
- * PATCH /api/box-bookings/admin/bookings/:id/reactivate — undo an
- * accidental Release/expiry: puts the booking back to ACTIVE and re-rents
- * its box, as long as nobody else has been assigned that box in the
- * meantime (guarded — otherwise this would double-book it).
+ * PATCH /api/box-bookings/admin/bookings/:id/status — manual status
+ * override for staff corrections (e.g. undoing an accidental Release, or
+ * flagging a booking as ended without physically releasing the box yet).
+ * - -> ACTIVE from EXPIRED: re-rents the box, guarded against it having
+ *   already been assigned to someone else in the meantime (double-booking).
+ * - -> EXPIRED from ACTIVE: just flips the booking's status, same as the
+ *   overnight auto-expiry job — the box itself is untouched (stays RENTED
+ *   until staff physically clear it and hit Release).
  */
-async function reactivateBooking(req, res, next) {
+async function updateBookingStatus(req, res, next) {
   try {
+    const { status } = req.body;
+    if (!['ACTIVE', 'EXPIRED'].includes(status)) {
+      return res.status(400).json({ error: 'status must be ACTIVE or EXPIRED' });
+    }
     const booking = await prisma.boxBooking.findUnique({ where: { id: req.params.id }, include: { box: true } });
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
-    if (booking.status !== 'EXPIRED') return res.status(409).json({ error: 'Only an expired booking can be reactivated' });
-    if (!booking.box) return res.status(409).json({ error: 'This booking has no box assigned' });
-    if (booking.box.status !== 'AVAILABLE') {
-      return res.status(409).json({ error: 'That box is no longer available — it may already be rented to someone else' });
+    if (booking.status === status) {
+      return res.json({ booking: withBoxAddress({ ...booking }) });
     }
 
-    await prisma.box.update({ where: { id: booking.box.id }, data: { status: 'RENTED' } });
+    if (status === 'ACTIVE') {
+      if (booking.status !== 'EXPIRED') return res.status(409).json({ error: 'Only an expired booking can be set back to active' });
+      if (!booking.box) return res.status(409).json({ error: 'This booking has no box assigned' });
+      if (booking.box.status !== 'AVAILABLE') {
+        return res.status(409).json({ error: 'That box is no longer available — it may already be rented to someone else' });
+      }
+      await prisma.box.update({ where: { id: booking.box.id }, data: { status: 'RENTED' } });
+    } else if (booking.status !== 'ACTIVE') {
+      return res.status(409).json({ error: 'Only an active booking can be set to expired' });
+    }
+
     const updated = await prisma.boxBooking.update({
       where: { id: booking.id },
-      data: { status: 'ACTIVE' },
+      data: { status },
       include: { box: true, boxSize: true, customer: { select: { fullName: true, email: true, phone: true } } },
     });
     res.json({ booking: withBoxAddress(updated) });
