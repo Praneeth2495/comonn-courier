@@ -353,7 +353,7 @@ async function confirmCashBooking(req, res, next) {
       await prisma.trackingEvent.create({
         data: { orderId: order.id, status: 'PICKUP_CONFIRMED', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
       });
-      await notifyOrderStatusChange(order.id, 'PICKUP_CONFIRMED');
+      notifyOrderStatusChange(order.id, 'PICKUP_CONFIRMED');
     }
 
     const updated = await prisma.order.findUnique({ where: { id: order.id }, include: { payment: true } });
