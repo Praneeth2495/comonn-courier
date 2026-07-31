@@ -284,6 +284,7 @@ function BookingsTable() {
       {viewing && <BookingDetailModal booking={viewing} onClose={() => setViewing(null)} />}
       {editing && <EditBookingDatesModal booking={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
       {creating && <NewBookingModal onClose={() => setCreating(false)} onCreated={() => { setCreating(false); load(); }} />}
+      {commenting && <BookingCommentsModal booking={commenting} onClose={() => setCommenting(null)} />}
     </div>
   );
 }
