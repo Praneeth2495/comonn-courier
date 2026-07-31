@@ -45,32 +45,40 @@ async function notifyRecipient(templateName, contactName, phone, trackingNumber,
  * site can use it identically regardless of what's already loaded.
  */
 async function notifyOrderStatusChange(orderId, status) {
-  const isConfirmation = CONFIRMATION_STATUSES.has(status);
-  const updateTemplate = UPDATE_TEMPLATES[status];
-  if (!isConfirmation && !updateTemplate) return;
+  try {
+    const isConfirmation = CONFIRMATION_STATUSES.has(status);
+    const updateTemplate = UPDATE_TEMPLATES[status];
+    if (!isConfirmation && !updateTemplate) return;
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    select: {
-      orderNumber: true,
-      trackingNumber: true,
-      whatsappOptIn: true,
-      senderAddress: { select: { contactName: true, phone: true } },
-      receiverAddress: { select: { contactName: true, phone: true } },
-    },
-  });
-  if (!order) return;
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        orderNumber: true,
+        trackingNumber: true,
+        whatsappOptIn: true,
+        senderAddress: { select: { contactName: true, phone: true } },
+        receiverAddress: { select: { contactName: true, phone: true } },
+      },
+    });
+    if (!order) return;
 
-  const templateName = isConfirmation ? CONFIRMATION_TEMPLATE : (order.whatsappOptIn ? updateTemplate : null);
-  if (!templateName) return;
+    const templateName = isConfirmation ? CONFIRMATION_TEMPLATE : (order.whatsappOptIn ? updateTemplate : null);
+    if (!templateName) return;
 
-  const trackingNumber = order.trackingNumber || order.orderNumber;
-  const trackUrl = siteUrl(`/track?id=${encodeURIComponent(trackingNumber)}`);
+    const trackingNumber = order.trackingNumber || order.orderNumber;
+    const trackUrl = siteUrl(`/track?id=${encodeURIComponent(trackingNumber)}`);
 
-  await Promise.all([
-    notifyRecipient(templateName, order.senderAddress?.contactName, order.senderAddress?.phone, trackingNumber, trackUrl),
-    notifyRecipient(templateName, order.receiverAddress?.contactName, order.receiverAddress?.phone, trackingNumber, trackUrl),
-  ]);
+    await Promise.all([
+      notifyRecipient(templateName, order.senderAddress?.contactName, order.senderAddress?.phone, trackingNumber, trackUrl),
+      notifyRecipient(templateName, order.receiverAddress?.contactName, order.receiverAddress?.phone, trackingNumber, trackUrl),
+    ]);
+  } catch (err) {
+    // Genuinely fire-and-forget — callers never await this, so a failure
+    // here (e.g. a DB hiccup looking up the order) must never surface as
+    // an unhandled rejection. Same resilience contract notifyRecipient
+    // already has for the WhatsApp call itself.
+    console.error(`notifyOrderStatusChange failed (order=${orderId}, status=${status}):`, err.message);
+  }
 }
 
 module.exports = { notifyOrderStatusChange };
