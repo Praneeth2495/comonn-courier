@@ -321,10 +321,26 @@ model BoxBooking {
   updatedAt            DateTime  @updatedAt
 
   payments BoxPayment[]
+  comments BoxBookingComment[]
 
   @@index([customerId])
   @@index([status])
   @@index([endDate])
+}
+
+// Same shape/purpose as OrderComment/PartyInvoiceComment — internal
+// admin/staff notes. Manual status changes (via updateBookingStatus) also
+// auto-create one of these, same pattern as updateOrderStatus does.
+model BoxBookingComment {
+  id        String     @id @default(uuid())
+  bookingId String
+  booking   BoxBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime   @default(now())
+
+  @@index([bookingId])
 }
 
 // One row per checkout attempt against a booking — the initial payment
