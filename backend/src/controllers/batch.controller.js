@@ -85,7 +85,7 @@ async function applyStatusToItems(items, status) {
       })
     )
   );
-  await Promise.all(orderIds.map((orderId) => notifyOrderStatusChange(orderId, status)));
+  orderIds.forEach((orderId) => notifyOrderStatusChange(orderId, status));
   return orderIds.length;
 }
 
