@@ -88,7 +88,7 @@ export default function Labels() {
               </div>
             )}
 
-            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} hasPassword={hasPassword} />
+            <GuestOrDashboardCta user={user} authLoading={authLoading} order={order} clearBooking={clearBooking} navigate={navigate} hasPassword={hasPassword} />
           </>
         )}
 
@@ -139,7 +139,7 @@ export default function Labels() {
               </div>
             )}
 
-            <GuestOrDashboardCta user={user} order={order} clearBooking={clearBooking} navigate={navigate} hasPassword={hasPassword} />
+            <GuestOrDashboardCta user={user} authLoading={authLoading} order={order} clearBooking={clearBooking} navigate={navigate} hasPassword={hasPassword} />
           </>
         )}
       </div>
