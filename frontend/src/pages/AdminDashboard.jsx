@@ -158,6 +158,7 @@ const ORDER_TABS = [
   ['pickup', 'Pickup orders', ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
   ['delivery', 'Delivery orders', ['IN_TRANSIT', 'OUT_FOR_DELIVERY']],
   ['unconfirmed', 'Unconfirmed orders', ['UNFINISHED']],
+  ['manifest', 'Manifest'],
 ];
 
 // Reshapes a fetched order back into the same quoteInput/selectedQuote shape
