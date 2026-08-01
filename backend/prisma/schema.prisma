@@ -66,6 +66,7 @@ model User {
   customsClientsCreated   CustomsClient[]
   boxBookings             BoxBooking[]
   boxBookingComments      BoxBookingComment[]
+  manifestsCreated        Manifest[]
 
   @@index([email])
 }
