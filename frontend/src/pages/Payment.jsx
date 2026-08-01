@@ -619,7 +619,11 @@ export default function Payment() {
                   </div>
                   <div className="right">
                     <span className="price-tag" style={{ color: 'var(--success)' }}>{addonAmount('WARRANTY') > 0 ? `₹${Number(addonAmount('WARRANTY')).toFixed(2)}` : 'Free'}</span>
-                    <button type="button" className="btn btn-outline btn-sm" disabled>Added ✓</button>
+                    {warrantyCoverage === appliedWarrantyCoverage ? (
+                      <button type="button" className="btn btn-outline btn-sm" disabled>Added ✓</button>
+                    ) : (
+                      <button type="button" className="btn btn-outline btn-sm" onClick={applyWarranty}>Add</button>
+                    )}
                   </div>
                 </div>
                 <div className="addon-row">
