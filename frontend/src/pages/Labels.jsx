@@ -154,9 +154,17 @@ export default function Labels() {
 // password" screen used from the account-creation email — the order id
 // itself (see issuePasswordSetLink) is enough to prove they just completed
 // this checkout with a verified email, so a fresh token is issued instantly.
-function GuestOrDashboardCta({ user, order, clearBooking, navigate, hasPassword }) {
+function GuestOrDashboardCta({ user, authLoading, order, clearBooking, navigate, hasPassword }) {
   const [issuing, setIssuing] = useState(false);
   const [error, setError] = useState('');
+
+  // AuthContext hydrates `user` synchronously from a locally-cached
+  // localStorage value, then corrects it asynchronously via /auth/me — that
+  // cached value can be stale (e.g. left over from a session that's since
+  // expired or logged out elsewhere). Rendering before that revalidation
+  // finishes risked showing "Go to my orders" for what's actually a guest
+  // booking. Wait for it so the guest-vs-logged-in branch below is accurate.
+  if (authLoading) return null;
 
   if (user) {
     return (
@@ -175,13 +183,13 @@ function GuestOrDashboardCta({ user, order, clearBooking, navigate, hasPassword 
     return (
       <div style={{ marginTop: 22 }}>
         <p style={{ fontSize: 13, color: 'var(--slate)', textAlign: 'center', marginBottom: 10 }}>
-          {email ? <>You already have an account with <b>{email}</b> — log in to track this order.</> : 'You already have an account — log in to track this order.'}
+          {email ? <>Account already existed for this sender. Username: <b>{email}</b>.</> : 'Account already existed for this sender.'}
         </p>
         <button
           className="btn btn-outline block"
           onClick={() => { clearBooking(); navigate(email ? `/login?email=${encodeURIComponent(email)}` : '/login'); }}
         >
-          Login →
+          Login
         </button>
       </div>
     );
