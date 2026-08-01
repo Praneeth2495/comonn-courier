@@ -977,6 +977,7 @@ function RatesPanel() {
   const [originZones, setOriginZones] = useState([]);
   const [services, setServices] = useState([]);
   const [rateCards, setRateCards] = useState([]);
+  const [manifestRegions, setManifestRegions] = useState([]);
   const [form, setForm] = useState(EMPTY_RATE_FORM);
 
   function load() {
@@ -984,8 +985,14 @@ function RatesPanel() {
     client.get('/admin/zones', { params: { kind: 'origin' } }).then(({ data }) => setOriginZones(data.zones));
     client.get('/admin/services').then(({ data }) => setServices(data.services));
     client.get('/admin/rate-cards').then(({ data }) => setRateCards(data.rateCards));
+    client.get('/admin/manifest-regions').then(({ data }) => setManifestRegions(data.regions));
   }
   useEffect(load, []);
+
+  async function assignManifestRegion(zoneId, regionId) {
+    const { data } = await client.patch(`/admin/zones/${zoneId}/manifest-region`, { regionId: regionId || null });
+    setZones((prev) => prev.map((z) => (z.id === zoneId ? { ...z, manifestRegion: data.zone.manifestRegion, manifestRegionId: data.zone.manifestRegionId } : z)));
+  }
 
   async function submit(e) {
     e.preventDefault();
