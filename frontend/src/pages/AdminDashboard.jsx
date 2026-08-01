@@ -1034,12 +1034,24 @@ function RatesPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Zones &amp; Rate Cards</h1>
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Zones</h4>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <h4 style={{ marginBottom: 4, color: 'var(--navy)' }}>Zones</h4>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 12 }}>Assign each destination zone to a manifest sub-region (airport gateway) — set up sub-regions from Orders → Manifest → "Hubs &amp; sub-regions".</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {zones.map((z) => (
-            <span key={z.id} className="pill pill-navy" title={z.countries.map((c) => c.countryName).join(', ')}>
-              {z.name} · {z.countries.length} countries
-            </span>
+            <div key={z.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span className="pill pill-navy" title={z.countries.map((c) => c.countryName).join(', ')}>
+                {z.name} · {z.countries.length} countries
+              </span>
+              <select
+                className="select"
+                style={{ maxWidth: 240, fontSize: 12.5, padding: '4px 8px', width: 'auto' }}
+                value={z.manifestRegionId || z.manifestRegion?.id || ''}
+                onChange={(e) => assignManifestRegion(z.id, e.target.value)}
+              >
+                <option value="">No manifest sub-region</option>
+                {manifestRegions.map((r) => <option key={r.id} value={r.id}>{r.name} ({r.countryCode})</option>)}
+              </select>
+            </div>
           ))}
         </div>
       </div>
