@@ -8,7 +8,7 @@ import { getCountryName } from '../utils/countryNames';
 
 export default function Labels() {
   const { order, clearBooking } = useBooking();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [labels, setLabels] = useState(null);
   const [invoice, setInvoice] = useState(null);
