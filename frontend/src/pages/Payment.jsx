@@ -172,7 +172,11 @@ export default function Payment() {
 
   function changeWarranty(coverage) {
     setWarrantyCoverage(coverage);
-    syncAddons({ warrantyCoverage: coverage });
+  }
+
+  async function applyWarranty() {
+    await syncAddons({ warrantyCoverage });
+    setAppliedWarrantyCoverage(warrantyCoverage);
   }
 
   function toggleAddon(code) {
