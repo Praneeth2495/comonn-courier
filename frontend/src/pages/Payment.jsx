@@ -52,6 +52,10 @@ export default function Payment() {
   const [dgAcknowledged, setDgAcknowledged] = useState(false);
   const [showDgModal, setShowDgModal] = useState(false);
   const [warrantyCoverage, setWarrantyCoverage] = useState(10000);
+  // Tracks the tier actually synced to the order, separate from the
+  // dropdown's current selection — lets the button read "Add" the moment
+  // the customer picks a different tier, rather than auto-applying it.
+  const [appliedWarrantyCoverage, setAppliedWarrantyCoverage] = useState(10000);
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [pickupDate, setPickupDate] = useState(pickupDates[0]);
 
