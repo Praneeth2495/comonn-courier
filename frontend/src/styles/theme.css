@@ -292,8 +292,12 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .auth-row{grid-template-columns:1fr!important;}
 }
 @media(max-width:640px){
-  .auth-row{padding-left:16px;padding-right:16px;gap:28px;}
-  .auth-side{padding:32px 24px;min-height:auto;}
+  .auth-row{padding:24px 16px;gap:14px;}
+  /* The quote + stats are decorative and were pushing the actual form
+     below the fold on mobile (single-column layout) — keep just the
+     "Welcome back"-style pill so the form is visible right below it. */
+  .auth-side{padding:18px 24px;min-height:auto;}
+  .auth-side .quote,.auth-stats{display:none;}
   .auth-card,.center-card{padding:26px 20px;}
   .card-top-stripe{margin:-26px -20px 24px;width:calc(100% + 40px);}
 }
