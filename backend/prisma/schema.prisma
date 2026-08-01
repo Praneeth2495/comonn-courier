@@ -426,6 +426,12 @@ model Zone {
   rateCards        RateCard[]            @relation("RateCardZone")
   rateCardsFrom    RateCard[]            @relation("RateCardFromZone")
   staffAssignments StaffZoneAssignment[]
+  // Groups this destination zone under one manifest sub-region (an airport
+  // gateway) — e.g. both "Australia 1" and "Australia 2" zones might route
+  // through the same "Mel Airport" sub-region. Optional: a zone with no
+  // sub-region assigned just doesn't show up in the Manifest tab's filters.
+  manifestRegionId String?
+  manifestRegion   ManifestRegion?       @relation(fields: [manifestRegionId], references: [id])
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
 }
