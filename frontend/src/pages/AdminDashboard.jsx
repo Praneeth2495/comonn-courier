@@ -279,6 +279,7 @@ function OrdersPanel() {
   }
 
   function load() {
+    if (tab === 'manifest') { setLoading(false); return; }
     setLoading(true);
     const seq = ++seqRef.current;
     const tabDef = ORDER_TABS.find(([key]) => key === tab);
