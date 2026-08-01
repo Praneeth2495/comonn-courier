@@ -3,10 +3,13 @@ const { notifyOrderStatusChange } = require('../services/orderNotifications');
 
 /**
  * Resolves scanned codes to their orders. Tries the Label table first (real
- * printed barcodes), then falls back to matching the order number or
- * tracking number directly — covers orders that never got a physical label
- * (e.g. cash-pickup bookings assessed in person, with nothing to print
- * until/unless staff generates one).
+ * printed barcodes), then a Manifest barcode — which expands into every
+ * order currently bagged in that manifest, so one scan bulk-applies a
+ * status to a whole shipment instead of each order needing its own scan —
+ * then falls back to matching the order number or tracking number directly
+ * (covers orders with nothing printed yet, e.g. cash-pickup bookings
+ * assessed in person). Note the returned array is no longer guaranteed 1:1
+ * with the input: a matched manifest code expands into N order entries.
  */
 async function resolveBarcodes(barcodeValues) {
   const unique = [...new Set(barcodeValues)];
@@ -17,7 +20,21 @@ async function resolveBarcodes(barcodeValues) {
   });
   const byBarcode = new Map(labels.map((l) => [l.barcodeValue, l]));
 
-  const unresolved = unique.filter((code) => !byBarcode.has(code));
+  let unresolved = unique.filter((code) => !byBarcode.has(code));
+
+  const manifests = unresolved.length > 0
+    ? await prisma.manifest.findMany({
+        where: { OR: [{ manifestNumber: { in: unresolved } }, { barcodeValue: { in: unresolved } }] },
+        include: { orders: { select: { id: true, orderNumber: true } } },
+      })
+    : [];
+  const byManifestCode = new Map();
+  for (const manifest of manifests) {
+    if (unresolved.includes(manifest.manifestNumber)) byManifestCode.set(manifest.manifestNumber, manifest);
+    if (unresolved.includes(manifest.barcodeValue)) byManifestCode.set(manifest.barcodeValue, manifest);
+  }
+  unresolved = unresolved.filter((code) => !byManifestCode.has(code));
+
   const byOrderCode = new Map();
   if (unresolved.length > 0) {
     const orders = await prisma.order.findMany({
@@ -30,13 +47,32 @@ async function resolveBarcodes(barcodeValues) {
     }
   }
 
-  return unique.map((barcodeValue) => {
+  const results = [];
+  for (const barcodeValue of unique) {
     const label = byBarcode.get(barcodeValue);
-    if (label) return { barcodeValue, matched: true, orderId: label.order.id, orderNumber: label.order.orderNumber };
+    if (label) {
+      results.push({ barcodeValue, matched: true, orderId: label.order.id, orderNumber: label.order.orderNumber });
+      continue;
+    }
+    const manifest = byManifestCode.get(barcodeValue);
+    if (manifest) {
+      if (manifest.orders.length === 0) {
+        results.push({ barcodeValue, matched: false, orderId: null, orderNumber: null });
+      } else {
+        for (const order of manifest.orders) {
+          results.push({ barcodeValue, matched: true, orderId: order.id, orderNumber: order.orderNumber, viaManifest: manifest.manifestNumber });
+        }
+      }
+      continue;
+    }
     const order = byOrderCode.get(barcodeValue);
-    if (order) return { barcodeValue, matched: true, orderId: order.id, orderNumber: order.orderNumber };
-    return { barcodeValue, matched: false, orderId: null, orderNumber: null };
-  });
+    if (order) {
+      results.push({ barcodeValue, matched: true, orderId: order.id, orderNumber: order.orderNumber });
+      continue;
+    }
+    results.push({ barcodeValue, matched: false, orderId: null, orderNumber: null });
+  }
+  return results;
 }
 
 /**
