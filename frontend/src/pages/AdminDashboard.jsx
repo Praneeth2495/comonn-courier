@@ -526,6 +526,7 @@ function OrdersPanel() {
 
       {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
       {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
+      </>}
     </div>
   );
 }
