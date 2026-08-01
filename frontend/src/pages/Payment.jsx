@@ -619,11 +619,7 @@ export default function Payment() {
                     </select>
                   </div>
                   <div className="right">
-                    <span className="price-tag" style={{ color: 'var(--success)' }}>
-                      {(WARRANTY_TIERS.find((t) => t.coverage === warrantyCoverage)?.price || 0) > 0
-                        ? `₹${Number(WARRANTY_TIERS.find((t) => t.coverage === warrantyCoverage).price).toFixed(2)}`
-                        : 'Free'}
-                    </span>
+                    <span className="price-tag" style={{ color: 'var(--success)' }}>{selectedWarrantyPrice > 0 ? `₹${selectedWarrantyPrice.toFixed(2)}` : 'Free'}</span>
                     {warrantyCoverage === appliedWarrantyCoverage ? (
                       <button type="button" className="btn btn-outline btn-sm" disabled>Added ✓</button>
                     ) : (
