@@ -42,4 +42,10 @@ async function generateBoxInvoiceNumber() {
   return `SIN${seq}`;
 }
 
-module.exports = { generateInvoiceNumber, generatePartyInvoiceNumber, generateBoxInvoiceNumber };
+/** Generates MAN<seq> for air-freight manifests, same yearly-resetting idiom. */
+async function generateManifestNumber() {
+  const seq = await nextYearlySequence('manifest', new Date());
+  return `MAN${seq}`;
+}
+
+module.exports = { generateInvoiceNumber, generatePartyInvoiceNumber, generateBoxInvoiceNumber, generateManifestNumber, nextYearlySequence };
