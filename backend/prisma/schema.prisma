@@ -175,22 +175,22 @@ enum RecurrenceInterval {
 }
 
 model PartyInvoice {
-  id            String             @id @default(uuid())
-  direction     InvoiceDirection
-  invoiceNumber String             @unique
-  partyName     String
-  businessName  String?
-  description   String
-  amount        Decimal            @db.Decimal(10, 2)
-  gstPercent    Decimal            @default(0) @db.Decimal(5, 2)
-  totalAmount   Decimal            @db.Decimal(10, 2)
-  currency      String             @default("INR")
-  dueDate       DateTime
-  email         String?
-  phone         String?
-  status        String             @default("UNPAID") // UNPAID | PAID
-  paidAt        DateTime?
-  recurrence    RecurrenceInterval @default(NONE)
+  id               String                @id @default(uuid())
+  direction        InvoiceDirection
+  invoiceNumber    String                @unique
+  partyName        String
+  businessName     String?
+  description      String
+  amount           Decimal               @db.Decimal(10, 2)
+  gstPercent       Decimal               @default(0) @db.Decimal(5, 2)
+  totalAmount      Decimal               @db.Decimal(10, 2)
+  currency         String                @default("INR")
+  dueDate          DateTime
+  email            String?
+  phone            String?
+  status           String                @default("UNPAID") // UNPAID | PAID
+  paidAt           DateTime?
+  recurrence       RecurrenceInterval    @default(NONE)
   // Only set (and only meaningful) on the root invoice of a recurring
   // series — the background job (partyInvoiceRecurrence.js) scans for rows
   // where this is due, clones a new child invoice, then advances it.
@@ -204,18 +204,18 @@ model PartyInvoice {
   // Payable). Stored as bytes in the DB rather than local disk — unlike
   // the generated PDF below, this isn't derivable from other DB fields,
   // so it would be permanently lost on a Railway redeploy if left on disk.
-  attachmentName String?
-  attachmentMime String?
-  attachmentData Bytes?
+  attachmentName   String?
+  attachmentMime   String?
+  attachmentData   Bytes?
   // The system-generated PDF (see partyInvoicePdf.js) — safe to keep on
   // local disk and regenerate on the fly if missing, same pattern as
   // Invoice/Label.
-  pdfFileUrl  String?
-  createdById String
-  createdBy   User                  @relation(fields: [createdById], references: [id])
-  comments    PartyInvoiceComment[]
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  pdfFileUrl       String?
+  createdById      String
+  createdBy        User                  @relation(fields: [createdById], references: [id])
+  comments         PartyInvoiceComment[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
 
   @@index([direction])
   @@index([status])
@@ -261,24 +261,24 @@ model CustomsClient {
 // webhook/markOrdersPaidForProviderOrder path is hard-coded to Order, and
 // this avoids touching that financially-critical flow at all.
 model BoxSize {
-  id          String   @id @default(uuid())
-  code        String   @unique // "SMALL" | "MEDIUM" | "LARGE"
+  id          String       @id @default(uuid())
+  code        String       @unique // "SMALL" | "MEDIUM" | "LARGE"
   name        String
   description String?
-  monthlyRate Decimal  @db.Decimal(10, 2)
-  currency    String   @default("INR")
-  isActive    Boolean  @default(true)
+  monthlyRate Decimal      @db.Decimal(10, 2)
+  currency    String       @default("INR")
+  isActive    Boolean      @default(true)
   boxes       Box[]
   bookings    BoxBooking[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Box {
   id        String       @id @default(uuid())
   boxSizeId String
   boxSize   BoxSize      @relation(fields: [boxSizeId], references: [id])
-  number    Int          // shown to customers as "Box 23"
+  number    Int // shown to customers as "Box 23"
   status    String       @default("AVAILABLE") // AVAILABLE | RENTED | RETIRED
   retiredAt DateTime?
   bookings  BoxBooking[]
@@ -693,14 +693,14 @@ model Order {
 // "Mel Airport") — the sub-region filter on the Manifest tab, and also
 // supplies the default "to" address when creating a manifest for it.
 model ManifestRegion {
-  id             String   @id @default(uuid())
+  id             String     @id @default(uuid())
   name           String // "Mel Airport"
   countryCode    String // ISO alpha-2, for grouping the country filter chips
   airportAddress String
-  isActive       Boolean  @default(true)
+  isActive       Boolean    @default(true)
   zones          Zone[]
   manifests      Manifest[]
-  createdAt      DateTime @default(now())
+  createdAt      DateTime   @default(now())
 
   @@index([countryCode])
 }
