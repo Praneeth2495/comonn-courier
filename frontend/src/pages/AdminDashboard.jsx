@@ -398,6 +398,7 @@ function OrdersPanel() {
         ))}
       </div>
 
+      {tab === 'manifest' ? <ManifestPanel /> : <>
       <div className="chip-filter-row">
         <div className="chip-filter active"><IndiaFlagChip /> India</div>
       </div>
