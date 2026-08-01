@@ -571,17 +571,18 @@ export default function Payment() {
     <div>
       <div id="stepper-payment"><Stepper activeKey="payment" /></div>
       <div className="section" style={{ paddingTop: 20 }}>
+        <div className="wrap" style={{ maxWidth: 1080 }}>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            style={{ marginBottom: 16 }}
+            onClick={() => navigate('/details')}
+          >
+            ← Back
+          </button>
+        </div>
         <div className="wrap payment-layout" style={{ maxWidth: 1080 }}>
           <div>
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              style={{ marginBottom: 16 }}
-              onClick={() => navigate('/details')}
-            >
-              ← Back
-            </button>
-
             {!isPreppedForCustomer && (
             <>
             <div className="card" style={{ padding: 26 }}>
