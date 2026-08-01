@@ -951,4 +951,5 @@ module.exports = {
   issuePasswordSetLink,
   round2,
   PAYABLE_STATUSES,
+  buildOrdersWhere,
 };
