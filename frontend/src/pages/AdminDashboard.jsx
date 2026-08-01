@@ -10,6 +10,7 @@ import PartyInvoicesPanel from '../components/PartyInvoicesPanel';
 import CustomsClientsPanel from '../components/CustomsClientsPanel';
 import StorageAdminPanel from '../components/StorageAdminPanel';
 import PrintLabelPanel from '../components/PrintLabelPanel';
+import ManifestPanel from '../components/ManifestPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import logoFooter from '../assets/logo-footer.png';
 
