@@ -115,7 +115,10 @@ export default function Payment() {
         pickupDate: pickupDates[0],
         dgAcknowledged: false,
       });
-      if (seq === addonsSeqRef.current) setOrder(data.order);
+      if (seq === addonsSeqRef.current) {
+        setOrder(data.order);
+        setAppliedWarrantyCoverage(10000);
+      }
     } catch {
       // best-effort — the customer can still set these manually below
     }
