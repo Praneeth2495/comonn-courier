@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
 const admin = require('../controllers/admin.controller');
+const { setZoneManifestRegion } = require('../controllers/manifestRegion.controller');
 
 router.use(requireAuth, requireRole('ADMIN', 'STAFF'));
 
@@ -11,6 +12,7 @@ router.get('/pickup-origins', admin.listPickupOrigins);
 router.get('/zones', admin.listZones);
 router.post('/zones', requireRole('ADMIN'), admin.createZone);
 router.post('/zones/countries', requireRole('ADMIN'), admin.upsertCountryMapping);
+router.patch('/zones/:id/manifest-region', requireRole('ADMIN'), setZoneManifestRegion);
 
 router.get('/staff-zones', requireRole('ADMIN'), admin.listStaffZoneAssignments);
 router.put('/staff-zones/:userId', requireRole('ADMIN'), admin.setStaffZoneAssignments);
