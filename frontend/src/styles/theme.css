@@ -422,7 +422,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .dg-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px 8px 10px;border-radius:999px;background:var(--warn-bg);border:1px solid #F5D9BE;font-size:12.5px;font-weight:600;color:var(--warn);}
 .dg-chip .ic{font-size:14px;line-height:1;}
 
-.payment-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:stretch;}
+.payment-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:start;}
 .payment-layout>*{min-width:0;}
 @media(max-width:900px){
   .payment-layout{grid-template-columns:1fr!important;}
