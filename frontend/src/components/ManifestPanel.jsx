@@ -348,7 +348,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
       const { data } = await client.post('/admin/manifests', {
         orderIds,
         hubId,
-        toAddress: toAddress.trim(),
+        toAddress: region.airportAddress,
         manifestDate,
       });
       onCreated(data.manifest);
