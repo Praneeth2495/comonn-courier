@@ -13,36 +13,88 @@ function withQty(order) {
 }
 
 /**
- * GET /api/admin/manifests/eligible-orders?regionId= — orders that can be
- * added to a manifest for this sub-region: not already in a (different)
- * manifest, and confirmed (excludes PAYABLE_STATUSES, i.e. unpaid/unconfirmed
- * orders) — everything else, including pickup bookings, is included per the
- * "straight from order placement" requirement. Reuses buildOrdersWhere so
- * STAFF still only see orders in their assigned zones, intersected with the
- * region's zones.
+ * GET /api/admin/manifests/eligible-orders?airportCode= — orders that can
+ * be added to a manifest for this destination airport: not already in a
+ * (different) manifest, and confirmed (excludes PAYABLE_STATUSES, i.e.
+ * unpaid/unconfirmed orders) — everything else, including pickup bookings,
+ * is included per the "straight from order placement" requirement. Reuses
+ * buildOrdersWhere so STAFF still only see orders in their assigned zones.
  */
 async function listEligibleOrders(req, res, next) {
   try {
-    const { regionId } = req.query;
-    if (!regionId) return res.status(400).json({ error: 'regionId is required' });
-
-    const zones = await prisma.zone.findMany({ where: { manifestRegionId: regionId }, select: { code: true } });
-    const regionCodes = zones.map((z) => z.code);
-    if (regionCodes.length === 0) return res.json({ orders: [] });
+    const { airportCode } = req.query;
+    if (!airportCode) return res.status(400).json({ error: 'airportCode is required' });
 
     const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
     where.manifestId = null;
-    if (where.zoneCode && where.zoneCode.in) {
-      where.zoneCode = { in: where.zoneCode.in.filter((c) => regionCodes.includes(c)) };
-    } else {
-      where.zoneCode = { in: regionCodes };
-    }
+    where.airportCode = airportCode;
 
     const orders = await prisma.order.findMany({ where, include: ORDER_INCLUDE, orderBy: { createdAt: 'desc' } });
     res.json({ orders: orders.map(withQty) });
   } catch (err) {
     next(err);
   }
+}
+
+/**
+ * GET /api/admin/manifests/available-airports — the country/airport chips
+ * for the Build Manifest tab: one entry per distinct (destination country,
+ * airportCode) pair currently found among manifest-eligible orders (not
+ * already in a manifest, not unpaid/unconfirmed), with a live count. Reuses
+ * buildOrdersWhere so STAFF only see airports covering their assigned
+ * zones. Grouping is done in JS rather than a DB groupBy since it needs the
+ * receiver's countryCode, which lives on the related Address, not Order
+ * itself — fine at this order volume.
+ */
+async function listAvailableAirports(req, res, next) {
+  try {
+    const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
+    where.manifestId = null;
+    where.airportCode = { not: null };
+
+    const orders = await prisma.order.findMany({
+      where,
+      select: { airportCode: true, receiverAddress: { select: { countryCode: true } } },
+    });
+
+    const counts = new Map(); // `${countryCode}:${airportCode}` -> count
+    for (const o of orders) {
+      const key = `${o.receiverAddress.countryCode}:${o.airportCode}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+
+    const codes = [...new Set(orders.map((o) => o.airportCode))];
+    const regions = codes.length ? await prisma.manifestRegion.findMany({ where: { code: { in: codes } } }) : [];
+    const regionByCode = new Map(regions.map((r) => [r.code, r]));
+
+    const airports = [...counts.entries()].map(([key, count]) => {
+      const [countryCode, airportCode] = key.split(':');
+      const region = regionByCode.get(airportCode);
+      return { countryCode, airportCode, count, name: region?.name || airportCode };
+    });
+
+    res.json({ airports });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Finds (or auto-creates, with a placeholder name/address) the
+ * ManifestRegion for a given airport code — admin can rename it and fix the
+ * real cargo address afterward from the Manifest tab's setup panel.
+ */
+async function findOrCreateRegion(airportCode, countryCode, fallbackAddress) {
+  const existing = await prisma.manifestRegion.findUnique({ where: { code: airportCode } });
+  if (existing) return existing;
+  return prisma.manifestRegion.create({
+    data: {
+      code: airportCode,
+      name: airportCode,
+      countryCode: countryCode.toUpperCase(),
+      airportAddress: fallbackAddress?.trim() || '',
+    },
+  });
 }
 
 /** Recomputes and persists orderCount/totalQty/totalWeightKg from the manifest's current orders, then regenerates the PDF sheet. Called after every create/add/remove so the numbers and PDF never drift from the real linked orders. */
