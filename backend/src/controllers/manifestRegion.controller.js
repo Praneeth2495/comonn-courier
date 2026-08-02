@@ -1,10 +1,9 @@
 const { prisma } = require('../config/db');
 
-/** GET /api/admin/manifest-regions — every sub-region, with the zones currently assigned to it. */
+/** GET /api/admin/manifest-regions — every destination airport known so far (auto-created on first manifest, or pre-provisioned here). */
 async function listManifestRegions(req, res, next) {
   try {
     const regions = await prisma.manifestRegion.findMany({
-      include: { zones: { select: { id: true, code: true, name: true } } },
       orderBy: [{ countryCode: 'asc' }, { name: 'asc' }],
     });
     res.json({ regions });
@@ -13,15 +12,20 @@ async function listManifestRegions(req, res, next) {
   }
 }
 
-/** POST /api/admin/manifest-regions */
+/** POST /api/admin/manifest-regions — pre-provision an airport code before any order reaches it, or to set its real cargo address ahead of time. */
 async function createManifestRegion(req, res, next) {
   try {
-    const { name, countryCode, airportAddress } = req.body;
-    if (!name?.trim() || !countryCode?.trim() || !airportAddress?.trim()) {
-      return res.status(400).json({ error: 'name, countryCode and airportAddress are required' });
+    const { code, name, countryCode, airportAddress } = req.body;
+    if (!code?.trim() || !name?.trim() || !countryCode?.trim() || !airportAddress?.trim()) {
+      return res.status(400).json({ error: 'code, name, countryCode and airportAddress are required' });
     }
     const region = await prisma.manifestRegion.create({
-      data: { name: name.trim(), countryCode: countryCode.trim().toUpperCase(), airportAddress: airportAddress.trim() },
+      data: {
+        code: code.trim().toUpperCase(),
+        name: name.trim(),
+        countryCode: countryCode.trim().toUpperCase(),
+        airportAddress: airportAddress.trim(),
+      },
     });
     res.status(201).json({ region });
   } catch (err) {
@@ -45,24 +49,4 @@ async function updateManifestRegion(req, res, next) {
   }
 }
 
-/**
- * PATCH /api/admin/zones/:id/manifest-region — assigns (or clears, with
- * regionId: null) which sub-region a destination Zone routes through. Lives
- * here rather than admin.controller.js since it's purely a Manifest-feature
- * concern layered onto the existing Zone model.
- */
-async function setZoneManifestRegion(req, res, next) {
-  try {
-    const { regionId } = req.body;
-    const zone = await prisma.zone.update({
-      where: { id: req.params.id },
-      data: { manifestRegionId: regionId || null },
-      include: { manifestRegion: true },
-    });
-    res.json({ zone });
-  } catch (err) {
-    next(err);
-  }
-}
-
-module.exports = { listManifestRegions, createManifestRegion, updateManifestRegion, setZoneManifestRegion };
+module.exports = { listManifestRegions, createManifestRegion, updateManifestRegion };
