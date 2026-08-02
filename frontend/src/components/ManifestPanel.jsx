@@ -185,13 +185,17 @@ function BuildManifest() {
           <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: -6, marginBottom: 14 }}>Multiple airports can be selected together — orders for all of them can share one manifest as long as it's the same country.</p>
 
           {originStates.length > 0 && (
-            <div className="chip-filter-row">
-              <div className="chip-filter active">🇮🇳 India</div>
-              <div className={`chip-filter ${!selectedOriginState ? 'active' : ''}`} onClick={() => setSelectedOriginState('')}>All states</div>
-              {originStates.map((s) => (
-                <div key={s} className={`chip-filter ${selectedOriginState === s ? 'active' : ''}`} onClick={() => setSelectedOriginState(s)}>{s}</div>
-              ))}
-            </div>
+            <>
+              <div className="chip-filter-row">
+                <div className="chip-filter active">🇮🇳 India</div>
+                {originStates.map((s) => (
+                  <div key={s} className={`chip-filter ${selectedOriginStates.includes(s) ? 'active' : ''}`} onClick={() => toggleOriginState(s)}>
+                    {s === UNSPECIFIED_STATE ? 'Unspecified' : s}
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: -6, marginBottom: 14 }}>Multiple origin states can be selected together too.</p>
+            </>
           )}
 
           {justCreated && (
