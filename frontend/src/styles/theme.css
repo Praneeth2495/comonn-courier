@@ -500,6 +500,8 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .t-row:not(.t-head){border-top:1px solid var(--line-2);font-size:13.5px;}
 .t-row.overdue{background:#FEF0EF;}
 .t-row.overdue:hover{background:#FCE4E2;}
+.t-row.picked-up{background:#EFF9F0;}
+.t-row.picked-up:hover{background:#E3F4E5;}
 .t-row:not(.t-head):hover{background:#FAFAF7;}
 .t-oid{font-family:'IBM Plex Mono';font-weight:600;color:var(--cobalt);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:13.5px;}
 .t-oid:hover{color:var(--coral);}
