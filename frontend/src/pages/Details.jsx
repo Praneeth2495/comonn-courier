@@ -340,7 +340,11 @@ export default function Details() {
               instructionsLabel="Instructions"
               autoFillNote={senderLocked ? "Locked to your quote's pickup postcode — go back to the Book page to change it" : "Country auto-filled from your quote's origin"}
               savedAddresses={senderSavedAddresses}
-              onSelectSaved={(id) => { const a = savedAddresses.find((s) => s.id === id); if (a) setSender(fromSavedAddress(a)); }}
+              onSelectSaved={(id) => {
+                const a = savedAddresses.find((s) => s.id === id);
+                if (!a) return;
+                setSender((prev) => ({ ...fromSavedAddress(a), postcode: prev.postcode, city: prev.city, state: prev.state, countryCode: prev.countryCode }));
+              }}
               lockedFields={senderLocked ? ['postcode', 'city', 'state', 'countryCode'] : []}
             />
           </div>
