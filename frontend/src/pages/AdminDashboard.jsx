@@ -221,6 +221,21 @@ function toSelectedQuote(order) {
   };
 }
 
+// pickupDate is a display string like "Wednesday, 23 July" (no year) set at
+// booking time — mirrors driverAutoUnassign.js's parser: reconstruct a real
+// Date against the current year, rolling forward a year if that guess would
+// place it implausibly far in the past (a booking made in late December for
+// an early-January pickup).
+function parsePickupDateStr(str, referenceDate) {
+  if (!str) return null;
+  const year = referenceDate.getFullYear();
+  let parsed = new Date(`${str} ${year}`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  const diffDays = (referenceDate - parsed) / 86400000;
+  if (diffDays > 270) parsed = new Date(`${str} ${year + 1}`);
+  return parsed;
+}
+
 function IndiaFlagChip() {
   return (
     <svg viewBox="0 0 60 40">
