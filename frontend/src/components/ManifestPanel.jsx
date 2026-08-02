@@ -435,14 +435,14 @@ function ManifestHistory() {
     <div>
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Manifest #</th><th>From (airport)</th><th>Sub-region</th><th>Date</th><th>Orders</th><th>Qty</th><th>Weight</th><th>Created by</th><th></th></tr></thead>
+          <thead><tr><th>Manifest #</th><th>From (airport)</th><th>Sub-region</th><th>Created</th><th>Orders</th><th>Qty</th><th>Weight</th><th>Created by</th><th></th></tr></thead>
           <tbody>
             {manifests.map((m) => (
               <tr key={m.id}>
                 <td className="mono">{m.manifestNumber}</td>
                 <td>{m.hub?.name || '—'}</td>
                 <td>{m.region?.name || m.countryCode}</td>
-                <td>{new Date(m.manifestDate).toLocaleDateString('en-IN')}</td>
+                <td>{new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                 <td>{m._count?.orders ?? m.orderCount}</td>
                 <td>{m.totalQty}</td>
                 <td>{Number(m.totalWeightKg).toFixed(2)} kg</td>
