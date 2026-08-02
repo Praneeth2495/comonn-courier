@@ -90,15 +90,16 @@ export default function Details() {
   }, [user]);
 
   const pricingPending = Boolean(quoteInput?.pricingPending);
-  // Staff/admin editing an existing booking can still correct a mistyped
-  // sender pincode directly; regular customers must go back to the Book
-  // page (which re-quotes) to change their pickup location.
-  const senderLocked = !['ADMIN', 'STAFF'].includes(user?.role);
+  // Locked for everyone, staff/admin included — postcode/city/state/country
+  // here are what the price was actually calculated against (via the Book
+  // page's quote), so editing them in place (whether on a new booking or
+  // while correcting an existing one) would silently mismatch the shipment
+  // from its price. Anyone needing a different pickup location has to go
+  // back to the Book page, which re-quotes.
+  const senderLocked = true;
   // Same lock for the receiver's postcode/suburb/state — these come from
-  // the destination autocomplete picked on the Book page, which is what
-  // the price was actually calculated against, so a regular customer can't
-  // silently edit them here and end up with a mismatched shipment.
-  const receiverLocked = !['ADMIN', 'STAFF'].includes(user?.role);
+  // the destination autocomplete picked on the Book page.
+  const receiverLocked = true;
 
   const norm = (s) => (s || '').trim().toLowerCase();
   // Only surface saved addresses that fully match this quote's chosen
