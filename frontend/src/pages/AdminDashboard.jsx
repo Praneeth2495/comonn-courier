@@ -506,8 +506,8 @@ function OrdersPanel() {
             {tab === 'pickup' && <div></div>}
             <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' || tab === 'bookings' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}{tab === 'pickup' && <div>Driver</div>}
           </div>
-          {orders.map((o) => (
-            <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''}`} key={o.id}>
+          {displayOrders.map((o) => (
+            <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''} ${o.__overdue ? 'overdue' : ''}`} key={o.id}>
               {tab === 'pickup' && (
                 <div>
                   <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggleSelect(o.id)} />
