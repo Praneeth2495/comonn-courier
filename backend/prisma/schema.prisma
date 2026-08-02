@@ -740,6 +740,17 @@ model Manifest {
   barcodeValue   String          @unique // scannable in Batch Scan — same value as manifestNumber today, kept separate in case that ever needs to differ
   hubId          String
   hub            Hub             @relation(fields: [hubId], references: [id])
+  // Destination country every order in this manifest shares — always set,
+  // even when the orders span several airports within that country (see
+  // regionId below), since it's what scopes "add more orders" to the right
+  // pool. Derived server-side from the selected orders, not client input.
+  countryCode    String
+  // Only set when every order currently in the manifest resolves to the
+  // exact same destination airport — a convenience link to that airport's
+  // saved name/address, established once at creation and not recomputed
+  // afterward. A manifest deliberately mixing several airports in the same
+  // country (see order.controller.js/manifest.controller.js) simply has no
+  // single region to point at; toAddress (freely editable) covers that case.
   regionId       String?
   region         ManifestRegion? @relation(fields: [regionId], references: [id])
   toAddress      String // snapshot of the airport address used, editable independent of the region's saved default
