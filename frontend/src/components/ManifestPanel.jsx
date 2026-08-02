@@ -290,10 +290,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
       if (activeHubs.length === 1) setHubId(activeHubs[0].id);
       if (airports.length === 1) {
         const match = activeRegions.find((r) => r.code === airports[0].airportCode);
-        if (match) {
-          setRegionSelection(match.id);
-          setToAddress(match.airportAddress || '');
-        }
+        if (match) setRegionSelection(match.id);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     });
