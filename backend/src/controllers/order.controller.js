@@ -71,6 +71,7 @@ async function createOrder(req, res, next) {
     if (pricingPending) {
       const service = await prisma.service.findUnique({ where: { code: 'PICKUP' } });
       const zone = await resolveZoneForCountry(receiver.countryCode);
+      const airportCode = await resolveAirportForDestination(receiver.countryCode, receiver.postcode);
       orderData = {
         orderNumber,
         invoiceNumber,
@@ -97,6 +98,7 @@ async function createOrder(req, res, next) {
           })),
         },
         zoneCode: zone.code,
+        airportCode,
         baseFreight: 0,
         surchargesTotal: 0,
         taxRate: 0,
