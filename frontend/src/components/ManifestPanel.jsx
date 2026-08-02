@@ -108,7 +108,7 @@ function BuildManifest() {
     if (!selectedCountry || selectedAirportCodes.length === 0) { setEligibleOrders([]); return; }
     setLoadingOrders(true);
     client.get('/admin/manifests/eligible-orders', { params: { countryCode: selectedCountry, airportCode: selectedAirportCodes.join(',') } })
-      .then(({ data }) => { setEligibleOrders(data.orders); setSelectedOrderIds([]); setSelectedOriginState(''); setLoadingOrders(false); })
+      .then(({ data }) => { setEligibleOrders(data.orders); setSelectedOrderIds([]); setLoadingOrders(false); })
       .catch(() => setLoadingOrders(false));
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,9 +116,28 @@ function BuildManifest() {
 
   // Origin (sender) state — only shown once real eligible orders exist, and
   // only the states actually present among them (not every pickup state in
-  // the system).
-  const originStates = [...new Set(eligibleOrders.map((o) => o.senderAddress?.state).filter(Boolean))].sort();
-  const visibleOrders = eligibleOrders.filter((o) => !selectedOriginState || o.senderAddress?.state === selectedOriginState);
+  // the system). Multi-select, same as the destination airport chips —
+  // defaults to every state selected whenever the eligible-orders pool
+  // changes. A handful of addresses have no state on file at all; those
+  // group under one "Unspecified" chip rather than silently vanishing from
+  // the list.
+  const UNSPECIFIED_STATE = '__unspecified__';
+  const originStates = [...new Set(eligibleOrders.map((o) => o.senderAddress?.state || UNSPECIFIED_STATE))].sort((a, b) => {
+    if (a === UNSPECIFIED_STATE) return 1;
+    if (b === UNSPECIFIED_STATE) return -1;
+    return a.localeCompare(b);
+  });
+
+  useEffect(() => {
+    setSelectedOriginStates(originStates);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eligibleOrders]);
+
+  function toggleOriginState(state) {
+    setSelectedOriginStates((prev) => (prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state]));
+  }
+
+  const visibleOrders = eligibleOrders.filter((o) => selectedOriginStates.includes(o.senderAddress?.state || UNSPECIFIED_STATE));
 
   function toggleOrder(id) {
     setSelectedOrderIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
