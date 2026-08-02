@@ -144,8 +144,8 @@ input,select,textarea{font-family:inherit;}
   .app-main{padding:20px 16px;}
 }
 
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
-.stat-card{background:#fff;border:1px solid var(--line-2);border-radius:14px;padding:18px 20px;}
+.stat-grid{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;}
+.stat-card{background:#fff;border:1px solid var(--line-2);border-radius:14px;padding:18px 20px;flex:0 0 auto;min-width:140px;}
 .stat-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:600;}
 .stat-card .value{font-family:'Space Grotesk';font-size:26px;font-weight:700;color:var(--navy);margin-top:6px;overflow-wrap:break-word;}
 
