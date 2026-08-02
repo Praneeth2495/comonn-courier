@@ -348,6 +348,7 @@ async function generateQuote(input) {
   return {
     service: { code: service.code, name: service.name, transitDays: `${transitDaysMin}-${transitDaysMax}` },
     zone: { code: zone.code, name: zone.name },
+    airportCode,
     items: pricedItems.map(({ actualWeightKgTotal, volumetricWeightKgTotal, ...rest }) => rest),
     weight: {
       actualWeightKg,
