@@ -124,17 +124,13 @@ export default function Details() {
       norm(a.city) === norm(receiver.city)
   );
 
-  // When receiver fields are locked (regular customers), only reuse the
-  // saved address's contact details — keep the locked postcode/city/state/
-  // country exactly as quoted/priced, so picking a saved address can never
-  // silently drift the destination away from what was actually priced.
+  // Only reuse the saved address's contact details — keep the locked
+  // postcode/city/state/country exactly as quoted/priced, so picking a
+  // saved address can never silently drift the destination away from what
+  // was actually priced.
   function pickSavedReceiverAddress(id) {
     const a = savedAddresses.find((s) => s.id === id);
     if (!a) return;
-    if (!receiverLocked) {
-      setReceiver(fromSavedAddress(a));
-      return;
-    }
     setReceiver((prev) => ({ ...fromSavedAddress(a), postcode: prev.postcode, city: prev.city, state: prev.state, countryCode: prev.countryCode }));
   }
 
