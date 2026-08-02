@@ -84,14 +84,19 @@ async function generateManifestPdf(manifest) {
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
     doc.moveDown(0.5);
 
-    const colX = { order: 50, tracking: 140, receiver: 230, dest: 390, qty: 470, weight: 505 };
+    // Airport column matters now that one manifest can combine orders bound
+    // for several different airports within the same country — staff
+    // physically sorting parcels need to see which airport each one routes
+    // through, not just the destination country.
+    const colX = { order: 50, tracking: 122, receiver: 195, dest: 330, airport: 415, qty: 455, weight: 490 };
     doc.font('Helvetica-Bold').fontSize(8);
-    doc.text('Order #', colX.order, doc.y, { continued: false, width: 85 });
-    doc.text('Tracking', colX.tracking, doc.y - 9, { width: 85 });
-    doc.text('Receiver', colX.receiver, doc.y - 9, { width: 155 });
-    doc.text('Dest.', colX.dest, doc.y - 9, { width: 75 });
+    doc.text('Order #', colX.order, doc.y, { continued: false, width: 70 });
+    doc.text('Tracking', colX.tracking, doc.y - 9, { width: 70 });
+    doc.text('Receiver', colX.receiver, doc.y - 9, { width: 130 });
+    doc.text('Dest.', colX.dest, doc.y - 9, { width: 80 });
+    doc.text('Airport', colX.airport, doc.y - 9, { width: 35 });
     doc.text('Qty', colX.qty, doc.y - 9, { width: 30 });
-    doc.text('Wt (kg)', colX.weight, doc.y - 9, { width: 40 });
+    doc.text('Wt (kg)', colX.weight, doc.y - 9, { width: 45 });
     doc.moveDown(0.5);
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
     doc.moveDown(0.3);
@@ -104,12 +109,13 @@ async function generateManifestPdf(manifest) {
       }
       const rowY = doc.y;
       const qty = (order.items || []).reduce((sum, it) => sum + it.quantity, 0);
-      doc.text(order.orderNumber, colX.order, rowY, { width: 85 });
-      doc.text(order.trackingNumber || '—', colX.tracking, rowY, { width: 85 });
-      doc.text(order.receiverAddress?.contactName || '', colX.receiver, rowY, { width: 155 });
-      doc.text(order.receiverAddress?.countryCode || '', colX.dest, rowY, { width: 75 });
+      doc.text(order.orderNumber, colX.order, rowY, { width: 70 });
+      doc.text(order.trackingNumber || '—', colX.tracking, rowY, { width: 70 });
+      doc.text(order.receiverAddress?.contactName || '', colX.receiver, rowY, { width: 130 });
+      doc.text(`${order.receiverAddress?.city || ''}, ${order.receiverAddress?.countryCode || ''}`, colX.dest, rowY, { width: 80 });
+      doc.text(order.airportCode || '—', colX.airport, rowY, { width: 35 });
       doc.text(String(qty), colX.qty, rowY, { width: 30 });
-      doc.text(Number(order.chargeableWeightKg).toFixed(2), colX.weight, rowY, { width: 40 });
+      doc.text(Number(order.chargeableWeightKg).toFixed(2), colX.weight, rowY, { width: 45 });
       doc.moveDown(0.6);
     }
 
