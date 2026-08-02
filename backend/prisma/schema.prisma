@@ -766,6 +766,7 @@ model Manifest {
   updatedAt      DateTime        @updatedAt
 
   @@index([regionId])
+  @@index([countryCode])
 }
 
 // One physical package within a (possibly multi-item) shipment.
