@@ -125,19 +125,36 @@ async function recomputeAndRegenerate(manifestId) {
   return { ...updated, pdfFileUrl: fileName };
 }
 
-/** POST /api/admin/manifests — { orderIds, hubId, airportCode, toAddress, manifestDate } */
+/**
+ * POST /api/admin/manifests — { orderIds, hubId, toAddress, manifestDate }.
+ * airportCode is deliberately not client input — the destination country
+ * (and whichever specific airport(s), if that turns out to be exactly one)
+ * are derived server-side from the selected orders themselves, since a
+ * manifest is now free to combine orders bound for several different
+ * airports as long as they're all in the same country.
+ */
 async function createManifest(req, res, next) {
   try {
-    const { orderIds, hubId, airportCode, toAddress, manifestDate } = req.body;
+    const { orderIds, hubId, toAddress, manifestDate } = req.body;
     if (!Array.isArray(orderIds) || orderIds.length === 0) return res.status(400).json({ error: 'orderIds is required' });
     if (!hubId) return res.status(400).json({ error: 'hubId is required' });
-    if (!airportCode) return res.status(400).json({ error: 'airportCode is required' });
     if (!toAddress?.trim()) return res.status(400).json({ error: 'toAddress is required' });
     if (!manifestDate) return res.status(400).json({ error: 'manifestDate is required' });
 
-    const firstOrder = await prisma.order.findUnique({ where: { id: orderIds[0] }, include: { receiverAddress: true } });
-    if (!firstOrder) return res.status(400).json({ error: 'orderIds contains an unknown order' });
-    const region = await findOrCreateRegion(airportCode, firstOrder.receiverAddress.countryCode, toAddress);
+    const orders = await prisma.order.findMany({ where: { id: { in: orderIds } }, include: { receiverAddress: true } });
+    if (orders.length === 0) return res.status(400).json({ error: 'orderIds contains no known orders' });
+    const countryCodes = [...new Set(orders.map((o) => o.receiverAddress.countryCode))];
+    if (countryCodes.length > 1) {
+      return res.status(400).json({ error: 'Selected orders must all be destined for the same country to share a manifest.' });
+    }
+    const countryCode = countryCodes[0];
+    const airportCodes = [...new Set(orders.map((o) => o.airportCode).filter(Boolean))];
+
+    let regionId = null;
+    if (airportCodes.length === 1) {
+      const region = await findOrCreateRegion(airportCodes[0], countryCode, toAddress);
+      regionId = region.id;
+    }
 
     const manifestNumber = await generateManifestNumber();
     const manifest = await prisma.$transaction(async (tx) => {
@@ -146,14 +163,20 @@ async function createManifest(req, res, next) {
           manifestNumber,
           barcodeValue: manifestNumber,
           hubId,
-          regionId: region.id,
+          countryCode,
+          regionId,
           toAddress: toAddress.trim(),
           manifestDate: new Date(manifestDate),
           createdById: req.user.id,
         },
       });
       const claimed = await tx.order.updateMany({
-        where: { id: { in: orderIds }, manifestId: null, status: { notIn: PAYABLE_STATUSES }, airportCode },
+        where: {
+          id: { in: orderIds },
+          manifestId: null,
+          status: { notIn: PAYABLE_STATUSES },
+          receiverAddress: { countryCode },
+        },
         data: { manifestId: created.id },
       });
       if (claimed.count === 0) {
