@@ -133,14 +133,23 @@ function MyJobs({ userName }) {
       if (!j.driverAssignedAt) return true;
       return isoDate(new Date(j.driverAssignedAt)) === selectedDate;
     });
+  // The date a completed job is pinned to — pickedUpAt if the driver marked
+  // it via the app, else the earliest tracking event that took it past the
+  // active statuses (covers jobs whose status was advanced by staff instead,
+  // which never sets pickedUpAt). Deliberately NOT updatedAt: that gets
+  // touched by any later edit (e.g. staff pushing the status further along
+  // after pickup), which would wrongly move an already-completed job to
+  // whatever day that unrelated edit happened.
+  function completionDate(job) {
+    if (job.pickedUpAt) return job.pickedUpAt;
+    const firstTerminalEvent = (job.trackingEvents || []).find((t) => !ACTIVE_STATUSES.includes(t.status));
+    if (firstTerminalEvent) return firstTerminalEvent.occurredAt;
+    return job.updatedAt;
+  }
   const completedJobs = jobs
     .filter((j) => !ACTIVE_STATUSES.includes(j.status))
     .filter((j) => {
-      // Cancelled jobs in particular can reach this bucket without ever
-      // being picked up (pickedUpAt stays null) — fall back to updatedAt
-      // (when the cancellation happened) so every completed job is still
-      // pinned to one specific date, never showing on every date picked.
-      const at = j.pickedUpAt || j.updatedAt;
+      const at = completionDate(j);
       if (!at) return true;
       return isoDate(new Date(at)) === selectedDate;
     });
