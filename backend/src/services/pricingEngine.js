@@ -119,6 +119,30 @@ async function resolveZoneForDestination(countryCode, postcode) {
 }
 
 /**
+ * Resolve a destination country+postcode to its manifest airport code (e.g.
+ * "MEL") via PostcodeSuggestion.airport — the same source data that powers
+ * postcode autocomplete, keyed at full-postcode granularity (unlike
+ * PostcodeZone, which is reduced to a shorter match key for some
+ * countries — see extractZoneMatchKey). A single pricing Zone can span
+ * several airports (e.g. "Australia 2" postcodes route through MEL, PER and
+ * SYD depending on suburb), so this must be resolved per-order from the
+ * postcode, not derived from the zone. Unlike resolveZoneForDestination, a
+ * missing match is not an error — the order just can't be added to a
+ * Manifest until backfilled (see scripts/backfill-order-airport-codes.js).
+ */
+async function resolveAirportForDestination(countryCode, postcode) {
+  if (!countryCode || !postcode) return null;
+  const suggestion = await prisma.postcodeSuggestion.findFirst({
+    where: {
+      countryCode: countryCode.toUpperCase(),
+      postcode: String(postcode).trim(),
+      airport: { not: null },
+    },
+  });
+  return suggestion ? suggestion.airport : null;
+}
+
+/**
  * Resolve a pickup (origin) postcode to its origin Zone id, e.g.
  * "India-urban" — used to optionally narrow RateCard selection by
  * fromZoneId. Returns null if the postcode isn't known (or wasn't
