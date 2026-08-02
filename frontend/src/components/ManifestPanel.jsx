@@ -387,7 +387,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
           <div className="field">
             <label>To Airport</label>
-            <select className="select" value={regionSelection} onChange={(e) => pickRegion(e.target.value)}>
+            <select className="select" required value={regionSelection} onChange={(e) => pickRegion(e.target.value)}>
               <option value="">Choose destination airport…</option>
               {regions.map((r) => <option key={r.id} value={r.id}>{r.code} — {r.name}</option>)}
               <option value={NEW_OPTION}>+ Add new destination airport…</option>
@@ -404,12 +404,8 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
           )}
 
           <div className="field">
-            <label>To (airport address)</label>
-            <textarea className="input" rows={2} style={{ resize: 'vertical' }} required value={toAddress} onChange={(e) => setToAddress(e.target.value)} />
-          </div>
-          <div className="field">
             <label>Manifest date</label>
-            <input className="input" type="date" required value={manifestDate} onChange={(e) => setManifestDate(e.target.value)} />
+            <input className="input" disabled value={new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} />
           </div>
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
