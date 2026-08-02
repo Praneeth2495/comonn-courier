@@ -341,6 +341,7 @@ async function getOrder(req, res, next) {
         payment: true,
         labels: true,
         items: true,
+        addons: true,
         trackingEvents: { orderBy: { occurredAt: 'asc' } },
       },
     });
