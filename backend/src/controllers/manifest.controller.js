@@ -193,8 +193,16 @@ async function addOrdersToManifest(req, res, next) {
     const { orderIds } = req.body;
     if (!Array.isArray(orderIds) || orderIds.length === 0) return res.status(400).json({ error: 'orderIds is required' });
 
+    const manifest = await prisma.manifest.findUnique({ where: { id: req.params.id }, include: { region: true } });
+    if (!manifest) return res.status(404).json({ error: 'Manifest not found' });
+
     const claimed = await prisma.order.updateMany({
-      where: { id: { in: orderIds }, manifestId: null, status: { notIn: PAYABLE_STATUSES } },
+      where: {
+        id: { in: orderIds },
+        manifestId: null,
+        status: { notIn: PAYABLE_STATUSES },
+        ...(manifest.region ? { airportCode: manifest.region.code } : {}),
+      },
       data: { manifestId: req.params.id },
     });
     if (claimed.count === 0) return res.status(409).json({ error: 'None of the selected orders are eligible.' });
