@@ -40,13 +40,12 @@ export default function ManifestPanel() {
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Manifest</h1>
       <div className="acct-tabs" style={{ marginBottom: 20 }}>
-        {[['build', 'Build manifest'], ['history', 'Manifests'], ['setup', 'Airports & hubs']].map(([key, label]) => (
+        {[['build', 'Build manifest'], ['history', 'Manifests']].map(([key, label]) => (
           <button key={key} className={`acct-tab ${subTab === key ? 'active' : ''}`} onClick={() => setSubTab(key)}>{label}</button>
         ))}
       </div>
       {subTab === 'build' && <BuildManifest />}
       {subTab === 'history' && <ManifestHistory />}
-      {subTab === 'setup' && <ManifestSetup />}
     </div>
   );
 }
