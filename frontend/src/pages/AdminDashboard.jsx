@@ -293,7 +293,9 @@ function OrdersPanel() {
     };
     if (tabDef[2]) params.status = tabDef[2].join(',');
     else if (tabDef[3] === 'hasUser') params.hasUser = 'true';
-    // 'all' mode (Bookings tab): no status/hasUser filter — every booking.
+    else if (tabDef[3] === 'all') params.notStatus = 'UNFINISHED';
+    // 'all' mode (Bookings tab): every booking except UNFINISHED (leads that
+    // never even reached payment) — those only ever show under Unconfirmed.
 
     client.get('/orders', { params }).then(({ data }) => {
       if (seq !== seqRef.current) return; // a newer request superseded this one
