@@ -54,7 +54,7 @@ async function importSuggestions(db) {
   // other) failure partway through still leaves every smaller country's
   // data intact.
   const rows = db.prepare(`
-    SELECT "Country Code" as countryCode, "Postcode" as combined, "Region" as region
+    SELECT "Country Code" as countryCode, "Postcode" as combined, "Region" as region, "Airport" as airport
     FROM "Total Zones - Suggestion List"
     ORDER BY CASE
       WHEN "Country Code" = 'GB' THEN 2
@@ -64,7 +64,7 @@ async function importSuggestions(db) {
   `).all();
 
   const parsed = [];
-  for (const { countryCode, combined, region } of rows) {
+  for (const { countryCode, combined, region, airport } of rows) {
     if (!countryCode || !combined) continue;
     const p = parseCombinedPostcode(combined);
     if (!p || !p.postcode || !p.suburb) continue; // malformed row — skip rather than guess
@@ -74,6 +74,7 @@ async function importSuggestions(db) {
       suburb: p.suburb,
       state: p.state,
       region: region ? region.trim() : null,
+      airport: airport ? airport.trim() : null,
     });
   }
 
