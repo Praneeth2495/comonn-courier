@@ -96,7 +96,6 @@ function BuildManifest() {
   function pickCountry(code) {
     setSelectedCountry(code);
     setSelectedAirportCodes(airports.filter((a) => a.countryCode === code).map((a) => a.airportCode));
-    setSelectedOriginState('');
     setJustCreated(null);
   }
 
