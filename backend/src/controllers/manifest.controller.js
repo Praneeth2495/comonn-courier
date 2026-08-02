@@ -254,6 +254,7 @@ async function downloadManifest(req, res, next) {
 
 module.exports = {
   listEligibleOrders,
+  listAvailableAirports,
   createManifest,
   listManifests,
   getManifest,
