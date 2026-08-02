@@ -615,6 +615,7 @@ async function updateOrderDetails(req, res, next) {
     if (pricingPending) {
       const service = await prisma.service.findUnique({ where: { code: 'PICKUP' } });
       const zone = await resolveZoneForCountry(receiver.countryCode);
+      const airportCode = await resolveAirportForDestination(receiver.countryCode, receiver.postcode);
       orderData = {
         serviceId: service.id,
         actualWeightKg: 0,
@@ -624,6 +625,7 @@ async function updateOrderDetails(req, res, next) {
         contentsDescription,
         pricingPending: true,
         zoneCode: zone.code,
+        airportCode,
         baseFreight: 0,
         surchargesTotal: 0,
         taxTotal: 0,
