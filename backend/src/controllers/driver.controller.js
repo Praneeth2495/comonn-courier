@@ -6,7 +6,18 @@ async function listMyJobs(req, res, next) {
   try {
     const jobs = await prisma.order.findMany({
       where: { assignedDriverId: req.user.id },
-      include: { senderAddress: true, receiverAddress: true, service: true, items: true },
+      include: {
+        senderAddress: true,
+        receiverAddress: true,
+        service: true,
+        items: true,
+        // Lets the dashboard pin a completed job to the day it actually left
+        // the driver's hands (pickedUpAt, or else the earliest tracking
+        // event past the active statuses) instead of whatever day it was
+        // last touched for an unrelated reason (e.g. staff advancing its
+        // status further along after pickup).
+        trackingEvents: { orderBy: { occurredAt: 'asc' } },
+      },
       orderBy: { driverAssignedAt: 'desc' },
     });
     res.json({ jobs });
