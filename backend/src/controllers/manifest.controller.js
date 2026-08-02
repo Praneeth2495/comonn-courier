@@ -13,21 +13,31 @@ function withQty(order) {
 }
 
 /**
- * GET /api/admin/manifests/eligible-orders?airportCode= — orders that can
- * be added to a manifest for this destination airport: not already in a
- * (different) manifest, and confirmed (excludes PAYABLE_STATUSES, i.e.
- * unpaid/unconfirmed orders) — everything else, including pickup bookings,
- * is included per the "straight from order placement" requirement. Reuses
- * buildOrdersWhere so STAFF still only see orders in their assigned zones.
+ * GET /api/admin/manifests/eligible-orders?countryCode=&airportCode= —
+ * orders that can be added to a manifest: not already in a (different)
+ * manifest, and confirmed (excludes PAYABLE_STATUSES, i.e. unpaid/
+ * unconfirmed orders) — everything else, including pickup bookings, is
+ * included per the "straight from order placement" requirement.
+ * countryCode is always required (a manifest can only ever hold orders for
+ * one destination country); airportCode narrows to one or more specific
+ * airports within it (comma-separated) — omit it to see every airport in
+ * that country at once, which is what makes combining several airports
+ * into one manifest possible. Reuses buildOrdersWhere so STAFF still only
+ * see orders in their assigned zones.
  */
 async function listEligibleOrders(req, res, next) {
   try {
-    const { airportCode } = req.query;
-    if (!airportCode) return res.status(400).json({ error: 'airportCode is required' });
+    const { countryCode, airportCode } = req.query;
+    if (!countryCode) return res.status(400).json({ error: 'countryCode is required' });
 
     const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
     where.manifestId = null;
-    where.airportCode = airportCode;
+    where.airportCode = { not: null };
+    where.receiverAddress = { countryCode: countryCode.toUpperCase() };
+    if (airportCode) {
+      const codes = airportCode.split(',').map((c) => c.trim()).filter(Boolean);
+      if (codes.length) where.airportCode = { in: codes };
+    }
 
     const orders = await prisma.order.findMany({ where, include: ORDER_INCLUDE, orderBy: { createdAt: 'desc' } });
     res.json({ orders: orders.map(withQty) });
