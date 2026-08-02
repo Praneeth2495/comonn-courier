@@ -662,6 +662,7 @@ async function updateOrderDetails(req, res, next) {
         contentsDescription,
         pricingPending: false,
         zoneCode: quote.zone.code,
+        airportCode: quote.airportCode,
         baseFreight: quote.pricing.baseFreight,
         surchargesTotal: quote.pricing.surchargesTotal,
         taxTotal: quote.pricing.taxTotal,
