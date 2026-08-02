@@ -115,14 +115,19 @@ async function recomputeAndRegenerate(manifestId) {
   return { ...updated, pdfFileUrl: fileName };
 }
 
-/** POST /api/admin/manifests — { orderIds, hubId, regionId, toAddress, manifestDate } */
+/** POST /api/admin/manifests — { orderIds, hubId, airportCode, toAddress, manifestDate } */
 async function createManifest(req, res, next) {
   try {
-    const { orderIds, hubId, regionId, toAddress, manifestDate } = req.body;
+    const { orderIds, hubId, airportCode, toAddress, manifestDate } = req.body;
     if (!Array.isArray(orderIds) || orderIds.length === 0) return res.status(400).json({ error: 'orderIds is required' });
     if (!hubId) return res.status(400).json({ error: 'hubId is required' });
+    if (!airportCode) return res.status(400).json({ error: 'airportCode is required' });
     if (!toAddress?.trim()) return res.status(400).json({ error: 'toAddress is required' });
     if (!manifestDate) return res.status(400).json({ error: 'manifestDate is required' });
+
+    const firstOrder = await prisma.order.findUnique({ where: { id: orderIds[0] }, include: { receiverAddress: true } });
+    if (!firstOrder) return res.status(400).json({ error: 'orderIds contains an unknown order' });
+    const region = await findOrCreateRegion(airportCode, firstOrder.receiverAddress.countryCode, toAddress);
 
     const manifestNumber = await generateManifestNumber();
     const manifest = await prisma.$transaction(async (tx) => {
@@ -131,14 +136,14 @@ async function createManifest(req, res, next) {
           manifestNumber,
           barcodeValue: manifestNumber,
           hubId,
-          regionId: regionId || null,
+          regionId: region.id,
           toAddress: toAddress.trim(),
           manifestDate: new Date(manifestDate),
           createdById: req.user.id,
         },
       });
       const claimed = await tx.order.updateMany({
-        where: { id: { in: orderIds }, manifestId: null, status: { notIn: PAYABLE_STATUSES } },
+        where: { id: { in: orderIds }, manifestId: null, status: { notIn: PAYABLE_STATUSES }, airportCode },
         data: { manifestId: created.id },
       });
       if (claimed.count === 0) {
