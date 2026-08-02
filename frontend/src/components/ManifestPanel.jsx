@@ -319,9 +319,6 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
   function pickRegion(value) {
     setRegionSelection(value);
-    if (value === NEW_OPTION) return;
-    const region = regions.find((r) => r.id === value);
-    if (region) setToAddress(region.airportAddress || '');
   }
 
   async function submitNewRegion() {
@@ -332,7 +329,6 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
       const { data } = await client.post('/admin/manifest-regions', newRegion);
       setRegions((prev) => [...prev, data.region]);
       setRegionSelection(data.region.id);
-      setToAddress(data.region.airportAddress || '');
       setNewRegion({ code: '', name: '', countryCode: '', airportAddress: '' });
     } catch (err) {
       setError(err.response?.data?.error || 'Could not add this destination airport.');
@@ -343,7 +339,9 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
   async function submit(e) {
     e.preventDefault();
-    if (!hubId || hubId === NEW_OPTION || !toAddress.trim() || !manifestDate) return;
+    if (!hubId || hubId === NEW_OPTION || !regionSelection || regionSelection === NEW_OPTION) return;
+    const region = regions.find((r) => r.id === regionSelection);
+    if (!region) return;
     setSubmitting(true);
     setError('');
     try {
