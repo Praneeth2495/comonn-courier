@@ -308,6 +308,7 @@ async function generateQuote(input) {
   }
 
   const zone = await resolveZoneForDestination(destinationCountryCode, destinationPostcode);
+  const airportCode = await resolveAirportForDestination(destinationCountryCode, destinationPostcode);
 
   const pricedItems = items.map((it) => priceItem(it, service.volumetricDivisor));
 
