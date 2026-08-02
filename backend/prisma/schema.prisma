@@ -47,6 +47,10 @@ model User {
   // 1-hour account-setup follow-up email (see accountSetupFollowup.js).
   passwordSetAt           DateTime?
   accountSetupEmailSentAt DateTime?
+  // Free-text home-region label for a DRIVER account only (e.g. "HYD") —
+  // shown alongside their name in the "send to driver" picker so staff can
+  // tell two same-named drivers apart. Meaningless for any other role.
+  driverRegion            String?
 
   addresses               Address[]
   orders                  Order[]
