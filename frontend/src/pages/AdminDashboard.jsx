@@ -403,6 +403,31 @@ function OrdersPanel() {
 
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
+  // Pickup orders (this page's worth): today's jobs first, then tomorrow's
+  // and beyond in date order; anything whose pickup day has already passed
+  // without being picked up floats to the very top, flagged so the row can
+  // be highlighted — that's the one a driver missed and needs chasing.
+  // Orders with no parseable pickup date sort last (nothing to prioritize
+  // them by).
+  let displayOrders = orders;
+  if (tab === 'pickup') {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    displayOrders = orders
+      .map((o) => {
+        const parsed = parsePickupDateStr(o.pickupDate, now);
+        const overdue = !!parsed && parsed < todayStart && o.status !== 'PICKED_UP';
+        return { ...o, __parsedPickupDate: parsed, __overdue: overdue };
+      })
+      .sort((a, b) => {
+        if (a.__overdue !== b.__overdue) return a.__overdue ? -1 : 1;
+        if (!a.__parsedPickupDate && !b.__parsedPickupDate) return 0;
+        if (!a.__parsedPickupDate) return 1;
+        if (!b.__parsedPickupDate) return -1;
+        return a.__parsedPickupDate - b.__parsedPickupDate;
+      });
+  }
+
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Orders</h1>
