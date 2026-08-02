@@ -257,25 +257,97 @@ function BuildManifest() {
   );
 }
 
+const NEW_OPTION = '__new__';
+
 function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [hubs, setHubs] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [hubId, setHubId] = useState('');
+  const [regionSelection, setRegionSelection] = useState('');
   const [toAddress, setToAddress] = useState(airports.length === 1 ? (airports[0].airportAddress || '') : '');
   const [manifestDate, setManifestDate] = useState(todayIso());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const [newHub, setNewHub] = useState({ name: '', address: '' });
+  const [addingHub, setAddingHub] = useState(false);
+  const [newRegion, setNewRegion] = useState({
+    code: airports.length === 1 ? airports[0].airportCode : '',
+    name: '',
+    countryCode: airports[0]?.countryCode || '',
+    airportAddress: '',
+  });
+  const [addingRegion, setAddingRegion] = useState(false);
+
   useEffect(() => {
-    client.get('/admin/hubs').then(({ data }) => {
-      const active = data.hubs.filter((h) => h.isActive);
-      setHubs(active);
-      if (active.length === 1) setHubId(active[0].id);
+    Promise.all([
+      client.get('/admin/hubs'),
+      client.get('/admin/manifest-regions'),
+    ]).then(([hubsRes, regionsRes]) => {
+      const activeHubs = hubsRes.data.hubs.filter((h) => h.isActive);
+      const activeRegions = regionsRes.data.regions.filter((r) => r.isActive);
+      setHubs(activeHubs);
+      setRegions(activeRegions);
+      if (activeHubs.length === 1) setHubId(activeHubs[0].id);
+      if (airports.length === 1) {
+        const match = activeRegions.find((r) => r.code === airports[0].airportCode);
+        if (match) {
+          setRegionSelection(match.id);
+          setToAddress(match.airportAddress || '');
+        }
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     });
   }, []);
 
+  function pickHub(value) {
+    setHubId(value);
+    if (value !== NEW_OPTION) setNewHub({ name: '', address: '' });
+  }
+
+  async function submitNewHub() {
+    if (!newHub.name.trim() || !newHub.address.trim()) return;
+    setAddingHub(true);
+    setError('');
+    try {
+      const { data } = await client.post('/admin/hubs', newHub);
+      setHubs((prev) => [...prev, data.hub]);
+      setHubId(data.hub.id);
+      setNewHub({ name: '', address: '' });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not add this origin airport.');
+    } finally {
+      setAddingHub(false);
+    }
+  }
+
+  function pickRegion(value) {
+    setRegionSelection(value);
+    if (value === NEW_OPTION) return;
+    const region = regions.find((r) => r.id === value);
+    if (region) setToAddress(region.airportAddress || '');
+  }
+
+  async function submitNewRegion() {
+    if (!newRegion.code.trim() || !newRegion.name.trim() || !newRegion.countryCode.trim() || !newRegion.airportAddress.trim()) return;
+    setAddingRegion(true);
+    setError('');
+    try {
+      const { data } = await client.post('/admin/manifest-regions', newRegion);
+      setRegions((prev) => [...prev, data.region]);
+      setRegionSelection(data.region.id);
+      setToAddress(data.region.airportAddress || '');
+      setNewRegion({ code: '', name: '', countryCode: '', airportAddress: '' });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not add this destination airport.');
+    } finally {
+      setAddingRegion(false);
+    }
+  }
+
   async function submit(e) {
     e.preventDefault();
-    if (!hubId || !toAddress.trim() || !manifestDate) return;
+    if (!hubId || hubId === NEW_OPTION || !toAddress.trim() || !manifestDate) return;
     setSubmitting(true);
     setError('');
     try {
@@ -296,7 +368,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
   return (
     <div className="modal-overlay open" onClick={onClose}>
-      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ fontSize: 17 }}>Create manifest</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
@@ -304,12 +376,39 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected{codes.length ? `, routing via ${codes.join(', ')}` : ''}.</p>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>From (airport)</label>
-            <select className="select" required value={hubId} onChange={(e) => setHubId(e.target.value)}>
-              <option value="">Choose an airport…</option>
+            <label>From Airport</label>
+            <select className="select" required value={hubId} onChange={(e) => pickHub(e.target.value)}>
+              <option value="">Choose origin airport…</option>
               {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+              <option value={NEW_OPTION}>+ Add new origin airport…</option>
             </select>
           </div>
+          {hubId === NEW_OPTION && (
+            <div className="card" style={{ padding: 12, background: 'var(--paper)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input className="input" placeholder="Name, e.g. MAA Airport" value={newHub.name} onChange={(e) => setNewHub({ ...newHub, name: e.target.value })} />
+              <input className="input" placeholder="Full airport/cargo address" value={newHub.address} onChange={(e) => setNewHub({ ...newHub, address: e.target.value })} />
+              <button type="button" className="btn btn-outline btn-sm" disabled={addingHub} onClick={submitNewHub}>{addingHub ? 'Adding…' : 'Add & use this airport'}</button>
+            </div>
+          )}
+
+          <div className="field">
+            <label>To Airport</label>
+            <select className="select" value={regionSelection} onChange={(e) => pickRegion(e.target.value)}>
+              <option value="">Choose destination airport…</option>
+              {regions.map((r) => <option key={r.id} value={r.id}>{r.code} — {r.name}</option>)}
+              <option value={NEW_OPTION}>+ Add new destination airport…</option>
+            </select>
+          </div>
+          {regionSelection === NEW_OPTION && (
+            <div className="card" style={{ padding: 12, background: 'var(--paper)', display: 'grid', gridTemplateColumns: '80px 1fr 70px', gap: 8 }}>
+              <input className="input" placeholder="Code" maxLength={4} value={newRegion.code} onChange={(e) => setNewRegion({ ...newRegion, code: e.target.value.toUpperCase() })} />
+              <input className="input" placeholder="Name" value={newRegion.name} onChange={(e) => setNewRegion({ ...newRegion, name: e.target.value })} />
+              <input className="input" placeholder="Country" maxLength={2} value={newRegion.countryCode} onChange={(e) => setNewRegion({ ...newRegion, countryCode: e.target.value.toUpperCase() })} />
+              <input className="input" placeholder="Airport cargo address" style={{ gridColumn: '1 / -1' }} value={newRegion.airportAddress} onChange={(e) => setNewRegion({ ...newRegion, airportAddress: e.target.value })} />
+              <button type="button" className="btn btn-outline btn-sm" style={{ gridColumn: '1 / -1' }} disabled={addingRegion} onClick={submitNewRegion}>{addingRegion ? 'Adding…' : 'Add & use this airport'}</button>
+            </div>
+          )}
+
           <div className="field">
             <label>To (airport address)</label>
             <textarea className="input" rows={2} style={{ resize: 'vertical' }} required value={toAddress} onChange={(e) => setToAddress(e.target.value)} />
