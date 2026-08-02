@@ -612,6 +612,12 @@ model Order {
 
   // pricing snapshot (never recompute historical orders off live rate cards)
   zoneCode         String
+  // Destination airport this order routes through, resolved from the
+  // receiver postcode at booking time (same snapshot convention as
+  // zoneCode) — see pricingEngine.resolveAirportForDestination. Null when
+  // no airport data exists yet for that postcode/country; such orders
+  // can't be added to a Manifest until backfilled.
+  airportCode      String?
   baseFreight      Decimal @db.Decimal(10, 2)
   surchargesTotal  Decimal @default(0) @db.Decimal(10, 2)
   addonsTotal      Decimal @default(0) @db.Decimal(10, 2)
