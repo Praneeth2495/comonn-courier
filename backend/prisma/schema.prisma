@@ -686,6 +686,7 @@ model Order {
   @@index([merchantId])
   @@index([merchantInvoiceId])
   @@index([manifestId])
+  @@index([airportCode])
 }
 
 // A named, staff-managed grouping of destination Zones that all route
