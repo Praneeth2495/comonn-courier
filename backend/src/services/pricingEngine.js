@@ -417,6 +417,7 @@ module.exports = {
   resolveZoneForCountry,
   extractZoneMatchKey,
   resolveZoneForDestination,
+  resolveAirportForDestination,
   resolveFromZoneForPostcode,
   findRateBracket,
   applySurcharges,
