@@ -96,7 +96,7 @@ async function importSuggestions(db) {
 }
 
 async function importZones(db) {
-  const rows = db.prepare(`SELECT field1 as countryCode, field2 as postcode, field3 as zoneName FROM "Total Zones - Zones" WHERE field1 != 'Country'`).all();
+  const rows = db.prepare(`SELECT "Country" as countryCode, "Postcode" as postcode, "Zone" as zoneName FROM "Total Zones - Zones"`).all();
 
   // India already has real rate cards pointing at the existing production
   // origin zone — reuse it instead of creating a new "India 1" zone, which
