@@ -39,6 +39,27 @@ function slugCode(name) {
   return name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// The proxied Railway connection has occasionally hung mid-import on a
+// single batch (no error, no progress — just a dead promise) over a run
+// this long (~600 sequential round-trips for the Suggestions table). Retry
+// a few times with backoff, forcing a fresh connection each time via
+// $disconnect() (Prisma reconnects lazily on the next query) rather than
+// trusting a connection that may already be dead.
+async function withRetry(fn, { attempts = 4, label = 'batch' } = {}) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === attempts) throw err;
+      console.error(`\n${label} failed (attempt ${attempt}/${attempts}): ${err.message}. Reconnecting and retrying...`);
+      await prisma.$disconnect();
+      await sleep(attempt * 2000);
+    }
+  }
+}
+
 // Splits a combined "<postcode>, <suburb>[, <state>]" string. Some
 // countries in this dataset have no state/province segment at all (SG, DE,
 // ZA...), so only treat the last segment as `state` when there are 3+
