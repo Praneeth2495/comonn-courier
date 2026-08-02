@@ -391,7 +391,7 @@ async function listDrivers(req, res, next) {
   try {
     const drivers = await prisma.user.findMany({
       where: { role: 'DRIVER', isActive: true },
-      select: { id: true, fullName: true, email: true, phone: true },
+      select: { id: true, fullName: true, email: true, phone: true, driverRegion: true },
       orderBy: { fullName: 'asc' },
     });
     res.json({ drivers });
