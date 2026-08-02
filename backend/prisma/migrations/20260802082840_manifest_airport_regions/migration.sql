@@ -2,7 +2,13 @@
 ALTER TABLE "Zone" DROP CONSTRAINT "Zone_manifestRegionId_fkey";
 
 -- AlterTable
-ALTER TABLE "ManifestRegion" ADD COLUMN     "code" TEXT NOT NULL;
+ALTER TABLE "ManifestRegion" ADD COLUMN     "code" TEXT;
+
+-- Backfill any ManifestRegion rows created before this migration (airport
+-- code wasn't a field yet) — derive from the existing name where possible.
+UPDATE "ManifestRegion" SET "code" = UPPER(REGEXP_REPLACE(name, '[^A-Za-z0-9]+', '', 'g')) WHERE "code" IS NULL;
+
+ALTER TABLE "ManifestRegion" ALTER COLUMN "code" SET NOT NULL;
 
 -- AlterTable
 ALTER TABLE "Order" ADD COLUMN     "airportCode" TEXT;
