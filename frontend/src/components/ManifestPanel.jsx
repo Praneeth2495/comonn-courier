@@ -264,8 +264,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [regions, setRegions] = useState([]);
   const [hubId, setHubId] = useState('');
   const [regionSelection, setRegionSelection] = useState('');
-  const [toAddress, setToAddress] = useState(airports.length === 1 ? (airports[0].airportAddress || '') : '');
-  const [manifestDate, setManifestDate] = useState(todayIso());
+  const manifestDate = todayIso();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
