@@ -10,7 +10,13 @@
  * "<postcode>, <suburb>, <state>" string — some countries (SG, DE, ZA...)
  * only have "<postcode>, <suburb>" (no state). A "Region" column is also
  * present (currently only populated for India, e.g. "Srikakulam") — powers
- * the admin Pickup-orders panel's origin state/region filters.
+ * the admin Pickup-orders panel's origin state/region filters. An "Airport"
+ * column (populated for AU/NZ/CA/GB/US/IN) is also imported, one IATA-style
+ * code per postcode — powers Order.airportCode (see
+ * pricingEngine.resolveAirportForDestination), which drives the Manifest
+ * tab's sub-region grouping. Deliberately per-postcode rather than
+ * per-Zone: a single pricing Zone like "Australia 2" can span several real
+ * airports depending on suburb.
  *
  * Table "Total Zones - Zones" -> PostcodeZone (Country, Postcode, Zone
  * name, e.g. "India 1", "Australia 2"). India's postcodes all map to a
