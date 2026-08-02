@@ -70,7 +70,7 @@ async function listAvailableAirports(req, res, next) {
     const airports = [...counts.entries()].map(([key, count]) => {
       const [countryCode, airportCode] = key.split(':');
       const region = regionByCode.get(airportCode);
-      return { countryCode, airportCode, count, name: region?.name || airportCode };
+      return { countryCode, airportCode, count, name: region?.name || airportCode, airportAddress: region?.airportAddress || '' };
     });
 
     res.json({ airports });
