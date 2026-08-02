@@ -1,8 +1,8 @@
 -- DropForeignKey
-ALTER TABLE "Zone" DROP CONSTRAINT "Zone_manifestRegionId_fkey";
+ALTER TABLE "Zone" DROP CONSTRAINT IF EXISTS "Zone_manifestRegionId_fkey";
 
 -- AlterTable
-ALTER TABLE "ManifestRegion" ADD COLUMN     "code" TEXT;
+ALTER TABLE "ManifestRegion" ADD COLUMN IF NOT EXISTS "code" TEXT;
 
 -- Backfill any ManifestRegion rows created before this migration (airport
 -- code wasn't a field yet). The one known pre-existing row ("Mel Airport",
@@ -14,16 +14,16 @@ UPDATE "ManifestRegion" SET "code" = UPPER(REGEXP_REPLACE(name, '[^A-Za-z0-9]+',
 ALTER TABLE "ManifestRegion" ALTER COLUMN "code" SET NOT NULL;
 
 -- AlterTable
-ALTER TABLE "Order" ADD COLUMN     "airportCode" TEXT;
+ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS "airportCode" TEXT;
 
 -- AlterTable
-ALTER TABLE "PostcodeSuggestion" ADD COLUMN     "airport" TEXT;
+ALTER TABLE "PostcodeSuggestion" ADD COLUMN IF NOT EXISTS "airport" TEXT;
 
 -- AlterTable
-ALTER TABLE "Zone" DROP COLUMN "manifestRegionId";
+ALTER TABLE "Zone" DROP COLUMN IF EXISTS "manifestRegionId";
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ManifestRegion_code_key" ON "ManifestRegion"("code");
+CREATE UNIQUE INDEX IF NOT EXISTS "ManifestRegion_code_key" ON "ManifestRegion"("code");
 
 -- CreateIndex
-CREATE INDEX "Order_airportCode_idx" ON "Order"("airportCode");
+CREATE INDEX IF NOT EXISTS "Order_airportCode_idx" ON "Order"("airportCode");
