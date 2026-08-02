@@ -145,6 +145,7 @@ async function createOrder(req, res, next) {
           })),
         },
         zoneCode: quote.zone.code,
+        airportCode: quote.airportCode,
         baseFreight: quote.pricing.baseFreight,
         surchargesTotal: quote.pricing.surchargesTotal,
         taxRate: quote.pricing.taxRate,
