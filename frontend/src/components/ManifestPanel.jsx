@@ -388,7 +388,7 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
 
   return (
     <div className="modal-overlay open" onClick={onClose}>
-      <div className="modal-box" style={{ maxWidth: 620 }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-box" style={{ maxWidth: 720 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div>
             <h3 style={{ fontSize: 17 }}>{manifest ? manifest.manifestNumber : 'Manifest'}</h3>
