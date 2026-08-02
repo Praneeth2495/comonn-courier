@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
 const {
   listEligibleOrders,
+  listAvailableAirports,
   createManifest,
   listManifests,
   getManifest,
@@ -13,6 +14,7 @@ const {
 router.use(requireAuth, requireRole('ADMIN', 'STAFF'));
 
 router.get('/eligible-orders', listEligibleOrders);
+router.get('/available-airports', listAvailableAirports);
 router.get('/', listManifests);
 router.post('/', createManifest);
 router.get('/:id', getManifest);
