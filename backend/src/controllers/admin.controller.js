@@ -109,7 +109,7 @@ async function listZones(req, res, next) {
       const assignments = await prisma.staffZoneAssignment.findMany({ where: { userId: req.user.id }, select: { zoneId: true } });
       where = { ...where, id: { in: assignments.map((a) => a.zoneId) } };
     }
-    const zones = await prisma.zone.findMany({ where, include: { countries: true, manifestRegion: true } });
+    const zones = await prisma.zone.findMany({ where, include: { countries: true } });
     res.json({ zones });
   } catch (err) {
     next(err);
