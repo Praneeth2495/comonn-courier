@@ -51,55 +51,58 @@ export default function ManifestPanel() {
   );
 }
 
+// Sub-regions are destination airports, resolved per-order from the
+// receiver's postcode (Order.airportCode) — not hand-assigned per zone,
+// since a single pricing zone can genuinely span several real airports.
 function BuildManifest() {
-  const [regions, setRegions] = useState([]);
+  const [airports, setAirports] = useState([]);
   const [countries, setCountries] = useState([]);
-  const [loadingRegions, setLoadingRegions] = useState(true);
+  const [loadingAirports, setLoadingAirports] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState('');
-  const [selectedRegionId, setSelectedRegionId] = useState('');
+  const [selectedAirportCode, setSelectedAirportCode] = useState('');
   const [eligibleOrders, setEligibleOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [justCreated, setJustCreated] = useState(null);
 
-  function loadRegions() {
-    setLoadingRegions(true);
+  function loadAirports() {
+    setLoadingAirports(true);
     Promise.all([
-      client.get('/admin/manifest-regions'),
+      client.get('/admin/manifests/available-airports'),
       client.get('/quote/countries'),
-    ]).then(([regionsRes, countriesRes]) => {
-      setRegions(regionsRes.data.regions.filter((r) => r.isActive));
+    ]).then(([airportsRes, countriesRes]) => {
+      setAirports(airportsRes.data.airports);
       setCountries(countriesRes.data.countries);
-      setLoadingRegions(false);
-    }).catch(() => setLoadingRegions(false));
+      setLoadingAirports(false);
+    }).catch(() => setLoadingAirports(false));
   }
-  useEffect(loadRegions, []);
+  useEffect(loadAirports, []);
 
-  const countryCodes = [...new Set(regions.map((r) => r.countryCode))].sort();
+  const countryCodes = [...new Set(airports.map((a) => a.countryCode))].sort();
 
   useEffect(() => {
     if (!selectedCountry && countryCodes.length > 0) setSelectedCountry(countryCodes[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regions]);
+  }, [airports]);
 
-  const regionsForCountry = regions.filter((r) => r.countryCode === selectedCountry);
+  const airportsForCountry = airports.filter((a) => a.countryCode === selectedCountry);
 
   function pickCountry(code) {
     setSelectedCountry(code);
-    const first = regions.find((r) => r.countryCode === code);
-    setSelectedRegionId(first ? first.id : '');
+    const first = airports.find((a) => a.countryCode === code);
+    setSelectedAirportCode(first ? first.airportCode : '');
     setJustCreated(null);
   }
 
   function loadEligibleOrders() {
-    if (!selectedRegionId) { setEligibleOrders([]); return; }
+    if (!selectedAirportCode) { setEligibleOrders([]); return; }
     setLoadingOrders(true);
-    client.get('/admin/manifests/eligible-orders', { params: { regionId: selectedRegionId } })
+    client.get('/admin/manifests/eligible-orders', { params: { airportCode: selectedAirportCode } })
       .then(({ data }) => { setEligibleOrders(data.orders); setSelectedOrderIds([]); setLoadingOrders(false); })
       .catch(() => setLoadingOrders(false));
   }
-  useEffect(loadEligibleOrders, [selectedRegionId]);
+  useEffect(loadEligibleOrders, [selectedAirportCode]);
 
   function toggleOrder(id) {
     setSelectedOrderIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -113,16 +116,17 @@ function BuildManifest() {
     setShowCreateModal(false);
     setJustCreated(manifest);
     loadEligibleOrders();
+    loadAirports();
   }
 
-  const selectedRegion = regions.find((r) => r.id === selectedRegionId);
+  const selectedAirport = airports.find((a) => a.airportCode === selectedAirportCode);
 
-  if (loadingRegions) return <LoadingLogo />;
+  if (loadingAirports) return <LoadingLogo />;
 
   return (
     <div>
       {countryCodes.length === 0 ? (
-        <p className="lead" style={{ fontSize: 13.5 }}>No manifest sub-regions set up yet. Go to the "Hubs &amp; sub-regions" tab to add one and assign zones to it.</p>
+        <p className="lead" style={{ fontSize: 13.5 }}>No orders with a resolved destination airport are waiting to be manifested right now.</p>
       ) : (
         <>
           <div className="chip-filter-row">
@@ -134,12 +138,11 @@ function BuildManifest() {
           </div>
 
           <div className="chip-filter-row">
-            {regionsForCountry.map((r) => (
-              <div key={r.id} className={`chip-filter ${selectedRegionId === r.id ? 'active' : ''}`} onClick={() => { setSelectedRegionId(r.id); setJustCreated(null); }}>
-                {r.name}
+            {airportsForCountry.map((a) => (
+              <div key={a.airportCode} className={`chip-filter ${selectedAirportCode === a.airportCode ? 'active' : ''}`} onClick={() => { setSelectedAirportCode(a.airportCode); setJustCreated(null); }}>
+                {a.name === a.airportCode ? a.airportCode : `${a.name} (${a.airportCode})`} · {a.count}
               </div>
             ))}
-            {regionsForCountry.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No sub-regions for this country yet.</p>}
           </div>
 
           {justCreated && (
@@ -149,7 +152,7 @@ function BuildManifest() {
             </div>
           )}
 
-          {selectedRegionId && (
+          {selectedAirportCode && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: eligibleOrders.length > 0 ? 'pointer' : 'default' }}>
@@ -179,7 +182,7 @@ function BuildManifest() {
                           <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span></td>
                         </tr>
                       ))}
-                      {eligibleOrders.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders in this sub-region right now.</td></tr>}
+                      {eligibleOrders.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders for this airport right now.</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -191,7 +194,7 @@ function BuildManifest() {
 
       {showCreateModal && (
         <CreateManifestModal
-          region={selectedRegion}
+          airport={selectedAirport}
           orderIds={selectedOrderIds}
           onClose={() => setShowCreateModal(false)}
           onCreated={onCreated}
@@ -201,10 +204,10 @@ function BuildManifest() {
   );
 }
 
-function CreateManifestModal({ region, orderIds, onClose, onCreated }) {
+function CreateManifestModal({ airport, orderIds, onClose, onCreated }) {
   const [hubs, setHubs] = useState([]);
   const [hubId, setHubId] = useState('');
-  const [toAddress, setToAddress] = useState(region?.airportAddress || '');
+  const [toAddress, setToAddress] = useState(airport?.airportAddress || '');
   const [manifestDate, setManifestDate] = useState(todayIso());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -226,7 +229,7 @@ function CreateManifestModal({ region, orderIds, onClose, onCreated }) {
       const { data } = await client.post('/admin/manifests', {
         orderIds,
         hubId,
-        regionId: region?.id || null,
+        airportCode: airport?.airportCode,
         toAddress: toAddress.trim(),
         manifestDate,
       });
@@ -244,7 +247,7 @@ function CreateManifestModal({ region, orderIds, onClose, onCreated }) {
           <h3 style={{ fontSize: 17 }}>Create manifest</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
-        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected, routing via {airport?.airportCode}.</p>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
             <label>From (hub)</label>
@@ -414,10 +417,10 @@ function AddOrdersModal({ manifest, onClose, onAdded }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    client.get('/admin/manifests/eligible-orders', { params: { regionId: manifest.regionId } })
+    client.get('/admin/manifests/eligible-orders', { params: { airportCode: manifest.region?.code } })
       .then(({ data }) => { setOrders(data.orders); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [manifest.regionId]);
+  }, [manifest.region?.code]);
 
   function toggle(id) {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -445,7 +448,7 @@ function AddOrdersModal({ manifest, onClose, onAdded }) {
         </div>
         {loading ? <LoadingLogo size={40} /> : (
           <div style={{ maxHeight: 340, overflowY: 'auto', marginBottom: 14 }}>
-            {orders.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No further eligible orders in this sub-region.</p>}
+            {orders.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No further eligible orders for this airport.</p>}
             {orders.map((o) => (
               <label key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, padding: '8px 0', borderBottom: '1px solid var(--line-2)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggle(o.id)} />
@@ -469,7 +472,7 @@ function ManifestSetup() {
   const [regions, setRegions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hubForm, setHubForm] = useState({ name: '', address: '' });
-  const [regionForm, setRegionForm] = useState({ name: '', countryCode: '', airportAddress: '' });
+  const [regionForm, setRegionForm] = useState({ code: '', name: '', countryCode: '', airportAddress: '' });
   const [addingHub, setAddingHub] = useState(false);
   const [addingRegion, setAddingRegion] = useState(false);
   const [error, setError] = useState('');
@@ -510,12 +513,12 @@ function ManifestSetup() {
 
   async function addRegion(e) {
     e.preventDefault();
-    if (!regionForm.name.trim() || !regionForm.countryCode.trim() || !regionForm.airportAddress.trim()) return;
+    if (!regionForm.code.trim() || !regionForm.name.trim() || !regionForm.countryCode.trim() || !regionForm.airportAddress.trim()) return;
     setAddingRegion(true);
     setError('');
     try {
       await client.post('/admin/manifest-regions', regionForm);
-      setRegionForm({ name: '', countryCode: '', airportAddress: '' });
+      setRegionForm({ code: '', name: '', countryCode: '', airportAddress: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || 'Could not add this sub-region.');
@@ -566,41 +569,47 @@ function ManifestSetup() {
       </div>
 
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Add a manifest sub-region</h4>
-        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 12 }}>An airport gateway that one or more destination zones route through — e.g. "Mel Airport" covering both Australia zones. Assign zones to it from Zones &amp; Rate Cards.</p>
-        <form onSubmit={addRegion} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 2fr auto', gap: 10, alignItems: 'end' }}>
+        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Pre-provision a destination airport</h4>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 12 }}>
+          Airports show up automatically in the Build Manifest tab once an order's destination postcode resolves to one — this is only needed to set the real cargo address ahead of time, or to rename an auto-created entry (it otherwise defaults to just the airport code).
+        </p>
+        <form onSubmit={addRegion} style={{ display: 'grid', gridTemplateColumns: '90px 1fr 90px 2fr auto', gap: 10, alignItems: 'end' }}>
+          <div className="field">
+            <label>Code</label>
+            <input className="input" placeholder="MEL" maxLength={4} required value={regionForm.code} onChange={(e) => setRegionForm({ ...regionForm, code: e.target.value.toUpperCase() })} />
+          </div>
           <div className="field">
             <label>Name</label>
-            <input className="input" placeholder="Mel Airport" required value={regionForm.name} onChange={(e) => setRegionForm({ ...regionForm, name: e.target.value })} />
+            <input className="input" placeholder="Melbourne Airport" required value={regionForm.name} onChange={(e) => setRegionForm({ ...regionForm, name: e.target.value })} />
           </div>
           <div className="field">
             <label>Country code</label>
             <input className="input" placeholder="AU" maxLength={2} required value={regionForm.countryCode} onChange={(e) => setRegionForm({ ...regionForm, countryCode: e.target.value.toUpperCase() })} />
           </div>
           <div className="field">
-            <label>Airport address</label>
+            <label>Airport cargo address</label>
             <input className="input" placeholder="Full airport gateway address" required value={regionForm.airportAddress} onChange={(e) => setRegionForm({ ...regionForm, airportAddress: e.target.value })} />
           </div>
-          <button className="btn btn-primary btn-sm" disabled={addingRegion}>{addingRegion ? 'Adding…' : 'Add sub-region'}</button>
+          <button className="btn btn-primary btn-sm" disabled={addingRegion}>{addingRegion ? 'Adding…' : 'Add'}</button>
         </form>
         {error && <div className="error-text" style={{ marginTop: 10 }}>{error}</div>}
       </div>
 
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Name</th><th>Country</th><th>Airport address</th><th>Zones</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Code</th><th>Name</th><th>Country</th><th>Airport address</th><th>Status</th><th></th></tr></thead>
           <tbody>
             {regions.map((r) => (
               <tr key={r.id}>
+                <td className="mono">{r.code}</td>
                 <td>{r.name}</td>
                 <td className="mono">{r.countryCode}</td>
-                <td style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{r.airportAddress}</td>
-                <td>{r.zones?.length ? r.zones.map((z) => z.name).join(', ') : <span style={{ color: 'var(--slate-light)' }}>None assigned</span>}</td>
+                <td style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{r.airportAddress || <span style={{ color: 'var(--slate-light)' }}>Not set</span>}</td>
                 <td>{r.isActive ? <span className="pill pill-success">Active</span> : <span className="pill pill-danger">Inactive</span>}</td>
                 <td><button className="btn btn-outline btn-sm" onClick={() => toggleRegionActive(r)}>{r.isActive ? 'Deactivate' : 'Activate'}</button></td>
               </tr>
             ))}
-            {regions.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No sub-regions yet.</td></tr>}
+            {regions.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No airports seen yet.</td></tr>}
           </tbody>
         </table>
       </div>
