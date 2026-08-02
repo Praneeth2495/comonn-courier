@@ -183,7 +183,8 @@ async function importZones(db) {
   await prisma.postcodeZone.deleteMany({});
   const BATCH = 5000;
   for (let i = 0; i < parsed.length; i += BATCH) {
-    await prisma.postcodeZone.createMany({ data: parsed.slice(i, i + BATCH), skipDuplicates: true });
+    const batch = parsed.slice(i, i + BATCH);
+    await withRetry(() => prisma.postcodeZone.createMany({ data: batch, skipDuplicates: true }), { label: `Zones batch at ${i}` });
     process.stdout.write(`\rZones imported ${Math.min(i + BATCH, parsed.length)}/${parsed.length}`);
   }
   console.log('');
