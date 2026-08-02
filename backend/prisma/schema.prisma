@@ -686,13 +686,21 @@ model Order {
 // through the same airport gateway (e.g. "Australia 1" + "Australia 2" ->
 // "Mel Airport") — the sub-region filter on the Manifest tab, and also
 // supplies the default "to" address when creating a manifest for it.
+// One row per destination airport gateway, keyed by its airport code (e.g.
+// "MEL") — matches Order.airportCode, which is resolved per-order from the
+// receiver's postcode (see pricingEngine.resolveAirportForDestination), not
+// per pricing Zone: a single Zone like "Australia 2" can genuinely span
+// several airports (MEL/PER/SYD), so grouping at the Zone level would be
+// wrong. Auto-created on first use (manifest.controller.js) with a
+// placeholder name/address; admin can rename and fix the real cargo
+// address afterward from the Manifest tab's "Hubs & sub-regions" setup.
 model ManifestRegion {
   id             String     @id @default(uuid())
-  name           String // "Mel Airport"
+  code           String     @unique // airport code, e.g. "MEL"
+  name           String // "Melbourne Airport"
   countryCode    String // ISO alpha-2, for grouping the country filter chips
   airportAddress String
   isActive       Boolean    @default(true)
-  zones          Zone[]
   manifests      Manifest[]
   createdAt      DateTime   @default(now())
 
