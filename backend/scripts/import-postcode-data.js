@@ -41,16 +41,20 @@ function slugCode(name) {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// The proxied Railway connection has occasionally hung mid-import on a
-// single batch (no error, no progress — just a dead promise) over a run
-// this long (~600 sequential round-trips for the Suggestions table). Retry
-// a few times with backoff, forcing a fresh connection each time via
-// $disconnect() (Prisma reconnects lazily on the next query) rather than
-// trusting a connection that may already be dead.
-async function withRetry(fn, { attempts = 4, label = 'batch' } = {}) {
+// The proxied Railway connection has hung mid-import before — not an
+// error, just a promise that never resolves or rejects — over a run this
+// long (~600 sequential round-trips for the Suggestions table). A plain
+// try/catch retry can't recover from that (there's nothing to catch), so
+// race each batch against a timeout too; on either a real error or a
+// timeout, force a fresh connection via $disconnect() (Prisma reconnects
+// lazily on the next query) and retry with backoff.
+async function withRetry(fn, { attempts = 4, label = 'batch', timeoutMs = 30000 } = {}) {
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
-      return await fn();
+      return await Promise.race([
+        fn(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error(`timed out after ${timeoutMs}ms`)), timeoutMs)),
+      ]);
     } catch (err) {
       if (attempt === attempts) throw err;
       console.error(`\n${label} failed (attempt ${attempt}/${attempts}): ${err.message}. Reconnecting and retrying...`);
