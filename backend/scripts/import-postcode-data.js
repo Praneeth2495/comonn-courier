@@ -110,7 +110,8 @@ async function importSuggestions(db) {
   await prisma.postcodeSuggestion.deleteMany({});
   const BATCH = 5000;
   for (let i = 0; i < parsed.length; i += BATCH) {
-    await prisma.postcodeSuggestion.createMany({ data: parsed.slice(i, i + BATCH) });
+    const batch = parsed.slice(i, i + BATCH);
+    await withRetry(() => prisma.postcodeSuggestion.createMany({ data: batch }), { label: `Suggestions batch at ${i}` });
     process.stdout.write(`\rSuggestions imported ${Math.min(i + BATCH, parsed.length)}/${parsed.length}`);
   }
   console.log('');
