@@ -568,7 +568,7 @@ function AccountsPanel() {
   function load() {
     setLoading(true);
     const seq = ++seqRef.current;
-    const params = { q: q || undefined, page, pageSize, from: fromDate || undefined, to: toDate || undefined };
+    const params = { q: q || undefined, page, pageSize, from: fromDate || undefined, to: toDate || undefined, notStatus: 'UNFINISHED' };
     Promise.all([
       client.get('/orders', { params }),
       client.get('/orders/summary', { params }),
