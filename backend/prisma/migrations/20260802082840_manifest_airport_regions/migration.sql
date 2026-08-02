@@ -5,7 +5,10 @@ ALTER TABLE "Zone" DROP CONSTRAINT "Zone_manifestRegionId_fkey";
 ALTER TABLE "ManifestRegion" ADD COLUMN     "code" TEXT;
 
 -- Backfill any ManifestRegion rows created before this migration (airport
--- code wasn't a field yet) — derive from the existing name where possible.
+-- code wasn't a field yet). The one known pre-existing row ("Mel Airport",
+-- Melbourne) gets its real IATA code directly; anything else unforeseen
+-- falls back to a slugified name so the NOT NULL constraint below can't fail.
+UPDATE "ManifestRegion" SET "code" = 'MEL' WHERE "code" IS NULL AND name = 'Mel Airport';
 UPDATE "ManifestRegion" SET "code" = UPPER(REGEXP_REPLACE(name, '[^A-Za-z0-9]+', '', 'g')) WHERE "code" IS NULL;
 
 ALTER TABLE "ManifestRegion" ALTER COLUMN "code" SET NOT NULL;
