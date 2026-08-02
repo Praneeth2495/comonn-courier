@@ -502,6 +502,10 @@ model PostcodeSuggestion {
   // Pickup-orders panel's origin state/region filters; null where the
   // source data doesn't assign one (currently only populated for India).
   region      String?
+  // Destination airport code for this postcode (e.g. "MEL") — powers
+  // Order.airportCode resolution, which drives the Manifest tab's
+  // sub-region grouping. Currently populated for AU/NZ/CA/GB/US/IN.
+  airport     String?
 
   @@index([countryCode, postcode])
   @@index([countryCode, region])
