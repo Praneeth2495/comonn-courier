@@ -67,7 +67,7 @@ function BuildManifest() {
   const [eligibleOrders, setEligibleOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
-  const [selectedOriginState, setSelectedOriginState] = useState('');
+  const [selectedOriginStates, setSelectedOriginStates] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [justCreated, setJustCreated] = useState(null);
 
