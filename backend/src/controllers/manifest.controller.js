@@ -226,15 +226,18 @@ async function addOrdersToManifest(req, res, next) {
     const { orderIds } = req.body;
     if (!Array.isArray(orderIds) || orderIds.length === 0) return res.status(400).json({ error: 'orderIds is required' });
 
-    const manifest = await prisma.manifest.findUnique({ where: { id: req.params.id }, include: { region: true } });
+    const manifest = await prisma.manifest.findUnique({ where: { id: req.params.id } });
     if (!manifest) return res.status(404).json({ error: 'Manifest not found' });
 
+    // Same-country guard only — a manifest may already combine several
+    // airports, so any further orders just need to match its country, not
+    // one specific airport.
     const claimed = await prisma.order.updateMany({
       where: {
         id: { in: orderIds },
         manifestId: null,
         status: { notIn: PAYABLE_STATUSES },
-        ...(manifest.region ? { airportCode: manifest.region.code } : {}),
+        receiverAddress: { countryCode: manifest.countryCode },
       },
       data: { manifestId: req.params.id },
     });
