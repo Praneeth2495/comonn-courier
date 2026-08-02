@@ -182,7 +182,7 @@ export function SiteFooter() {
           <h4>Quick links</h4>
           <Link to="/">Home</Link>
           <Link to="/quote">Book</Link>
-          <a href="#" onClick={(e) => e.preventDefault()}>Terms &amp; Conditions</a>
+          <a href="/terms-and-conditions.pdf" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
           <a href="#" onClick={(e) => e.preventDefault()}>Transit Warranty</a>
         </div>
         <div className="footer-col">
