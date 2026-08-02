@@ -498,6 +498,8 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .t-row{display:grid;grid-template-columns:1.2fr 1.6fr 1.6fr .8fr;gap:16px;padding:16px 22px;align-items:center;}
 .t-head{background:var(--paper);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:700;}
 .t-row:not(.t-head){border-top:1px solid var(--line-2);font-size:13.5px;}
+.t-row.overdue{background:#FEF0EF;}
+.t-row.overdue:hover{background:#FCE4E2;}
 .t-row:not(.t-head):hover{background:#FAFAF7;}
 .t-oid{font-family:'IBM Plex Mono';font-weight:600;color:var(--cobalt);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:13.5px;}
 .t-oid:hover{color:var(--coral);}
