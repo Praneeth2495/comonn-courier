@@ -40,7 +40,7 @@ export default function ManifestPanel() {
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Manifest</h1>
       <div className="acct-tabs" style={{ marginBottom: 20 }}>
-        {[['build', 'Build manifest'], ['history', 'Manifests'], ['setup', 'Hubs & sub-regions']].map(([key, label]) => (
+        {[['build', 'Build manifest'], ['history', 'Manifests'], ['setup', 'Airports & hubs']].map(([key, label]) => (
           <button key={key} className={`acct-tab ${subTab === key ? 'active' : ''}`} onClick={() => setSubTab(key)}>{label}</button>
         ))}
       </div>
@@ -54,15 +54,20 @@ export default function ManifestPanel() {
 // Sub-regions are destination airports, resolved per-order from the
 // receiver's postcode (Order.airportCode) — not hand-assigned per zone,
 // since a single pricing zone can genuinely span several real airports.
+// A manifest may combine orders bound for several different airports, as
+// long as they're all in the same destination country — the airport chips
+// below are multi-select (all start selected for the chosen country) for
+// exactly that reason.
 function BuildManifest() {
   const [airports, setAirports] = useState([]);
   const [countries, setCountries] = useState([]);
   const [loadingAirports, setLoadingAirports] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState('');
-  const [selectedAirportCode, setSelectedAirportCode] = useState('');
+  const [selectedAirportCodes, setSelectedAirportCodes] = useState([]);
   const [eligibleOrders, setEligibleOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+  const [selectedOriginState, setSelectedOriginState] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [justCreated, setJustCreated] = useState(null);
 
@@ -82,7 +87,7 @@ function BuildManifest() {
   const countryCodes = [...new Set(airports.map((a) => a.countryCode))].sort();
 
   useEffect(() => {
-    if (!selectedCountry && countryCodes.length > 0) setSelectedCountry(countryCodes[0]);
+    if (!selectedCountry && countryCodes.length > 0) pickCountry(countryCodes[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [airports]);
 
@@ -90,26 +95,40 @@ function BuildManifest() {
 
   function pickCountry(code) {
     setSelectedCountry(code);
-    const first = airports.find((a) => a.countryCode === code);
-    setSelectedAirportCode(first ? first.airportCode : '');
+    setSelectedAirportCodes(airports.filter((a) => a.countryCode === code).map((a) => a.airportCode));
+    setSelectedOriginState('');
+    setJustCreated(null);
+  }
+
+  function toggleAirport(code) {
+    setSelectedAirportCodes((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
     setJustCreated(null);
   }
 
   function loadEligibleOrders() {
-    if (!selectedAirportCode) { setEligibleOrders([]); return; }
+    if (!selectedCountry || selectedAirportCodes.length === 0) { setEligibleOrders([]); return; }
     setLoadingOrders(true);
-    client.get('/admin/manifests/eligible-orders', { params: { airportCode: selectedAirportCode } })
-      .then(({ data }) => { setEligibleOrders(data.orders); setSelectedOrderIds([]); setLoadingOrders(false); })
+    client.get('/admin/manifests/eligible-orders', { params: { countryCode: selectedCountry, airportCode: selectedAirportCodes.join(',') } })
+      .then(({ data }) => { setEligibleOrders(data.orders); setSelectedOrderIds([]); setSelectedOriginState(''); setLoadingOrders(false); })
       .catch(() => setLoadingOrders(false));
   }
-  useEffect(loadEligibleOrders, [selectedAirportCode]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(loadEligibleOrders, [selectedCountry, selectedAirportCodes.join(',')]);
+
+  // Origin (sender) state — only shown once real eligible orders exist, and
+  // only the states actually present among them (not every pickup state in
+  // the system).
+  const originStates = [...new Set(eligibleOrders.map((o) => o.senderAddress?.state).filter(Boolean))].sort();
+  const visibleOrders = eligibleOrders.filter((o) => !selectedOriginState || o.senderAddress?.state === selectedOriginState);
 
   function toggleOrder(id) {
     setSelectedOrderIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
   function toggleSelectAll() {
-    setSelectedOrderIds((prev) => (prev.length === eligibleOrders.length ? [] : eligibleOrders.map((o) => o.id)));
+    const visibleIds = visibleOrders.map((o) => o.id);
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedOrderIds.includes(id));
+    setSelectedOrderIds((prev) => (allVisibleSelected ? prev.filter((id) => !visibleIds.includes(id)) : [...new Set([...prev, ...visibleIds])]));
   }
 
   function onCreated(manifest) {
@@ -119,7 +138,8 @@ function BuildManifest() {
     loadAirports();
   }
 
-  const selectedAirport = airports.find((a) => a.airportCode === selectedAirportCode);
+  const selectedOrderAirportCodes = [...new Set(eligibleOrders.filter((o) => selectedOrderIds.includes(o.id)).map((o) => o.airportCode))];
+  const selectedAirportObjs = airports.filter((a) => selectedOrderAirportCodes.includes(a.airportCode));
 
   if (loadingAirports) return <LoadingLogo />;
 
@@ -139,11 +159,22 @@ function BuildManifest() {
 
           <div className="chip-filter-row">
             {airportsForCountry.map((a) => (
-              <div key={a.airportCode} className={`chip-filter ${selectedAirportCode === a.airportCode ? 'active' : ''}`} onClick={() => { setSelectedAirportCode(a.airportCode); setJustCreated(null); }}>
+              <div key={a.airportCode} className={`chip-filter ${selectedAirportCodes.includes(a.airportCode) ? 'active' : ''}`} onClick={() => toggleAirport(a.airportCode)}>
                 {a.name === a.airportCode ? a.airportCode : `${a.name} (${a.airportCode})`} · {a.count}
               </div>
             ))}
           </div>
+          <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: -6, marginBottom: 14 }}>Multiple airports can be selected together — orders for all of them can share one manifest as long as it's the same country.</p>
+
+          {originStates.length > 0 && (
+            <div className="chip-filter-row">
+              <div className="chip-filter active">🇮🇳 India</div>
+              <div className={`chip-filter ${!selectedOriginState ? 'active' : ''}`} onClick={() => setSelectedOriginState('')}>All states</div>
+              {originStates.map((s) => (
+                <div key={s} className={`chip-filter ${selectedOriginState === s ? 'active' : ''}`} onClick={() => setSelectedOriginState(s)}>{s}</div>
+              ))}
+            </div>
+          )}
 
           {justCreated && (
             <div className="card" style={{ padding: 14, marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', background: 'var(--paper)' }}>
@@ -152,14 +183,14 @@ function BuildManifest() {
             </div>
           )}
 
-          {selectedAirportCode && (
+          {selectedAirportCodes.length > 0 && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: eligibleOrders.length > 0 ? 'pointer' : 'default' }}>
-                  {eligibleOrders.length > 0 && (
-                    <input type="checkbox" checked={selectedOrderIds.length === eligibleOrders.length} onChange={toggleSelectAll} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: visibleOrders.length > 0 ? 'pointer' : 'default' }}>
+                  {visibleOrders.length > 0 && (
+                    <input type="checkbox" checked={visibleOrders.every((o) => selectedOrderIds.includes(o.id))} onChange={toggleSelectAll} />
                   )}
-                  {selectedOrderIds.length} of {eligibleOrders.length} selected
+                  {selectedOrderIds.length} selected · {visibleOrders.length} shown
                 </label>
                 <button className="btn btn-primary btn-sm" disabled={selectedOrderIds.length === 0} onClick={() => setShowCreateModal(true)}>
                   Create Manifest
@@ -169,20 +200,21 @@ function BuildManifest() {
               {loadingOrders ? <LoadingLogo /> : (
                 <div className="table-wrap">
                   <table className="data-table">
-                    <thead><tr><th></th><th>Order #</th><th>Receiver</th><th>Destination</th><th>Qty</th><th>Weight</th><th>Status</th></tr></thead>
+                    <thead><tr><th></th><th>Order #</th><th>Receiver</th><th>Destination</th><th>Airport</th><th>Qty</th><th>Weight</th><th>Status</th></tr></thead>
                     <tbody>
-                      {eligibleOrders.map((o) => (
+                      {visibleOrders.map((o) => (
                         <tr key={o.id}>
                           <td><input type="checkbox" checked={selectedOrderIds.includes(o.id)} onChange={() => toggleOrder(o.id)} /></td>
                           <td className="mono">{o.orderNumber}</td>
                           <td>{o.receiverAddress?.contactName || '—'}</td>
                           <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
+                          <td className="mono">{o.airportCode}</td>
                           <td>{o.qty}</td>
                           <td>{Number(o.chargeableWeightKg).toFixed(2)} kg</td>
                           <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span></td>
                         </tr>
                       ))}
-                      {eligibleOrders.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders for this airport right now.</td></tr>}
+                      {visibleOrders.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders match these filters right now.</td></tr>}
                     </tbody>
                   </table>
                 </div>
@@ -194,7 +226,7 @@ function BuildManifest() {
 
       {showCreateModal && (
         <CreateManifestModal
-          airport={selectedAirport}
+          airports={selectedAirportObjs}
           orderIds={selectedOrderIds}
           onClose={() => setShowCreateModal(false)}
           onCreated={onCreated}
@@ -204,10 +236,10 @@ function BuildManifest() {
   );
 }
 
-function CreateManifestModal({ airport, orderIds, onClose, onCreated }) {
+function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [hubs, setHubs] = useState([]);
   const [hubId, setHubId] = useState('');
-  const [toAddress, setToAddress] = useState(airport?.airportAddress || '');
+  const [toAddress, setToAddress] = useState(airports.length === 1 ? (airports[0].airportAddress || '') : '');
   const [manifestDate, setManifestDate] = useState(todayIso());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -229,7 +261,6 @@ function CreateManifestModal({ airport, orderIds, onClose, onCreated }) {
       const { data } = await client.post('/admin/manifests', {
         orderIds,
         hubId,
-        airportCode: airport?.airportCode,
         toAddress: toAddress.trim(),
         manifestDate,
       });
@@ -240,6 +271,8 @@ function CreateManifestModal({ airport, orderIds, onClose, onCreated }) {
     }
   }
 
+  const codes = airports.map((a) => a.airportCode);
+
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
@@ -247,12 +280,12 @@ function CreateManifestModal({ airport, orderIds, onClose, onCreated }) {
           <h3 style={{ fontSize: 17 }}>Create manifest</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
-        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected, routing via {airport?.airportCode}.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected{codes.length ? `, routing via ${codes.join(', ')}` : ''}.</p>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>From (hub)</label>
+            <label>From (airport)</label>
             <select className="select" required value={hubId} onChange={(e) => setHubId(e.target.value)}>
-              <option value="">Choose a hub…</option>
+              <option value="">Choose an airport…</option>
               {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           </div>
@@ -292,13 +325,13 @@ function ManifestHistory() {
     <div>
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Manifest #</th><th>Hub</th><th>Sub-region</th><th>Date</th><th>Orders</th><th>Qty</th><th>Weight</th><th>Created by</th><th></th></tr></thead>
+          <thead><tr><th>Manifest #</th><th>From (airport)</th><th>Sub-region</th><th>Date</th><th>Orders</th><th>Qty</th><th>Weight</th><th>Created by</th><th></th></tr></thead>
           <tbody>
             {manifests.map((m) => (
               <tr key={m.id}>
                 <td className="mono">{m.manifestNumber}</td>
                 <td>{m.hub?.name || '—'}</td>
-                <td>{m.region?.name || '—'}</td>
+                <td>{m.region?.name || m.countryCode}</td>
                 <td>{new Date(m.manifestDate).toLocaleDateString('en-IN')}</td>
                 <td>{m._count?.orders ?? m.orderCount}</td>
                 <td>{m.totalQty}</td>
@@ -370,20 +403,21 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
               <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>{manifest.orders.length} orders · {manifest.totalQty} qty · {Number(manifest.totalWeightKg).toFixed(2)} kg</span>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="btn btn-outline btn-sm" onClick={() => downloadBlob(`/admin/manifests/${manifest.id}/download`, `${manifest.manifestNumber}.pdf`)}>Download sheet</button>
-                {manifest.regionId && <button className="btn btn-primary btn-sm" onClick={() => setShowAddOrders(true)}>+ Add orders</button>}
+                <button className="btn btn-primary btn-sm" onClick={() => setShowAddOrders(true)}>+ Add orders</button>
               </div>
             </div>
             {error && <div className="error-text" style={{ marginBottom: 10 }}>{error}</div>}
             <div style={{ maxHeight: 340, overflowY: 'auto' }}>
               <div className="table-wrap">
                 <table className="data-table">
-                  <thead><tr><th>Order #</th><th>Receiver</th><th>Destination</th><th>Qty</th><th>Weight</th><th></th></tr></thead>
+                  <thead><tr><th>Order #</th><th>Receiver</th><th>Destination</th><th>Airport</th><th>Qty</th><th>Weight</th><th></th></tr></thead>
                   <tbody>
                     {manifest.orders.map((o) => (
                       <tr key={o.id}>
                         <td className="mono">{o.orderNumber}</td>
                         <td>{o.receiverAddress?.contactName || '—'}</td>
                         <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
+                        <td className="mono">{o.airportCode}</td>
                         <td>{o.qty}</td>
                         <td>{Number(o.chargeableWeightKg).toFixed(2)} kg</td>
                         <td>
@@ -393,7 +427,7 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
                         </td>
                       </tr>
                     ))}
-                    {manifest.orders.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '20px 0' }}>No orders left in this manifest.</td></tr>}
+                    {manifest.orders.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '20px 0' }}>No orders left in this manifest.</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -417,10 +451,10 @@ function AddOrdersModal({ manifest, onClose, onAdded }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    client.get('/admin/manifests/eligible-orders', { params: { airportCode: manifest.region?.code } })
+    client.get('/admin/manifests/eligible-orders', { params: { countryCode: manifest.countryCode } })
       .then(({ data }) => { setOrders(data.orders); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [manifest.region?.code]);
+  }, [manifest.countryCode]);
 
   function toggle(id) {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -448,11 +482,12 @@ function AddOrdersModal({ manifest, onClose, onAdded }) {
         </div>
         {loading ? <LoadingLogo size={40} /> : (
           <div style={{ maxHeight: 340, overflowY: 'auto', marginBottom: 14 }}>
-            {orders.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No further eligible orders for this airport.</p>}
+            {orders.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No further eligible orders for {manifest.countryCode}.</p>}
             {orders.map((o) => (
               <label key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, padding: '8px 0', borderBottom: '1px solid var(--line-2)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggle(o.id)} />
                 <span className="mono">{o.orderNumber}</span>
+                <span className="mono" style={{ fontSize: 11.5, color: 'var(--slate)' }}>{o.airportCode}</span>
                 <span style={{ color: 'var(--slate-light)' }}>{o.receiverAddress?.contactName} — {o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</span>
               </label>
             ))}
@@ -500,7 +535,7 @@ function ManifestSetup() {
       setHubForm({ name: '', address: '' });
       load();
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not add this hub.');
+      setError(err.response?.data?.error || 'Could not add this origin airport.');
     } finally {
       setAddingHub(false);
     }
@@ -537,17 +572,18 @@ function ManifestSetup() {
   return (
     <div>
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Add a hub</h4>
+        <h4 style={{ marginBottom: 4, color: 'var(--navy)' }}>Add an origin airport</h4>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 12 }}>The "From" side of a manifest — where shipments leave from in India.</p>
         <form onSubmit={addHub} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: 10, alignItems: 'end' }}>
           <div className="field">
             <label>Name</label>
-            <input className="input" placeholder="Chennai Hub" required value={hubForm.name} onChange={(e) => setHubForm({ ...hubForm, name: e.target.value })} />
+            <input className="input" placeholder="MAA Airport" required value={hubForm.name} onChange={(e) => setHubForm({ ...hubForm, name: e.target.value })} />
           </div>
           <div className="field">
             <label>Address</label>
-            <input className="input" placeholder="Full hub address" required value={hubForm.address} onChange={(e) => setHubForm({ ...hubForm, address: e.target.value })} />
+            <input className="input" placeholder="Full airport/cargo address" required value={hubForm.address} onChange={(e) => setHubForm({ ...hubForm, address: e.target.value })} />
           </div>
-          <button className="btn btn-primary btn-sm" disabled={addingHub}>{addingHub ? 'Adding…' : 'Add hub'}</button>
+          <button className="btn btn-primary btn-sm" disabled={addingHub}>{addingHub ? 'Adding…' : 'Add'}</button>
         </form>
       </div>
 
@@ -563,7 +599,7 @@ function ManifestSetup() {
                 <td><button className="btn btn-outline btn-sm" onClick={() => toggleHubActive(h)}>{h.isActive ? 'Deactivate' : 'Activate'}</button></td>
               </tr>
             ))}
-            {hubs.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No hubs yet.</td></tr>}
+            {hubs.length === 0 && <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No origin airports yet.</td></tr>}
           </tbody>
         </table>
       </div>
