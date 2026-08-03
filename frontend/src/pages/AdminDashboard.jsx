@@ -1287,7 +1287,7 @@ function UsersPanel() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
             )}
           </tbody>
         </table>
