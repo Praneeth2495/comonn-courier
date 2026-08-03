@@ -554,7 +554,7 @@ function OrdersPanel() {
               {tab === 'pickup' && (
                 <div>
                   {o.assignedDriver ? (
-                    <span className="pill pill-cobalt" style={{ fontSize: 11 }}>{o.assignedDriver.fullName}</span>
+                    <span className="pill pill-cobalt" style={{ fontSize: 11 }}>{o.assignedDriver.fullName}{o.assignedDriver.driverRegion ? ` (${o.assignedDriver.driverRegion})` : ''}</span>
                   ) : (
                     <span style={{ color: 'var(--slate-light)', fontSize: 12 }}>Unassigned</span>
                   )}
