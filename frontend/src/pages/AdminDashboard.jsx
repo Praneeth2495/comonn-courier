@@ -491,7 +491,7 @@ function OrdersPanel() {
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{selectedIds.length} selected</span>
           <select className="select" style={{ maxWidth: 220 }} value={assignDriverId} onChange={(e) => setAssignDriverId(e.target.value)}>
             <option value="">Choose a driver…</option>
-            {drivers.map((d) => <option key={d.id} value={d.id}>{d.fullName}</option>)}
+            {drivers.map((d) => <option key={d.id} value={d.id}>{d.fullName}{d.driverRegion ? ` (${d.driverRegion})` : ''}</option>)}
           </select>
           <button className="btn btn-primary btn-sm" disabled={!assignDriverId || assigning} onClick={sendToDriver}>
             {assigning ? 'Sending…' : 'Send to driver'}
