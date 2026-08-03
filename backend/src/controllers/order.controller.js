@@ -278,7 +278,7 @@ async function listOrders(req, res, next) {
           payment: true,
           items: true,
           labels: true,
-          assignedDriver: { select: { id: true, fullName: true } },
+          assignedDriver: { select: { id: true, fullName: true, driverRegion: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip: (Number(page) - 1) * Number(pageSize),
