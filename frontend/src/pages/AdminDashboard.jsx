@@ -1195,6 +1195,14 @@ function UsersPanel() {
     setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
   }
 
+  // Free-text home-region label for a driver (e.g. "HYD") — shown next to
+  // their name in the pickup "send to driver" picker so staff can tell two
+  // same-named drivers apart.
+  async function setDriverRegion(id, driverRegion) {
+    const { data } = await client.patch(`/admin/users/${id}`, { driverRegion });
+    setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
+  }
+
   async function saveZones(userId, zoneIds) {
     const { data } = await client.put(`/admin/staff-zones/${userId}`, { zoneIds });
     setStaffZones((prev) => ({ ...prev, [userId]: data.zones }));
