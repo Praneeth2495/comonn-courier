@@ -166,6 +166,13 @@ async function createCombinedOrder(req, res, next) {
         data: { dgAcknowledged: true, otpVerifiedAt: verified.otpVerifiedAt, otpEmail: verified.otpEmail },
       });
     }
+    const noPickupDateIds = orders.filter((o) => o.id !== verified.id && !o.pickupDate).map((o) => o.id);
+    if (verified.pickupDate && noPickupDateIds.length) {
+      await prisma.order.updateMany({
+        where: { id: { in: noPickupDateIds } },
+        data: { pickupDate: verified.pickupDate },
+      });
+    }
 
     const combinedTotal = round2(orders.reduce((sum, o) => sum + Number(o.grandTotal), 0));
     const currency = orders[0].currency;
