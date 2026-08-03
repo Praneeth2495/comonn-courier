@@ -130,7 +130,10 @@ async function createOrder(req, res, next) {
  * per-order accounting/refunds stay correct. DG ack + OTP verification only
  * need to have happened on ONE of the orders (whichever the customer
  * actually completed them on) — that gets propagated to the rest of the
- * group here, since it's one combined checkout.
+ * group here, since it's one combined checkout. Pickup date rides along
+ * too: the other orders in the group never individually load the Payment
+ * page (so never get their own default pickup-date sync), and they're
+ * being collected on the same visit as the verified order anyway.
  */
 async function createCombinedOrder(req, res, next) {
   try {
