@@ -1243,6 +1243,20 @@ function UsersPanel() {
                   </select>
                 </td>
                 <td>
+                  {u.role === 'DRIVER' ? (
+                    <input
+                      key={u.id}
+                      className="input"
+                      style={{ padding: '6px 8px', fontSize: 12.5, maxWidth: 100 }}
+                      placeholder="e.g. HYD"
+                      defaultValue={u.driverRegion || ''}
+                      onBlur={(e) => { if (e.target.value.trim() !== (u.driverRegion || '')) setDriverRegion(u.id, e.target.value.trim()); }}
+                    />
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
+                <td>
                   {u.role === 'STAFF' ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       {(staffZones[u.id] || []).length === 0 ? (
