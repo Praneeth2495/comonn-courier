@@ -423,10 +423,13 @@ async function updateOrderStatus(req, res, next) {
     });
     if (!existing) return res.status(404).json({ error: 'Order not found' });
 
+    const isManualPaidMark = status === 'PAID' && existing.status !== 'PAID';
+
     const order = await prisma.order.update({
       where: { id: req.params.id },
       data: {
         status,
+        ...(isManualPaidMark ? { manualPaymentMarkedAt: new Date() } : {}),
         trackingEvents: { create: { status, location, note } },
       },
     });
