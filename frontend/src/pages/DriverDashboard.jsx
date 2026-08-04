@@ -253,6 +253,16 @@ function JobCard({ job, updating, onStatusChange }) {
         </div>
       </div>
 
+      {job.labels?.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
+          {job.labels.map((l) => (
+            <a key={l.id} className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/download/${l.id}?inline=1`} target="_blank" rel="noreferrer">
+              View label{job.labels.length > 1 ? ` (${l.packageIndex})` : ''}
+            </a>
+          ))}
+        </div>
+      )}
+
       {onStatusChange && (
         <div className="field" style={{ marginTop: 16, maxWidth: 240 }}>
           <label>Update status</label>
