@@ -670,7 +670,7 @@ function AccountsPanel() {
           {orders.map((o) => {
             const { amountPaid, due } = paidAndDue(o);
             return (
-              <div className="t-row accounts-row" key={o.id}>
+              <div className={`t-row accounts-row${o.manualPaymentMarkedAt ? ' manual-paid' : ''}`} key={o.id}>
                 <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
                 <div className="mono">{o.invoiceNumber || '—'}</div>
                 <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
