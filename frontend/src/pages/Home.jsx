@@ -299,7 +299,7 @@ export default function Home() {
             <div style={{ padding: 26 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
                 <h3 style={{ fontSize: 17 }}>Instant Booking</h3>
-                <span className="pill pill-cobalt">Get a quote in 4 clicks</span>
+                <span className="pill pill-cobalt">Get a quote in 5 clicks</span>
               </div>
 
               <div className="field" style={{ position: 'relative' }}>
