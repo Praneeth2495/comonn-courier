@@ -436,7 +436,7 @@ export default function Quote() {
           <div className="airmail-edge" style={{ borderRadius: '18px 18px 0 0', margin: '-28px -28px 22px', width: 'calc(100% + 56px)' }} />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <h3 style={{ fontSize: 17 }}>Instant Booking</h3>
-            <span className="pill pill-cobalt">Get a quote in 4 clicks</span>
+            <span className="pill pill-cobalt">Get a quote in 5 clicks</span>
           </div>
 
           <div className="grid-2">
