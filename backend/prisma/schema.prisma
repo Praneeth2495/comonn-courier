@@ -664,6 +664,14 @@ model Order {
   trackingNumber String? @unique
   invoiceNumber  String? @unique // "IN1", "IN2"... assigned at booking time, resets only on calendar year change
 
+  // Set only when staff/admin flip status to PAID by hand from the order
+  // detail dropdown (updateOrderStatus) — e.g. cash collected at pickup —
+  // as opposed to the online Razorpay flow (markOrderPaid /
+  // markOrdersPaidForProviderOrder in payment.controller.js), which never
+  // touches this field. Lets the Accounts table flag these rows for a
+  // manual-reconciliation double-check.
+  manualPaymentMarkedAt DateTime?
+
   // Physical pickup dispatch: staff/admin send a pickup job directly to a
   // driver account, who then sees it in their own portal and marks it
   // PICKED_UP once collected in person.
