@@ -72,7 +72,7 @@ export default function Register() {
 
         <div className="grid-2" style={{ marginTop: 14 }}>
           <div className="field">
-            <label>Mobile</label>
+            <label>Mobile <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <div className="input-group" style={{ width: '100%' }}>
               <select className="flag" value={form.countryCode} onChange={(e) => update('countryCode', e.target.value)}>
                 {COUNTRY_CODES.map((c) => <option key={c}>{c}</option>)}
