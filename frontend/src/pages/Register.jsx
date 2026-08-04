@@ -88,7 +88,7 @@ export default function Register() {
 
         <div className="grid-2" style={{ marginTop: 14 }}>
           <div className="field">
-            <label>Password</label>
+            <label>Password <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <div style={{ position: 'relative' }}>
               <input
                 className="input"
