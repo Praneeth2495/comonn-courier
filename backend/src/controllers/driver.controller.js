@@ -11,6 +11,7 @@ async function listMyJobs(req, res, next) {
         receiverAddress: true,
         service: true,
         items: true,
+        labels: true,
         // Lets the dashboard pin a completed job to the day it actually left
         // the driver's hands (pickedUpAt, or else the earliest tracking
         // event past the active statuses) instead of whatever day it was
