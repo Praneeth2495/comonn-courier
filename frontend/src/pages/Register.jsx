@@ -81,7 +81,7 @@ export default function Register() {
             </div>
           </div>
           <div className="field">
-            <label>Email</label>
+            <label>Email <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="email" placeholder="you@email.com" required value={form.email} onChange={(e) => update('email', e.target.value)} />
           </div>
         </div>
