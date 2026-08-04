@@ -451,7 +451,7 @@ async function updateOrderStatus(req, res, next) {
     // confirmed. Staff manually marking cash collected as PAID is one way
     // that happens (the online payment flow's own markOrderPaid() covers
     // the other).
-    if (existing.pricingPending && status === 'PAID' && existing.status !== 'PAID') {
+    if (existing.pricingPending && isManualPaidMark) {
       await sendReceiverBookingNotification({ ...order, senderAddress: existing.senderAddress, receiverAddress: existing.receiverAddress });
     }
 
