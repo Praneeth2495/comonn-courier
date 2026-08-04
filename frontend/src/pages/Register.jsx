@@ -61,7 +61,7 @@ export default function Register() {
 
         <div className="grid-2">
           <div className="field">
-            <label>Full Name</label>
+            <label>Full Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" placeholder="Full name" required value={form.fullName} onChange={(e) => update('fullName', e.target.value)} />
           </div>
           <div className="field">
