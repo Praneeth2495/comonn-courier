@@ -306,14 +306,21 @@ async function generateLabel(req, res, next) {
     // Label row, so the labels.length check below doesn't apply to them).
     if (order.pricingPending) {
       const emailedTo = order.senderAddress?.email || order.otpEmail || null;
-      let accountUser = order.user;
+      // Kept separate from the confirmationEmailSentAt-guarded block below:
+      // that guard is only about not re-sending the one-time confirmation
+      // email, but ensureCustomerAccount is idempotent (a no-op once the
+      // order is correctly linked to a real CUSTOMER account) and needs to
+      // keep running on every visit — otherwise an order that was first
+      // opened before its ADMIN/STAFF-booked userId got corrected (see
+      // createOrder) would stay stuck showing the wrong account's
+      // hasPassword forever, since the email would already be marked sent.
+      const accountInfo = await ensureCustomerAccount(order);
+      const accountUser = accountInfo?.user || order.user;
       if (!order.confirmationEmailSentAt && emailedTo) {
         // Still creates/links the guest's account (needed for the Labels
         // page's "Set up my password" button and the delayed account-setup
         // follow-up email) — just no longer embeds account-creation details
         // in this confirmation email itself.
-        const accountInfo = await ensureCustomerAccount(order);
-        if (accountInfo?.user) accountUser = accountInfo.user;
         await sendBookingConfirmationEmail(order, emailedTo);
         await prisma.order.update({ where: { id: order.id }, data: { confirmationEmailSentAt: new Date() } });
       }
