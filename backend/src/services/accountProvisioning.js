@@ -14,9 +14,17 @@ const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
  * links the order to it, and pulls the order's sender/receiver addresses
  * into the account's saved address book. Returns null if the order
  * already belongs to a logged-in customer or has no verified email.
+ *
+ * Callers must include `user: true` on the order they pass in — the
+ * `order.userId` check below only short-circuits when that linked account
+ * is actually a CUSTOMER. A walk-in/phone order booked by ADMIN/STAFF used
+ * to slip through with `userId` pointing at the staff member's own account
+ * (see createOrder); re-pointing it here to the real customer, found or
+ * created from the OTP-verified email, repairs that instead of leaving the
+ * order permanently misattributed.
  */
 async function ensureCustomerAccount(order) {
-  if (order.userId) return null;
+  if (order.userId && order.user?.role === 'CUSTOMER') return null;
   const email = (order.otpEmail || '').toLowerCase().trim();
   if (!email) return null;
 
