@@ -400,13 +400,17 @@ async function getOrderForPayment(req, res, next) {
  */
 async function issuePasswordSetLink(req, res, next) {
   try {
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const order = await prisma.order.findUnique({ where: { id: req.params.id }, include: { user: true } });
     if (!order) return res.status(404).json({ error: 'Order not found' });
     if (!order.otpEmail || !order.otpVerifiedAt) {
       return res.status(400).json({ error: 'This order has no verified email to set a password for.' });
     }
 
-    let userId = order.userId;
+    // order.userId can point at a non-CUSTOMER account (an ADMIN/STAFF
+    // member who booked this as a walk-in/phone order — see createOrder) —
+    // never issue a password-set token for that account. Re-resolve to the
+    // real customer via the OTP-verified email instead.
+    let userId = order.user?.role === 'CUSTOMER' ? order.userId : null;
     if (!userId) {
       const accountInfo = await ensureCustomerAccount(order);
       userId = accountInfo?.user?.id;
