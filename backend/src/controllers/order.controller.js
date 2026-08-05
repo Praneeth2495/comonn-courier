@@ -57,11 +57,19 @@ async function createOrder(req, res, next) {
       }
     }
 
+    // Only a real customer booking their own shipment should own this
+    // order/address. ADMIN/STAFF routinely use this same endpoint to book a
+    // walk-in/phone order on a customer's behalf — attaching their own id
+    // there would silently steal the order away from the customer's actual
+    // account (and, worse, from the OTP-verified email that's supposed to
+    // drive guest-account linking below).
+    const ownerUserId = req.user?.role === 'CUSTOMER' ? req.user.id : undefined;
+
     const senderAddress = await prisma.address.create({
-      data: { userId: req.user?.id, ...sender },
+      data: { userId: ownerUserId, ...sender },
     });
     const receiverAddress = await prisma.address.create({
-      data: { userId: req.user?.id, ...receiver },
+      data: { userId: ownerUserId, ...receiver },
     });
 
     const orderNumber = await generateOrderNumber();
