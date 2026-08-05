@@ -30,7 +30,10 @@ const PAYABLE_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT'];
  *
  * Works for both logged-in customers (userId attached) and guest checkout
  * (userId omitted — order still gets created, can be claimed on the
- * receipt/track page later by matching orderNumber + email).
+ * receipt/track page later by matching orderNumber + email). ADMIN/STAFF
+ * booking on a customer's behalf also goes through here (walk-in/phone
+ * orders) and is deliberately treated as guest checkout, not attached to
+ * the staff member's own account — see ownerUserId below.
  */
 async function createOrder(req, res, next) {
   try {
