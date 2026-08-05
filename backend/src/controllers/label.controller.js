@@ -343,11 +343,18 @@ async function generateLabel(req, res, next) {
           });
         }
       }
+      // Idempotent no-op once order.userId is correctly linked to a real
+      // CUSTOMER account — kept here (not just in the fresh-generation
+      // branch below) so an order whose labels were generated before that
+      // link was corrected (see createOrder) gets repaired on the next
+      // visit instead of reading the stale account forever.
+      const accountInfo = await ensureCustomerAccount(order);
+      const accountUser = accountInfo?.user || order.user;
       return res.json({
         labels: order.labels.map(toLabelResponse),
         invoice: toInvoiceResponse(invoice),
         emailedTo: order.otpEmail || null,
-        hasPassword: Boolean(order.user?.passwordSetAt),
+        hasPassword: Boolean(accountUser?.passwordSetAt),
       });
     }
 
