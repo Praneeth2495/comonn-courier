@@ -83,7 +83,7 @@ async function createOrder(req, res, next) {
       orderData = {
         orderNumber,
         invoiceNumber,
-        userId: req.user?.id,
+        userId: ownerUserId,
         serviceId: service.id,
         senderAddressId: senderAddress.id,
         receiverAddressId: receiverAddress.id,
@@ -131,7 +131,7 @@ async function createOrder(req, res, next) {
       orderData = {
         orderNumber,
         invoiceNumber,
-        userId: req.user?.id,
+        userId: ownerUserId,
         serviceId: service.id,
         senderAddressId: senderAddress.id,
         receiverAddressId: receiverAddress.id,
