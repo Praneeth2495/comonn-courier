@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import client from '../api/client';
+import { passwordPolicyError, PASSWORD_HINT } from '../utils/passwordPolicy';
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -14,6 +15,11 @@ export default function ChangePassword() {
     setError('');
     setSuccess(false);
 
+    const passwordError = passwordPolicyError(newPassword);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setError('New passwords do not match.');
       return;
