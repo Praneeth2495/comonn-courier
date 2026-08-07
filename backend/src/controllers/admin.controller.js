@@ -6,11 +6,15 @@ const { resolveOriginFilters } = require('./order.controller');
 // payment, not just whatever's currently sitting in the literal PAID
 // status (which would undercount, since most orders move on to
 // LABEL_GENERATED/PICKED_UP/etc. within a day or two). PICKUP_CONFIRMED
-// does NOT count — that's the "book pickup" flow confirming the visit
-// itself, with cash collected later once the courier weighs the parcel in
-// person (see confirmCashBooking, payment.controller.js: "no money has
-// actually changed hands yet"). Same exclusion list the revenue aggregate
-// below uses, for the same reason.
+// does NOT count, regardless of how the order eventually gets paid — cash
+// collected in person, or a Razorpay link staff sends later. Either way
+// nothing has been paid yet AT the moment a "book pickup" order sits in
+// PICKUP_CONFIRMED (see confirmCashBooking, payment.controller.js: "no
+// money has actually changed hands yet"); real payment always requires
+// staff to price it first, which moves it to PENDING_PAYMENT (see
+// updateOrderDetails, order.controller.js) before it can reach PAID by
+// either payment method. Same exclusion list the revenue aggregate below
+// uses, for the same reason.
 const UNPAID_STATUSES = ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'CANCELLED'];
 async function dashboardStats(req, res, next) {
   try {
