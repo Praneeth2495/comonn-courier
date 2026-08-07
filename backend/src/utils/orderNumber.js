@@ -20,14 +20,15 @@ async function nextMonthlySequence(kind, now) {
 }
 
 /**
- * Generates DDMM<seq> e.g. 18071 for the 1st order created on 18 July.
- * The sequence resets to 1 at the start of each calendar month and is
- * never zero-padded, so it never repeats within a month.
+ * Generates DM<seq> e.g. 881 for the 1st order created on 8 August. Day and
+ * month are plain numbers, never zero-padded (8, not 08; January is 1, not
+ * 01). The sequence resets to 1 at the start of each calendar month and is
+ * also never zero-padded, so it never repeats within a month.
  */
 async function generateOrderNumber() {
   const now = new Date();
   const seq = await nextMonthlySequence('order', now);
-  return `${pad2(now.getDate())}${pad2(now.getMonth() + 1)}${seq}`;
+  return `${now.getDate()}${now.getMonth() + 1}${seq}`;
 }
 
 module.exports = { generateOrderNumber };
