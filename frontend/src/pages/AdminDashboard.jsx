@@ -30,6 +30,7 @@ export default function AdminDashboard() {
     ['printlabel', 'Print Label'],
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
+    ...(isAdmin ? [['onboarding', 'Onboarding']] : []),
     ...(isAdmin ? [['merchants', 'Merchants']] : []),
     ...(isAdmin ? [['customsclients', 'Customs Client']] : []),
     ...(isAdmin ? [['storage', 'Storage']] : []),
