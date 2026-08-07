@@ -10,7 +10,11 @@ const { resolveOriginFilters } = require('./order.controller');
 async function dashboardStats(req, res, next) {
   try {
     const { from, to } = req.query;
-    const where = {};
+    // UNFINISHED (a quote+details started but payment never reached) never
+    // shows up outside the dedicated Unconfirmed-orders tab anywhere else
+    // in the admin panel (Bookings/Pickup/Manifest/Delivery/Accounts all
+    // exclude it the same way) — Overview follows the same rule.
+    const where = { status: { not: 'UNFINISHED' } };
     if (from || to) {
       where.createdAt = {};
       if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000Z`);
