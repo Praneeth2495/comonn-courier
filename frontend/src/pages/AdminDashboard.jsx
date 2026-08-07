@@ -81,6 +81,8 @@ export default function AdminDashboard() {
 }
 
 function Overview() {
+  const { user } = useAuth();
+  const [subTab, setSubTab] = useState('summary');
   const [data, setData] = useState(null);
   const now = useState(() => new Date())[0];
   // Month-to-date by default (unlike Accounts, which defaults to the full
@@ -91,22 +93,33 @@ function Overview() {
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
   const [toDate, setToDate] = useState(isoDate(now));
   const [detailOrder, setDetailOrder] = useState(null);
+  // ADMIN always sees the breakdown tabs; a STAFF viewer only does if
+  // individually granted access (Users panel) — see requireOverviewBreakdownAccess
+  // in admin.controller.js, which enforces the same rule server-side.
+  const canSeeBreakdown = user?.role === 'ADMIN' || user?.canViewOverviewBreakdown;
 
   useEffect(() => {
+    if (subTab !== 'summary') return;
+    setData(null);
     client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, subTab]);
 
   async function openDetail(id) {
     const { data } = await client.get(`/orders/${id}`);
     setDetailOrder(data.order);
   }
 
-  if (!data) return <LoadingLogo />;
-  const { totals, recentOrders } = data;
-
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 20 }}>Overview</h1>
+
+      {canSeeBreakdown && (
+        <div className="dash-tabs" style={{ marginBottom: 16 }}>
+          <button className={`dash-tab ${subTab === 'summary' ? 'active' : ''}`} onClick={() => setSubTab('summary')}>Summary</button>
+          <button className={`dash-tab ${subTab === 'staff' ? 'active' : ''}`} onClick={() => setSubTab('staff')}>Staff overview</button>
+          <button className={`dash-tab ${subTab === 'region' ? 'active' : ''}`} onClick={() => setSubTab('region')}>Region overview</button>
+        </div>
+      )}
 
       <div className="card date-toolbar" style={{ marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
@@ -115,32 +128,123 @@ function Overview() {
         <input className="input" type="date" value={toDate} min={fromDate} onChange={(e) => setToDate(e.target.value)} />
       </div>
 
-      <div className="stat-grid">
-        <Stat label="Total orders" value={totals.totalOrders} />
-        <Stat label="Pending payment" value={totals.pendingPayment} />
-        <Stat label="Paid" value={totals.paid} />
-        <Stat label="In transit" value={totals.inTransit} />
-        <Stat label="Delivered" value={totals.delivered} />
-      </div>
+      {subTab === 'summary' && (
+        !data ? <LoadingLogo /> : (
+          <>
+            <div className="stat-grid">
+              <Stat label="Total orders" value={data.totals.totalOrders} />
+              <Stat label="Pending payment" value={data.totals.pendingPayment} />
+              <Stat label="Paid" value={data.totals.paid} />
+              <Stat label="In transit" value={data.totals.inTransit} />
+              <Stat label="Delivered" value={data.totals.delivered} />
+            </div>
 
-      <h3 className="h-md" style={{ margin: '24px 0 12px' }}>Recent orders</h3>
-      <div className="table-wrap">
-        <table className="data-table">
-          <thead><tr><th>Order</th><th>Service</th><th>Destination</th><th>Status</th></tr></thead>
-          <tbody>
-            {recentOrders.map((o) => (
-              <tr key={o.id}>
-                <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
-                <td>{o.service.name}</td>
-                <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
-                <td>{o.status.replace(/_/g, ' ')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            <h3 className="h-md" style={{ margin: '24px 0 12px' }}>Recent orders</h3>
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead><tr><th>Order</th><th>Service</th><th>Destination</th><th>Status</th></tr></thead>
+                <tbody>
+                  {data.recentOrders.map((o) => (
+                    <tr key={o.id}>
+                      <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
+                      <td>{o.service.name}</td>
+                      <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
+                      <td>{o.status.replace(/_/g, ' ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )
+      )}
+
+      {subTab === 'staff' && canSeeBreakdown && <StaffOverviewTable fromDate={fromDate} toDate={toDate} />}
+      {subTab === 'region' && canSeeBreakdown && <RegionOverviewTable fromDate={fromDate} toDate={toDate} />}
 
       {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+    </div>
+  );
+}
+
+function StaffOverviewTable({ fromDate, toDate }) {
+  const [rows, setRows] = useState(null);
+
+  useEffect(() => {
+    setRows(null);
+    client.get('/admin/dashboard/staff', { params: { from: fromDate, to: toDate } }).then(({ data }) => setRows(data.rows));
+  }, [fromDate, toDate]);
+
+  if (!rows) return <LoadingLogo />;
+
+  return (
+    <div className="table-wrap">
+      <table className="data-table">
+        <thead><tr><th>Staff</th><th>Regions</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.staff.id}>
+              <td>
+                {r.staff.fullName}
+                <div style={{ fontSize: 11, color: 'var(--slate-light)' }}>{r.staff.email}</div>
+              </td>
+              <td>
+                {r.regions.length === 0 ? (
+                  <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>None assigned</span>
+                ) : (
+                  r.regions.map((rg, i) => (
+                    <span key={i} className="pill pill-cobalt" style={{ fontSize: 11, marginRight: 4, marginBottom: 4, display: 'inline-block' }}>
+                      {rg.region ? `${rg.state} · ${rg.region}` : `${rg.state} (all)`}
+                    </span>
+                  ))
+                )}
+              </td>
+              <td>{r.totals.totalOrders}</td>
+              <td>{r.totals.pendingPayment}</td>
+              <td>{r.totals.paid}</td>
+              <td>{r.totals.inTransit}</td>
+              <td>{r.totals.delivered}</td>
+            </tr>
+          ))}
+          {rows.length === 0 && (
+            <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No staff accounts yet.</td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function RegionOverviewTable({ fromDate, toDate }) {
+  const [rows, setRows] = useState(null);
+
+  useEffect(() => {
+    setRows(null);
+    client.get('/admin/dashboard/regions', { params: { from: fromDate, to: toDate } }).then(({ data }) => setRows(data.rows));
+  }, [fromDate, toDate]);
+
+  if (!rows) return <LoadingLogo />;
+
+  return (
+    <div className="table-wrap">
+      <table className="data-table">
+        <thead><tr><th>Region</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i}>
+              <td>{r.region.region ? `${r.region.state} · ${r.region.region}` : `${r.region.state} (all)`}</td>
+              <td>{r.totals.totalOrders}</td>
+              <td>{r.totals.pendingPayment}</td>
+              <td>{r.totals.paid}</td>
+              <td>{r.totals.inTransit}</td>
+              <td>{r.totals.delivered}</td>
+            </tr>
+          ))}
+          {rows.length === 0 && (
+            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No regions assigned to any staff yet.</td></tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
