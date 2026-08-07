@@ -1,4 +1,5 @@
 const { prisma } = require('../config/db');
+const { resolveOriginFilters } = require('./order.controller');
 
 // ---------------- Dashboard ----------------
 // "Paid" here (and the other stat cards) is a snapshot of orders currently
@@ -9,25 +10,41 @@ const { prisma } = require('../config/db');
 async function dashboardStats(req, res, next) {
   try {
     const { from, to } = req.query;
-    const dateWhere = {};
-    if (from) dateWhere.gte = new Date(`${from}T00:00:00.000Z`);
-    if (to) dateWhere.lte = new Date(`${to}T23:59:59.999Z`);
-    const dateFilter = Object.keys(dateWhere).length ? { createdAt: dateWhere } : {};
+    const where = {};
+    if (from || to) {
+      where.createdAt = {};
+      if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000Z`);
+      if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999Z`);
+    }
+
+    // A STAFF viewer only sees orders picked up from the state/region
+    // they've been assigned (Users panel) — same origin-region scoping the
+    // Pickup-orders tab uses, e.g. a staff member assigned only "Chittoor"
+    // sees only orders whose sender address is in Chittoor. ADMIN is never
+    // restricted. A STAFF member with no region assignments sees none,
+    // same as the existing zone-assignment default elsewhere.
+    if (req.user.role === 'STAFF') {
+      const assignments = await prisma.staffRegionAssignment.findMany({
+        where: { userId: req.user.id },
+        select: { state: true, region: true },
+      });
+      where.senderAddress = { OR: await resolveOriginFilters(assignments) };
+    }
 
     const [totalOrders, pendingPayment, paid, inTransit, delivered, revenueAgg] = await Promise.all([
-      prisma.order.count({ where: dateFilter }),
-      prisma.order.count({ where: { ...dateFilter, status: { in: ['UNFINISHED', 'PENDING_PAYMENT'] } } }),
-      prisma.order.count({ where: { ...dateFilter, status: 'PAID' } }),
-      prisma.order.count({ where: { ...dateFilter, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
-      prisma.order.count({ where: { ...dateFilter, status: 'DELIVERED' } }),
+      prisma.order.count({ where }),
+      prisma.order.count({ where: { ...where, status: { in: ['UNFINISHED', 'PENDING_PAYMENT'] } } }),
+      prisma.order.count({ where: { ...where, status: 'PAID' } }),
+      prisma.order.count({ where: { ...where, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
+      prisma.order.count({ where: { ...where, status: 'DELIVERED' } }),
       prisma.order.aggregate({
         _sum: { grandTotal: true },
-        where: { ...dateFilter, status: { notIn: ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'CANCELLED'] } },
+        where: { ...where, status: { notIn: ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'CANCELLED'] } },
       }),
     ]);
 
     const recentOrders = await prisma.order.findMany({
-      where: dateFilter,
+      where,
       take: 10,
       orderBy: { createdAt: 'desc' },
       include: { service: true, receiverAddress: { select: { city: true, countryCode: true } } },
