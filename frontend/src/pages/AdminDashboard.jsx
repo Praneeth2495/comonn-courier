@@ -85,10 +85,16 @@ function Overview() {
   const now = useState(() => new Date())[0];
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
   const [toDate, setToDate] = useState(isoDate(monthEnd(now)));
+  const [detailOrder, setDetailOrder] = useState(null);
 
   useEffect(() => {
     client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
   }, [fromDate, toDate]);
+
+  async function openDetail(id) {
+    const { data } = await client.get(`/orders/${id}`);
+    setDetailOrder(data.order);
+  }
 
   if (!data) return <LoadingLogo />;
   const { totals, recentOrders } = data;
