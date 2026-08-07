@@ -1104,17 +1104,6 @@ function RatesPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Zones &amp; Rate Cards</h1>
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
-        <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Zones</h4>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {zones.map((z) => (
-            <span key={z.id} className="pill pill-navy" title={z.countries.map((c) => c.countryName).join(', ')}>
-              {z.name} · {z.countries.length} countries
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="card" style={{ padding: 20, marginBottom: 24 }}>
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>{form.id ? 'Edit rate bracket' : 'Add a rate bracket'}</h4>
         <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 10, alignItems: 'end' }}>
           <div className="field">
