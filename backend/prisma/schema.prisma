@@ -77,8 +77,52 @@ model User {
   boxBookings             BoxBooking[]
   boxBookingComments      BoxBookingComment[]
   manifestsCreated        Manifest[]
+  employeeProfile         EmployeeProfile?
 
   @@index([email])
+}
+
+// One-to-one HR record for a STAFF/DRIVER account, created via the admin
+// "Onboarding" tab (which creates the User account itself in the same
+// step — see employee.controller.js). Captures the joining/personal
+// details a plain User row doesn't have. ADMIN-only throughout: never
+// exposed to STAFF, even ones with canViewOverviewBreakdown.
+model EmployeeProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  designation   String?
+  department    String?
+  dateOfJoining DateTime?
+
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postcode     String?
+
+  emergencyContactName     String?
+  emergencyContactRelation String?
+  emergencyContactPhone    String?
+
+  idProofType   String? // free-text label, e.g. "Aadhaar", "PAN", "Passport", "Driving Licence"
+  idProofNumber String?
+  // Uploaded ID scan/photo — stored as bytes in the DB rather than local
+  // disk, same reasoning as PartyInvoice.attachmentData: not derivable
+  // from other fields, so it would be permanently lost on a Railway
+  // redeploy if left on disk.
+  idProofFileName String?
+  idProofFileMime String?
+  idProofFileData Bytes?
+
+  bankAccountName   String?
+  bankAccountNumber String?
+  bankIfsc          String?
+  bankName          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Internal admin/staff notes on an order. Deliberately separate from
