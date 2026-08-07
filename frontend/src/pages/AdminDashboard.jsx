@@ -30,8 +30,6 @@ export default function AdminDashboard() {
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
     ...(isAdmin ? [['merchants', 'Merchants']] : []),
-    ...(isAdmin ? [['receivable', 'Receivable']] : []),
-    ...(isAdmin ? [['payable', 'Payable']] : []),
     ...(isAdmin ? [['customsclients', 'Customs Client']] : []),
     ...(isAdmin ? [['storage', 'Storage']] : []),
     ['account', 'Profile'],
