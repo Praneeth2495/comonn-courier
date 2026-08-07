@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
 import PasswordToggle from '../components/PasswordToggle';
+import { passwordPolicyError, PASSWORD_HINT } from '../utils/passwordPolicy';
 
 const COUNTRY_CODES = ['🇮🇳 +91', '🇦🇺 +61', '🇨🇦 +1', '🇳🇿 +64', '🇬🇧 +44', '🇺🇸 +1', '🇪🇺 +32'];
 
