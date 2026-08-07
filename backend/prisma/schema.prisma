@@ -51,6 +51,12 @@ model User {
   // shown alongside their name in the "send to driver" picker so staff can
   // tell two same-named drivers apart. Meaningless for any other role.
   driverRegion            String?
+  // STAFF-only opt-in, granted individually by ADMIN via the Users panel,
+  // to see the "Staff overview" / "Region overview" tabs on their own
+  // Overview page — a broader, cross-region view than their own
+  // region-scoped stats (see StaffRegionAssignment). Meaningless for ADMIN,
+  // who already sees everything regardless of this flag.
+  canViewOverviewBreakdown Boolean @default(false)
 
   addresses               Address[]
   orders                  Order[]
