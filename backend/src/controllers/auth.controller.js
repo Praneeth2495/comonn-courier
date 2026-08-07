@@ -5,12 +5,30 @@ const { signUserToken } = require('../utils/jwt');
 const { sendEmail } = require('../services/emailService');
 const { issuePasswordSetToken, passwordSetUrl } = require('../services/accountProvisioning');
 
+// Shared by every place a customer picks their own password (register,
+// change-password, set-password) — guest-checkout accounts are exempt
+// since accountProvisioning.js generates those randomly, never from user
+// input. Returns an error string, or null when the password is strong
+// enough.
+function passwordPolicyError(password) {
+  if (typeof password !== 'string' || password.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  if (!/[A-Z]/.test(password)) return 'Password must include at least one uppercase letter.';
+  if (!/[a-z]/.test(password)) return 'Password must include at least one lowercase letter.';
+  if (!/[0-9]/.test(password)) return 'Password must include at least one number.';
+  if (!/[^A-Za-z0-9]/.test(password)) return 'Password must include at least one special character.';
+  return null;
+}
+
 async function register(req, res, next) {
   try {
     const { email, password, fullName, phone, company } = req.body;
     if (!email || !password || !fullName) {
       return res.status(400).json({ error: 'email, password and fullName are required' });
     }
+    const passwordError = passwordPolicyError(password);
+    if (passwordError) return res.status(400).json({ error: passwordError });
 
     const normalizedEmail = email.toLowerCase().trim();
     const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
