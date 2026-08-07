@@ -83,8 +83,13 @@ export default function AdminDashboard() {
 function Overview() {
   const [data, setData] = useState(null);
   const now = useState(() => new Date())[0];
+  // Month-to-date by default (unlike Accounts, which defaults to the full
+  // calendar month) — the stat cards are a "how's this month going so far"
+  // snapshot, so defaulting toDate past today would silently include
+  // future days that haven't happened yet. Still fully editable via the
+  // date inputs below.
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
-  const [toDate, setToDate] = useState(isoDate(monthEnd(now)));
+  const [toDate, setToDate] = useState(isoDate(now));
   const [detailOrder, setDetailOrder] = useState(null);
 
   useEffect(() => {
