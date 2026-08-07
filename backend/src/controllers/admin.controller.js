@@ -2,14 +2,16 @@ const { prisma } = require('../config/db');
 const { resolveOriginFilters } = require('./order.controller');
 
 // ---------------- Dashboard ----------------
-// "Paid" is cumulative — every order that has ever cleared payment, not
-// just whatever's currently sitting in the literal PAID status (which
-// would undercount, since most orders move on to LABEL_GENERATED/
-// PICKED_UP/etc. within a day or two). PICKUP_CONFIRMED counts too — it's
-// the "book pickup" flow's equivalent of PAID (cash collected in person
-// instead of upfront), already treated the same way as PAID for the
-// "your order is booked" notification (see orderNotifications.js). Same
-// exclusion list the revenue aggregate below uses.
+// "Paid" is cumulative — every order that has ever actually cleared
+// payment, not just whatever's currently sitting in the literal PAID
+// status (which would undercount, since most orders move on to
+// LABEL_GENERATED/PICKED_UP/etc. within a day or two). PICKUP_CONFIRMED
+// does NOT count — that's the "book pickup" flow confirming the visit
+// itself, with cash collected later once the courier weighs the parcel in
+// person (see confirmCashBooking, payment.controller.js: "no money has
+// actually changed hands yet"). Same exclusion list the revenue aggregate
+// below uses, for the same reason.
+const UNPAID_STATUSES = ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'CANCELLED'];
 async function dashboardStats(req, res, next) {
   try {
     const { from, to } = req.query;
