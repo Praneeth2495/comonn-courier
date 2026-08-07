@@ -4,10 +4,10 @@ const { register, login, me, updateProfile, changePassword, forgotPassword, setP
 const { requireAuth } = require('../middleware/auth');
 
 const forgotPasswordLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5 });
-// Higher than forgotPasswordLimiter since mistyped passwords are a normal
-// occurrence (not just a rare intentional action) — still low enough to
-// make brute-forcing a password impractical.
-const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
+// skipSuccessfulRequests means only failed (401) attempts count toward the
+// limit — a run of wrong passwords locks out, but it doesn't also penalize
+// someone who logs in successfully several times in the same window.
+const loginLimiter = rateLimit({ windowMs: 30 * 60 * 1000, max: 5, skipSuccessfulRequests: true });
 
 router.post('/register', register);
 router.post('/login', loginLimiter, login);
