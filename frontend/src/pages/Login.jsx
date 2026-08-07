@@ -66,7 +66,11 @@ export default function Login() {
             </div>
             <span className="form-foot-link"><Link to="/forgot-password">Forgot password?</Link></span>
           </div>
-          {error && <div className="error-text">{error}</div>}
+          {error && (
+            <div className="error-text">
+              {error} {/access restricted/i.test(error) && <Link to="/forgot-password">Click here to reset your password.</Link>}
+            </div>
+          )}
           <button className="btn btn-primary block" style={{ padding: 13 }} disabled={loading}>
             {loading ? 'Logging in…' : 'Sign In'}
           </button>
