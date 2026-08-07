@@ -48,7 +48,7 @@ input,select,textarea{font-family:inherit;}
 /* Compact date-range toolbar (Overview/Accounts date filter, Driver's "View
    jobs for" picker) — the default .input sizing reads oversized for a
    single date field that's mostly just a filter, not a form. */
-.date-toolbar{padding:9px 14px!important;}
+.date-toolbar{padding:9px 14px;}
 .date-toolbar .input{max-width:142px;padding:7px 10px;font-size:13px;}
 .nav-actions{display:flex;align-items:center;gap:10px;}
 
