@@ -125,7 +125,7 @@ function Overview() {
           <tbody>
             {recentOrders.map((o) => (
               <tr key={o.id}>
-                <td className="mono">{o.orderNumber}</td>
+                <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
                 <td>{o.service.name}</td>
                 <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
                 <td>{o.status.replace(/_/g, ' ')}</td>
@@ -134,6 +134,8 @@ function Overview() {
           </tbody>
         </table>
       </div>
+
+      {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
     </div>
   );
 }
