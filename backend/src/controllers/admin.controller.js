@@ -542,10 +542,15 @@ async function listDrivers(req, res, next) {
 
 async function setUserRole(req, res, next) {
   try {
-    const { role, isActive, driverRegion } = req.body;
+    const { role, isActive, driverRegion, canViewOverviewBreakdown } = req.body;
     const user = await prisma.user.update({
       where: { id: req.params.id },
-      data: { role, isActive, driverRegion: driverRegion === undefined ? undefined : (driverRegion.trim() || null) },
+      data: {
+        role,
+        isActive,
+        driverRegion: driverRegion === undefined ? undefined : (driverRegion.trim() || null),
+        canViewOverviewBreakdown,
+      },
     });
 
     // New (or newly re-promoted) staff start with full visibility into
