@@ -82,10 +82,13 @@ export default function AdminDashboard() {
 
 function Overview() {
   const [data, setData] = useState(null);
+  const now = useState(() => new Date())[0];
+  const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
+  const [toDate, setToDate] = useState(isoDate(monthEnd(now)));
 
   useEffect(() => {
-    client.get('/admin/dashboard').then(({ data }) => setData(data));
-  }, []);
+    client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
+  }, [fromDate, toDate]);
 
   if (!data) return <LoadingLogo />;
   const { totals, recentOrders } = data;
@@ -93,6 +96,14 @@ function Overview() {
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 20 }}>Overview</h1>
+
+      <div className="card" style={{ padding: 14, marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
+        <input className="input" type="date" style={{ maxWidth: 170 }} value={fromDate} max={toDate} onChange={(e) => setFromDate(e.target.value)} />
+        <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
+        <input className="input" type="date" style={{ maxWidth: 170 }} value={toDate} min={fromDate} onChange={(e) => setToDate(e.target.value)} />
+      </div>
+
       <div className="stat-grid">
         <Stat label="Total orders" value={totals.totalOrders} />
         <Stat label="Pending payment" value={totals.pendingPayment} />
