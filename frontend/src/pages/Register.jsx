@@ -31,6 +31,11 @@ export default function Register() {
     e.preventDefault();
     setError('');
 
+    const passwordError = passwordPolicyError(form.password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match.');
       return;
