@@ -592,6 +592,8 @@ async function setUserRole(req, res, next) {
 
 module.exports = {
   dashboardStats,
+  staffOverview,
+  regionOverview,
   listPickupOrigins,
   listZones,
   createZone,
