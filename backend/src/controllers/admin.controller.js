@@ -16,19 +16,46 @@ const { resolveOriginFilters } = require('./order.controller');
 // either payment method. Same exclusion list the revenue aggregate below
 // uses, for the same reason.
 const UNPAID_STATUSES = ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'CANCELLED'];
+
+// UNFINISHED (a quote+details started but payment never reached) never
+// shows up outside the dedicated Unconfirmed-orders tab anywhere else in
+// the admin panel (Bookings/Pickup/Manifest/Delivery/Accounts all exclude
+// it the same way) — Overview and its breakdown tabs follow the same rule.
+// `extraWhere` layers on a scope (a single staff's region assignments, or
+// one specific region) on top of the shared date-range filter.
+function buildDashboardWhere(from, to, extraWhere = {}) {
+  const where = { status: { not: 'UNFINISHED' }, ...extraWhere };
+  if (from || to) {
+    where.createdAt = {};
+    if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000Z`);
+    if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999Z`);
+  }
+  return where;
+}
+
+// Shared by dashboardStats (whole-business or one staff member's scope) and
+// the staffOverview/regionOverview breakdown tabs (one row per staff/region)
+// — same five numbers, just computed against whatever `where` the caller
+// already scoped down to.
+async function computeOrderTotals(where) {
+  const [totalOrders, pendingPayment, paid, inTransit, delivered, revenueAgg] = await Promise.all([
+    prisma.order.count({ where }),
+    prisma.order.count({ where: { ...where, status: 'PENDING_PAYMENT' } }),
+    prisma.order.count({ where: { ...where, status: { notIn: UNPAID_STATUSES } } }),
+    prisma.order.count({ where: { ...where, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
+    prisma.order.count({ where: { ...where, status: 'DELIVERED' } }),
+    prisma.order.aggregate({
+      _sum: { grandTotal: true },
+      where: { ...where, status: { notIn: UNPAID_STATUSES } },
+    }),
+  ]);
+  return { totalOrders, pendingPayment, paid, inTransit, delivered, totalRevenue: revenueAgg._sum.grandTotal || 0 };
+}
+
 async function dashboardStats(req, res, next) {
   try {
     const { from, to } = req.query;
-    // UNFINISHED (a quote+details started but payment never reached) never
-    // shows up outside the dedicated Unconfirmed-orders tab anywhere else
-    // in the admin panel (Bookings/Pickup/Manifest/Delivery/Accounts all
-    // exclude it the same way) — Overview follows the same rule.
-    const where = { status: { not: 'UNFINISHED' } };
-    if (from || to) {
-      where.createdAt = {};
-      if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000Z`);
-      if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999Z`);
-    }
+    const scopeWhere = {};
 
     // A STAFF viewer only sees orders picked up from the state/region
     // they've been assigned (Users panel) — same origin-region scoping the
@@ -41,20 +68,11 @@ async function dashboardStats(req, res, next) {
         where: { userId: req.user.id },
         select: { state: true, region: true },
       });
-      where.senderAddress = { OR: await resolveOriginFilters(assignments) };
+      scopeWhere.senderAddress = { OR: await resolveOriginFilters(assignments) };
     }
 
-    const [totalOrders, pendingPayment, paid, inTransit, delivered, revenueAgg] = await Promise.all([
-      prisma.order.count({ where }),
-      prisma.order.count({ where: { ...where, status: 'PENDING_PAYMENT' } }),
-      prisma.order.count({ where: { ...where, status: { notIn: UNPAID_STATUSES } } }),
-      prisma.order.count({ where: { ...where, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
-      prisma.order.count({ where: { ...where, status: 'DELIVERED' } }),
-      prisma.order.aggregate({
-        _sum: { grandTotal: true },
-        where: { ...where, status: { notIn: UNPAID_STATUSES } },
-      }),
-    ]);
+    const where = buildDashboardWhere(from, to, scopeWhere);
+    const totals = await computeOrderTotals(where);
 
     const recentOrders = await prisma.order.findMany({
       where,
@@ -63,17 +81,97 @@ async function dashboardStats(req, res, next) {
       include: { service: true, receiverAddress: { select: { city: true, countryCode: true } } },
     });
 
-    res.json({
-      totals: {
-        totalOrders,
-        pendingPayment,
-        paid,
-        inTransit,
-        delivered,
-        totalRevenue: revenueAgg._sum.grandTotal || 0,
-      },
-      recentOrders,
+    res.json({ totals, recentOrders });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Both breakdown tabs are ADMIN-only by default; a STAFF member can only
+// reach them if individually granted canViewOverviewBreakdown (Users
+// panel) — checked fresh from the DB rather than trusting the JWT payload,
+// since the flag needs to take effect immediately, without waiting for the
+// staff member to log out and back in.
+async function requireOverviewBreakdownAccess(req, res) {
+  if (req.user.role === 'ADMIN') return true;
+  const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { canViewOverviewBreakdown: true } });
+  if (user?.canViewOverviewBreakdown) return true;
+  res.status(403).json({ error: 'You do not have access to this view.' });
+  return false;
+}
+
+/**
+ * GET /api/admin/dashboard/staff — one row per STAFF account, each scoped
+ * to that staff member's own assigned pickup region(s) (same rule
+ * dashboardStats applies when a STAFF views their own Overview). A staff
+ * member with no region assignments shows all-zero, same as their own
+ * Overview would.
+ */
+async function staffOverview(req, res, next) {
+  try {
+    if (!(await requireOverviewBreakdownAccess(req, res))) return;
+    const { from, to } = req.query;
+
+    const staff = await prisma.user.findMany({
+      where: { role: 'STAFF' },
+      select: { id: true, fullName: true, email: true },
+      orderBy: { fullName: 'asc' },
     });
+
+    const rows = await Promise.all(
+      staff.map(async (s) => {
+        const assignments = await prisma.staffRegionAssignment.findMany({
+          where: { userId: s.id },
+          select: { state: true, region: true },
+        });
+        const where = buildDashboardWhere(from, to, {
+          senderAddress: { OR: assignments.length ? await resolveOriginFilters(assignments) : [] },
+        });
+        const totals = await computeOrderTotals(where);
+        return { staff: s, regions: assignments, totals };
+      })
+    );
+
+    res.json({ rows });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/admin/dashboard/regions — one row per distinct state/region
+ * pair currently assigned to at least one staff member (the operationally
+ * relevant set, not every region in the postcode database — most of which
+ * no staff covers).
+ */
+async function regionOverview(req, res, next) {
+  try {
+    if (!(await requireOverviewBreakdownAccess(req, res))) return;
+    const { from, to } = req.query;
+
+    const assignments = await prisma.staffRegionAssignment.findMany({
+      select: { state: true, region: true },
+    });
+    const seen = new Set();
+    const distinctRegions = [];
+    for (const a of assignments) {
+      const key = `${a.state}|${a.region || ''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      distinctRegions.push({ state: a.state, region: a.region });
+    }
+    distinctRegions.sort((a, b) => a.state.localeCompare(b.state) || (a.region || '').localeCompare(b.region || ''));
+
+    const rows = await Promise.all(
+      distinctRegions.map(async (r) => {
+        const [originFilter] = await resolveOriginFilters([r]);
+        const where = buildDashboardWhere(from, to, { senderAddress: originFilter });
+        const totals = await computeOrderTotals(where);
+        return { region: r, totals };
+      })
+    );
+
+    res.json({ rows });
   } catch (err) {
     next(err);
   }
