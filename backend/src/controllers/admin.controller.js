@@ -2,11 +2,14 @@ const { prisma } = require('../config/db');
 const { resolveOriginFilters } = require('./order.controller');
 
 // ---------------- Dashboard ----------------
-// "Paid" here (and the other stat cards) is a snapshot of orders currently
-// sitting in that exact status, not a cumulative "ever paid" count — an
-// order that's since moved on to LABEL_GENERATED/PICKED_UP/etc. no longer
-// shows up under "Paid". That's why this number is often small even with
-// plenty of real paid orders — most of them have already progressed past it.
+// "Paid" is cumulative — every order that has ever cleared payment, not
+// just whatever's currently sitting in the literal PAID status (which
+// would undercount, since most orders move on to LABEL_GENERATED/
+// PICKED_UP/etc. within a day or two). PICKUP_CONFIRMED counts too — it's
+// the "book pickup" flow's equivalent of PAID (cash collected in person
+// instead of upfront), already treated the same way as PAID for the
+// "your order is booked" notification (see orderNotifications.js). Same
+// exclusion list the revenue aggregate below uses.
 async function dashboardStats(req, res, next) {
   try {
     const { from, to } = req.query;
