@@ -108,6 +108,7 @@ export default function Register() {
               />
               <PasswordToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
             </div>
+            <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 5 }}>{PASSWORD_HINT}</p>
           </div>
           <div className="field">
             <label>Confirm Password</label>
