@@ -51,6 +51,7 @@ export default function SetPassword() {
             <div className="field">
               <label>New password</label>
               <input className="input" type="password" placeholder="At least 8 characters" required value={password} onChange={(e) => setPasswordValue(e.target.value)} />
+              <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 5 }}>{PASSWORD_HINT}</p>
             </div>
             <div className="field">
               <label>Confirm password</label>
