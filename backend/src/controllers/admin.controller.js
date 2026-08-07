@@ -517,7 +517,7 @@ async function upsertSurcharge(req, res, next) {
 async function listUsers(req, res, next) {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, email: true, fullName: true, phone: true, role: true, isActive: true, driverRegion: true, createdAt: true },
+      select: { id: true, email: true, fullName: true, phone: true, role: true, isActive: true, driverRegion: true, canViewOverviewBreakdown: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
     });
     res.json({ users });
