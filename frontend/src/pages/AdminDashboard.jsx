@@ -658,11 +658,11 @@ function AccountsPanel() {
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Accounts</h1>
 
-      <div className="card" style={{ padding: 14, marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="card date-toolbar" style={{ marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
-        <input className="input" type="date" style={{ maxWidth: 170 }} value={fromDate} max={toDate} onChange={(e) => { setPage(1); setFromDate(e.target.value); }} />
+        <input className="input" type="date" value={fromDate} max={toDate} onChange={(e) => { setPage(1); setFromDate(e.target.value); }} />
         <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
-        <input className="input" type="date" style={{ maxWidth: 170 }} value={toDate} min={fromDate} onChange={(e) => { setPage(1); setToDate(e.target.value); }} />
+        <input className="input" type="date" value={toDate} min={fromDate} onChange={(e) => { setPage(1); setToDate(e.target.value); }} />
       </div>
 
       {summary && (
