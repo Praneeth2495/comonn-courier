@@ -763,63 +763,76 @@ function AccountsPanel() {
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Accounts</h1>
 
-      <div className="card date-toolbar" style={{ marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
-        <input className="input" type="date" value={fromDate} max={toDate} onChange={(e) => { setPage(1); setFromDate(e.target.value); }} />
-        <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
-        <input className="input" type="date" value={toDate} min={fromDate} onChange={(e) => { setPage(1); setToDate(e.target.value); }} />
+      <div className="dash-tabs" style={{ marginBottom: 16 }}>
+        <button className={`dash-tab ${subTab === 'bookings' ? 'active' : ''}`} onClick={() => setSubTab('bookings')}>Bookings</button>
+        <button className={`dash-tab ${subTab === 'receivable' ? 'active' : ''}`} onClick={() => setSubTab('receivable')}>Receivable</button>
+        <button className={`dash-tab ${subTab === 'payable' ? 'active' : ''}`} onClick={() => setSubTab('payable')}>Payable</button>
       </div>
 
-      {summary && (
-        <div className="stat-grid" style={{ marginBottom: 20 }}>
-          <Stat label="Total bookings" value={summary.totalBookings} />
-          <Stat label="Total paid" value={`₹${Number(summary.totalPaid).toFixed(2)}`} />
-          <Stat label="Total to pay" value={`₹${Number(summary.totalDue).toFixed(2)}`} />
-          <Stat label="Total credit owed" value={`₹${Number(summary.totalCredit).toFixed(2)}`} />
-        </div>
-      )}
-
-      <div className="dash-toolbar">
-        <form className="search-box" onSubmit={search}>
-          🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
-        </form>
-        <div className="pager">
-          <span>{total} booking{total === 1 ? '' : 's'}</span>
-          <button type="button" className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹</button>
-          <span className="mono" style={{ fontSize: 13 }}>{page} / {pageCount}</span>
-          <button type="button" className="btn btn-outline btn-sm" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>›</button>
-        </div>
-      </div>
-
-      {loading ? <LoadingLogo /> : (
-        <div className="table-wrap">
-          <div className="t-row t-head accounts-row">
-            <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>To Address</div><div>Paid / To pay</div>
+      {subTab === 'bookings' && (
+        <>
+          <div className="card date-toolbar" style={{ marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
+            <input className="input" type="date" value={fromDate} max={toDate} onChange={(e) => { setPage(1); setFromDate(e.target.value); }} />
+            <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
+            <input className="input" type="date" value={toDate} min={fromDate} onChange={(e) => { setPage(1); setToDate(e.target.value); }} />
           </div>
-          {orders.map((o) => {
-            const { amountPaid, due } = paidAndDue(o);
-            return (
-              <div className={`t-row accounts-row${o.manualPaymentMarkedAt ? ' manual-paid' : ''}`} key={o.id}>
-                <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
-                <div className="mono">{o.invoiceNumber || '—'}</div>
-                <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
-                <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
-                <div>
-                  <div style={{ color: 'var(--success)', fontWeight: 700, fontSize: 13 }}>Paid ₹{amountPaid.toFixed(2)}</div>
-                  {due > 0 ? (
-                    <div style={{ color: 'var(--danger)', fontSize: 12 }}>To pay ₹{due.toFixed(2)}</div>
-                  ) : due < 0 ? (
-                    <div style={{ color: 'var(--slate)', fontSize: 12 }}>Credit ₹{Math.abs(due).toFixed(2)}</div>
-                  ) : null}
-                </div>
+
+          {summary && (
+            <div className="stat-grid" style={{ marginBottom: 20 }}>
+              <Stat label="Total bookings" value={summary.totalBookings} />
+              <Stat label="Total paid" value={`₹${Number(summary.totalPaid).toFixed(2)}`} />
+              <Stat label="Total to pay" value={`₹${Number(summary.totalDue).toFixed(2)}`} />
+              <Stat label="Total credit owed" value={`₹${Number(summary.totalCredit).toFixed(2)}`} />
+            </div>
+          )}
+
+          <div className="dash-toolbar">
+            <form className="search-box" onSubmit={search}>
+              🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
+            </form>
+            <div className="pager">
+              <span>{total} booking{total === 1 ? '' : 's'}</span>
+              <button type="button" className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹</button>
+              <span className="mono" style={{ fontSize: 13 }}>{page} / {pageCount}</span>
+              <button type="button" className="btn btn-outline btn-sm" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>›</button>
+            </div>
+          </div>
+
+          {loading ? <LoadingLogo /> : (
+            <div className="table-wrap">
+              <div className="t-row t-head accounts-row">
+                <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>To Address</div><div>Paid / To pay</div>
               </div>
-            );
-          })}
-          {orders.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--slate-light)' }}>No bookings yet.</div>}
-        </div>
+              {orders.map((o) => {
+                const { amountPaid, due } = paidAndDue(o);
+                return (
+                  <div className={`t-row accounts-row${o.manualPaymentMarkedAt ? ' manual-paid' : ''}`} key={o.id}>
+                    <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
+                    <div className="mono">{o.invoiceNumber || '—'}</div>
+                    <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
+                    <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
+                    <div>
+                      <div style={{ color: 'var(--success)', fontWeight: 700, fontSize: 13 }}>Paid ₹{amountPaid.toFixed(2)}</div>
+                      {due > 0 ? (
+                        <div style={{ color: 'var(--danger)', fontSize: 12 }}>To pay ₹{due.toFixed(2)}</div>
+                      ) : due < 0 ? (
+                        <div style={{ color: 'var(--slate)', fontSize: 12 }}>Credit ₹{Math.abs(due).toFixed(2)}</div>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+              {orders.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--slate-light)' }}>No bookings yet.</div>}
+            </div>
+          )}
+
+          {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+        </>
       )}
 
-      {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+      {subTab === 'receivable' && <PartyInvoicesPanel direction="RECEIVABLE" />}
+      {subTab === 'payable' && <PartyInvoicesPanel direction="PAYABLE" />}
     </div>
   );
 }
