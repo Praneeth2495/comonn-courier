@@ -130,9 +130,8 @@ async function changePassword(req, res, next) {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'currentPassword and newPassword are required' });
     }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'newPassword must be at least 8 characters' });
-    }
+    const passwordError = passwordPolicyError(newPassword);
+    if (passwordError) return res.status(400).json({ error: passwordError });
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) return res.status(404).json({ error: 'User not found' });
