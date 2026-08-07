@@ -37,7 +37,7 @@ async function dashboardStats(req, res, next) {
 
     const [totalOrders, pendingPayment, paid, inTransit, delivered, revenueAgg] = await Promise.all([
       prisma.order.count({ where }),
-      prisma.order.count({ where: { ...where, status: { in: ['UNFINISHED', 'PENDING_PAYMENT'] } } }),
+      prisma.order.count({ where: { ...where, status: 'PENDING_PAYMENT' } }),
       prisma.order.count({ where: { ...where, status: 'PAID' } }),
       prisma.order.count({ where: { ...where, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
       prisma.order.count({ where: { ...where, status: 'DELIVERED' } }),
