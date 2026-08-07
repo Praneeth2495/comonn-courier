@@ -159,12 +159,11 @@ function MyJobs({ userName }) {
       <h1 className="h-lg" style={{ marginBottom: 4 }}>My pickup jobs</h1>
       <p className="lead" style={{ marginBottom: 16 }}>{userName}</p>
 
-      <div className="card" style={{ padding: 14, marginBottom: 20, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="card date-toolbar" style={{ marginBottom: 20, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>View jobs for</span>
         <input
           className="input"
           type="date"
-          style={{ maxWidth: 170 }}
           value={selectedDate}
           min={isoDate(threeMonthsAgo)}
           max={isoDate(today)}
