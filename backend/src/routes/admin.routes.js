@@ -5,6 +5,8 @@ const admin = require('../controllers/admin.controller');
 router.use(requireAuth, requireRole('ADMIN', 'STAFF'));
 
 router.get('/dashboard', admin.dashboardStats);
+router.get('/dashboard/staff', admin.staffOverview);
+router.get('/dashboard/regions', admin.regionOverview);
 
 router.get('/pickup-origins', admin.listPickupOrigins);
 
