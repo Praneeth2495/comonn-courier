@@ -1,21 +1,33 @@
 const { prisma } = require('../config/db');
 
 // ---------------- Dashboard ----------------
+// "Paid" here (and the other stat cards) is a snapshot of orders currently
+// sitting in that exact status, not a cumulative "ever paid" count — an
+// order that's since moved on to LABEL_GENERATED/PICKED_UP/etc. no longer
+// shows up under "Paid". That's why this number is often small even with
+// plenty of real paid orders — most of them have already progressed past it.
 async function dashboardStats(req, res, next) {
   try {
+    const { from, to } = req.query;
+    const dateWhere = {};
+    if (from) dateWhere.gte = new Date(`${from}T00:00:00.000Z`);
+    if (to) dateWhere.lte = new Date(`${to}T23:59:59.999Z`);
+    const dateFilter = Object.keys(dateWhere).length ? { createdAt: dateWhere } : {};
+
     const [totalOrders, pendingPayment, paid, inTransit, delivered, revenueAgg] = await Promise.all([
-      prisma.order.count(),
-      prisma.order.count({ where: { status: { in: ['UNFINISHED', 'PENDING_PAYMENT'] } } }),
-      prisma.order.count({ where: { status: 'PAID' } }),
-      prisma.order.count({ where: { status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
-      prisma.order.count({ where: { status: 'DELIVERED' } }),
+      prisma.order.count({ where: dateFilter }),
+      prisma.order.count({ where: { ...dateFilter, status: { in: ['UNFINISHED', 'PENDING_PAYMENT'] } } }),
+      prisma.order.count({ where: { ...dateFilter, status: 'PAID' } }),
+      prisma.order.count({ where: { ...dateFilter, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
+      prisma.order.count({ where: { ...dateFilter, status: 'DELIVERED' } }),
       prisma.order.aggregate({
         _sum: { grandTotal: true },
-        where: { status: { notIn: ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'CANCELLED'] } },
+        where: { ...dateFilter, status: { notIn: ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'CANCELLED'] } },
       }),
     ]);
 
     const recentOrders = await prisma.order.findMany({
+      where: dateFilter,
       take: 10,
       orderBy: { createdAt: 'desc' },
       include: { service: true, receiverAddress: { select: { city: true, countryCode: true } } },
