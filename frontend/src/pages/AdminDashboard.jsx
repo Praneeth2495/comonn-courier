@@ -68,8 +68,6 @@ export default function AdminDashboard() {
         {tab === 'rates' && isAdmin && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
         {tab === 'merchants' && isAdmin && <MerchantsPanel />}
-        {tab === 'receivable' && isAdmin && <PartyInvoicesPanel direction="RECEIVABLE" />}
-        {tab === 'payable' && isAdmin && <PartyInvoicesPanel direction="PAYABLE" />}
         {tab === 'customsclients' && isAdmin && <CustomsClientsPanel />}
         {tab === 'storage' && isAdmin && <StorageAdminPanel />}
         {tab === 'account' && <ChangePassword />}
