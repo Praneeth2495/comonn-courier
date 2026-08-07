@@ -1247,7 +1247,7 @@ function UsersPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Users</h1>
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Driver region</th><th>Delivery zones</th><th>Pickup states/regions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Driver region</th><th>Delivery zones</th><th>Pickup states/regions</th><th>Overview access</th></tr></thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
