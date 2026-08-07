@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
+import { passwordPolicyError, PASSWORD_HINT } from '../utils/passwordPolicy';
 
 export default function SetPassword() {
   const { setPassword } = useAuth();
@@ -15,7 +16,8 @@ export default function SetPassword() {
   async function submit(e) {
     e.preventDefault();
     setError('');
-    if (password.length < 8) return setError('Password must be at least 8 characters');
+    const passwordError = passwordPolicyError(password);
+    if (passwordError) return setError(passwordError);
     if (password !== confirm) return setError('Passwords do not match');
     setLoading(true);
     try {
