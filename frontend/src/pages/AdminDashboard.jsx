@@ -1305,10 +1305,24 @@ function UsersPanel() {
                     <span style={{ color: 'var(--slate-light)' }}>—</span>
                   )}
                 </td>
+                <td>
+                  {u.role === 'STAFF' ? (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={!!u.canViewOverviewBreakdown}
+                        onChange={(e) => setOverviewAccess(u.id, e.target.checked)}
+                      />
+                      Staff &amp; Region tabs
+                    </label>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
             )}
           </tbody>
         </table>
