@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
 const admin = require('../controllers/admin.controller');
+const employee = require('../controllers/employee.controller');
 
 router.use(requireAuth, requireRole('ADMIN', 'STAFF'));
 
