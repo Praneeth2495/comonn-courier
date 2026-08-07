@@ -1216,6 +1216,14 @@ function UsersPanel() {
     setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
   }
 
+  // Grants a STAFF account access to the Overview page's "Staff overview" /
+  // "Region overview" tabs — off by default, since those show every
+  // region/staff member, not just the ones this staff member is assigned.
+  async function setOverviewAccess(id, canViewOverviewBreakdown) {
+    const { data } = await client.patch(`/admin/users/${id}`, { canViewOverviewBreakdown });
+    setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
+  }
+
   async function saveZones(userId, zoneIds) {
     const { data } = await client.put(`/admin/staff-zones/${userId}`, { zoneIds });
     setStaffZones((prev) => ({ ...prev, [userId]: data.zones }));
