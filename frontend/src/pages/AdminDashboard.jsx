@@ -69,6 +69,7 @@ export default function AdminDashboard() {
         {tab === 'printlabel' && <PrintLabelPanel />}
         {tab === 'rates' && isAdmin && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
+        {tab === 'onboarding' && isAdmin && <EmployeeOnboardingPanel />}
         {tab === 'merchants' && isAdmin && <MerchantsPanel />}
         {tab === 'customsclients' && isAdmin && <CustomsClientsPanel />}
         {tab === 'storage' && isAdmin && <StorageAdminPanel />}
