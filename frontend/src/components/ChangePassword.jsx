@@ -63,6 +63,7 @@ export default function ChangePassword() {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
         />
+        <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 5 }}>{PASSWORD_HINT}</p>
       </div>
       <div className="field" style={{ marginBottom: 16 }}>
         <label>Confirm new password</label>
