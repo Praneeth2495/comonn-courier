@@ -4,9 +4,13 @@ const { register, login, me, updateProfile, changePassword, forgotPassword, setP
 const { requireAuth } = require('../middleware/auth');
 
 const forgotPasswordLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5 });
+// Higher than forgotPasswordLimiter since mistyped passwords are a normal
+// occurrence (not just a rare intentional action) — still low enough to
+// make brute-forcing a password impractical.
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 
 router.post('/register', register);
-router.post('/login', login);
+router.post('/login', loginLimiter, login);
 router.get('/me', requireAuth, me);
 router.patch('/me', requireAuth, updateProfile);
 router.post('/change-password', requireAuth, changePassword);
