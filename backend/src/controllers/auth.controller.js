@@ -193,7 +193,8 @@ async function setPassword(req, res, next) {
   try {
     const { token, password } = req.body;
     if (!token || !password) return res.status(400).json({ error: 'token and password are required' });
-    if (password.length < 8) return res.status(400).json({ error: 'password must be at least 8 characters' });
+    const passwordError = passwordPolicyError(password);
+    if (passwordError) return res.status(400).json({ error: passwordError });
 
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     const record = await prisma.passwordSetToken.findUnique({ where: { tokenHash } });
