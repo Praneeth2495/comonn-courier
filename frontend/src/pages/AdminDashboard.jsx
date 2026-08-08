@@ -162,7 +162,7 @@ function Overview() {
       {subTab === 'staff' && canSeeBreakdown && <StaffOverviewTable fromDate={fromDate} toDate={toDate} />}
       {subTab === 'region' && canSeeBreakdown && <RegionOverviewTable fromDate={fromDate} toDate={toDate} />}
 
-      {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+      {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
     </div>
   );
 }
@@ -694,7 +694,7 @@ function OrdersPanel() {
         </div>
       )}
 
-      {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+      {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
       {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
       </>}
     </div>
@@ -827,7 +827,7 @@ function AccountsPanel() {
             </div>
           )}
 
-          {detailOrder && <OrderDetailAdminModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+          {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
         </>
       )}
 
