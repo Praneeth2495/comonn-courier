@@ -858,32 +858,59 @@ function OrderDetailAdminModal({ order, onClose }) {
   }
 
   const canGenerate = labels.length === 0 && !order.pricingPending && LABEL_ELIGIBLE_STATUSES.includes(order.status);
+  const { amountPaid, due } = paidAndDue(order);
+  const hasDocuments = labels.length > 0 || canGenerate;
 
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
           <div>
-            <h3 style={{ fontSize: 17 }}>Order <span className="mono">{order.orderNumber}</span></h3>
+            <h3 style={{ fontSize: 17, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              Order <span className="mono">{order.orderNumber}</span>
+              <span className={`status-badge ${STATUS_PILL[order.status] || 'pill-navy'}`}>{order.status.replace(/_/g, ' ')}</span>
+            </h3>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Everything the customer entered at booking</p>
           </div>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
-        <div className="detail-section">
-          <h4>Route</h4>
-          <div className="addr-grid" style={{ margin: 0 }}>
-            <div className="addr-block"><div className="lbl">Origin</div><p>{order.senderAddress?.city}, {order.senderAddress?.countryCode}</p></div>
-            <div className="addr-block"><div className="lbl">Destination</div><p>{order.receiverAddress?.city}, {order.receiverAddress?.countryCode}</p></div>
+        <div className="oda-summary">
+          <div className="item total">
+            <span className="lbl">Total</span>
+            <span className="val">₹{Number(order.grandTotal).toFixed(2)}</span>
+          </div>
+          <div className="item">
+            <span className="lbl">{due > 0 ? 'To pay' : due < 0 ? 'Credit' : 'Paid'}</span>
+            <span className="val" style={{ color: due > 0 ? 'var(--danger)' : due < 0 ? 'var(--slate)' : 'var(--success)' }}>
+              {due > 0 ? `₹${due.toFixed(2)}` : due < 0 ? `₹${Math.abs(due).toFixed(2)}` : `₹${amountPaid.toFixed(2)}`}
+            </span>
+          </div>
+          <div className="item">
+            <span className="lbl">Service</span>
+            <span className="val">{order.service?.name || '—'}</span>
+          </div>
+          <div className="item">
+            <span className="lbl">Booked</span>
+            <span className="val">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
           </div>
         </div>
 
         <div className="detail-section">
-          <h4>Shipment</h4>
+          <div className="oda-section-head"><span className="icon">📍</span><h4>Route</h4></div>
+          <div className="oda-route">
+            <div className="oda-route-block"><div className="lbl">Origin</div><p>{order.senderAddress?.city}, {order.senderAddress?.countryCode}</p></div>
+            <div className="oda-route-arrow">→</div>
+            <div className="oda-route-block"><div className="lbl">Destination</div><p>{order.receiverAddress?.city}, {order.receiverAddress?.countryCode}</p></div>
+          </div>
+        </div>
+
+        <div className="detail-section">
+          <div className="oda-section-head"><span className="icon">📦</span><h4>Shipment</h4></div>
           <div className="detail-grid">
             <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Items</span><span className="v">{itemsSummary || '—'}</span></div>
             <div className="detail-row"><span className="k">Service</span><span className="v">{order.service?.name}</span></div>
-            <div className="detail-row"><span className="k">Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)} {order.currency}</span></div>
+            <div className="detail-row oda-highlight"><span className="k">Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)} {order.currency}</span></div>
             <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Goods description</span><span className="v">{order.contentsDescription || '—'}</span></div>
             <div className="detail-row"><span className="k">Value of goods</span><span className="v">₹{Number(order.declaredValue).toFixed(2)}</span></div>
             <div className="detail-row"><span className="k">Pickup date</span><span className="v">{order.pickupDate || '—'}</span></div>
@@ -892,7 +919,7 @@ function OrderDetailAdminModal({ order, onClose }) {
 
         {order.addons?.length > 0 && (
           <div className="detail-section">
-            <h4>Add-on services</h4>
+            <div className="oda-section-head"><span className="icon">🎁</span><h4>Add-on services</h4></div>
             <div className="detail-grid">
               {order.addons.map((a) => (
                 <div className="detail-row" key={a.id}>
@@ -900,13 +927,13 @@ function OrderDetailAdminModal({ order, onClose }) {
                   <span className="v">₹{Number(a.amount).toFixed(2)}</span>
                 </div>
               ))}
-              <div className="detail-row"><span className="k">Add-ons total</span><span className="v">₹{Number(order.addonsTotal).toFixed(2)}</span></div>
+              <div className="detail-row oda-highlight"><span className="k">Add-ons total</span><span className="v">₹{Number(order.addonsTotal).toFixed(2)}</span></div>
             </div>
           </div>
         )}
 
         <div className="detail-section">
-          <h4>Receiver details</h4>
+          <div className="oda-section-head"><span className="icon">📥</span><h4>Receiver details</h4></div>
           <div className="detail-grid">
             <div className="detail-row"><span className="k">Name</span><span className="v">{order.receiverAddress?.contactName}</span></div>
             <div className="detail-row"><span className="k">Phone</span><span className="v">{order.receiverAddress?.phone}</span></div>
@@ -919,8 +946,8 @@ function OrderDetailAdminModal({ order, onClose }) {
           </div>
         </div>
 
-        <div className="detail-section" style={{ marginBottom: 0 }}>
-          <h4>Sender details</h4>
+        <div className="detail-section" style={{ marginBottom: hasDocuments ? 20 : 0 }}>
+          <div className="oda-section-head"><span className="icon">📤</span><h4>Sender details</h4></div>
           <div className="detail-grid">
             <div className="detail-row"><span className="k">Name</span><span className="v">{order.senderAddress?.contactName}</span></div>
             <div className="detail-row"><span className="k">Phone</span><span className="v">{order.senderAddress?.phone}</span></div>
@@ -932,25 +959,29 @@ function OrderDetailAdminModal({ order, onClose }) {
           </div>
         </div>
 
-        {labels.length > 0 && (
-          <div className="detail-section" style={{ marginBottom: 0, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {labels.map((l) => (
-              <a key={l.id} className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/download/${l.id}?inline=1`} target="_blank" rel="noreferrer">
-                View label{labels.length > 1 ? ` (${l.packageIndex})` : ''}
-              </a>
-            ))}
-            <a className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${order.id}?inline=1`} target="_blank" rel="noreferrer">
-              View invoice
-            </a>
-          </div>
-        )}
-
-        {canGenerate && (
+        {hasDocuments && (
           <div className="detail-section" style={{ marginBottom: 0 }}>
-            <button className="btn btn-outline btn-sm" disabled={generating} onClick={generateLabel}>
-              {generating ? 'Generating…' : 'Generate label & invoice'}
-            </button>
-            {generateError && <div className="error-text" style={{ marginTop: 8 }}>{generateError}</div>}
+            <div className="oda-section-head"><span className="icon">🏷️</span><h4>Documents</h4></div>
+            {labels.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {labels.map((l) => (
+                  <a key={l.id} className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/download/${l.id}?inline=1`} target="_blank" rel="noreferrer">
+                    View label{labels.length > 1 ? ` (${l.packageIndex})` : ''}
+                  </a>
+                ))}
+                <a className="btn btn-outline btn-sm" href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${order.id}?inline=1`} target="_blank" rel="noreferrer">
+                  View invoice
+                </a>
+              </div>
+            )}
+            {canGenerate && (
+              <div style={{ marginTop: labels.length > 0 ? 10 : 0 }}>
+                <button className="btn btn-outline btn-sm" disabled={generating} onClick={generateLabel}>
+                  {generating ? 'Generating…' : 'Generate label & invoice'}
+                </button>
+                {generateError && <div className="error-text" style={{ marginTop: 8 }}>{generateError}</div>}
+              </div>
+            )}
           </div>
         )}
       </div>
