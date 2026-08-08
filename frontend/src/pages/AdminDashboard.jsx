@@ -395,7 +395,15 @@ function OrdersPanel() {
   const [drivers, setDrivers] = useState([]);
   const [assignDriverId, setAssignDriverId] = useState('');
   const [assigning, setAssigning] = useState(false);
+  // Pickup tab only: clicking a due-date bucket chip (Overdue/Today/Future)
+  // narrows the table to just that bucket; clicking the same one again
+  // clears it back to showing everything.
+  const [dueBucket, setDueBucket] = useState('');
   const seqRef = useRef(0);
+
+  function toggleDueBucket(bucket) {
+    setDueBucket((prev) => (prev === bucket ? '' : bucket));
+  }
   const navigate = useNavigate();
   const { setBooking } = useBooking();
 
