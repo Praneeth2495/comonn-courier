@@ -145,7 +145,7 @@ export default function UserDashboard() {
                       Track order →
                     </button>
                   )}
-                  <button className="btn btn-outline btn-sm" onClick={() => setSelected(o)}>View details</button>
+                  <button className="btn btn-outline btn-sm" onClick={() => openDetail(o.id)}>View details</button>
                   {label && (
                     <a
                       className="btn btn-outline btn-sm"
