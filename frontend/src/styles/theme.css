@@ -528,6 +528,26 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .detail-row{font-size:13.5px;}
 .detail-row .k{color:var(--slate-light);font-size:11.5px;display:block;margin-bottom:2px;}
 .detail-row .v{color:var(--ink);font-weight:600;}
+
+/* Order-detail admin modal (OrderDetailAdminModal) — scoped classes (oda-
+   prefix) so this doesn't affect the shared .addr-grid/.detail-section
+   used on Labels/Details/other admin panels. */
+.oda-summary{display:flex;gap:22px;flex-wrap:wrap;margin:16px 0 22px;padding:14px 18px;background:var(--paper);border-radius:12px;border:1px solid var(--line-2);}
+.oda-summary .item{display:flex;flex-direction:column;gap:3px;}
+.oda-summary .item .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate-light);font-weight:700;}
+.oda-summary .item .val{font-size:14.5px;font-weight:700;color:var(--ink);}
+.oda-summary .item.total .val{color:var(--coral);font-size:17px;}
+.oda-section-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.oda-section-head .icon{font-size:13px;line-height:1;}
+.oda-section-head h4{margin:0;}
+.oda-route{display:flex;align-items:stretch;margin:8px 0;border:1px solid var(--line-2);border-radius:12px;overflow:hidden;}
+.oda-route-block{flex:1;background:var(--paper);padding:16px 18px;min-width:0;}
+.oda-route-block .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate-light);font-weight:700;margin-bottom:4px;}
+.oda-route-block p{font-size:13.5px;color:var(--ink);line-height:1.5;margin:0;font-weight:600;overflow-wrap:break-word;}
+.oda-route-arrow{display:flex;align-items:center;justify-content:center;width:40px;flex:none;color:var(--slate-light);font-size:18px;background:#fff;border-left:1px solid var(--line-2);border-right:1px solid var(--line-2);}
+@media(max-width:520px){.oda-route{flex-direction:column;}.oda-route-arrow{width:100%;height:26px;border-left:none;border-right:none;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);}}
+.detail-row.oda-highlight{background:#FFF5F2;margin:2px -8px;padding:8px;border-radius:8px;}
+.detail-row.oda-highlight .v{color:var(--coral);font-size:15px;}
 .status-badge{display:inline-flex;padding:4px 11px;border-radius:99px;font-size:11.5px;font-weight:700;}
 .pager{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--slate);}
 
