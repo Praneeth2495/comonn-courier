@@ -81,6 +81,14 @@ export default function UserDashboard() {
     navigate('/payment');
   }
 
+  // Re-fetches the full order (addons, items, etc.) rather than reusing the
+  // list-row object — the list endpoint doesn't include everything the
+  // detail view shows, same as the admin/staff "click order ID" flow.
+  async function openDetail(id) {
+    const { data } = await client.get(`/orders/${id}`);
+    setSelected(data.order);
+  }
+
   return (
     <div className="wrap section">
       <div>
