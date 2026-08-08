@@ -749,7 +749,12 @@ function AccountsPanel() {
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
-  useEffect(load, [page, fromDate, toDate]);
+  useEffect(load, [page, pageSize, fromDate, toDate]);
+
+  function changePageSize(size) {
+    setPageSize(size);
+    setPage(1);
+  }
 
   function search(e) {
     e.preventDefault();
