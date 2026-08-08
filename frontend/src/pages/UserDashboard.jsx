@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
 import LoadingLogo from '../components/LoadingLogo';
+import { OrderDetailModal } from '../components/OrderDetailModal';
 
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
