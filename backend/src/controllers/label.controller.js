@@ -517,4 +517,4 @@ async function downloadInvoice(req, res, next) {
   }
 }
 
-module.exports = { generateLabel, downloadLabel, downloadLabelByBarcode, downloadInvoice, sendReceiverBookingNotification };
+module.exports = { generateLabel, downloadLabel, downloadLabelByBarcode, downloadInvoice, sendReceiverBookingNotification, regenerateInvoiceIfExists };
