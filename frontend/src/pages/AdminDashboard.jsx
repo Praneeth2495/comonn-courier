@@ -1386,6 +1386,55 @@ function UsersPanel() {
           onClose={() => setEditingStaffRegions(null)}
         />
       )}
+
+      {editingPageAccess && (
+        <PageAccessModal
+          staff={editingPageAccess}
+          currentAllowedPages={editingPageAccess.allowedPages}
+          onSave={(allowedPages) => savePageAccess(editingPageAccess.id, allowedPages)}
+          onClose={() => setEditingPageAccess(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function PageAccessModal({ staff, currentAllowedPages, onSave, onClose }) {
+  const [selected, setSelected] = useState(currentAllowedPages);
+  const [saving, setSaving] = useState(false);
+
+  function toggle(pageKey) {
+    setSelected((prev) => (prev.includes(pageKey) ? prev.filter((k) => k !== pageKey) : [...prev, pageKey]));
+  }
+
+  async function save() {
+    setSaving(true);
+    await onSave(selected);
+    setSaving(false);
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <h3 style={{ fontSize: 17 }}>Page access for {staff.fullName}</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
+          Overview, Orders (view), Inventory and Profile are always visible. Check any extra pages this account should also see and use.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
+          {PAGE_KEYS.map((key) => (
+            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
+              <input type="checkbox" checked={selected.includes(key)} onChange={() => toggle(key)} />
+              {PAGE_LABELS[key]}
+            </label>
+          ))}
+        </div>
+        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
+          {saving ? 'Saving…' : 'Save page access'}
+        </button>
+      </div>
     </div>
   );
 }
