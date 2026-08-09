@@ -38,18 +38,6 @@ function volumetricWeightNote({ showDims, weightPreset, lengthCm, widthCm, heigh
   return { l, w, h, actualWeightKg, volumetricWeightKg };
 }
 
-function IndiaChakra() {
-  return (
-    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="18" height="12">
-      <rect width="60" height="40" fill="#FF9933" />
-      <rect y="13.3" width="60" height="13.3" fill="#FFFFFF" />
-      <rect y="26.6" width="60" height="13.4" fill="#138808" />
-      <circle cx="30" cy="20" r="5.6" fill="none" stroke="#00008B" strokeWidth="0.9" />
-      <circle cx="30" cy="20" r="1.1" fill="#00008B" />
-    </svg>
-  );
-}
-
 const COUNTRIES = [
   { name: 'Australia', code: 'AU' },
   { name: 'Canada', code: 'CA' },
