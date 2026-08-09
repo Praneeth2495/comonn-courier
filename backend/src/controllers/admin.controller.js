@@ -1,6 +1,6 @@
 const { prisma } = require('../config/db');
 const { resolveOriginFilters } = require('./order.controller');
-const { PAGE_KEYS } = require('../constants/pages');
+const { PAGE_KEYS, DEFAULT_ALLOWED_PAGES_BY_ROLE } = require('../constants/pages');
 
 // ---------------- Dashboard ----------------
 // "Paid" is cumulative — every order that has ever actually cleared
