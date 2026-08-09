@@ -546,14 +546,20 @@ function OrdersPanel() {
   // Orders with no parseable pickup date sort last (nothing to prioritize
   // them by).
   let displayOrders = orders;
+  let dueBucketCounts = { overdue: 0, today: 0, future: 0 };
   if (tab === 'pickup') {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     displayOrders = orders
       .map((o) => {
         const parsed = parsePickupDateStr(o.pickupDate, now);
         const overdue = !!parsed && parsed < todayStart && o.status !== 'PICKED_UP';
-        return { ...o, __parsedPickupDate: parsed, __overdue: overdue };
+        // Bucket is independent of the overdue/PICKED_UP distinction — this
+        // just describes when the pickup is/was scheduled, for the summary
+        // chips below (an order without a parseable date falls in none).
+        const dueBucket = !parsed ? null : parsed < todayStart ? 'overdue' : parsed < todayEnd ? 'today' : 'future';
+        return { ...o, __parsedPickupDate: parsed, __overdue: overdue, __dueBucket: dueBucket };
       })
       .sort((a, b) => {
         if (a.__overdue !== b.__overdue) return a.__overdue ? -1 : 1;
@@ -562,6 +568,11 @@ function OrdersPanel() {
         if (!b.__parsedPickupDate) return -1;
         return a.__parsedPickupDate - b.__parsedPickupDate;
       });
+    dueBucketCounts = displayOrders.reduce((acc, o) => {
+      if (o.__dueBucket) acc[o.__dueBucket] += 1;
+      return acc;
+    }, { overdue: 0, today: 0, future: 0 });
+    if (dueBucket) displayOrders = displayOrders.filter((o) => o.__dueBucket === dueBucket);
   }
 
   return (
