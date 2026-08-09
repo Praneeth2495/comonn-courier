@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, requirePage } = require('../middleware/auth');
 const admin = require('../controllers/admin.controller');
 const employee = require('../controllers/employee.controller');
 
@@ -9,9 +9,12 @@ router.get('/dashboard', admin.dashboardStats);
 router.get('/dashboard/staff', admin.staffOverview);
 router.get('/dashboard/regions', admin.regionOverview);
 
-router.get('/pickup-origins', admin.listPickupOrigins);
+// Used by the Orders page's pickup-assignment picker (ADMIN bypasses
+// requirePage; a STAFF/ACCOUNTS user without 'orders' toggled never sees
+// the Orders tab to call this from, but the route enforces it either way).
+router.get('/pickup-origins', requirePage('orders'), admin.listPickupOrigins);
 
-router.get('/zones', admin.listZones);
+router.get('/zones', requirePage('rates'), admin.listZones);
 router.post('/zones', requireRole('ADMIN'), admin.createZone);
 router.post('/zones/countries', requireRole('ADMIN'), admin.upsertCountryMapping);
 
@@ -21,26 +24,26 @@ router.put('/staff-zones/:userId', requireRole('ADMIN'), admin.setStaffZoneAssig
 router.get('/staff-regions', requireRole('ADMIN'), admin.listStaffRegionAssignments);
 router.put('/staff-regions/:userId', requireRole('ADMIN'), admin.setStaffRegionAssignments);
 
-router.get('/services', admin.listServicesAdmin);
+router.get('/services', requirePage('rates'), admin.listServicesAdmin);
 router.post('/services', requireRole('ADMIN'), admin.upsertService);
 
-router.get('/rate-cards', admin.listRateCards);
+router.get('/rate-cards', requirePage('rates'), admin.listRateCards);
 router.post('/rate-cards', requireRole('ADMIN'), admin.upsertRateCard);
 router.delete('/rate-cards/:id', requireRole('ADMIN'), admin.deleteRateCard);
 
-router.get('/surcharges', admin.listSurcharges);
+router.get('/surcharges', requirePage('rates'), admin.listSurcharges);
 router.post('/surcharges', requireRole('ADMIN'), admin.upsertSurcharge);
 
 router.get('/users', requireRole('ADMIN'), admin.listUsers);
 router.patch('/users/:id', requireRole('ADMIN'), admin.setUserRole);
 
-router.get('/employees', requireRole('ADMIN', 'ACCOUNTS'), employee.listEmployees);
-router.post('/employees', requireRole('ADMIN', 'ACCOUNTS'), employee.createEmployee);
-router.get('/employees/:id', requireRole('ADMIN', 'ACCOUNTS'), employee.getEmployee);
-router.patch('/employees/:id', requireRole('ADMIN', 'ACCOUNTS'), employee.updateEmployee);
-router.get('/employees/:id/id-proof', requireRole('ADMIN', 'ACCOUNTS'), employee.downloadIdProof);
+router.get('/employees', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.listEmployees);
+router.post('/employees', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.createEmployee);
+router.get('/employees/:id', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.getEmployee);
+router.patch('/employees/:id', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.updateEmployee);
+router.get('/employees/:id/id-proof', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.downloadIdProof);
 
 // Available to ADMIN & STAFF (both can dispatch pickup jobs to drivers)
-router.get('/drivers', admin.listDrivers);
+router.get('/drivers', requirePage('orders'), admin.listDrivers);
 
 module.exports = router;
