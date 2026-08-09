@@ -535,7 +535,7 @@ async function assignDriver(req, res, next) {
       data: orderIds.map((orderId) => ({
         orderId,
         authorId: req.user.id,
-        body: `Pickup job sent to driver ${driver.fullName}.`,
+        body: `Pickup job sent to rider ${driver.fullName}.`,
       })),
     });
 
