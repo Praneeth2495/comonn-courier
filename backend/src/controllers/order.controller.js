@@ -629,7 +629,7 @@ async function updateOrderDetails(req, res, next) {
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
-    const isStaff = req.user && ['ADMIN', 'STAFF'].includes(req.user.role);
+    const isStaff = req.user && ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(req.user.role);
     if (!PAYABLE_STATUSES.includes(order.status) && !isStaff) {
       return res.status(409).json({ error: 'This order can no longer be edited from the booking flow. Contact support.' });
     }
