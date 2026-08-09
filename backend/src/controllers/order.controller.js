@@ -287,6 +287,7 @@ async function listOrders(req, res, next) {
           senderAddress: true,
           receiverAddress: true,
           payment: true,
+          balancePayments: true,
           items: true,
           labels: true,
           assignedDriver: { select: { id: true, fullName: true, driverRegion: true } },
