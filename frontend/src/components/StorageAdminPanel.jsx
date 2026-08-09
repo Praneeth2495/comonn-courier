@@ -257,7 +257,7 @@ function BookingsTable() {
                 <td className="mono">{b.box?.number ?? '—'}</td>
                 <td>{b.days}</td>
                 <td>₹{Number(b.totalAmount).toFixed(2)}</td>
-                <td>{b.endDate ? new Date(b.endDate).toLocaleDateString('en-IN') : '—'}</td>
+                <td>{b.endDate ? new Date(b.endDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : '—'}</td>
                 <td>
                   <select
                     className="select"
@@ -552,7 +552,7 @@ function BookingCommentsModal({ booking, onClose }) {
               <div className="comment-item" key={c.id}>
                 <div className="meta">
                   <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
-                  <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</span>
                 </div>
                 <p className="body">{c.body}</p>
               </div>
