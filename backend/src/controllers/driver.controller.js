@@ -76,7 +76,7 @@ async function markPickedUp(req, res, next) {
       data: {
         status: 'PICKED_UP',
         pickedUpAt: new Date(),
-        trackingEvents: { create: { status: 'PICKED_UP', note: 'Picked up by driver' } },
+        trackingEvents: { create: { status: 'PICKED_UP', note: 'Picked up by rider' } },
       },
     });
     notifyOrderStatusChange(updated.id, 'PICKED_UP');
