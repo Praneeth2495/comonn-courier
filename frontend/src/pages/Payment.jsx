@@ -78,6 +78,15 @@ export default function Payment() {
   const [sendLinkStatus, setSendLinkStatus] = useState('');
   const [paymentJustConfirmed, setPaymentJustConfirmed] = useState(false);
 
+  // Balance top-up (an already-paid order's price went up after a staff
+  // edit) — see the !PAYABLE_STATUSES.includes(order.status) branch below.
+  const [balanceSubmitting, setBalanceSubmitting] = useState(false);
+  const [balanceError, setBalanceError] = useState('');
+  const [manualMethod, setManualMethod] = useState('Phone/UPI');
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [manualError, setManualError] = useState('');
+  const [balanceJustSettled, setBalanceJustSettled] = useState(false);
+
   const didInitialSync = useRef(false);
   const addonsSeqRef = useRef(0);
 
