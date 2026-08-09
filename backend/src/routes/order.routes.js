@@ -34,10 +34,10 @@ router.get('/:id', requireAuth, getOrder);
 // deliberately no auth: staff share this URL directly with the customer.
 router.get('/:id/pay', getOrderForPayment);
 router.post('/:id/cancel', requireAuth, cancelOrder);
-router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF'), updateOrderStatus);
-router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF'), assignDriver);
-router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), listOrderComments);
-router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF'), addOrderComment);
+router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), updateOrderStatus);
+router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), assignDriver);
+router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), listOrderComments);
+router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), addOrderComment);
 
 // Payment-page pre-payment steps — guest checkout allowed
 router.patch('/:id/details', optionalAuth, updateOrderDetails);
