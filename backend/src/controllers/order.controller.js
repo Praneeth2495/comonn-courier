@@ -625,7 +625,7 @@ async function updateOrderDetails(req, res, next) {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { payment: true },
+      include: { payment: true, balancePayments: true },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
