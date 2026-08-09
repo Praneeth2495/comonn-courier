@@ -1343,10 +1343,24 @@ function UsersPanel() {
                     <span style={{ color: 'var(--slate-light)' }}>—</span>
                   )}
                 </td>
+                <td>
+                  {u.role === 'STAFF' || u.role === 'ACCOUNTS' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(u.allowedPages || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>No extra pages</span>
+                      ) : (
+                        (u.allowedPages || []).map((key) => <span key={key} className="pill pill-navy" style={{ fontSize: 11 }}>{PAGE_LABELS[key] || key}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingPageAccess({ id: u.id, fullName: u.fullName, allowedPages: u.allowedPages || [] })}>Edit</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
+              <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
             )}
           </tbody>
         </table>
