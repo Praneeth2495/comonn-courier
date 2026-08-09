@@ -21,27 +21,31 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
-  const isStaff = user?.role === 'STAFF';
-  const isAccounts = user?.role === 'ACCOUNTS';
-  // Accounts users get Overview/Orders/Accounts/Inventory/Onboarding/Storage,
-  // same breadth as ADMIN on those specific pages, but never Scan, Print
-  // Label, Zones & Rates, Users, Merchants, or Customs Client.
-  const canSeeAccounts = isAdmin || isAccounts;
-  const canScan = isAdmin || isStaff;
+  // ADMIN always sees every page. STAFF/ACCOUNTS see exactly the pages an
+  // admin has individually granted them via User.allowedPages (Users
+  // panel) — everyone starts with a role-default set the first time
+  // they're promoted (see setUserRole on the backend), then admin can
+  // customize per person from there. Orders/Inventory/Overview/Profile are
+  // universal (not gated by allowedPages). "Users" and "Merchants" are
+  // hardcoded ADMIN-only in code and never appear here regardless of
+  // allowedPages — Merchants because merchant records carry live API
+  // keys, Users because granting it is equivalent to granting full
+  // role-management control.
+  const hasPage = (key) => isAdmin || !!user?.allowedPages?.includes(key);
 
   const TABS = [
     ['overview', 'Overview'],
     ['orders', 'Orders'],
-    ...(canSeeAccounts ? [['accounts', 'Accounts']] : []),
+    ...(hasPage('accounts') ? [['accounts', 'Accounts']] : []),
     ['inventory', 'Inventory'],
-    ...(canScan ? [['batchscan', 'Scan']] : []),
-    ...(canScan ? [['printlabel', 'Print Label']] : []),
-    ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
+    ...(hasPage('batchscan') ? [['batchscan', 'Scan']] : []),
+    ...(hasPage('printlabel') ? [['printlabel', 'Print Label']] : []),
+    ...(hasPage('rates') ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
-    ...(canSeeAccounts ? [['onboarding', 'Onboarding']] : []),
+    ...(hasPage('onboarding') ? [['onboarding', 'Onboarding']] : []),
     ...(isAdmin ? [['merchants', 'Merchants']] : []),
-    ...(isAdmin ? [['customsclients', 'Customs Client']] : []),
-    ...(canSeeAccounts ? [['storage', 'Storage']] : []),
+    ...(hasPage('customsclients') ? [['customsclients', 'Customs Client']] : []),
+    ...(hasPage('storage') ? [['storage', 'Storage']] : []),
     ['account', 'Profile'],
   ];
 
