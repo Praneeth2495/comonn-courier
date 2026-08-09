@@ -699,7 +699,7 @@ function OrdersPanel() {
         <div className="table-wrap">
           <div className={`t-row t-head orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''}`}>
             {tab === 'pickup' && <div></div>}
-            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' || tab === 'bookings' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}{tab === 'pickup' && <div>Driver</div>}
+            <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' || tab === 'bookings' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}{tab === 'pickup' && <div>Rider</div>}
           </div>
           {displayOrders.map((o) => (
             <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''} ${o.__overdue ? 'overdue' : o.status === 'PICKED_UP' ? 'picked-up' : ''}`} key={o.id}>
