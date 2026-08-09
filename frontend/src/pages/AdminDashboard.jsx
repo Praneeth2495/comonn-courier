@@ -887,7 +887,7 @@ function AccountsPanel() {
           {loading ? <LoadingLogo /> : (
             <div className="table-wrap">
               <div className="t-row t-head accounts-row">
-                <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>To Address</div><div>Paid / To pay</div>
+                <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>To Address</div><div>Paid / To pay</div><div>Comment</div>
               </div>
               {orders.map((o) => {
                 const { amountPaid, due } = paidAndDue(o);
@@ -905,6 +905,7 @@ function AccountsPanel() {
                         <div style={{ color: 'var(--slate)', fontSize: 12 }}>Credit ₹{Math.abs(due).toFixed(2)}</div>
                       ) : null}
                     </div>
+                    <div><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>View</button></div>
                   </div>
                 );
               })}
@@ -913,6 +914,7 @@ function AccountsPanel() {
           )}
 
           {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+          {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
         </>
       )}
 
