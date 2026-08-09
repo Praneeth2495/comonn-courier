@@ -689,7 +689,7 @@ function OrdersPanel() {
             {drivers.map((d) => <option key={d.id} value={d.id}>{d.fullName}{d.driverRegion ? ` (${d.driverRegion})` : ''}</option>)}
           </select>
           <button className="btn btn-primary btn-sm" disabled={!assignDriverId || assigning} onClick={sendToDriver}>
-            {assigning ? 'Sending…' : 'Send to driver'}
+            {assigning ? 'Sending…' : 'Send to rider'}
           </button>
           {drivers.length === 0 && <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>No driver accounts yet — create one from Users (set role to Driver).</span>}
         </div>
