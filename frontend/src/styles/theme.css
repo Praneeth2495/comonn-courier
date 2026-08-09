@@ -257,8 +257,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .news-card .more{font-size:12.5px;font-weight:700;color:var(--coral);margin-top:4px;}
 
 /* World operations dot-map (homepage hero) */
-.world-ops-map-wrap{margin-top:36px;max-width:480px;}
-.world-ops-map-wrap h4{color:#93A0C4;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;}
+.world-ops-map-wrap{margin-top:32px;max-width:640px;}
 .world-ops-map{width:100%;height:auto;display:block;overflow:visible;}
 .wom-dot{fill:rgba(255,255,255,.16);}
 .wom-arc{fill:none;stroke:var(--coral);stroke-width:.28;stroke-dasharray:1.6 1.8;opacity:.55;animation:wom-flow 24s linear infinite;}
