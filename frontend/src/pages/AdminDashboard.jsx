@@ -1373,12 +1373,43 @@ function UsersPanel() {
                 </td>
               </tr>
             ))}
-            {users.length === 0 && (
+            {internalUsers.length === 0 && (
               <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
+
+      {subTab === 'customers' && (
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th></tr></thead>
+          <tbody>
+            {customerUsers.map((u) => (
+              <tr key={u.id}>
+                <td>{u.fullName}</td>
+                <td>{u.email}</td>
+                <td>{u.phone || '—'}</td>
+                <td>{new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
+                <td>
+                  <select className="select" style={{ padding: '6px 8px', fontSize: 12.5 }} value={u.role} onChange={(e) => setRole(u.id, e.target.value)}>
+                    <option value="CUSTOMER">Customer</option>
+                    <option value="STAFF">Staff</option>
+                    <option value="ACCOUNTS">Accounts</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="DRIVER">Rider</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+            {customerUsers.length === 0 && (
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No customers yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      )}
 
       {editingStaffZones && (
         <StaffZoneModal
