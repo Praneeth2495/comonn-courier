@@ -577,7 +577,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .t-row.orders-detailed{min-width:820px;}
   .t-row.orders-detailed.with-actions{min-width:900px;}
   .t-row.orders-detailed.with-driver{min-width:960px;}
-  .t-row.accounts-row{min-width:720px;}
+  .t-row.accounts-row{min-width:780px;}
   .dash-toolbar{flex-direction:column;align-items:stretch;}
   .search-box{min-width:0;}
 }
