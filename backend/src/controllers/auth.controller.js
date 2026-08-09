@@ -75,7 +75,7 @@ async function login(req, res, next) {
     const token = signUserToken(user);
     res.json({
       token,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, allowedPages: user.allowedPages },
     });
   } catch (err) {
     next(err);
@@ -86,7 +86,7 @@ async function me(req, res, next) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: { id: true, email: true, fullName: true, phone: true, company: true, role: true, canViewOverviewBreakdown: true, createdAt: true },
+      select: { id: true, email: true, fullName: true, phone: true, company: true, role: true, canViewOverviewBreakdown: true, allowedPages: true, createdAt: true },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({ user });
