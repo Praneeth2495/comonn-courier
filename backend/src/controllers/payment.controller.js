@@ -373,4 +373,163 @@ async function confirmCashBooking(req, res, next) {
   }
 }
 
-module.exports = { createOrder, createCombinedOrder, confirmPayment, handleWebhook, getPaymentStatus, confirmCashBooking };
+// ------------------------------------------------------------
+// Balance top-up payments — for when staff edit an order that's already
+// been paid once (weight/qty/etc changed via "Edit order") and the price
+// goes up. Kept on a separate BalancePayment table rather than the 1:1
+// Payment record (see schema.prisma) so the original checkout payment
+// stays a clean, untouched record, and an order can be topped up more
+// than once over time.
+
+/** Sum of every SUCCEEDED payment on an order — original + every top-up. Caller must include `payment` and `balancePayments`. */
+function totalPaidForOrder(order) {
+  const original = order.payment?.status === 'SUCCEEDED' ? Number(order.payment.amount) : 0;
+  const topUps = (order.balancePayments || [])
+    .filter((p) => p.status === 'SUCCEEDED')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  return round2(original + topUps);
+}
+
+/**
+ * POST /api/payments/:orderId/balance-order — same public, order-id-scoped
+ * trust model as createOrder/getOrderForPayment: reachable by staff
+ * (initiating from the admin Payment page) or the customer themselves via
+ * a shared /pay/:orderId link. Not gated by PAYABLE_STATUSES — that's only
+ * for an order's first payment; this fires whenever there's a genuine
+ * balance due, regardless of how far the order has otherwise progressed.
+ */
+async function createBalanceOrder(req, res, next) {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.orderId },
+      include: { payment: true, balancePayments: true },
+    });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const amountPaid = totalPaidForOrder(order);
+    const balance = round2(Number(order.grandTotal) - amountPaid);
+    if (balance <= 0) return res.status(409).json({ error: 'No balance due on this order.' });
+
+    // Reuse an existing unpaid top-up for this exact amount rather than
+    // creating duplicates (same idea as createOrder above).
+    const existing = order.balancePayments.find((p) => p.status === 'REQUIRES_PAYMENT' && Number(p.amount) === balance);
+    if (existing) {
+      return res.json({ payment: existing, keyId: process.env.RAZORPAY_KEY_ID, balance });
+    }
+
+    const rzpOrder = await createRazorpayOrder({
+      amount: balance,
+      currency: order.currency,
+      orderId: order.id,
+      orderNumber: `${order.orderNumber}-BAL`,
+    });
+
+    const balancePayment = await prisma.balancePayment.create({
+      data: { orderId: order.id, providerOrderId: rzpOrder.id, amount: balance, currency: order.currency, status: 'REQUIRES_PAYMENT' },
+    });
+
+    res.json({ payment: balancePayment, keyId: process.env.RAZORPAY_KEY_ID, balance });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** Idempotent — shared by confirmBalancePayment and the webhook's BalancePayment branch. */
+async function markBalancePaymentByProviderOrderId(providerOrderId, extra = {}) {
+  const balancePayment = await prisma.balancePayment.findUnique({ where: { providerOrderId } });
+  if (!balancePayment || balancePayment.status === 'SUCCEEDED') return;
+
+  await prisma.balancePayment.update({
+    where: { id: balancePayment.id },
+    data: { status: 'SUCCEEDED', ...extra },
+  });
+
+  const order = await prisma.order.findUnique({
+    where: { id: balancePayment.orderId },
+    include: { payment: true, balancePayments: true },
+  });
+  const amountPaid = totalPaidForOrder(order);
+  const balance = round2(Number(order.grandTotal) - amountPaid);
+  await prisma.orderComment.create({
+    data: {
+      orderId: order.id,
+      // System-generated — no human author for an automated online payment.
+      authorId: order.userId || balancePayment.orderId, // placeholder overwritten just below if no real author is available
+      body: `Additional payment of ₹${Number(balancePayment.amount).toFixed(2)} received online (Razorpay).${balance > 0 ? ` ₹${balance.toFixed(2)} still due.` : ' Order now fully settled.'}`,
+    },
+  }).catch(() => {}); // best-effort — a missing/invalid authorId shouldn't block the payment itself from being recorded
+}
+
+/** POST /api/payments/:orderId/balance-confirm — same signature-verification pattern as confirmPayment. */
+async function confirmBalancePayment(req, res, next) {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ error: 'Missing Razorpay payment fields' });
+    }
+    const valid = verifyPaymentSignature({ razorpay_order_id, razorpay_payment_id, razorpay_signature });
+    if (!valid) return res.status(400).json({ error: 'Invalid payment signature' });
+
+    const balancePayment = await prisma.balancePayment.findFirst({ where: { orderId: req.params.orderId, providerOrderId: razorpay_order_id } });
+    if (!balancePayment) return res.status(404).json({ error: 'No matching balance payment found for this order' });
+
+    if (balancePayment.status !== 'SUCCEEDED') {
+      await markBalancePaymentByProviderOrderId(razorpay_order_id, { providerPaymentId: razorpay_payment_id, method: 'razorpay' });
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/payments/:orderId/balance-manual — ADMIN/STAFF only. Records a
+ * balance collected outside Razorpay (staff took a phone call, customer
+ * paid by UPI/bank transfer directly, cash, etc). No signature to verify
+ * here — the record just is what staff say it is, same trust level as
+ * manually setting an order to PAID via the status dropdown.
+ */
+async function markBalancePaymentManual(req, res, next) {
+  try {
+    const { method } = req.body;
+    if (!method?.trim()) return res.status(400).json({ error: 'method is required (e.g. "Phone/UPI", "Bank transfer", "Cash")' });
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.orderId },
+      include: { payment: true, balancePayments: true },
+    });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const amountPaid = totalPaidForOrder(order);
+    const balance = round2(Number(order.grandTotal) - amountPaid);
+    if (balance <= 0) return res.status(409).json({ error: 'No balance due on this order.' });
+
+    await prisma.balancePayment.create({
+      data: { orderId: order.id, provider: 'manual', amount: balance, currency: order.currency, status: 'SUCCEEDED', method: method.trim() },
+    });
+    await prisma.orderComment.create({
+      data: {
+        orderId: order.id,
+        authorId: req.user.id,
+        body: `Additional payment of ₹${balance.toFixed(2)} recorded as received via ${method.trim()}. Order now fully settled.`,
+      },
+    });
+
+    res.json({ ok: true, amountCollected: balance });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  createOrder,
+  createCombinedOrder,
+  confirmPayment,
+  handleWebhook,
+  getPaymentStatus,
+  confirmCashBooking,
+  createBalanceOrder,
+  confirmBalancePayment,
+  markBalancePaymentManual,
+  totalPaidForOrder,
+};
