@@ -5,7 +5,7 @@ const { generateOrderNumber } = require('../utils/orderNumber');
 const { generateInvoiceNumber } = require('../utils/invoiceNumber');
 const { WARRANTY_TIERS, FLAT_ADDONS, warrantyLabel } = require('../services/addonCatalog');
 const { sendEmail } = require('../services/emailService');
-const { sendReceiverBookingNotification } = require('./label.controller');
+const { sendReceiverBookingNotification, regenerateInvoiceIfExists } = require('./label.controller');
 const { ensureCustomerAccount, issuePasswordSetToken } = require('../services/accountProvisioning');
 const { notifyOrderStatusChange } = require('../services/orderNotifications');
 
