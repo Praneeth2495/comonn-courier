@@ -279,6 +279,17 @@ async function handleWebhook(req, res, next) {
         // payment this same webhook now needs to cover.
         const boxPayment = await prisma.boxPayment.findUnique({ where: { providerOrderId: entity.order_id } });
         if (boxPayment) await markBoxBookingPaid(entity.order_id, entity.id);
+        // Same additive-branch pattern for an order-balance top-up (see
+        // createBalanceOrder) — providerOrderId is globally unique, so
+        // this never collides with the lookups above.
+        const balancePayment = await prisma.balancePayment.findUnique({ where: { providerOrderId: entity.order_id } });
+        if (balancePayment) {
+          await markBalancePaymentByProviderOrderId(entity.order_id, {
+            providerPaymentId: entity.id,
+            rawWebhookPayload: event,
+            method: entity.method,
+          });
+        }
       }
     }
 
