@@ -289,6 +289,11 @@ const ORDER_TABS = [
   ['manifest', 'Manifest'],
 ];
 
+// How many pickup orders to fetch in one request — effectively "all of
+// them" for this tab, so the due-date bucket counts/filter (below) are
+// accurate across every matching order, not just one server-paginated page.
+const PICKUP_FETCH_ALL_SIZE = 2000;
+
 // Reshapes a fetched order back into the same quoteInput/selectedQuote shape
 // the booking flow (Quote/Details/Payment) already knows how to hydrate from,
 // so "Edit order" can reuse that flow instead of a separate edit UI.
