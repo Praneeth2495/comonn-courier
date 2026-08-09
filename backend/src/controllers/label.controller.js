@@ -139,6 +139,22 @@ async function ensureInvoice(order) {
   return prisma.invoice.create({ data: { orderId: order.id, fileUrl: fileName } });
 }
 
+/**
+ * Forces the invoice PDF to be regenerated with the order's current
+ * pricing, if one already exists — called from updateOrderDetails
+ * (order.controller.js) after a staff edit changes an already-invoiced
+ * order's price. Unlike ensureInvoice, this doesn't check whether the file
+ * is missing first — the DB row's fileUrl/filename stay the same
+ * (deterministic, keyed by orderNumber), only the PDF content changes, so
+ * no new Invoice row or fileUrl is needed.
+ */
+async function regenerateInvoiceIfExists(order) {
+  const existing = await prisma.invoice.findUnique({ where: { orderId: order.id } });
+  if (!existing) return null;
+  await generateInvoicePdf(order);
+  return existing;
+}
+
 // One "package" entry per unit of quantity, across all items — same order
 // every time (derived purely from order.items), so package N always maps
 // to the same label regardless of when it's (re)computed.
