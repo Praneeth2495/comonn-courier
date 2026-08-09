@@ -45,7 +45,7 @@ router.patch('/:id/addons', optionalAuth, updateAddons);
 router.post('/:id/send-otp', otpLimiter, optionalAuth, sendOtp);
 router.post('/:id/verify-otp', otpLimiter, optionalAuth, verifyOtp);
 router.post('/:id/promo', optionalAuth, applyPromo);
-router.post('/:id/send-payment-link-email', otpLimiter, requireAuth, requireRole('ADMIN', 'STAFF'), sendPaymentLinkEmail);
+router.post('/:id/send-payment-link-email', otpLimiter, requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), sendPaymentLinkEmail);
 // Public, order-id-scoped (see issuePasswordSetLink) — lets the just-finished
 // Labels page send a guest straight into "create password" without an
 // email round-trip.
