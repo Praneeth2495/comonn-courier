@@ -66,7 +66,7 @@ export default function PartyInvoicesPanel({ direction }) {
                   <td className="mono">{inv.invoiceNumber}</td>
                   <td>{inv.partyName}{inv.businessName ? <span style={{ color: 'var(--slate-light)' }}> · {inv.businessName}</span> : null}</td>
                   <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
-                  <td>{new Date(inv.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td>{new Date(inv.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
                   <td>{RECURRENCE_LABELS[inv.recurrence] || '—'}</td>
                   <td>{statusPill(inv)}</td>
                   <td><button className="btn btn-outline btn-sm" onClick={() => setSelectedId(inv.id)}>View</button></td>
@@ -290,9 +290,9 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0', flexWrap: 'wrap' }}>
               {statusPill(invoice)}
               <span style={{ fontFamily: 'IBM Plex Mono', fontWeight: 700 }}>₹{Number(invoice.totalAmount).toFixed(2)}</span>
-              <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Due {new Date(invoice.dueDate).toLocaleDateString('en-IN')}</span>
+              <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Due {new Date(invoice.dueDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
               {invoice.status === 'PAID' && invoice.paidAt && (
-                <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Paid {new Date(invoice.paidAt).toLocaleDateString('en-IN')}</span>
+                <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Paid {new Date(invoice.paidAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
               )}
             </div>
 
@@ -337,7 +337,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
                   <div className="comment-item" key={c.id}>
                     <div className="meta">
                       <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
-                      <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</span>
                     </div>
                     <p className="body">{c.body}</p>
                   </div>
