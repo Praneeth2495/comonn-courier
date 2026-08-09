@@ -747,6 +747,18 @@ async function updateOrderDetails(req, res, next) {
 
     const updated = await recomputeOrderTotals(order.id);
 
+    // The invoice PDF (if this order already has one) was generated with
+    // the pre-edit pricing — ensureInvoice (label.controller.js) only ever
+    // regenerates when the file is missing from disk, not when the price
+    // has simply changed, so it needs to be forced here.
+    if (previousTotal !== Number(updated.grandTotal)) {
+      const fullOrder = await prisma.order.findUnique({
+        where: { id: order.id },
+        include: { senderAddress: true, receiverAddress: true, service: true, addons: true, payment: true },
+      });
+      await regenerateInvoiceIfExists(fullOrder);
+    }
+
     const amountPaid = totalPaidForOrder(order);
     const balance = round2(Number(updated.grandTotal) - amountPaid);
 
