@@ -391,15 +391,22 @@ async function getOrder(req, res, next) {
  * Deliberately much narrower than the staff-only GET /:id: only ever
  * returns an order that's still awaiting payment, so the link stops
  * working once it's been paid, cancelled, or otherwise moved on — nothing
- * sensitive to leak via a guessed/expired link.
+ * sensitive to leak via a guessed/expired link. Also serves an order past
+ * its first payment if it now has a genuine balance due (staff edited it
+ * after it was already paid — see BalancePayment) so the same shareable
+ * link keeps working for a top-up, not just the original checkout.
  */
 async function getOrderForPayment(req, res, next) {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { service: true, senderAddress: true, receiverAddress: true, items: true, addons: true, payment: true },
+      include: { service: true, senderAddress: true, receiverAddress: true, items: true, addons: true, payment: true, balancePayments: true },
     });
-    if (!order || !PAYABLE_STATUSES.includes(order.status)) {
+    if (!order) return res.status(404).json({ error: 'This payment link is no longer valid.' });
+
+    const awaitingFirstPayment = PAYABLE_STATUSES.includes(order.status);
+    const balanceDue = !awaitingFirstPayment && round2(Number(order.grandTotal) - totalPaidForOrder(order)) > 0;
+    if (!awaitingFirstPayment && !balanceDue) {
       return res.status(404).json({ error: 'This payment link is no longer valid.' });
     }
     res.json({ order });
