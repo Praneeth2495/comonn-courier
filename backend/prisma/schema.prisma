@@ -906,6 +906,35 @@ model Payment {
   updatedAt         DateTime      @updatedAt
 }
 
+// An additional charge collected after an order was already paid once —
+// staff edited weight/qty/etc via "Edit order" and the price went up.
+// Deliberately its own table rather than overwriting Payment (which stays
+// a clean 1:1 record of the order's original checkout) or relaxing
+// Payment.orderId's uniqueness — keeps every top-up as its own auditable
+// transaction, and an order can have more than one over time if it's
+// edited again later. `method` distinguishes "razorpay" (customer paid
+// online, same Checkout.js flow as the original payment) from "manual"
+// (staff recorded it as collected by phone call/UPI/bank transfer — see
+// markBalancePaymentManual, payment.controller.js).
+model BalancePayment {
+  id                String        @id @default(uuid())
+  orderId           String
+  order             Order         @relation(fields: [orderId], references: [id])
+  provider          String        @default("razorpay") // "razorpay" | "manual"
+  providerOrderId   String?       @unique // Razorpay Order id — null for a manual entry
+  providerPaymentId String?
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(REQUIRES_PAYMENT)
+  method            String? // "card" | "Phone/UPI" | "Bank transfer" | "Cash" | ...
+  recordedById      String? // ADMIN/STAFF who logged a manual entry — null for online payments
+  rawWebhookPayload Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([orderId])
+}
+
 // ------------------------------------------------------------
 // Labels
 // ------------------------------------------------------------
