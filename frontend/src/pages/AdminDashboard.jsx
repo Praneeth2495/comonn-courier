@@ -408,6 +408,7 @@ function OrdersPanel() {
 
   function toggleDueBucket(bucket) {
     setDueBucket((prev) => (prev === bucket ? '' : bucket));
+    setPage(1);
   }
   const navigate = useNavigate();
   const { setBooking } = useBooking();
