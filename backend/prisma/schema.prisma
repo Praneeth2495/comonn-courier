@@ -28,11 +28,11 @@ enum Role {
   ADMIN
   STAFF
   DRIVER
-  // Restricted admin-panel access: Overview, Orders, Accounts (incl.
-  // Receivable/Payable sub-tabs), Inventory, Onboarding, Storage only —
-  // not Users, Zones & Rates, Merchants, Customs Client, Scan, or Print
-  // Label. Unlike STAFF, not scoped down to assigned regions/zones — sees
-  // every order, same unrestricted visibility as ADMIN, just fewer pages.
+  // Restricted admin-panel access — exactly which pages beyond the
+  // universal Overview/Orders/Inventory/Profile are visible is per-user,
+  // see User.allowedPages. Unlike STAFF, not scoped down to assigned
+  // regions/zones — sees every order, same unrestricted visibility as
+  // ADMIN, just fewer pages by default.
   ACCOUNTS
 }
 
