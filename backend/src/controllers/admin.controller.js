@@ -543,7 +543,10 @@ async function listDrivers(req, res, next) {
 
 async function setUserRole(req, res, next) {
   try {
-    const { role, isActive, driverRegion, canViewOverviewBreakdown } = req.body;
+    const { role, isActive, driverRegion, canViewOverviewBreakdown, allowedPages } = req.body;
+    if (allowedPages !== undefined && (!Array.isArray(allowedPages) || allowedPages.some((p) => !PAGE_KEYS.includes(p)))) {
+      return res.status(400).json({ error: 'allowedPages must be an array of valid page keys' });
+    }
     const user = await prisma.user.update({
       where: { id: req.params.id },
       data: {
@@ -551,6 +554,7 @@ async function setUserRole(req, res, next) {
         isActive,
         driverRegion: driverRegion === undefined ? undefined : (driverRegion.trim() || null),
         canViewOverviewBreakdown,
+        allowedPages,
       },
     });
 
