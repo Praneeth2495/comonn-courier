@@ -888,7 +888,11 @@ async function verifyOtp(req, res, next) {
 // cards on a paper background) — just an order summary and a pay button,
 // since by the time staff send this the customer has nothing left to fill
 // in (DG ack/add-ons/email verification are already done).
-function renderPaymentLinkEmailHtml(order, link) {
+// `balance` is only passed for a top-up (an already-paid order whose price
+// went up after a staff edit) — shows "Balance due: ₹X" instead of the
+// full order total, so the customer isn't misled into thinking they owe
+// the whole amount again.
+function renderPaymentLinkEmailHtml(order, link, balance = null) {
   const itemRows = order.items
     .map(
       (it) =>
@@ -905,12 +909,13 @@ function renderPaymentLinkEmailHtml(order, link) {
       <div style="background:#fff;border-radius:14px;padding:22px;border:1px solid #E7E3DA;">
         <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
           <tr>
-            <td style="font-size:17px;font-weight:700;color:#171C2C;">Ready for payment</td>
+            <td style="font-size:17px;font-weight:700;color:#171C2C;">${balance !== null ? 'Additional payment needed' : 'Ready for payment'}</td>
             <td style="text-align:right;">
               <span style="background:#EAF0FF;color:#2451FF;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">Order ${order.orderNumber}</span>
             </td>
           </tr>
         </table>
+        ${balance !== null ? `<p style="font-size:13px;color:#5B6478;margin:0 0 14px;">Your shipment's details were updated, which changed the price. Here's what's still due:</p>` : ''}
         <table style="width:100%;border-collapse:collapse;border-top:1px dashed #E7E3DA;padding-top:10px;">
           <thead><tr style="text-align:left;color:#8A93A6;font-size:11px;text-transform:uppercase;">
             <th style="padding:8px 10px 6px;">Item</th><th style="padding:8px 10px 6px;">Weight</th>
