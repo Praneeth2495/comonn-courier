@@ -399,8 +399,16 @@ export default function Payment() {
           await client.post(`/payments/${order.id}/balance-confirm`, response);
           const succeeded = await pollForBalanceSuccess(checkoutData.payment.providerOrderId);
           if (succeeded) {
-            const { data } = await client.get(`/orders/${order.id}`).catch(() => ({ data: null }));
-            if (data?.order) setOrder(data.order);
+            try {
+              const { data } = await client.get(`/orders/${order.id}`);
+              setOrder({ ...order, ...data.order });
+            } catch {
+              // Guest paying via a shared /pay/:orderId link has no token
+              // — GET /orders/:id 401s. pollForBalanceSuccess already
+              // confirmed the payment server-side via the guest-accessible
+              // balance-status endpoint, so merge locally instead.
+              setOrder({ ...order, balancePayments: [...(order.balancePayments || []), { status: 'SUCCEEDED', amount: checkoutData.balance }] });
+            }
             setBalanceJustSettled(true);
           } else {
             setBalanceError('Payment is processing — refresh in a moment to confirm.');
