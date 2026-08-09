@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, requirePage } = require('../middleware/auth');
 const {
   listBoxSizes,
   createBooking,
