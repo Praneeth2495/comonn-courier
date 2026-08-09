@@ -47,6 +47,12 @@ app.use(morgan('dev'));
 // be mounted BEFORE express.json() and must not be JSON-parsed.
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), handleWebhook);
 
+// Meta WhatsApp Cloud API webhook — GET is Meta's one-time verification
+// handshake (query params only, no body); POST delivers events and needs
+// the RAW body for signature verification, same reasoning as Razorpay above.
+app.get('/api/whatsapp/webhook', verifyWhatsappWebhook);
+app.post('/api/whatsapp/webhook', express.raw({ type: 'application/json' }), handleWhatsappWebhook);
+
 app.use(express.json({ limit: '2mb' }));
 
 // Basic rate limiting on the public quote endpoint to prevent scraping/abuse
