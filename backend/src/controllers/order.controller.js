@@ -316,14 +316,18 @@ async function getOrdersSummary(req, res, next) {
     const where = await buildOrdersWhere(req);
     const orders = await prisma.order.findMany({
       where,
-      select: { grandTotal: true, payment: { select: { status: true, amount: true } } },
+      select: {
+        grandTotal: true,
+        payment: { select: { status: true, amount: true } },
+        balancePayments: { select: { status: true, amount: true } },
+      },
     });
 
     let totalPaid = 0;
     let totalDue = 0;
     let totalCredit = 0;
     for (const o of orders) {
-      const paid = o.payment?.status === 'SUCCEEDED' ? Number(o.payment.amount) : 0;
+      const paid = totalPaidForOrder(o);
       const due = round2(Number(o.grandTotal) - paid);
       totalPaid += paid;
       if (due > 0) totalDue += due;
