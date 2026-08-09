@@ -180,6 +180,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .hero{background:linear-gradient(180deg,var(--navy) 0%, var(--navy-2) 100%);position:relative;overflow:hidden;}
 .hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 15% 20%, rgba(255,255,255,.05) 0, transparent 40%), radial-gradient(circle at 85% 80%, rgba(255,90,54,.12) 0, transparent 45%);pointer-events:none;}
 .hero-row{max-width:1240px;margin:0 auto;padding:64px 32px 88px;display:grid;grid-template-columns:1fr 460px;gap:56px;align-items:start;position:relative;}
+.hero-copy{padding-top:30px;}
 .hero-copy .eyebrow{color:#FF9478;}
 .hero-copy h1{color:#fff;font-size:46px;line-height:1.1;font-weight:700;}
 .hero-copy h1 .hl{color:var(--coral);}
