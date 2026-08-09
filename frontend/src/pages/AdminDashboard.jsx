@@ -1241,6 +1241,12 @@ function UsersPanel() {
     setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
   }
 
+  async function savePageAccess(userId, allowedPages) {
+    const { data } = await client.patch(`/admin/users/${userId}`, { allowedPages });
+    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
+    setEditingPageAccess(null);
+  }
+
   async function saveZones(userId, zoneIds) {
     const { data } = await client.put(`/admin/staff-zones/${userId}`, { zoneIds });
     setStaffZones((prev) => ({ ...prev, [userId]: data.zones }));
