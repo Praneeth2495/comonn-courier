@@ -927,7 +927,8 @@ model BalancePayment {
   currency          String        @default("INR")
   status            PaymentStatus @default(REQUIRES_PAYMENT)
   method            String? // "card" | "Phone/UPI" | "Bank transfer" | "Cash" | ...
-  recordedById      String? // ADMIN/STAFF who logged a manual entry — null for online payments
+  // Who logged a manual entry is recorded via the OrderComment created
+  // alongside it (see markBalancePaymentManual) rather than a field here.
   rawWebhookPayload Json?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
