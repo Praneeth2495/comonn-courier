@@ -1,6 +1,15 @@
 const router = require('express').Router();
-const { optionalAuth } = require('../middleware/auth');
-const { createOrder, createCombinedOrder, confirmPayment, getPaymentStatus, confirmCashBooking } = require('../controllers/payment.controller');
+const { optionalAuth, requireAuth, requireRole } = require('../middleware/auth');
+const {
+  createOrder,
+  createCombinedOrder,
+  confirmPayment,
+  getPaymentStatus,
+  confirmCashBooking,
+  createBalanceOrder,
+  confirmBalancePayment,
+  markBalancePaymentManual,
+} = require('../controllers/payment.controller');
 
 // NOTE: the webhook route is mounted separately in src/index.js because it
 // needs the raw request body (Razorpay signature verification requirement).
