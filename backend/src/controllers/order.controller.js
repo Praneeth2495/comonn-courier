@@ -928,7 +928,8 @@ function renderPaymentLinkEmailHtml(order, link, balance = null) {
         <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;"><span>${order.service?.name || 'Shipping'} (incl. GST)</span><span>₹${(Number(order.baseFreight) + Number(order.surchargesTotal)).toFixed(2)}</span></div>
         ${addonRows}
         ${Number(order.discountTotal) > 0 ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:#1E8E3E;"><span>Discount${order.promoCode ? ` (${order.promoCode})` : ''}</span><span>−₹${Number(order.discountTotal).toFixed(2)}</span></div>` : ''}
-        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:10px 0 0;margin-top:8px;border-top:1px dashed #E7E3DA;"><span>Total</span><span>₹${Number(order.grandTotal).toFixed(2)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;color:#8A93A6;"><span>Order total</span><span>₹${Number(order.grandTotal).toFixed(2)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:10px 0 0;margin-top:8px;border-top:1px dashed #E7E3DA;"><span>${balance !== null ? 'Balance due' : 'Total'}</span><span>₹${(balance !== null ? balance : Number(order.grandTotal)).toFixed(2)}</span></div>
       </div>
 
       <a href="${link}" style="display:block;text-align:center;margin-top:18px;background:#FF5A36;color:#fff;text-decoration:none;font-weight:700;padding:14px;border-radius:10px;font-size:15px;">Complete payment →</a>
