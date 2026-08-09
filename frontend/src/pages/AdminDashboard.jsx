@@ -795,6 +795,7 @@ function AccountsPanel() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
   const [detailOrder, setDetailOrder] = useState(null);
+  const [commentOrder, setCommentOrder] = useState(null);
   const now = useState(() => new Date())[0];
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
   const [toDate, setToDate] = useState(isoDate(monthEnd(now)));
