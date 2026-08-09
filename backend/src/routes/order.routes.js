@@ -36,8 +36,8 @@ router.get('/:id/pay', getOrderForPayment);
 router.post('/:id/cancel', requireAuth, cancelOrder);
 router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), updateOrderStatus);
 router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), assignDriver);
-router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), listOrderComments);
-router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), addOrderComment);
+router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders', 'accounts'), listOrderComments);
+router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders', 'accounts'), addOrderComment);
 
 // Payment-page pre-payment steps — guest checkout allowed
 router.patch('/:id/details', optionalAuth, updateOrderDetails);
