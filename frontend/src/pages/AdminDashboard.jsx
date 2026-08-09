@@ -1269,14 +1269,24 @@ function UsersPanel() {
     return r.region ? `${r.state} · ${r.region}` : `${r.state} (all)`;
   }
 
+  const internalUsers = users.filter((u) => u.role !== 'CUSTOMER');
+  const customerUsers = users.filter((u) => u.role === 'CUSTOMER');
+
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Users</h1>
+
+      <div className="dash-tabs" style={{ marginBottom: 16 }}>
+        <button className={`dash-tab ${subTab === 'internal' ? 'active' : ''}`} onClick={() => setSubTab('internal')}>Admin / Staff / Accounts / Rider</button>
+        <button className={`dash-tab ${subTab === 'customers' ? 'active' : ''}`} onClick={() => setSubTab('customers')}>Customers</button>
+      </div>
+
+      {subTab === 'internal' && (
       <div className="table-wrap">
         <table className="data-table">
           <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Rider region</th><th>Delivery zones</th><th>Pickup states/regions</th><th>Overview access</th><th>Page access</th></tr></thead>
           <tbody>
-            {users.map((u) => (
+            {internalUsers.map((u) => (
               <tr key={u.id}>
                 <td>{u.fullName}</td>
                 <td>{u.email}</td>
