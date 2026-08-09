@@ -51,7 +51,7 @@ export default function DriverDashboard() {
         <button className="app-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close menu">✕</button>
         <div className="brand">
           <img className="logo-img lg" src={logoFooter} alt="Comonn" />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>Driver</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>Rider</span>
         </div>
         <button className={`app-navlink ${tab === 'jobs' ? 'active' : ''}`} onClick={() => selectTab('jobs')}>My Jobs</button>
         <button className={`app-navlink ${tab === 'batchscan' ? 'active' : ''}`} onClick={() => selectTab('batchscan')}>Scan</button>
