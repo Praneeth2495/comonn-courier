@@ -480,8 +480,8 @@ function BookingDetailModal({ booking, onClose }) {
           <Row label="Address" value={booking.boxAddress || '—'} />
           <Row label="Days" value={booking.days} />
           <Row label="Amount" value={`₹${Number(booking.totalAmount).toFixed(2)}`} />
-          <Row label="Started" value={booking.startDate ? new Date(booking.startDate).toLocaleDateString('en-IN') : '—'} />
-          <Row label="Ends" value={booking.endDate ? new Date(booking.endDate).toLocaleDateString('en-IN') : '—'} />
+          <Row label="Started" value={booking.startDate ? new Date(booking.startDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : '—'} />
+          <Row label="Ends" value={booking.endDate ? new Date(booking.endDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : '—'} />
           <Row label="Invoice #" value={booking.invoiceNumber || '—'} />
           <Row label="Status" value={booking.status} />
         </div>
