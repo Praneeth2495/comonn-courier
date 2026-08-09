@@ -1255,6 +1255,7 @@ function UsersPanel() {
                   <select className="select" style={{ padding: '6px 8px', fontSize: 12.5 }} value={u.role} onChange={(e) => setRole(u.id, e.target.value)}>
                     <option value="CUSTOMER">Customer</option>
                     <option value="STAFF">Staff</option>
+                    <option value="ACCOUNTS">Accounts</option>
                     <option value="ADMIN">Admin</option>
                     <option value="DRIVER">Driver</option>
                   </select>
