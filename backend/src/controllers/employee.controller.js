@@ -123,7 +123,7 @@ async function createEmployee(req, res, next) {
           html: `
             <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
               <h2 style="color:#0E1B3D;margin-bottom:8px;">Welcome to Comonn, ${user.fullName}!</h2>
-              <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">An account has been created for you as ${role === 'DRIVER' ? 'a driver' : 'a staff member'}. Click below to set your password and get started.</p>
+              <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">An account has been created for you as ${role === 'DRIVER' ? 'a rider' : 'a staff member'}. Click below to set your password and get started.</p>
               <p style="margin:22px 0;"><a href="${passwordSetUrl(rawToken)}" style="background:#FF5A36;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Set up my password →</a></p>
               <p style="font-size:12px;color:#8A93A6;">This link expires in 24 hours.</p>
             </div>
