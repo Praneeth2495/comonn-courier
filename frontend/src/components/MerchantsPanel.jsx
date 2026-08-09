@@ -48,7 +48,7 @@ export default function MerchantsPanel() {
                   <td>{m.contactEmail}</td>
                   <td className="mono">{m.apiKeyPrefix}…</td>
                   <td>{m.isActive ? <span className="pill pill-success">Active</span> : <span className="pill pill-danger">Inactive</span>}</td>
-                  <td>{new Date(m.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td>{new Date(m.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
                   <td><button className="btn btn-outline btn-sm" onClick={() => setSelectedId(m.id)}>View</button></td>
                 </tr>
               ))}
@@ -196,7 +196,7 @@ function MerchantDetailModal({ merchantId, onClose, onOpenInvoice, onChanged }) 
                   <tbody>
                     {invoices.map((inv) => (
                       <tr key={inv.id}>
-                        <td>{new Date(inv.invoiceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                        <td>{new Date(inv.invoiceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
                         <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
                         <td>{statusPill(inv)}</td>
                         <td><button className="btn btn-outline btn-sm" onClick={() => onOpenInvoice(inv.id)}>View</button></td>
@@ -272,7 +272,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
           <>
             <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
               <div>
-                <h3 style={{ fontSize: 17 }}>Invoice — {new Date(invoice.invoiceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</h3>
+                <h3 style={{ fontSize: 17 }}>Invoice — {new Date(invoice.invoiceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{invoice.merchant?.name}</p>
               </div>
               <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
@@ -282,7 +282,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
               {statusPill(invoice)}
               <span style={{ fontFamily: 'IBM Plex Mono', fontWeight: 700 }}>₹{Number(invoice.totalAmount).toFixed(2)}</span>
               {invoice.status === 'PAID' && invoice.paidAt && (
-                <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Paid {new Date(invoice.paidAt).toLocaleDateString('en-IN')} via {invoice.paymentMethod === 'bank_transfer' ? 'bank transfer' : 'payment link'}</span>
+                <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Paid {new Date(invoice.paidAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })} via {invoice.paymentMethod === 'bank_transfer' ? 'bank transfer' : 'payment link'}</span>
               )}
             </div>
 
@@ -320,7 +320,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
                   <div className="comment-item" key={c.id}>
                     <div className="meta">
                       <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
-                      <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</span>
                     </div>
                     <p className="body">{c.body}</p>
                   </div>
