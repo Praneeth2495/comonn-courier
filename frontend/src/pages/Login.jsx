@@ -20,7 +20,11 @@ export default function Login() {
     try {
       const user = await login(email, password);
       navigate(
-        user.role === 'ADMIN' || user.role === 'STAFF' ? '/admin' : user.role === 'DRIVER' ? '/driver' : '/dashboard'
+        user.role === 'ADMIN' || user.role === 'STAFF' || user.role === 'ACCOUNTS'
+          ? '/admin'
+          : user.role === 'DRIVER'
+          ? '/driver'
+          : '/dashboard'
       );
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
