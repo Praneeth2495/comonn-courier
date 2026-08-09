@@ -114,7 +114,7 @@ function GuestMenu() {
 
 // Where "Dashboard" in the header should go for a logged-in user, by role.
 function dashboardPath(role) {
-  if (role === 'ADMIN' || role === 'STAFF') return '/admin';
+  if (role === 'ADMIN' || role === 'STAFF' || role === 'ACCOUNTS') return '/admin';
   if (role === 'DRIVER') return '/driver';
   return '/dashboard';
 }
