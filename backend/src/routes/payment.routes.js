@@ -22,4 +22,13 @@ router.post('/:orderId/confirm', optionalAuth, confirmPayment);
 router.post('/:orderId/cash', optionalAuth, confirmCashBooking);
 router.get('/:orderId', optionalAuth, getPaymentStatus);
 
+// Balance top-up (an already-paid order's price went up after a staff
+// edit). Same order-id-scoped trust model as the routes above for the
+// order/confirm pair — reachable by staff or the customer via a shared
+// /pay/:orderId link. The manual (phone/UPI/bank transfer) entry point is
+// staff-only, since it's staff asserting cash/transfer was received.
+router.post('/:orderId/balance-order', optionalAuth, createBalanceOrder);
+router.post('/:orderId/balance-confirm', optionalAuth, confirmBalancePayment);
+router.post('/:orderId/balance-manual', requireAuth, requireRole('ADMIN', 'STAFF'), markBalancePaymentManual);
+
 module.exports = router;
