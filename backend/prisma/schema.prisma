@@ -63,6 +63,17 @@ model User {
   // region-scoped stats (see StaffRegionAssignment). Meaningless for ADMIN,
   // who already sees everything regardless of this flag.
   canViewOverviewBreakdown Boolean @default(false)
+  // STAFF/ACCOUNTS-only, granted individually by ADMIN via the Users panel:
+  // which admin-panel pages (beyond the universal Overview/Orders/
+  // Inventory/Profile) this specific user can see and act on, independent
+  // of their role's own default set — e.g. one STAFF user can be given
+  // Onboarding access without changing it for every other STAFF account.
+  // Values are page keys from backend/src/constants/pages.js. Meaningless
+  // for ADMIN (always sees every page) and DRIVER (has its own fixed
+  // dashboard, unrelated to this list). The "Users" page is deliberately
+  // never toggleable here — granting it is equivalent to granting full
+  // role-management control, so it stays ADMIN-only in code.
+  allowedPages             String[] @default([])
 
   addresses               Address[]
   orders                  Order[]
