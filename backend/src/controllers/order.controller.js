@@ -369,6 +369,7 @@ async function getOrder(req, res, next) {
         senderAddress: true,
         receiverAddress: true,
         payment: true,
+        balancePayments: true,
         labels: true,
         items: true,
         addons: true,
