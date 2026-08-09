@@ -1257,7 +1257,7 @@ function UsersPanel() {
                     <option value="STAFF">Staff</option>
                     <option value="ACCOUNTS">Accounts</option>
                     <option value="ADMIN">Admin</option>
-                    <option value="DRIVER">Driver</option>
+                    <option value="DRIVER">Rider</option>
                   </select>
                 </td>
                 <td>
