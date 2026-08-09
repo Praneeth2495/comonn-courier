@@ -1,8 +1,9 @@
 const router = require('express').Router();
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, requirePage } = require('../middleware/auth');
 const { listClients, createClient } = require('../controllers/customsClient.controller');
 
-router.get('/', requireAuth, requireRole('ADMIN'), listClients);
-router.post('/', requireAuth, requireRole('ADMIN'), createClient);
+router.use(requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('customsclients'));
+router.get('/', listClients);
+router.post('/', createClient);
 
 module.exports = router;
