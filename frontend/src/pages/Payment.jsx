@@ -359,6 +359,87 @@ export default function Payment() {
     rzp.open();
   }
 
+  async function pollForBalanceSuccess(providerOrderId) {
+    for (let i = 0; i < 8; i++) {
+      const { data } = await client.get(`/payments/${order.id}/balance`, { params: { providerOrderId } });
+      if (data.payment.status === 'SUCCEEDED') return true;
+      await new Promise((r) => setTimeout(r, 1200));
+    }
+    return false;
+  }
+
+  // Pays the outstanding balance on an order that was already paid once —
+  // staff edited it (weight/qty/etc) and the price went up. Same
+  // Checkout.js flow as handlePay above, just pointed at the balance-order/
+  // balance-confirm endpoints so the original payment record stays untouched.
+  async function handlePayBalance() {
+    setBalanceError('');
+    if (!window.Razorpay) {
+      setBalanceError('Payment checkout failed to load. Please refresh and try again.');
+      return;
+    }
+    setBalanceSubmitting(true);
+    let checkoutData;
+    try {
+      const { data } = await client.post(`/payments/${order.id}/balance-order`);
+      checkoutData = data;
+    } catch (err) {
+      setBalanceError(err.response?.data?.error || 'Could not start payment.');
+      setBalanceSubmitting(false);
+      return;
+    }
+
+    const rzp = new window.Razorpay({
+      key: checkoutData.keyId,
+      order_id: checkoutData.payment.providerOrderId,
+      name: 'Comonn',
+      description: `Balance due — order ${order.orderNumber}`,
+      handler: async (response) => {
+        try {
+          await client.post(`/payments/${order.id}/balance-confirm`, response);
+          const succeeded = await pollForBalanceSuccess(checkoutData.payment.providerOrderId);
+          if (succeeded) {
+            const { data } = await client.get(`/orders/${order.id}`).catch(() => ({ data: null }));
+            if (data?.order) setOrder(data.order);
+            setBalanceJustSettled(true);
+          } else {
+            setBalanceError('Payment is processing — refresh in a moment to confirm.');
+          }
+        } catch (err) {
+          setBalanceError(err.response?.data?.error || 'Could not confirm payment.');
+        } finally {
+          setBalanceSubmitting(false);
+        }
+      },
+      modal: { ondismiss: () => setBalanceSubmitting(false) },
+      theme: { color: '#0f172a' },
+    });
+
+    rzp.on('payment.failed', () => {
+      setBalanceError('Payment failed. Please try again.');
+      setBalanceSubmitting(false);
+    });
+
+    rzp.open();
+  }
+
+  // Staff-only fallback for a balance collected outside Razorpay (customer
+  // paid by phone-directed UPI, bank transfer, or cash).
+  async function handleMarkBalanceManual() {
+    setManualError('');
+    setManualSubmitting(true);
+    try {
+      await client.post(`/payments/${order.id}/balance-manual`, { method: manualMethod });
+      const { data } = await client.get(`/orders/${order.id}`).catch(() => ({ data: null }));
+      if (data?.order) setOrder(data.order);
+      setBalanceJustSettled(true);
+    } catch (err) {
+      setManualError(err.response?.data?.error || 'Could not record this payment.');
+    } finally {
+      setManualSubmitting(false);
+    }
+  }
+
   // Pays for the current order plus every booking saved this session (via
   // "New booking" on the Details page) in a single Razorpay transaction.
   async function handleCombinedPay() {
