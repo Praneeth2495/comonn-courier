@@ -524,7 +524,7 @@ function OrdersPanel() {
       setSelectedIds([]);
       setAssignDriverId('');
     } catch (err) {
-      alert(err.response?.data?.error || 'Could not send these jobs to the driver.');
+      alert(err.response?.data?.error || 'Could not send these jobs to the rider.');
     } finally {
       setAssigning(false);
     }
