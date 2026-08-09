@@ -46,7 +46,6 @@ function arcPath(x1, y1, x2, y2) {
 export default function WorldOpsMap() {
   return (
     <div className="world-ops-map-wrap">
-      <h4>🌍 Where Comonn operates</h4>
       <svg className="world-ops-map" viewBox="-2 -2 67 36" role="img" aria-label="Map showing Comonn's shipping network from India to Australia, Canada, New Zealand, the UK and the USA">
         {LAND_DOTS.map(([x, y], i) => (
           <circle key={i} className="wom-dot" cx={x} cy={y} r={0.45} />
