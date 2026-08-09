@@ -34,11 +34,11 @@ router.post('/surcharges', requireRole('ADMIN'), admin.upsertSurcharge);
 router.get('/users', requireRole('ADMIN'), admin.listUsers);
 router.patch('/users/:id', requireRole('ADMIN'), admin.setUserRole);
 
-router.get('/employees', requireRole('ADMIN'), employee.listEmployees);
-router.post('/employees', requireRole('ADMIN'), employee.createEmployee);
-router.get('/employees/:id', requireRole('ADMIN'), employee.getEmployee);
-router.patch('/employees/:id', requireRole('ADMIN'), employee.updateEmployee);
-router.get('/employees/:id/id-proof', requireRole('ADMIN'), employee.downloadIdProof);
+router.get('/employees', requireRole('ADMIN', 'ACCOUNTS'), employee.listEmployees);
+router.post('/employees', requireRole('ADMIN', 'ACCOUNTS'), employee.createEmployee);
+router.get('/employees/:id', requireRole('ADMIN', 'ACCOUNTS'), employee.getEmployee);
+router.patch('/employees/:id', requireRole('ADMIN', 'ACCOUNTS'), employee.updateEmployee);
+router.get('/employees/:id/id-proof', requireRole('ADMIN', 'ACCOUNTS'), employee.downloadIdProof);
 
 // Available to ADMIN & STAFF (both can dispatch pickup jobs to drivers)
 router.get('/drivers', admin.listDrivers);
