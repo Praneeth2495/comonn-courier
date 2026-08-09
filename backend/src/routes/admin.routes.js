@@ -3,7 +3,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 const admin = require('../controllers/admin.controller');
 const employee = require('../controllers/employee.controller');
 
-router.use(requireAuth, requireRole('ADMIN', 'STAFF'));
+router.use(requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'));
 
 router.get('/dashboard', admin.dashboardStats);
 router.get('/dashboard/staff', admin.staffOverview);
