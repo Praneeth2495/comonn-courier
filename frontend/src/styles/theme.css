@@ -276,6 +276,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @media(max-width:1000px){
   .hero-row{grid-template-columns:1fr!important;gap:36px;}
   .hero-row > .card{width:100%;max-width:520px;margin:0 auto;}
+  .hero-copy{padding-top:0;}
   .grid-3,.grid-5,.why-row,.values-grid,.stat-row{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:640px){
