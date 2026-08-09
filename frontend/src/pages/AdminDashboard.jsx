@@ -78,16 +78,16 @@ export default function AdminDashboard() {
       <main className="app-main">
         {tab === 'overview' && <Overview />}
         {tab === 'orders' && <OrdersPanel />}
-        {tab === 'accounts' && canSeeAccounts && <AccountsPanel />}
+        {tab === 'accounts' && hasPage('accounts') && <AccountsPanel />}
         {tab === 'inventory' && <InventoryPanel />}
-        {tab === 'batchscan' && canScan && <BatchScanPanel />}
-        {tab === 'printlabel' && canScan && <PrintLabelPanel />}
-        {tab === 'rates' && isAdmin && <RatesPanel />}
+        {tab === 'batchscan' && hasPage('batchscan') && <BatchScanPanel />}
+        {tab === 'printlabel' && hasPage('printlabel') && <PrintLabelPanel />}
+        {tab === 'rates' && hasPage('rates') && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
-        {tab === 'onboarding' && canSeeAccounts && <EmployeeOnboardingPanel />}
+        {tab === 'onboarding' && hasPage('onboarding') && <EmployeeOnboardingPanel />}
         {tab === 'merchants' && isAdmin && <MerchantsPanel />}
-        {tab === 'customsclients' && isAdmin && <CustomsClientsPanel />}
-        {tab === 'storage' && canSeeAccounts && <StorageAdminPanel />}
+        {tab === 'customsclients' && hasPage('customsclients') && <CustomsClientsPanel />}
+        {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
         {tab === 'account' && <ChangePassword />}
       </main>
     </div>
