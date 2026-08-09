@@ -28,16 +28,16 @@ const otpLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5 });
 router.post('/', optionalAuth, createOrder);
 
 router.get('/', requireAuth, listOrders);
-router.get('/summary', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), getOrdersSummary);
+router.get('/summary', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('accounts'), getOrdersSummary);
 router.get('/:id', requireAuth, getOrder);
 // Public, shareable payment-link entry point (see getOrderForPayment) —
 // deliberately no auth: staff share this URL directly with the customer.
 router.get('/:id/pay', getOrderForPayment);
 router.post('/:id/cancel', requireAuth, cancelOrder);
-router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), updateOrderStatus);
-router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), assignDriver);
-router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), listOrderComments);
-router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), addOrderComment);
+router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), updateOrderStatus);
+router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), assignDriver);
+router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), listOrderComments);
+router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), addOrderComment);
 
 // Payment-page pre-payment steps — guest checkout allowed
 router.patch('/:id/details', optionalAuth, updateOrderDetails);
