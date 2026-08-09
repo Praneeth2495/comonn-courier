@@ -554,5 +554,6 @@ module.exports = {
   createBalanceOrder,
   confirmBalancePayment,
   markBalancePaymentManual,
+  getBalancePaymentStatus,
   totalPaidForOrder,
 };
