@@ -21,20 +21,27 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  const isStaff = user?.role === 'STAFF';
+  const isAccounts = user?.role === 'ACCOUNTS';
+  // Accounts users get Overview/Orders/Accounts/Inventory/Onboarding/Storage,
+  // same breadth as ADMIN on those specific pages, but never Scan, Print
+  // Label, Zones & Rates, Users, Merchants, or Customs Client.
+  const canSeeAccounts = isAdmin || isAccounts;
+  const canScan = isAdmin || isStaff;
 
   const TABS = [
     ['overview', 'Overview'],
     ['orders', 'Orders'],
-    ...(isAdmin ? [['accounts', 'Accounts']] : []),
+    ...(canSeeAccounts ? [['accounts', 'Accounts']] : []),
     ['inventory', 'Inventory'],
-    ['batchscan', 'Scan'],
-    ['printlabel', 'Print Label'],
+    ...(canScan ? [['batchscan', 'Scan']] : []),
+    ...(canScan ? [['printlabel', 'Print Label']] : []),
     ...(isAdmin ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
-    ...(isAdmin ? [['onboarding', 'Onboarding']] : []),
+    ...(canSeeAccounts ? [['onboarding', 'Onboarding']] : []),
     ...(isAdmin ? [['merchants', 'Merchants']] : []),
     ...(isAdmin ? [['customsclients', 'Customs Client']] : []),
-    ...(isAdmin ? [['storage', 'Storage']] : []),
+    ...(canSeeAccounts ? [['storage', 'Storage']] : []),
     ['account', 'Profile'],
   ];
 
