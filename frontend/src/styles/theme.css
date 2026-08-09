@@ -267,8 +267,8 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .wom-pin-origin{fill:var(--coral);}
 .wom-pin-dest{fill:#fff;}
 .wom-pin-dest-ring{fill:none;stroke:rgba(255,255,255,.4);stroke-width:.3;}
-.wom-label{font-size:2.15px;font-weight:600;fill:#C7CEE6;letter-spacing:.01em;}
-.wom-label-origin{font-size:2.35px;font-weight:700;fill:#FF9478;}
+.wom-label{font-size:1.7px;font-weight:600;fill:#C7CEE6;letter-spacing:.01em;}
+.wom-label-origin{font-size:1.9px;font-weight:700;fill:#FF9478;}
 @media(prefers-reduced-motion: reduce){.wom-arc,.wom-pin-ring{animation:none;}}
 @media(max-width:1000px){.world-ops-map-wrap{display:none;}}
 
