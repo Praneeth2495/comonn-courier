@@ -938,10 +938,14 @@ async function sendPaymentLinkEmail(req, res, next) {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { service: true, items: true, addons: true },
+      include: { service: true, items: true, addons: true, payment: true, balancePayments: true },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (!PAYABLE_STATUSES.includes(order.status)) {
+
+    const awaitingFirstPayment = PAYABLE_STATUSES.includes(order.status);
+    const amountPaid = totalPaidForOrder(order);
+    const balance = round2(Number(order.grandTotal) - amountPaid);
+    if (!awaitingFirstPayment && balance <= 0) {
       return res.status(409).json({ error: 'Order is no longer awaiting payment' });
     }
     if (!order.otpEmail || !order.otpVerifiedAt) {
@@ -954,8 +958,8 @@ async function sendPaymentLinkEmail(req, res, next) {
     await sendEmail({
       to: order.otpEmail,
       from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
-      subject: `Complete payment for order ${order.orderNumber}`,
-      html: renderPaymentLinkEmailHtml(order, link),
+      subject: awaitingFirstPayment ? `Complete payment for order ${order.orderNumber}` : `Additional payment needed for order ${order.orderNumber}`,
+      html: renderPaymentLinkEmailHtml(order, link, awaitingFirstPayment ? null : balance),
     });
 
     res.json({ ok: true });
