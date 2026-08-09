@@ -422,7 +422,7 @@ export default function BatchScanPanel() {
                   </td>
                   <td>{b._count.items}</td>
                   <td>{b.createdBy?.fullName || '—'}</td>
-                  <td>{new Date(b.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td>{new Date(b.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
                   <td style={{ display: 'flex', gap: 6 }}>
                     <button className="btn btn-outline btn-sm" disabled={loadingView} onClick={() => viewBatch(b.id)}>View</button>
                     <button className="btn btn-outline btn-sm" onClick={() => deleteBatch(b.id)}>Delete</button>

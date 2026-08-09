@@ -90,7 +90,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
           <div className="item">
             <span className="lbl">Booked</span>
-            <span className="val">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+            <span className="val">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</span>
           </div>
         </div>
 
@@ -249,7 +249,7 @@ export function OrderCommentsModal({ order, onClose }) {
               <div className="comment-item" key={c.id}>
                 <div className="meta">
                   <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
-                  <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</span>
                 </div>
                 <p className="body">{c.body}</p>
               </div>

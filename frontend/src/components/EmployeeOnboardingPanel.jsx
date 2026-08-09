@@ -51,7 +51,7 @@ export default function EmployeeOnboardingPanel() {
                   <td>{e.role === 'DRIVER' ? 'Driver' : 'Staff'}</td>
                   <td>{e.profile?.designation || '—'}</td>
                   <td>{e.profile?.department || '—'}</td>
-                  <td>{e.profile?.dateOfJoining ? new Date(e.profile.dateOfJoining).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                  <td>{e.profile?.dateOfJoining ? new Date(e.profile.dateOfJoining).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : '—'}</td>
                   <td className="mono">{e.phone || '—'}</td>
                   <td><button className="btn btn-outline btn-sm" onClick={() => setSelectedId(e.id)}>View / Edit</button></td>
                 </tr>
