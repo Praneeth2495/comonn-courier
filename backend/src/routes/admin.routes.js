@@ -37,11 +37,11 @@ router.post('/surcharges', requireRole('ADMIN'), admin.upsertSurcharge);
 router.get('/users', requireRole('ADMIN'), admin.listUsers);
 router.patch('/users/:id', requireRole('ADMIN'), admin.setUserRole);
 
-router.get('/employees', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.listEmployees);
-router.post('/employees', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.createEmployee);
-router.get('/employees/:id', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.getEmployee);
-router.patch('/employees/:id', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.updateEmployee);
-router.get('/employees/:id/id-proof', requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('onboarding'), employee.downloadIdProof);
+router.get('/employees', requirePage('onboarding'), employee.listEmployees);
+router.post('/employees', requirePage('onboarding'), employee.createEmployee);
+router.get('/employees/:id', requirePage('onboarding'), employee.getEmployee);
+router.patch('/employees/:id', requirePage('onboarding'), employee.updateEmployee);
+router.get('/employees/:id/id-proof', requirePage('onboarding'), employee.downloadIdProof);
 
 // Available to ADMIN & STAFF (both can dispatch pickup jobs to drivers)
 router.get('/drivers', requirePage('orders'), admin.listDrivers);
