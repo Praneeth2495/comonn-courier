@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const rateLimit = require('express-rate-limit');
-const { requireAuth, requireRole, optionalAuth } = require('../middleware/auth');
+const { requireAuth, requireRole, requirePage, optionalAuth } = require('../middleware/auth');
 const {
   createOrder,
   listOrders,
