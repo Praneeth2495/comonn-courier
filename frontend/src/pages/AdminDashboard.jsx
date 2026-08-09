@@ -53,6 +53,9 @@ export default function AdminDashboard() {
       <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <button className="app-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close menu">✕</button>
         <div className="brand"><img className="logo-img lg" src={logoFooter} alt="Comonn" /><span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>Admin</span></div>
+        <div style={{ fontSize: 10.5, color: '#6B759A', textTransform: 'uppercase', letterSpacing: '.05em', margin: '-8px 0 14px', paddingLeft: 2 }}>
+          🕐 Times shown in IST (Asia/Kolkata)
+        </div>
         {TABS.map(([key, label]) => (
           <button key={key} className={`app-navlink ${tab === key ? 'active' : ''}`} onClick={() => selectTab(key)}>{label}</button>
         ))}
@@ -1240,7 +1243,7 @@ function UsersPanel() {
                 <td>{u.fullName}</td>
                 <td>{u.email}</td>
                 <td>{u.phone || '—'}</td>
-                <td>{new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                <td>{new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
                 <td>
                   <select className="select" style={{ padding: '6px 8px', fontSize: 12.5 }} value={u.role} onChange={(e) => setRole(u.id, e.target.value)}>
                     <option value="CUSTOMER">Customer</option>
