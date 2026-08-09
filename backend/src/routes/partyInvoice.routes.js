@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, requirePage } = require('../middleware/auth');
 const {
   listInvoices,
   createInvoice,
@@ -12,16 +12,17 @@ const {
   addInvoiceComment,
 } = require('../controllers/partyInvoice.controller');
 
-// Receivable/Payable invoices are restricted to ADMIN and ACCOUNTS, same as
-// the existing Accounts tab this money-visibility feature sits alongside.
-router.get('/', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), listInvoices);
-router.post('/', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), createInvoice);
-router.get('/:id', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), getInvoice);
-router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), updateInvoiceStatus);
-router.post('/:id/send', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), sendInvoiceEmail);
-router.get('/:id/download', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), downloadInvoicePdf);
-router.get('/:id/attachment', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), downloadInvoiceAttachment);
-router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), listInvoiceComments);
-router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), addInvoiceComment);
+// Receivable/Payable invoices are part of the Accounts tab — ADMIN always,
+// STAFF/ACCOUNTS only if individually granted the 'accounts' page.
+router.use(requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('accounts'));
+router.get('/', listInvoices);
+router.post('/', createInvoice);
+router.get('/:id', getInvoice);
+router.patch('/:id/status', updateInvoiceStatus);
+router.post('/:id/send', sendInvoiceEmail);
+router.get('/:id/download', downloadInvoicePdf);
+router.get('/:id/attachment', downloadInvoiceAttachment);
+router.get('/:id/comments', listInvoiceComments);
+router.post('/:id/comments', addInvoiceComment);
 
 module.exports = router;
