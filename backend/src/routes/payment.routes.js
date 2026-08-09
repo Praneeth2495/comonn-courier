@@ -31,5 +31,6 @@ router.get('/:orderId', optionalAuth, getPaymentStatus);
 router.post('/:orderId/balance-order', optionalAuth, createBalanceOrder);
 router.post('/:orderId/balance-confirm', optionalAuth, confirmBalancePayment);
 router.post('/:orderId/balance-manual', requireAuth, requireRole('ADMIN', 'STAFF'), markBalancePaymentManual);
+router.get('/:orderId/balance', optionalAuth, getBalancePaymentStatus);
 
 module.exports = router;
