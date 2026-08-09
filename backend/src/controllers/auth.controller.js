@@ -219,7 +219,7 @@ async function setPassword(req, res, next) {
     const jwtToken = signUserToken(user);
     res.json({
       token: jwtToken,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, allowedPages: user.allowedPages },
     });
   } catch (err) {
     next(err);
