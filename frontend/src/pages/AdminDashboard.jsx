@@ -74,16 +74,16 @@ export default function AdminDashboard() {
       <main className="app-main">
         {tab === 'overview' && <Overview />}
         {tab === 'orders' && <OrdersPanel />}
-        {tab === 'accounts' && isAdmin && <AccountsPanel />}
+        {tab === 'accounts' && canSeeAccounts && <AccountsPanel />}
         {tab === 'inventory' && <InventoryPanel />}
-        {tab === 'batchscan' && <BatchScanPanel />}
-        {tab === 'printlabel' && <PrintLabelPanel />}
+        {tab === 'batchscan' && canScan && <BatchScanPanel />}
+        {tab === 'printlabel' && canScan && <PrintLabelPanel />}
         {tab === 'rates' && isAdmin && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
-        {tab === 'onboarding' && isAdmin && <EmployeeOnboardingPanel />}
+        {tab === 'onboarding' && canSeeAccounts && <EmployeeOnboardingPanel />}
         {tab === 'merchants' && isAdmin && <MerchantsPanel />}
         {tab === 'customsclients' && isAdmin && <CustomsClientsPanel />}
-        {tab === 'storage' && isAdmin && <StorageAdminPanel />}
+        {tab === 'storage' && canSeeAccounts && <StorageAdminPanel />}
         {tab === 'account' && <ChangePassword />}
       </main>
     </div>
