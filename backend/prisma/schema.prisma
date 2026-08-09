@@ -732,6 +732,7 @@ model Order {
   pickedUpAt       DateTime? // driver marked "Pickup completed" (distinct from updatedAt, which later status changes would otherwise shift)
 
   payment        Payment?
+  balancePayments BalancePayment[]
   labels         Label[]
   invoice        Invoice?
   trackingEvents TrackingEvent[]
