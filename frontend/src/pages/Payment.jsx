@@ -725,7 +725,7 @@ export default function Payment() {
                 type="button"
                 className="btn btn-outline block"
                 style={{ padding: 14, marginTop: 20 }}
-                onClick={() => { clearBooking(); navigate(isStaffViewer ? '/admin' : '/labels'); }}
+                onClick={() => { if (isStaffViewer) { clearBooking(); navigate('/admin'); } else { navigate('/labels'); } }}
               >
                 {isStaffViewer ? 'Done — back to Bookings' : 'View my labels & invoice'}
               </button>
