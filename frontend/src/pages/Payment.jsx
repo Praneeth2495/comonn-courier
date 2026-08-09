@@ -618,30 +618,35 @@ export default function Payment() {
     );
   }
 
-  // Reached only via an admin/staff "Edit order" on a booking that already
-  // moved past the payment step (customers never edit orders in this state)
-  // — show the recalculated invoice and any due/credit balance instead of
-  // the normal DG/OTP/payment-method UI.
+  // Reached via an admin/staff "Edit order" on a booking that already moved
+  // past the payment step, or a customer/staff visiting a shared
+  // /pay/:orderId link for such an order — show the recalculated invoice,
+  // and if the price increase left a real balance due, a full payment flow
+  // for just that difference (not the normal DG/OTP/full-checkout UI,
+  // since those were already done for the order's original payment).
   if (!PAYABLE_STATUSES.includes(order.status)) {
-    const amountPaid = Number(order.amountPaid || 0);
-    const balance = order.balance !== undefined && order.balance !== null ? Number(order.balance) : Number(order.grandTotal) - amountPaid;
+    const { amountPaid, balance } = computeAmountPaidAndBalance(order);
+    const isStaffViewer = ['ADMIN', 'STAFF'].includes(user?.role);
+    const settled = balance <= 0 || balanceJustSettled;
     return (
       <div>
         <div id="stepper-payment"><Stepper activeKey="payment" /></div>
         <div className="section" style={{ paddingTop: 20 }}>
           <div className="wrap" style={{ maxWidth: 560, margin: '0 auto' }}>
             <button type="button" className="btn btn-outline btn-sm" style={{ marginBottom: 16 }} onClick={() => navigate('/details')}>← Back</button>
-            {paymentJustConfirmed && (
+            {(paymentJustConfirmed || balanceJustSettled) && (
               <div className="card" style={{ padding: '16px 22px', marginBottom: 16, background: '#E9F9EE', border: '1px solid #BEE8CB' }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#1E8E3E' }}>✓ Payment received — the customer just completed payment for this order.</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#1E8E3E' }}>
+                  {balanceJustSettled ? '✓ Balance received — this order is now fully settled.' : '✓ Payment received — the customer just completed payment for this order.'}
+                </p>
               </div>
             )}
             <div className="card" style={{ padding: 26 }}>
-              <h3 style={{ marginBottom: 4 }}>{paymentJustConfirmed ? 'Payment confirmed' : 'Updated invoice'}</h3>
+              <h3 style={{ marginBottom: 4 }}>{settled ? 'Updated invoice' : 'Additional payment needed'}</h3>
               <p className="lead" style={{ fontSize: 13.5, marginBottom: 18 }}>
-                {paymentJustConfirmed
-                  ? 'This order is now paid. Totals below reflect the final invoice.'
-                  : "This booking's details were just edited. Totals below reflect the updated information."}
+                {settled
+                  ? "This booking's details were edited. Totals below reflect the updated information."
+                  : "This booking's details were edited, which increased the price. Here's what's still due."}
               </p>
               <div className="sum-line"><span>{order.service?.name || 'Shipping'} (incl. GST)</span><span className="v">₹{(Number(order.baseFreight) + Number(order.surchargesTotal)).toFixed(2)}</span></div>
               {order.addons?.map((a) => (
@@ -653,24 +658,72 @@ export default function Payment() {
               <div className="sum-line total"><span>New total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
               <div className="sum-line"><span>Already paid</span><span className="v">₹{amountPaid.toFixed(2)}</span></div>
               <div className="sum-line total" style={{ marginTop: 8 }}>
-                <span>{balance > 0 ? 'Balance due' : balance < 0 ? 'Credit owed to customer' : 'Settled'}</span>
-                <span className="v" style={{ color: balance > 0 ? 'var(--danger)' : balance < 0 ? 'var(--success)' : undefined }}>
-                  {balance === 0 ? '—' : `₹${Math.abs(balance).toFixed(2)}`}
+                <span>{settled ? (balance < 0 ? 'Credit owed to customer' : 'Settled') : 'Balance due'}</span>
+                <span className="v" style={{ color: balance > 0 && !settled ? 'var(--danger)' : balance < 0 ? 'var(--success)' : undefined }}>
+                  {balance === 0 || (settled && balance > 0) ? '—' : `₹${Math.abs(balance).toFixed(2)}`}
                 </span>
               </div>
-              {balance > 0 && (
-                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 12 }}>
-                  Collect this additional amount from the customer directly and note it in the order's comments.
-                </p>
-              )}
+
               {balance < 0 && (
                 <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 12 }}>
                   This customer is owed a credit — settle it with them directly and note it in the order's comments.
                 </p>
               )}
+
+              {!settled && (
+                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--line-2)' }}>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16, fontSize: 12.5 }}>
+                    <span style={{ color: order.dgAcknowledged ? 'var(--success)' : 'var(--danger)' }}>
+                      {order.dgAcknowledged ? '✓ Dangerous goods declaration on file' : '⚠ Dangerous goods declaration missing'}
+                    </span>
+                    <span style={{ color: order.otpVerifiedAt ? 'var(--success)' : 'var(--danger)' }}>
+                      {order.otpVerifiedAt ? `✓ Email verified — ${order.otpEmail}` : '⚠ Email not verified'}
+                    </span>
+                  </div>
+
+                  <button type="button" className="btn btn-primary block" style={{ padding: 14 }} disabled={balanceSubmitting} onClick={handlePayBalance}>
+                    {balanceSubmitting ? 'Processing…' : `Pay ₹${balance.toFixed(2)} now`}
+                  </button>
+                  {balanceError && <div className="error-text" style={{ marginTop: 8 }}>{balanceError}</div>}
+
+                  <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={copyPaymentLink}>
+                      {linkCopied ? 'Copied ✓' : 'Copy payment link'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      disabled={!order.otpVerifiedAt || sendLinkStatus === 'sending'}
+                      onClick={sendPaymentLinkEmail}
+                    >
+                      {sendLinkStatus === 'sending' ? 'Sending…' : 'Share via email'}
+                    </button>
+                  </div>
+                  {sendLinkStatus === 'sent' && <p style={{ fontSize: 12.5, color: 'var(--success)', marginTop: 6 }}>✓ Emailed to {order.otpEmail}</p>}
+                  {sendLinkStatus && sendLinkStatus !== 'sent' && sendLinkStatus !== 'sending' && <p className="error-text" style={{ marginTop: 6 }}>{sendLinkStatus}</p>}
+
+                  {isStaffViewer && (
+                    <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px dashed var(--line-2)' }}>
+                      <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 8 }}>Or record it as collected directly — customer paid by phone call, UPI, bank transfer, or cash:</p>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <select className="select" style={{ maxWidth: 200 }} value={manualMethod} onChange={(e) => setManualMethod(e.target.value)}>
+                          <option value="Phone/UPI">Phone/UPI</option>
+                          <option value="Bank transfer">Bank transfer</option>
+                          <option value="Cash">Cash</option>
+                        </select>
+                        <button type="button" className="btn btn-outline btn-sm" disabled={manualSubmitting} onClick={handleMarkBalanceManual}>
+                          {manualSubmitting ? 'Saving…' : `Mark ₹${balance.toFixed(2)} received`}
+                        </button>
+                      </div>
+                      {manualError && <div className="error-text" style={{ marginTop: 8 }}>{manualError}</div>}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 type="button"
-                className="btn btn-primary block"
+                className="btn btn-outline block"
                 style={{ padding: 14, marginTop: 20 }}
                 onClick={() => { clearBooking(); navigate('/admin'); }}
               >
