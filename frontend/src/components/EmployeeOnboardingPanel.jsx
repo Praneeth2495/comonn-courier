@@ -48,7 +48,7 @@ export default function EmployeeOnboardingPanel() {
                     {e.fullName}
                     <div style={{ fontSize: 11, color: 'var(--slate-light)' }}>{e.email}</div>
                   </td>
-                  <td>{e.role === 'DRIVER' ? 'Driver' : 'Staff'}</td>
+                  <td>{e.role === 'DRIVER' ? 'Rider' : 'Staff'}</td>
                   <td>{e.profile?.designation || '—'}</td>
                   <td>{e.profile?.department || '—'}</td>
                   <td>{e.profile?.dateOfJoining ? new Date(e.profile.dateOfJoining).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : '—'}</td>
