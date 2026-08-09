@@ -333,6 +333,24 @@ async function getPaymentStatus(req, res, next) {
 }
 
 /**
+ * GET /api/payments/:orderId/balance?providerOrderId=... — poll a specific
+ * top-up's status (used by the frontend the same way getPaymentStatus is
+ * for the original payment). Scoped by providerOrderId, not just orderId,
+ * since an order can have more than one BalancePayment over time.
+ */
+async function getBalancePaymentStatus(req, res, next) {
+  try {
+    const { providerOrderId } = req.query;
+    if (!providerOrderId) return res.status(400).json({ error: 'providerOrderId is required' });
+    const payment = await prisma.balancePayment.findFirst({ where: { orderId: req.params.orderId, providerOrderId } });
+    if (!payment) return res.status(404).json({ error: 'No balance payment found for this order' });
+    res.json({ payment });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * POST /api/payments/:orderId/cash
  * "Not sure, book pickup" flow only: no online payment happens — the order
  * is confirmed for pickup immediately and cash is collected once the
