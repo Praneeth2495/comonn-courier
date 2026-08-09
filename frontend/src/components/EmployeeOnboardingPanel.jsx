@@ -171,7 +171,7 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
                   <label>Role</label>
                   <select className="select" disabled={mode === 'edit'} value={form.role} onChange={(e) => update('role', e.target.value)}>
                     <option value="STAFF">Staff</option>
-                    <option value="DRIVER">Driver</option>
+                    <option value="DRIVER">Rider</option>
                   </select>
                 </div>
                 <div className="field"><label>Designation</label><input className="input" value={form.designation} onChange={(e) => update('designation', e.target.value)} /></div>
