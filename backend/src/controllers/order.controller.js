@@ -21,6 +21,20 @@ const { notifyOrderStatusChange } = require('../services/orderNotifications');
 // this combined list rather than the single literal status.
 const PAYABLE_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT'];
 
+// Duplicated (not imported) from payment.controller.js's identical helper
+// to avoid a circular require — that file already requires PAYABLE_STATUSES
+// and round2 from this one. Sum of every SUCCEEDED payment on an order —
+// the original checkout payment plus every balance top-up since (see
+// BalancePayment, schema.prisma). Caller must include/select `payment` and
+// `balancePayments`.
+function totalPaidForOrder(order) {
+  const original = order.payment?.status === 'SUCCEEDED' ? Number(order.payment.amount) : 0;
+  const topUps = (order.balancePayments || [])
+    .filter((p) => p.status === 'SUCCEEDED')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  return round2(original + topUps);
+}
+
 /**
  * POST /api/orders
  * Step 2 of the flow ("Add Details"): takes the chosen service + parcel
