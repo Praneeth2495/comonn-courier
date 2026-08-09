@@ -747,7 +747,7 @@ async function updateOrderDetails(req, res, next) {
 
     const updated = await recomputeOrderTotals(order.id);
 
-    const amountPaid = order.payment?.status === 'SUCCEEDED' ? Number(order.payment.amount) : 0;
+    const amountPaid = totalPaidForOrder(order);
     const balance = round2(Number(updated.grandTotal) - amountPaid);
 
     if (isStaff) {
