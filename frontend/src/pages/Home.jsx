@@ -293,6 +293,8 @@ export default function Home() {
               <div className="trust-item"><div className="ic">📍</div><span>Real time tracking</span></div>
               <div className="trust-item"><div className="ic">💸</div><span>We beat any price by 5%</span></div>
             </div>
+
+            <WorldOpsMap />
           </div>
 
           <form className="card" style={{ overflow: 'hidden' }} onSubmit={goToBook}>
