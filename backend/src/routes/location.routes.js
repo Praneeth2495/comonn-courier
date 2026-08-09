@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, requirePage } = require('../middleware/auth');
 const location = require('../controllers/location.controller');
 
-router.use(requireAuth, requireRole('ADMIN', 'STAFF', 'DRIVER'));
+router.use(requireAuth, requireRole('ADMIN', 'STAFF', 'DRIVER'), requirePage('batchscan'));
 
 // Listing is available to drivers too (needed while scanning); managing
 // locations is admin/staff only.
