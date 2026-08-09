@@ -280,10 +280,6 @@ export default function Home() {
       <div className="hero">
         <div className="hero-row">
           <div className="hero-copy">
-            <div className="eyebrow with-badge">
-              <span className="eyebrow-chakra"><IndiaChakra /></span>
-              India → World
-            </div>
             <h1>Committed to deliver, <span className="hl">on time</span>, every time.</h1>
             <p className="lead">
               Book an international shipment in under two minutes.
