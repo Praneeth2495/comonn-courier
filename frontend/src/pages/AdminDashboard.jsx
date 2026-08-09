@@ -649,7 +649,7 @@ function OrdersPanel() {
             <option value={500}>500 / page</option>
           </select>
           <div className="pager">
-            <span>{total} order{total === 1 ? '' : 's'}</span>
+            <span>{pagedTotal} order{pagedTotal === 1 ? '' : 's'}</span>
             <button type="button" className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹</button>
             <span className="mono" style={{ fontSize: 13 }}>{page} / {pageCount}</span>
             <button type="button" className="btn btn-outline btn-sm" disabled={page >= pageCount} onClick={() => setPage((p) => p + 1)}>›</button>
