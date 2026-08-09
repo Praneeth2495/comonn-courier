@@ -65,4 +65,4 @@ function optionalAuth(req, _res, next) {
   next();
 }
 
-module.exports = { requireAuth, requireRole, optionalAuth };
+module.exports = { requireAuth, requireRole, requirePage, optionalAuth };
