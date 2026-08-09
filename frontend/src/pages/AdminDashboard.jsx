@@ -1193,6 +1193,7 @@ const PAGE_LABELS = {
 };
 
 function UsersPanel() {
+  const [subTab, setSubTab] = useState('internal');
   const [users, setUsers] = useState([]);
   const [zones, setZones] = useState([]);
   const [staffZones, setStaffZones] = useState({}); // userId -> [zone,...]
