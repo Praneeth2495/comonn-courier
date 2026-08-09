@@ -28,7 +28,7 @@ const otpLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5 });
 router.post('/', optionalAuth, createOrder);
 
 router.get('/', requireAuth, listOrders);
-router.get('/summary', requireAuth, requireRole('ADMIN'), getOrdersSummary);
+router.get('/summary', requireAuth, requireRole('ADMIN', 'ACCOUNTS'), getOrdersSummary);
 router.get('/:id', requireAuth, getOrder);
 // Public, shareable payment-link entry point (see getOrderForPayment) —
 // deliberately no auth: staff share this URL directly with the customer.
