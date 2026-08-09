@@ -1173,6 +1173,22 @@ function RatesPanel() {
   );
 }
 
+// Mirrors backend/src/constants/pages.js — kept in sync manually since the
+// frontend and backend are separately deployed apps with no shared import.
+// "Users" and "Merchants" are deliberately absent (hardcoded ADMIN-only).
+const PAGE_KEYS = ['orders', 'accounts', 'inventory', 'batchscan', 'printlabel', 'rates', 'onboarding', 'customsclients', 'storage'];
+const PAGE_LABELS = {
+  orders: 'Orders (manage)',
+  accounts: 'Accounts',
+  inventory: 'Inventory',
+  batchscan: 'Scan',
+  printlabel: 'Print Label',
+  rates: 'Zones & Rates',
+  onboarding: 'Onboarding',
+  customsclients: 'Customs Client',
+  storage: 'Storage',
+};
+
 function UsersPanel() {
   const [users, setUsers] = useState([]);
   const [zones, setZones] = useState([]);
@@ -1182,6 +1198,7 @@ function UsersPanel() {
   const [pickupRegionsByState, setPickupRegionsByState] = useState({});
   const [staffRegions, setStaffRegions] = useState({}); // userId -> [{id,state,region},...]
   const [editingStaffRegions, setEditingStaffRegions] = useState(null); // { id, fullName }
+  const [editingPageAccess, setEditingPageAccess] = useState(null); // { id, fullName, allowedPages }
 
   function load() {
     client.get('/admin/users').then(({ data }) => setUsers(data.users));
