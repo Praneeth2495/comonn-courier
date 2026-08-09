@@ -444,20 +444,14 @@ async function markBalancePaymentByProviderOrderId(providerOrderId, extra = {}) 
     data: { status: 'SUCCEEDED', ...extra },
   });
 
-  const order = await prisma.order.findUnique({
-    where: { id: balancePayment.orderId },
-    include: { payment: true, balancePayments: true },
-  });
-  const amountPaid = totalPaidForOrder(order);
-  const balance = round2(Number(order.grandTotal) - amountPaid);
-  await prisma.orderComment.create({
-    data: {
-      orderId: order.id,
-      // System-generated — no human author for an automated online payment.
-      authorId: order.userId || balancePayment.orderId, // placeholder overwritten just below if no real author is available
-      body: `Additional payment of ₹${Number(balancePayment.amount).toFixed(2)} received online (Razorpay).${balance > 0 ? ` ₹${balance.toFixed(2)} still due.` : ' Order now fully settled.'}`,
-    },
-  }).catch(() => {}); // best-effort — a missing/invalid authorId shouldn't block the payment itself from being recorded
+  // No TrackingEvent or OrderComment here: OrderComment.authorId is a
+  // required real User — there's no human author for an automated online
+  // payment (many orders are guest checkouts with no linked account at
+  // all), and a TrackingEvent would need a status value, which would
+  // either duplicate the order's current one on the customer's public
+  // tracking timeline or invent a status that doesn't exist. The
+  // BalancePayment row itself, reflected immediately in the order's
+  // updated Paid/To-pay figures, is the record of what happened.
 }
 
 /** POST /api/payments/:orderId/balance-confirm — same signature-verification pattern as confirmPayment. */
