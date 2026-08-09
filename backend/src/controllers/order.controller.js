@@ -523,7 +523,7 @@ async function assignDriver(req, res, next) {
 
     const driver = await prisma.user.findUnique({ where: { id: driverId } });
     if (!driver || driver.role !== 'DRIVER') {
-      return res.status(400).json({ error: 'driverId must belong to a driver account' });
+      return res.status(400).json({ error: 'driverId must belong to a rider account' });
     }
 
     await prisma.order.updateMany({
