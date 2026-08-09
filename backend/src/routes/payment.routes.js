@@ -9,6 +9,7 @@ const {
   createBalanceOrder,
   confirmBalancePayment,
   markBalancePaymentManual,
+  getBalancePaymentStatus,
 } = require('../controllers/payment.controller');
 
 // NOTE: the webhook route is mounted separately in src/index.js because it
