@@ -11,6 +11,25 @@ import { getCountryName } from '../utils/countryNames';
 // awaiting payment" for gating purposes here.
 const PAYABLE_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT'];
 
+// Prefers live `payment`/`balancePayments` relations (present when this
+// order came from GET /orders/:id or /orders/:id/pay) — falls back to the
+// flat amountPaid/balance snapshot Details.jsx attaches right after an
+// edit-and-resubmit round trip, where recomputeOrderTotals's response
+// doesn't include those relations.
+function computeAmountPaidAndBalance(order) {
+  if (order.payment !== undefined || order.balancePayments !== undefined) {
+    const original = order.payment?.status === 'SUCCEEDED' ? Number(order.payment.amount) : 0;
+    const topUps = (order.balancePayments || [])
+      .filter((p) => p.status === 'SUCCEEDED')
+      .reduce((sum, p) => sum + Number(p.amount), 0);
+    const amountPaid = Math.round((original + topUps) * 100) / 100;
+    return { amountPaid, balance: Math.round((Number(order.grandTotal) - amountPaid) * 100) / 100 };
+  }
+  const amountPaid = Number(order.amountPaid || 0);
+  const balance = order.balance !== undefined && order.balance !== null ? Number(order.balance) : Number(order.grandTotal) - amountPaid;
+  return { amountPaid, balance };
+}
+
 const WARRANTY_TIERS = [
   { coverage: 10000, price: 0, label: '₹10,000 cover — Free' },
   { coverage: 25000, price: 300, label: '₹25,000 cover — ₹300' },
