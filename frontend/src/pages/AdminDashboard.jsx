@@ -436,8 +436,15 @@ function OrdersPanel() {
     const tabDef = ORDER_TABS.find(([key]) => key === tab);
     const params = {
       q: q || undefined,
-      page,
-      pageSize,
+      // Pickup tab always fetches every order matching the current
+      // state/region/search filters in one request (not just one page) —
+      // the due-date bucket chips below (Overdue/Today/Future) and
+      // click-to-filter need the true full set to be accurate, not just
+      // whatever happens to be on the currently loaded page. `page`/
+      // `pageSize` state still exists for this tab, but only to slice the
+      // already-fetched full set for display (see displayOrders below).
+      page: tab === 'pickup' ? 1 : page,
+      pageSize: tab === 'pickup' ? PICKUP_FETCH_ALL_SIZE : pageSize,
       scope: tab === 'pickup' ? 'pickup' : undefined,
       originState: tab === 'pickup' ? originState || undefined : undefined,
       originRegion: tab === 'pickup' ? originRegion || undefined : undefined,
