@@ -53,7 +53,7 @@ async function unassignOverdueDriverJobs() {
         trackingEvents: {
           create: {
             status: job.status,
-            note: `Auto-unassigned from ${job.assignedDriver?.fullName || 'driver'} — pickup date (${job.pickupDate}) passed without completion.`,
+            note: `Auto-unassigned from ${job.assignedDriver?.fullName || 'rider'} — pickup date (${job.pickupDate}) passed without completion.`,
           },
         },
       },
