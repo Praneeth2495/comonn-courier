@@ -508,6 +508,33 @@ async function updateOrderStatus(req, res, next) {
 }
 
 /**
+ * PATCH /api/orders/:id/carrier — ADMIN/STAFF/ACCOUNTS: records which
+ * third-party last-mile courier a package was handed off to in the
+ * destination country, and that carrier's own tracking number, for a
+ * separate label generated with them. Shown to the customer on the public
+ * tracking page as a direct link/fallback alongside Comonn's own timeline
+ * (see tracking.routes.js). Deliberately separate from updateOrderStatus —
+ * this doesn't create a TrackingEvent by itself; staff use the existing
+ * status-update action (with location/note) for that whenever they check
+ * the carrier's own site.
+ */
+async function updateOrderCarrier(req, res, next) {
+  try {
+    const { carrierName, carrierTrackingNumber } = req.body;
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data: {
+        carrierName: carrierName === undefined ? undefined : (carrierName.trim() || null),
+        carrierTrackingNumber: carrierTrackingNumber === undefined ? undefined : (carrierTrackingNumber.trim() || null),
+      },
+    });
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * PATCH /api/orders/assign-driver
  * ADMIN/STAFF: sends one or more pickup jobs directly to a driver account in
  * a single action. The driver then sees these in their own portal and marks
