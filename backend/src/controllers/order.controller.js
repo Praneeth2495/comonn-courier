@@ -331,6 +331,48 @@ async function listOrders(req, res, next) {
 }
 
 /**
+ * GET /api/orders/delivery-airports — destination country/airport chips for
+ * the Delivery orders tab: one entry per distinct (destination country,
+ * airportCode) pair currently found among IN_TRANSIT/OUT_FOR_DELIVERY
+ * orders, with a live count. Mirrors manifest.controller.js's
+ * listAvailableAirports, but scoped to already-shipped orders rather than
+ * manifest-eligible ones — these are past the manifest stage by definition.
+ * Reuses buildOrdersWhere so STAFF only see airports within their assigned
+ * zones.
+ */
+async function listDeliveryAirports(req, res, next) {
+  try {
+    const where = await buildOrdersWhere({ ...req, query: { ...req.query, status: ['IN_TRANSIT', 'OUT_FOR_DELIVERY'].join(',') } });
+    where.airportCode = { not: null };
+
+    const orders = await prisma.order.findMany({
+      where,
+      select: { airportCode: true, receiverAddress: { select: { countryCode: true } } },
+    });
+
+    const counts = new Map(); // `${countryCode}:${airportCode}` -> count
+    for (const o of orders) {
+      const key = `${o.receiverAddress.countryCode}:${o.airportCode}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+
+    const codes = [...new Set(orders.map((o) => o.airportCode))];
+    const regions = codes.length ? await prisma.manifestRegion.findMany({ where: { code: { in: codes } } }) : [];
+    const regionByCode = new Map(regions.map((r) => [r.code, r]));
+
+    const airports = [...counts.entries()].map(([key, count]) => {
+      const [countryCode, airportCode] = key.split(':');
+      const region = regionByCode.get(airportCode);
+      return { countryCode, airportCode, count, name: region?.name || airportCode };
+    });
+
+    res.json({ airports });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * GET /api/orders/summary
  * Aggregate totals for the Accounts overview — same filters/visibility as
  * listOrders, but summed across every matching order, not just the current
