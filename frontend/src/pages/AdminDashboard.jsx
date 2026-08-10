@@ -401,6 +401,14 @@ function OrdersPanel() {
   const [pickupRegionsByState, setPickupRegionsByState] = useState({});
   const [originState, setOriginState] = useState('');
   const [originRegion, setOriginRegion] = useState('');
+  // Delivery tab only: destination country/airport chips, same two-tier
+  // pattern as the Manifest tab's country+airport pickers — country is
+  // single-select ('' = all countries), airports within it are multi-select
+  // (all pre-selected on pick = no extra narrowing, matching Manifest's UX).
+  const [deliveryAirports, setDeliveryAirports] = useState([]);
+  const [deliveryCountryNames, setDeliveryCountryNames] = useState([]);
+  const [deliveryCountry, setDeliveryCountry] = useState('');
+  const [deliverySelectedAirportCodes, setDeliverySelectedAirportCodes] = useState([]);
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
