@@ -282,6 +282,17 @@ async function buildOrdersWhere(req) {
     andConditions.push({ senderAddress: senderFilter });
   }
 
+  // Delivery-orders tab's destination country/airport chips (see
+  // listDeliveryAirports below) — optional narrowing, independent of the
+  // origin-side filters above.
+  if (destinationCountryCode) {
+    andConditions.push({ receiverAddress: { countryCode: String(destinationCountryCode).toUpperCase() } });
+  }
+  if (airportCode) {
+    const codes = String(airportCode).split(',').map((c) => c.trim()).filter(Boolean);
+    if (codes.length) where.airportCode = { in: codes };
+  }
+
   if (andConditions.length) where.AND = andConditions;
 
   return where;
