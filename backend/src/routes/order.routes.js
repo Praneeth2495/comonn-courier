@@ -7,6 +7,7 @@ const {
   getOrdersSummary,
   getOrder,
   updateOrderStatus,
+  updateOrderCarrier,
   assignDriver,
   cancelOrder,
   listOrderComments,
