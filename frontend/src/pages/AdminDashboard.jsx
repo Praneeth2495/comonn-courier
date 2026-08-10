@@ -445,9 +445,32 @@ function OrdersPanel() {
         setPickupRegionsByState(data.regionsByState);
       }).catch(() => {});
     }
+    if (tab === 'delivery') {
+      Promise.all([
+        client.get('/orders/delivery-airports'),
+        deliveryCountryNames.length === 0 ? client.get('/quote/countries') : Promise.resolve(null),
+      ]).then(([airportsRes, countriesRes]) => {
+        setDeliveryAirports(airportsRes.data.airports);
+        if (countriesRes) setDeliveryCountryNames(countriesRes.data.countries);
+      }).catch(() => {});
+    }
     setSelectedIds([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  const deliveryCountryCodes = [...new Set(deliveryAirports.map((a) => a.countryCode))].sort();
+  const deliveryAirportsForCountry = deliveryAirports.filter((a) => a.countryCode === deliveryCountry);
+
+  function pickDeliveryCountry(code) {
+    setDeliveryCountry(code);
+    setDeliverySelectedAirportCodes(code ? deliveryAirports.filter((a) => a.countryCode === code).map((a) => a.airportCode) : []);
+    setPage(1);
+  }
+
+  function toggleDeliveryAirport(code) {
+    setDeliverySelectedAirportCodes((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
+    setPage(1);
+  }
 
   // Picking a different state clears any region filter from the previous
   // state's list — a region name is only meaningful within its own state.
