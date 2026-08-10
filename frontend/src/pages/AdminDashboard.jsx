@@ -659,9 +659,31 @@ function OrdersPanel() {
       </div>
 
       {tab === 'manifest' ? <ManifestPanel /> : <>
-      <div className="chip-filter-row">
-        <div className="chip-filter active"><IndiaFlagChip /> India</div>
-      </div>
+      {tab === 'delivery' ? (
+        <>
+          <div className="chip-filter-row">
+            <div className={`chip-filter ${!deliveryCountry ? 'active' : ''}`} onClick={() => pickDeliveryCountry('')}>All Countries</div>
+            {deliveryCountryCodes.map((code) => (
+              <div key={code} className={`chip-filter ${deliveryCountry === code ? 'active' : ''}`} onClick={() => pickDeliveryCountry(code)}>
+                {deliveryCountryNames.find((c) => c.countryCode === code)?.countryName || code}
+              </div>
+            ))}
+          </div>
+          {deliveryCountry && deliveryAirportsForCountry.length > 0 && (
+            <div className="chip-filter-row">
+              {deliveryAirportsForCountry.map((a) => (
+                <div key={a.airportCode} className={`chip-filter ${deliverySelectedAirportCodes.includes(a.airportCode) ? 'active' : ''}`} onClick={() => toggleDeliveryAirport(a.airportCode)}>
+                  {a.name === a.airportCode ? a.airportCode : `${a.name} (${a.airportCode})`} · {a.count}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="chip-filter-row">
+          <div className="chip-filter active"><IndiaFlagChip /> India</div>
+        </div>
+      )}
 
       {tab === 'pickup' && pickupStates.length > 0 && (
         <div className="chip-filter-row">
