@@ -175,7 +175,7 @@ export default function UserDashboard() {
 
       {tab === 'boxes' && <BoxBookings />}
 
-      {selected && <OrderDetailModal order={selected} onClose={() => setSelected(null)} canManageLabels={false} canViewComments={false} />}
+      {selected && <OrderDetailModal order={selected} onClose={() => setSelected(null)} canManageLabels={false} canViewComments={false} canManageTracking={false} />}
     </div>
   );
 }
