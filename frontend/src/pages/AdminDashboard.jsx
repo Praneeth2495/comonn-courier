@@ -670,7 +670,6 @@ function OrdersPanel() {
       {tab === 'delivery' ? (
         <>
           <div className="chip-filter-row">
-            <div className={`chip-filter ${!deliveryCountry ? 'active' : ''}`} onClick={() => pickDeliveryCountry('')}>All Countries</div>
             {deliveryCountryCodes.map((code) => (
               <div key={code} className={`chip-filter ${deliveryCountry === code ? 'active' : ''}`} onClick={() => pickDeliveryCountry(code)}>
                 {deliveryCountryNames.find((c) => c.countryCode === code)?.countryName || code}
