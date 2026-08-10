@@ -731,6 +731,16 @@ model Order {
   trackingNumber String? @unique
   invoiceNumber  String? @unique // "IN1", "IN2"... assigned at booking time, resets only on calendar year change
 
+  // Last-mile handoff — set by staff once the package is handed to a local
+  // courier in the destination country for final delivery (a separate
+  // label/tracking number gets generated with that carrier). Shown to the
+  // customer on the public tracking page as a fallback/direct link
+  // alongside Comonn's own timeline, since staff have to manually mirror
+  // that carrier's status updates into TrackingEvent (no shared API across
+  // last-mile partners yet).
+  carrierName            String?
+  carrierTrackingNumber  String?
+
   // Set only when staff/admin flip status to PAID by hand from the order
   // detail dropdown (updateOrderStatus) — e.g. cash collected at pickup —
   // as opposed to the online Razorpay flow (markOrderPaid /
