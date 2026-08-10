@@ -19,6 +19,11 @@ const STATUS_PILL = {
 
 const LABEL_ELIGIBLE_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
+// Statuses relevant once a package is moving/in last-mile — staff mirroring
+// a third-party carrier's own updates only ever move an order forward
+// through these, never back to a pre-shipment status.
+const TRACKING_UPDATE_STATUSES = ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'EXCEPTION'];
+
 function paidAndDue(o) {
   const grandTotal = Number(o.grandTotal);
   const amountPaid = o.payment?.status === 'SUCCEEDED' ? Number(o.payment.amount) : 0;
