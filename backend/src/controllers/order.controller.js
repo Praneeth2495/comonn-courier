@@ -1038,6 +1038,7 @@ module.exports = {
   getOrdersSummary,
   getOrder,
   updateOrderStatus,
+  updateOrderCarrier,
   assignDriver,
   cancelOrder,
   listOrderComments,
