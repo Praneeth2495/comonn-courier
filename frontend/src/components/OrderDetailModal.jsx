@@ -39,13 +39,27 @@ function paidAndDue(o) {
  * invoice" action for customers (their labels generate automatically —
  * see ensureLabelsForPaidOrders in UserDashboard.jsx). `canViewComments`
  * hides the internal admin/staff notes thread entirely from customers.
+ * `canManageTracking` hides the carrier-info and add-update forms for
+ * customers — they still see the read-only carrier line and timeline
+ * below it, same as the public /track page.
  */
-export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true }) {
+export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
   const [labels, setLabels] = useState(order.labels || []);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
   const [showComments, setShowComments] = useState(false);
+
+  const [trackingEvents, setTrackingEvents] = useState(order.trackingEvents || []);
+  const [carrierName, setCarrierName] = useState(order.carrierName || '');
+  const [carrierTrackingNumber, setCarrierTrackingNumber] = useState(order.carrierTrackingNumber || '');
+  const [savingCarrier, setSavingCarrier] = useState(false);
+  const [carrierSaved, setCarrierSaved] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState(TRACKING_UPDATE_STATUSES.includes(order.status) ? order.status : TRACKING_UPDATE_STATUSES[0]);
+  const [updateLocation, setUpdateLocation] = useState('');
+  const [updateNote, setUpdateNote] = useState('');
+  const [addingUpdate, setAddingUpdate] = useState(false);
+  const [addUpdateError, setAddUpdateError] = useState('');
 
   async function generateLabel() {
     setGenerating(true);
@@ -57,6 +71,37 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
       setGenerateError(err.response?.data?.error || 'Could not generate the label — please try again.');
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function saveCarrier() {
+    setSavingCarrier(true);
+    setCarrierSaved(false);
+    try {
+      await client.patch(`/orders/${order.id}/carrier`, { carrierName, carrierTrackingNumber });
+      setCarrierSaved(true);
+    } finally {
+      setSavingCarrier(false);
+    }
+  }
+
+  async function addTrackingUpdate(e) {
+    e.preventDefault();
+    setAddingUpdate(true);
+    setAddUpdateError('');
+    try {
+      const { data } = await client.patch(`/orders/${order.id}/status`, {
+        status: updateStatus,
+        location: updateLocation.trim() || undefined,
+        note: updateNote.trim() || undefined,
+      });
+      setTrackingEvents(data.order.trackingEvents || [...trackingEvents, { status: updateStatus, location: updateLocation, note: updateNote, occurredAt: new Date().toISOString() }]);
+      setUpdateLocation('');
+      setUpdateNote('');
+    } catch (err) {
+      setAddUpdateError(err.response?.data?.error || 'Could not add this update.');
+    } finally {
+      setAddingUpdate(false);
     }
   }
 
