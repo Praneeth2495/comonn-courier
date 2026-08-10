@@ -515,7 +515,7 @@ function OrdersPanel() {
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
-  useEffect(load, [tab, page, pageSize, originState, originRegion]);
+  useEffect(load, [tab, page, pageSize, originState, originRegion, deliveryCountry, deliverySelectedAirportCodes.join(',')]);
 
   function changePageSize(size) {
     setPageSize(size);
