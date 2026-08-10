@@ -31,6 +31,7 @@ router.post('/', optionalAuth, createOrder);
 
 router.get('/', requireAuth, listOrders);
 router.get('/summary', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('accounts'), getOrdersSummary);
+router.get('/delivery-airports', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), listDeliveryAirports);
 router.get('/:id', requireAuth, getOrder);
 // Public, shareable payment-link entry point (see getOrderForPayment) —
 // deliberately no auth: staff share this URL directly with the customer.
