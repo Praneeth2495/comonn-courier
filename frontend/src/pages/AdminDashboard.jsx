@@ -499,6 +499,8 @@ function OrdersPanel() {
       scope: tab === 'pickup' ? 'pickup' : undefined,
       originState: tab === 'pickup' ? originState || undefined : undefined,
       originRegion: tab === 'pickup' ? originRegion || undefined : undefined,
+      destinationCountryCode: tab === 'delivery' ? deliveryCountry || undefined : undefined,
+      airportCode: tab === 'delivery' && deliveryCountry && deliverySelectedAirportCodes.length > 0 ? deliverySelectedAirportCodes.join(',') : undefined,
     };
     if (tabDef[2]) params.status = tabDef[2].join(',');
     else if (tabDef[3] === 'hasUser') params.hasUser = 'true';
