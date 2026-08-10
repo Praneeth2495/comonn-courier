@@ -87,6 +87,12 @@ export default function Track() {
                 <span key={s} className={i <= stageIndex ? 'on' : ''}>{STAGE_LABELS[s]}</span>
               ))}
             </div>
+            {(result.carrierName || result.carrierTrackingNumber) && (
+              <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 14, borderTop: '1px solid var(--line-2)', paddingTop: 12 }}>
+                Last-mile delivery is with <b>{result.carrierName || 'a local courier partner'}</b>
+                {result.carrierTrackingNumber ? <> — their tracking number is <span className="mono">{result.carrierTrackingNumber}</span></> : null}. You can also track directly with them for the most up-to-the-minute status.
+              </p>
+            )}
           </div>
 
           <div className="timeline">
