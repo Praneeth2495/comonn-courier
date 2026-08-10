@@ -1088,6 +1088,7 @@ async function applyPromo(req, res, next) {
 module.exports = {
   createOrder,
   listOrders,
+  listDeliveryAirports,
   getOrdersSummary,
   getOrder,
   updateOrderStatus,
