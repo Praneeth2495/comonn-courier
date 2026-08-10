@@ -28,6 +28,8 @@ router.get('/:trackingNumber', async (req, res, next) => {
       service: order.service.name,
       destination: order.receiverAddress,
       events: order.trackingEvents,
+      carrierName: order.carrierName,
+      carrierTrackingNumber: order.carrierTrackingNumber,
     });
   } catch (err) {
     next(err);
