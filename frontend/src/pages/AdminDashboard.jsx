@@ -461,6 +461,14 @@ function OrdersPanel() {
   const deliveryCountryCodes = [...new Set(deliveryAirports.map((a) => a.countryCode))].sort();
   const deliveryAirportsForCountry = deliveryAirports.filter((a) => a.countryCode === deliveryCountry);
 
+  // No "All Countries" option — always resolves to one destination country
+  // at a time, same as the Manifest tab's country picker, defaulting to the
+  // first one with orders once the data loads.
+  useEffect(() => {
+    if (!deliveryCountry && deliveryCountryCodes.length > 0) pickDeliveryCountry(deliveryCountryCodes[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deliveryAirports]);
+
   function pickDeliveryCountry(code) {
     setDeliveryCountry(code);
     setDeliverySelectedAirportCodes(code ? deliveryAirports.filter((a) => a.countryCode === code).map((a) => a.airportCode) : []);
