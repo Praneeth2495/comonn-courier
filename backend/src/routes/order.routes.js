@@ -4,6 +4,7 @@ const { requireAuth, requireRole, requirePage, optionalAuth } = require('../midd
 const {
   createOrder,
   listOrders,
+  listDeliveryAirports,
   getOrdersSummary,
   getOrder,
   updateOrderStatus,
