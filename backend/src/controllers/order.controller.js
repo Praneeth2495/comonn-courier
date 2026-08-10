@@ -216,7 +216,7 @@ async function resolveOriginFilters(assignments) {
  * (customers see only their own orders, staff only their assigned zones/regions).
  */
 async function buildOrdersWhere(req) {
-  const { status, notStatus, zoneCode, hasUser, q, from, to, originState, originRegion, scope } = req.query;
+  const { status, notStatus, zoneCode, hasUser, q, from, to, originState, originRegion, scope, destinationCountryCode, airportCode } = req.query;
   const where = {};
   const andConditions = [];
 
