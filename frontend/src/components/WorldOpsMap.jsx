@@ -20,6 +20,8 @@ const PINS = [
   { name: 'New Zealand', x: 64.5, y: 27.71, dx: 1.4, dy: 0.9, anchor: 'start' },
   { name: 'UK', x: 31, y: 7.79, dx: 0, dy: -2, anchor: 'middle' },
   { name: 'USA', x: 18, y: 11.26, dx: 0, dy: 3.1, anchor: 'middle' },
+  { name: 'Europe', x: 33.5, y: 5.2, dx: 1.8, dy: 0.4, anchor: 'start' },
+  { name: 'South Africa', x: 35.5, y: 25.98, dx: 1.8, dy: 0.4, anchor: 'start' },
 ];
 
 const ORIGIN = PINS.find((p) => p.isOrigin);
