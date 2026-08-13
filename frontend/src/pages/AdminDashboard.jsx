@@ -887,7 +887,7 @@ function AccountsPanel() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(load, 3 * 60 * 1000);
+    const interval = setInterval(() => load(true), 60 * 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, fromDate, toDate]);
