@@ -256,7 +256,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .news-card .more{font-size:12.5px;font-weight:700;color:var(--coral);margin-top:4px;}
 
 /* World operations dot-map (homepage hero) */
-.world-ops-map-wrap{margin-top:32px;max-width:480px;}
+.world-ops-map-wrap{margin-top:32px;max-width:480px;position:relative;}
 .world-ops-map{width:100%;height:auto;display:block;overflow:visible;}
 .wom-dot{fill:rgba(255,255,255,.16);}
 .wom-arc{fill:none;stroke:var(--coral);stroke-width:.28;stroke-dasharray:1.6 1.8;opacity:.55;animation:wom-flow 24s linear infinite;}
@@ -266,9 +266,20 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .wom-pin-origin{fill:var(--coral);}
 .wom-pin-dest{fill:#fff;}
 .wom-pin-dest-ring{fill:none;stroke:rgba(255,255,255,.4);stroke-width:.3;}
-.wom-label{font-size:1.7px;font-weight:600;fill:#C7CEE6;letter-spacing:.01em;}
+.wom-pin-group{cursor:pointer;outline:none;}
+.wom-pin-hit{fill:transparent;}
+.wom-pin-group:hover .wom-pin-dest-ring,.wom-pin-group:focus-visible .wom-pin-dest-ring{stroke:#fff;}
+.wom-pin-group:hover .wom-label,.wom-pin-group:focus-visible .wom-label{fill:#fff;}
+.wom-label{font-size:1.7px;font-weight:600;fill:#C7CEE6;letter-spacing:.01em;transition:fill .15s ease;}
 .wom-label-origin{font-size:1.9px;font-weight:700;fill:#FF9478;}
-@media(prefers-reduced-motion: reduce){.wom-arc,.wom-pin-ring{animation:none;}}
+.wom-dropdown{position:absolute;transform:translate(-50%,10px);min-width:132px;background:#1B2A57;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 12px;box-shadow:0 12px 28px rgba(0,0,0,.35);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:5;}
+.wom-dropdown.is-flipped{transform:translate(-100%,10px);}
+.wom-dropdown.is-open{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,16px);}
+.wom-dropdown.is-flipped.is-open{transform:translate(-100%,16px);}
+.wom-dropdown-title{font-size:11px;font-weight:700;color:#FF9478;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.wom-dropdown ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;}
+.wom-dropdown li{font-size:13px;color:#E4E8F5;white-space:nowrap;}
+@media(prefers-reduced-motion: reduce){.wom-arc,.wom-pin-ring{animation:none;}.wom-dropdown{transition:none;}}
 @media(max-width:1000px){.world-ops-map-wrap{display:none;}}
 
 @media(max-width:1000px){
