@@ -853,7 +853,11 @@ function OrdersPanel() {
 
 function paidAndDue(o) {
   const grandTotal = Number(o.grandTotal);
-  const amountPaid = o.payment?.status === 'SUCCEEDED' ? Number(o.payment.amount) : 0;
+  const original = o.payment?.status === 'SUCCEEDED' ? Number(o.payment.amount) : 0;
+  const topUps = (o.balancePayments || [])
+    .filter((p) => p.status === 'SUCCEEDED')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const amountPaid = Math.round((original + topUps) * 100) / 100;
   const due = Math.round((grandTotal - amountPaid) * 100) / 100;
   return { amountPaid, due };
 }
