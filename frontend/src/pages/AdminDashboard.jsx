@@ -1314,7 +1314,11 @@ function UsersPanel() {
       setStaffRegions(map);
     });
   }
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   async function setRole(id, role) {
     const { data } = await client.patch(`/admin/users/${id}`, { role });
