@@ -178,6 +178,7 @@ function SizesAndBoxes() {
                   <td style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{activeBooking ? `${activeBooking.customer.fullName} (${activeBooking.customer.email})` : '—'}</td>
                   <td style={{ display: 'flex', gap: 8 }}>
                     {b.status === 'RENTED' && <button className="btn btn-outline btn-sm" onClick={() => releaseBox(b.id)}>Release</button>}
+                    {b.status === 'RETIRED' && <button className="btn btn-outline btn-sm" onClick={() => unretireBox(b.id)}>Un-retire</button>}
                     {b.status !== 'RETIRED' && <button className="btn btn-outline btn-sm" onClick={() => retireBox(b.id)}>Retire</button>}
                   </td>
                 </tr>
