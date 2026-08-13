@@ -885,7 +885,12 @@ function AccountsPanel() {
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
-  useEffect(load, [page, pageSize, fromDate, toDate]);
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 3 * 60 * 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, fromDate, toDate]);
 
   function changePageSize(size) {
     setPageSize(size);
