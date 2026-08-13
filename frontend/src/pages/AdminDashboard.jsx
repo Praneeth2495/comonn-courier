@@ -240,8 +240,13 @@ function RegionOverviewTable({ fromDate, toDate }) {
   const [rows, setRows] = useState(null);
 
   useEffect(() => {
-    setRows(null);
-    client.get('/admin/dashboard/regions', { params: { from: fromDate, to: toDate } }).then(({ data }) => setRows(data.rows));
+    function load(silent) {
+      if (!silent) setRows(null);
+      client.get('/admin/dashboard/regions', { params: { from: fromDate, to: toDate } }).then(({ data }) => setRows(data.rows));
+    }
+    load();
+    const interval = setInterval(() => load(true), 60 * 1000);
+    return () => clearInterval(interval);
   }, [fromDate, toDate]);
 
   if (!rows) return <LoadingLogo />;
