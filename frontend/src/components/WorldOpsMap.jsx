@@ -54,19 +54,37 @@ function arcPath(x1, y1, x2, y2) {
 }
 
 export default function WorldOpsMap() {
+  const [active, setActive] = useState(null);
+
+  const open = (name) => setActive(name);
+  const close = (name) => setActive((cur) => (cur === name ? null : cur));
+
   return (
     <div className="world-ops-map-wrap">
-      <svg className="world-ops-map" viewBox="-2 -2 67 36" role="img" aria-label="Map showing Comonn's shipping network from India to Australia, Canada, New Zealand, the UK and the USA">
+      <svg className="world-ops-map" viewBox="-2 -2 67 36" role="img" aria-label="Map showing Comonn's shipping network from India to Europe, North America, Asia, Africa and Oceania">
         {LAND_DOTS.map(([x, y], i) => (
           <circle key={i} className="wom-dot" cx={x} cy={y} r={0.45} />
         ))}
 
-        {DESTINATIONS.map((p) => (
+        {CONTINENTS.map((p) => (
           <path key={p.name} className="wom-arc" d={arcPath(ORIGIN.x, ORIGIN.y, p.x, p.y)} />
         ))}
 
-        {DESTINATIONS.map((p) => (
-          <g key={p.name}>
+        {CONTINENTS.map((p) => (
+          <g
+            key={p.name}
+            className="wom-pin-group"
+            tabIndex={0}
+            role="button"
+            aria-haspopup="listbox"
+            aria-expanded={active === p.name}
+            onMouseEnter={() => open(p.name)}
+            onMouseLeave={() => close(p.name)}
+            onFocus={() => open(p.name)}
+            onBlur={() => close(p.name)}
+            onClick={() => setActive((cur) => (cur === p.name ? null : p.name))}
+          >
+            <circle className="wom-pin-hit" cx={p.x} cy={p.y} r={3.2} />
             <circle className="wom-pin-dest-ring" cx={p.x} cy={p.y} r={1.3} />
             <circle className="wom-pin-dest" cx={p.x} cy={p.y} r={0.75} />
             <text className="wom-label" x={p.x + p.dx} y={p.y + p.dy} textAnchor={p.anchor}>
@@ -81,6 +99,29 @@ export default function WorldOpsMap() {
           India
         </text>
       </svg>
+
+      {CONTINENTS.map((p) => {
+        const pos = toPct(p.x, p.y);
+        const flip = p.anchor === 'end';
+        return (
+          <div
+            key={p.name}
+            className={`wom-dropdown${active === p.name ? ' is-open' : ''}${flip ? ' is-flipped' : ''}`}
+            style={{ left: `${pos.left}%`, top: `${pos.top}%` }}
+            role="listbox"
+            aria-label={`${p.name} destinations`}
+            onMouseEnter={() => open(p.name)}
+            onMouseLeave={() => close(p.name)}
+          >
+            <div className="wom-dropdown-title">{p.name}</div>
+            <ul>
+              {p.countries.map((c) => (
+                <li key={c} role="option">{c}</li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }
