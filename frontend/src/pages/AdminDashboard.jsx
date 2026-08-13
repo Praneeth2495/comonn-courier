@@ -1158,7 +1158,11 @@ function RatesPanel() {
     client.get('/admin/services').then(({ data }) => setServices(data.services));
     client.get('/admin/rate-cards').then(({ data }) => setRateCards(data.rateCards));
   }
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
