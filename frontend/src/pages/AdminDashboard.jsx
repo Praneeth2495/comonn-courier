@@ -110,9 +110,14 @@ function Overview() {
   const canSeeBreakdown = user?.role === 'ADMIN' || user?.canViewOverviewBreakdown;
 
   useEffect(() => {
-    if (subTab !== 'summary') return;
-    setData(null);
-    client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
+    function load(silent) {
+      if (subTab !== 'summary') return;
+      if (!silent) setData(null);
+      client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
+    }
+    load();
+    const interval = setInterval(() => load(true), 60 * 1000);
+    return () => clearInterval(interval);
   }, [fromDate, toDate, subTab]);
 
   async function openDetail(id) {
