@@ -1017,11 +1017,15 @@ function InventoryPanel() {
   const [editingId, setEditingId] = useState(null);
   const [editQty, setEditQty] = useState('');
 
-  function load() {
-    setLoading(true);
+  function load(silent) {
+    if (!silent) setLoading(true);
     client.get('/inventory').then(({ data }) => { setItems(data.items); setLoading(false); }).catch(() => setLoading(false));
   }
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => load(true), 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   async function addItem(e) {
     e.preventDefault();
