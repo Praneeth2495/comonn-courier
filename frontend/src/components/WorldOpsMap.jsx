@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 // Decorative "where we operate" dot map for the homepage hero — fills the
 // empty navy space below the trust-row. Dot coordinates were generated
 // offline via the `dotted-map` npm package (MIT licensed) at build time
