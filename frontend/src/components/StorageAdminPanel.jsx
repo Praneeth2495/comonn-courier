@@ -212,11 +212,15 @@ function BookingsTable() {
   const [statusUpdatingId, setStatusUpdatingId] = useState(null);
   const [error, setError] = useState('');
 
-  function load() {
-    setLoading(true);
+  function load(silent) {
+    if (!silent) setLoading(true);
     client.get('/box-bookings/admin/bookings').then(({ data }) => { setBookings(data.bookings); setLoading(false); }).catch(() => setLoading(false));
   }
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => load(true), 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filtered = bookings.filter((b) => {
     if (!q.trim()) return true;
