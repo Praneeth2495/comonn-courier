@@ -485,9 +485,9 @@ function OrdersPanel() {
     setPage(1);
   }
 
-  function load() {
+  function load(silent) {
     if (tab === 'manifest') { setLoading(false); return; }
-    setLoading(true);
+    if (!silent) setLoading(true);
     const seq = ++seqRef.current;
     const tabDef = ORDER_TABS.find(([key]) => key === tab);
     const params = {
