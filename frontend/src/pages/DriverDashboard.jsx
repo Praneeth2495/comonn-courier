@@ -88,7 +88,11 @@ function MyJobs({ userName }) {
       setLoading(false);
     }).catch(() => setLoading(false));
   }
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 3 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   async function markArrived(id) {
     setUpdatingId(id);
