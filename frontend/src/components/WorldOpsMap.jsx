@@ -13,19 +13,27 @@ const LAND_DOTS = LAND_DOTS_RAW.split(' ').map((pair) => {
 });
 
 // Same projection space as the dots above (image is 63 wide x 32 tall).
-const PINS = [
-  { name: 'India (Hub)', x: 46.5, y: 15.59, isOrigin: true },
-  { name: 'Australia', x: 59, y: 26.85, dx: -1, dy: -2, anchor: 'end' },
-  { name: 'Canada', x: 16.5, y: 10.39, dx: -1, dy: -2, anchor: 'end' },
-  { name: 'New Zealand', x: 64.5, y: 27.71, dx: 1.4, dy: 0.9, anchor: 'start' },
-  { name: 'UK', x: 31, y: 7.79, dx: 0, dy: -2, anchor: 'middle' },
-  { name: 'USA', x: 18, y: 11.26, dx: 0, dy: 3.1, anchor: 'middle' },
-  { name: 'Europe', x: 33.5, y: 5.2, dx: 1.8, dy: 0.4, anchor: 'start' },
-  { name: 'South Africa', x: 35.5, y: 25.98, dx: 1.8, dy: 0.4, anchor: 'start' },
+const ORIGIN = { name: 'India', x: 46.5, y: 15.59 };
+
+// Continent-level pins. Each `countries` entry is a country we currently
+// list, shown in a dropdown when the continent is hovered/focused.
+const CONTINENTS = [
+  { name: 'Europe', x: 33.5, y: 5.2, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['United Kingdom'] },
+  { name: 'North America', x: 17.25, y: 10.8, dx: -1, dy: -2, anchor: 'end', countries: ['Canada', 'United States'] },
+  { name: 'Asia', x: 51, y: 19.92, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['Malaysia', 'Singapore'] },
+  { name: 'Africa', x: 35.5, y: 25.98, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['South Africa'] },
+  { name: 'Oceania', x: 61.75, y: 27.28, dx: 1.4, dy: 0.9, anchor: 'start', countries: ['Australia', 'New Zealand'] },
 ];
 
-const ORIGIN = PINS.find((p) => p.isOrigin);
-const DESTINATIONS = PINS.filter((p) => !p.isOrigin);
+// Map viewBox is "-2 -2 67 36" — used to place the HTML dropdown at the
+// same relative position as the SVG pin it belongs to.
+const VIEWBOX = { minX: -2, minY: -2, width: 67, height: 36 };
+function toPct(x, y) {
+  return {
+    left: ((x - VIEWBOX.minX) / VIEWBOX.width) * 100,
+    top: ((y - VIEWBOX.minY) / VIEWBOX.height) * 100,
+  };
+}
 
 // Gentle bow curve from origin to each destination, always arcing "up"
 // (toward smaller y) so every route reads consistently, like a flight map.
