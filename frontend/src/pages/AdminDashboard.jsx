@@ -522,7 +522,7 @@ function OrdersPanel() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(load, 3 * 60 * 1000);
+    const interval = setInterval(() => load(true), 60 * 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, page, pageSize, originState, originRegion, deliveryCountry, deliverySelectedAirportCodes.join(',')]);
