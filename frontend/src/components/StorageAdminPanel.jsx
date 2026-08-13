@@ -33,8 +33,8 @@ function SizesAndBoxes() {
   const [addingBox, setAddingBox] = useState(false);
   const [error, setError] = useState('');
 
-  function load() {
-    setLoading(true);
+  function load(silent) {
+    if (!silent) setLoading(true);
     Promise.all([
       client.get('/box-bookings/admin/sizes'),
       client.get('/box-bookings/admin/boxes'),
@@ -44,7 +44,11 @@ function SizesAndBoxes() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(() => load(true), 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   async function addSize(e) {
     e.preventDefault();
