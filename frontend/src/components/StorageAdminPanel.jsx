@@ -94,6 +94,11 @@ function SizesAndBoxes() {
     load();
   }
 
+  async function unretireBox(id) {
+    await client.patch(`/box-bookings/admin/boxes/${id}/release`);
+    load();
+  }
+
   if (loading) return <LoadingLogo />;
 
   return (
