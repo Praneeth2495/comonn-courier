@@ -870,8 +870,8 @@ function AccountsPanel() {
     setDetailOrder(data.order);
   }
 
-  function load() {
-    setLoading(true);
+  function load(silent) {
+    if (!silent) setLoading(true);
     const seq = ++seqRef.current;
     const params = { q: q || undefined, page, pageSize, from: fromDate || undefined, to: toDate || undefined, notStatus: 'UNFINISHED' };
     Promise.all([
