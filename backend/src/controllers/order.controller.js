@@ -434,6 +434,11 @@ async function getOrder(req, res, next) {
     if (req.user.role === 'CUSTOMER' && order.userId !== req.user.id) {
       return res.status(403).json({ error: 'Not your order' });
     }
+    // Delivery status of our own outbound WhatsApp sends (including any
+    // Meta error text) is an internal ops detail, not something to hand a
+    // customer — same treatment as comments (fetched via a separate
+    // staff-only route, never included here at all).
+    if (req.user.role === 'CUSTOMER') delete order.whatsappMessages;
     res.json({ order });
   } catch (err) {
     next(err);
