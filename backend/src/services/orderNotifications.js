@@ -11,10 +11,9 @@ function siteUrl(pathname) {
 // Order.whatsappOptIn, set on the Payment page). Deliberately narrow set
 // of follow-up statuses (just these two, not every tracking transition) —
 // only sends if they opted in. All templates must be pre-approved in
-// Meta's WhatsApp Manager before use — these are the proposed names,
-// adjust here once the real approved names are known.
+// Meta's WhatsApp Manager before use.
 const CONFIRMATION_STATUSES = new Set(['PAID', 'PICKUP_CONFIRMED']);
-const CONFIRMATION_TEMPLATE = 'order_confirmation';
+const CONFIRMATION_TEMPLATE = 'order_confirmed';
 
 const UPDATE_TEMPLATES = {
   PICKED_UP: 'order_picked_up',
