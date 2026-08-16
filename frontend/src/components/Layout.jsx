@@ -55,7 +55,7 @@ function AccountMenu({ name, onOpen, onLogout }) {
           <button type="button" className="acct-menu-item" onClick={() => choose('profile')}>Profile details</button>
           <button type="button" className="acct-menu-item" onClick={() => choose('password')}>Change password</button>
           <div style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
-          <button type="button" className="acct-menu-item" onClick={() => { setOpen(false); onLogout(); }}>Log out</button>
+          <button type="button" className="acct-menu-item acct-menu-item-danger" onClick={() => { setOpen(false); onLogout(); }}>Log out</button>
         </div>
       )}
     </div>
