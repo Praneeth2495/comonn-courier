@@ -64,11 +64,10 @@ async function notifyOrderStatusChange(orderId, status) {
     if (!templateName) return;
 
     const trackingNumber = order.trackingNumber || order.orderNumber;
-    const trackUrl = siteUrl(`/track?id=${encodeURIComponent(trackingNumber)}`);
 
     await Promise.all([
-      notifyRecipient(templateName, order.senderAddress?.contactName, order.senderAddress?.phone, trackingNumber, trackUrl),
-      notifyRecipient(templateName, order.receiverAddress?.contactName, order.receiverAddress?.phone, trackingNumber, trackUrl),
+      notifyRecipient(templateName, order.senderAddress?.contactName, order.senderAddress?.phone, trackingNumber),
+      notifyRecipient(templateName, order.receiverAddress?.contactName, order.receiverAddress?.phone, trackingNumber),
     ]);
   } catch (err) {
     // Genuinely fire-and-forget — callers never await this, so a failure
