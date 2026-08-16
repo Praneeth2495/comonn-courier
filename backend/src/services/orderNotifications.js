@@ -15,7 +15,11 @@ const UPDATE_TEMPLATES = {
   OUT_FOR_DELIVERY: 'order_out_for_delivery',
 };
 
-async function notifyRecipient(templateName, contactName, phone, trackingNumber, trackUrl) {
+// All three approved templates (order_confirmed, order_picked_up,
+// order_out_for_delivery) take exactly 2 body params — name and order
+// number — see their approved bodies in WhatsApp Manager. None use a
+// dynamic URL; the "Track Order" button on each is a static Quick Reply.
+async function notifyRecipient(templateName, contactName, phone, trackingNumber) {
   if (!phone) return;
   const to = phone.replace(/\D/g, '');
   if (!to) return;
@@ -23,7 +27,7 @@ async function notifyRecipient(templateName, contactName, phone, trackingNumber,
     await sendTemplateMessage({
       to,
       templateName,
-      params: [contactName || 'there', trackingNumber, trackUrl],
+      params: [contactName || 'there', trackingNumber],
     });
   } catch (err) {
     console.error(`WhatsApp notify failed (template=${templateName}, to=${to}):`, err.message);
