@@ -306,6 +306,28 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         )}
 
+        {canViewWhatsapp && order.whatsappMessages?.length > 0 && (
+          <div className="detail-section" style={{ marginBottom: canViewComments ? 20 : 0 }}>
+            <div className="oda-section-head"><span className="icon">📲</span><h4>WhatsApp notifications</h4></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {order.whatsappMessages.map((m) => (
+                <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 12.5, borderBottom: '1px solid var(--line-2)', paddingBottom: 8 }}>
+                  <div>
+                    <b>{WHATSAPP_TEMPLATE_LABEL[m.templateName] || m.templateName}</b>
+                    <span style={{ color: 'var(--slate-light)', marginLeft: 6 }}>
+                      {m.recipientName || 'Unknown'} · {m.recipientPhone}
+                    </span>
+                    {m.status === 'failed' && m.errorMessage && (
+                      <div style={{ color: 'var(--danger)', marginTop: 2 }}>{m.errorMessage}</div>
+                    )}
+                  </div>
+                  <span className={`pill ${WHATSAPP_STATUS_PILL[m.status] || 'pill-navy'}`} style={{ flex: 'none', textTransform: 'capitalize' }}>{m.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {canViewComments && (
           <div className="detail-section" style={{ marginBottom: 0 }}>
             <div className="oda-section-head"><span className="icon">💬</span><h4>Internal notes</h4></div>
