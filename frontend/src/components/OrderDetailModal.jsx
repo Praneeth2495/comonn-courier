@@ -19,6 +19,13 @@ const STATUS_PILL = {
 
 const LABEL_ELIGIBLE_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
+const WHATSAPP_TEMPLATE_LABEL = {
+  order_confirmed: 'Order confirmed',
+  order_picked_up: 'Picked up',
+  order_out_for_delivery: 'Out for delivery',
+};
+const WHATSAPP_STATUS_PILL = { failed: 'pill-danger', read: 'pill-success', delivered: 'pill-success', sent: 'pill-cobalt', accepted: 'pill-cobalt' };
+
 // Statuses relevant once a package is moving/in last-mile — staff mirroring
 // a third-party carrier's own updates only ever move an order forward
 // through these, never back to a pre-shipment status.
