@@ -26,7 +26,23 @@ function verifyWebhook(req, res) {
  * unverified (logs a warning) so the endpoint still works during initial
  * setup before the secret is added.
  */
-function handleWebhookEvent(req, res) {
+// Meta's payload groups events under entry[].changes[].value.statuses[] —
+// each is one message's lifecycle update (sent -> delivered -> read, or
+// failed with an errors[] array). Matched back to the WhatsappMessage row
+// created at send time via providerMessageId (Meta's wamid). A status
+// update for a wamid we don't have (e.g. arrived before the create() above
+// finished, or a message sent before this table existed) is silently
+// skipped — nothing to attach it to.
+async function applyStatusUpdate(status) {
+  if (!status?.id) return;
+  const data = { status: status.status };
+  if (status.status === 'failed' && status.errors?.length) {
+    data.errorMessage = status.errors.map((e) => e.title || e.message).join('; ').slice(0, 500);
+  }
+  await prisma.whatsappMessage.updateMany({ where: { providerMessageId: status.id }, data });
+}
+
+async function handleWebhookEvent(req, res) {
   try {
     const secret = process.env.WHATSAPP_APP_SECRET;
     const signatureHeader = req.headers['x-hub-signature-256'];
@@ -41,12 +57,11 @@ function handleWebhookEvent(req, res) {
     }
 
     const event = JSON.parse(req.body);
-    // Meta's payload groups events under entry[].changes[].value — status
-    // updates (sent/delivered/read/failed) and incoming messages both land
-    // here. Not acted on yet, just logged for visibility — add real
-    // handling (e.g. persisting delivery failures) once there's a concrete
-    // need for it.
-    console.log('WhatsApp webhook event:', JSON.stringify(event));
+    const statuses = (event.entry || [])
+      .flatMap((e) => e.changes || [])
+      .flatMap((c) => c.value?.statuses || []);
+    await Promise.all(statuses.map(applyStatusUpdate));
+    if (statuses.length === 0) console.log('WhatsApp webhook event (no statuses):', JSON.stringify(event));
   } catch (err) {
     console.error('WhatsApp webhook: failed to process event:', err.message);
   }
