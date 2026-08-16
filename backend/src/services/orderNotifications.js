@@ -1,11 +1,6 @@
 const { prisma } = require('../config/db');
 const { sendTemplateMessage } = require('./whatsappService');
 
-function siteUrl(pathname) {
-  const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
-  return `${base}${pathname}`;
-}
-
 // PAID/PICKUP_CONFIRMED are the "your order is booked" moment — this one
 // always sends, regardless of the customer's WhatsApp opt-in choice (see
 // Order.whatsappOptIn, set on the Payment page). Deliberately narrow set
