@@ -46,7 +46,7 @@ function SizesAndBoxes() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(() => load(true), 60 * 1000);
+    const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -218,7 +218,7 @@ function BookingsTable() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(() => load(true), 60 * 1000);
+    const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, []);
 

@@ -116,7 +116,7 @@ function Overview() {
       client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
     }
     load();
-    const interval = setInterval(() => load(true), 60 * 1000);
+    const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, [fromDate, toDate, subTab]);
 
@@ -192,7 +192,7 @@ function StaffOverviewTable({ fromDate, toDate }) {
       client.get('/admin/dashboard/staff', { params: { from: fromDate, to: toDate } }).then(({ data }) => setRows(data.rows));
     }
     load();
-    const interval = setInterval(() => load(true), 60 * 1000);
+    const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, [fromDate, toDate]);
 
@@ -245,7 +245,7 @@ function RegionOverviewTable({ fromDate, toDate }) {
       client.get('/admin/dashboard/regions', { params: { from: fromDate, to: toDate } }).then(({ data }) => setRows(data.rows));
     }
     load();
-    const interval = setInterval(() => load(true), 60 * 1000);
+    const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, [fromDate, toDate]);
 
@@ -906,7 +906,7 @@ function AccountsPanel() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(() => load(true), 60 * 1000);
+    const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, fromDate, toDate]);
@@ -1027,7 +1027,7 @@ function InventoryPanel() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(() => load(true), 60 * 1000);
+    const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -1164,7 +1164,7 @@ function RatesPanel() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(load, 60 * 1000);
+    const interval = setInterval(load, 30 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -1320,7 +1320,7 @@ function UsersPanel() {
   }
   useEffect(() => {
     load();
-    const interval = setInterval(load, 60 * 1000);
+    const interval = setInterval(load, 30 * 1000);
     return () => clearInterval(interval);
   }, []);
 
