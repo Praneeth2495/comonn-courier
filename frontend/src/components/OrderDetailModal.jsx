@@ -50,7 +50,7 @@ function paidAndDue(o) {
  * customers — they still see the read-only carrier line and timeline
  * below it, same as the public /track page.
  */
-export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true }) {
+export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true, canViewWhatsapp = true }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
   const [labels, setLabels] = useState(order.labels || []);
   const [generating, setGenerating] = useState(false);
