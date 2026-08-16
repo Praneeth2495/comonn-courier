@@ -964,6 +964,30 @@ model BalancePayment {
   @@index([orderId])
 }
 
+// One row per WhatsApp template send (see orderNotifications.js) — a
+// status-change event sends to both sender and receiver, so an order
+// typically ends up with more than one of these. providerMessageId is
+// Meta's wamid, used to match up the async status webhook event
+// (whatsapp.controller.js) that later updates `status` from
+// accepted -> sent -> delivered -> read, or -> failed with errorMessage
+// filled in. Shown on the order detail modal so staff can see whether a
+// customer actually got notified without digging through server logs.
+model WhatsappMessage {
+  id                String   @id @default(uuid())
+  orderId           String
+  order             Order    @relation(fields: [orderId], references: [id])
+  templateName      String
+  recipientPhone    String
+  recipientName     String?
+  providerMessageId String?  @unique // Meta's wamid — null if the send call itself failed
+  status            String   @default("accepted") // accepted | sent | delivered | read | failed
+  errorMessage      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([orderId])
+}
+
 // ------------------------------------------------------------
 // Labels
 // ------------------------------------------------------------
