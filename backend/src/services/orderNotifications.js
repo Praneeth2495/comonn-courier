@@ -19,18 +19,41 @@ const UPDATE_TEMPLATES = {
 // order_out_for_delivery) take exactly 2 body params — name and order
 // number — see their approved bodies in WhatsApp Manager. None use a
 // dynamic URL; the "Track Order" button on each is a static Quick Reply.
-async function notifyRecipient(templateName, contactName, phone, trackingNumber) {
+// Every attempt (success or failure) is logged to WhatsappMessage so staff
+// can see it on the order detail modal — the webhook (whatsapp.controller.js)
+// later updates `status` on the success rows as delivered/read/failed come in.
+async function notifyRecipient(orderId, templateName, contactName, phone, trackingNumber) {
   if (!phone) return;
   const to = phone.replace(/\D/g, '');
   if (!to) return;
   try {
-    await sendTemplateMessage({
+    const result = await sendTemplateMessage({
       to,
       templateName,
       params: [contactName || 'there', trackingNumber],
     });
+    await prisma.whatsappMessage.create({
+      data: {
+        orderId,
+        templateName,
+        recipientPhone: to,
+        recipientName: contactName || null,
+        providerMessageId: result.messages?.[0]?.id || null,
+        status: result.messages?.[0]?.message_status || 'accepted',
+      },
+    });
   } catch (err) {
     console.error(`WhatsApp notify failed (template=${templateName}, to=${to}):`, err.message);
+    await prisma.whatsappMessage.create({
+      data: {
+        orderId,
+        templateName,
+        recipientPhone: to,
+        recipientName: contactName || null,
+        status: 'failed',
+        errorMessage: err.message.slice(0, 500),
+      },
+    }).catch(() => {}); // never let the audit-log write itself throw
   }
 }
 
