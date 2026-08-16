@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { prisma } = require('../config/db');
 
 /**
  * GET /api/whatsapp/webhook — Meta's one-time verification handshake, run
