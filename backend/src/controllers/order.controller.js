@@ -427,6 +427,7 @@ async function getOrder(req, res, next) {
         items: true,
         addons: true,
         trackingEvents: { orderBy: { occurredAt: 'asc' } },
+        whatsappMessages: { orderBy: { createdAt: 'asc' } },
       },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
