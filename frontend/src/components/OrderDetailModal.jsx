@@ -136,16 +136,20 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         </div>
 
         <div className="oda-summary">
-          <div className="item total">
-            <span className="lbl">Total</span>
-            <span className="val">₹{Number(order.grandTotal).toFixed(2)}</span>
-          </div>
-          <div className="item">
-            <span className="lbl">{due > 0 ? 'To pay' : due < 0 ? 'Credit' : 'Paid'}</span>
-            <span className="val" style={{ color: due > 0 ? 'var(--danger)' : due < 0 ? 'var(--slate)' : 'var(--success)' }}>
-              {due > 0 ? `₹${due.toFixed(2)}` : due < 0 ? `₹${Math.abs(due).toFixed(2)}` : `₹${amountPaid.toFixed(2)}`}
-            </span>
-          </div>
+          {canViewPricing && (
+            <>
+              <div className="item total">
+                <span className="lbl">Total</span>
+                <span className="val">₹{Number(order.grandTotal).toFixed(2)}</span>
+              </div>
+              <div className="item">
+                <span className="lbl">{due > 0 ? 'To pay' : due < 0 ? 'Credit' : 'Paid'}</span>
+                <span className="val" style={{ color: due > 0 ? 'var(--danger)' : due < 0 ? 'var(--slate)' : 'var(--success)' }}>
+                  {due > 0 ? `₹${due.toFixed(2)}` : due < 0 ? `₹${Math.abs(due).toFixed(2)}` : `₹${amountPaid.toFixed(2)}`}
+                </span>
+              </div>
+            </>
+          )}
           <div className="item">
             <span className="lbl">Service</span>
             <span className="val">{order.service?.name || '—'}</span>
