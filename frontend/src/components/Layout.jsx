@@ -115,7 +115,7 @@ function AccountMenu({ name, onOpen, onLogout, onShowIosHelp }) {
 // whole header into an awkward extra row. Mirrors AccountMenu's circular
 // avatar + dropdown, just with a generic person icon (no name yet) and
 // Login/Register as the menu options instead of profile/logout.
-function GuestMenu() {
+function GuestMenu({ onShowIosHelp }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
