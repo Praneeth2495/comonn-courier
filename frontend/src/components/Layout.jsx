@@ -119,13 +119,10 @@ function dashboardPath(role) {
   return '/dashboard';
 }
 
-export function SiteHeader({ onOpenAccount, onShowIosHelp }) {
+export function SiteHeader({ onOpenAccount }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  // Mounted for the header's whole lifetime (i.e. from page load), not just
-  // while a dropdown happens to be open — see InstallMenuItem's comment.
-  const install = useInstallPrompt();
   // On mobile the second nav row is reserved for Book/Track/Storage —
   // Services/About move into the account dropdown (AccountMenu/GuestMenu)
   // instead, regardless of login state.
