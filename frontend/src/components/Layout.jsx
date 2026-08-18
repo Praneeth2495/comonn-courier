@@ -252,11 +252,13 @@ export function PublicLayout({ children }) {
   // dropdown open any of these as a modal from anywhere in the app, not
   // just the Dashboard page.
   const [accountSection, setAccountSection] = useState(null);
+  const [showIosHelp, setShowIosHelp] = useState(false);
   return (
     <>
-      <SiteHeader onOpenAccount={setAccountSection} />
+      <SiteHeader onOpenAccount={setAccountSection} onShowIosHelp={() => setShowIosHelp(true)} />
       <main className="site-main">{children}</main>
       <SiteFooter />
+      {showIosHelp && <IosInstallHelpModal onClose={() => setShowIosHelp(false)} />}
       {accountSection && (
         <div className="modal-overlay open" onClick={() => setAccountSection(null)}>
           <div className="modal-box" style={{ maxWidth: accountSection === 'addresses' ? 640 : 440 }} onClick={(e) => e.stopPropagation()}>
