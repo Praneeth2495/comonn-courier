@@ -235,20 +235,23 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
             </form>
           )}
         </div>
+        )}
 
         <div className="detail-section">
           <div className="oda-section-head"><span className="icon">📦</span><h4>Shipment</h4></div>
           <div className="detail-grid">
             <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Items</span><span className="v">{itemsSummary || '—'}</span></div>
             <div className="detail-row"><span className="k">Service</span><span className="v">{order.service?.name}</span></div>
-            <div className="detail-row oda-highlight"><span className="k">Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)} {order.currency}</span></div>
+            {canViewPricing && (
+              <div className="detail-row oda-highlight"><span className="k">Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)} {order.currency}</span></div>
+            )}
             <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Goods description</span><span className="v">{order.contentsDescription || '—'}</span></div>
             <div className="detail-row"><span className="k">Value of goods</span><span className="v">₹{Number(order.declaredValue).toFixed(2)}</span></div>
             <div className="detail-row"><span className="k">Pickup date</span><span className="v">{order.pickupDate || '—'}</span></div>
           </div>
         </div>
 
-        {order.addons?.length > 0 && (
+        {canViewPricing && order.addons?.length > 0 && (
           <div className="detail-section">
             <div className="oda-section-head"><span className="icon">🎁</span><h4>Add-on services</h4></div>
             <div className="detail-grid">
