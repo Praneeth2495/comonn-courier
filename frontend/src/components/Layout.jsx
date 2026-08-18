@@ -156,7 +156,7 @@ function GuestMenu({ install, onShowIosHelp }) {
           <Link to="/about" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>About</Link>
           <Link to="/services" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>Services</Link>
           <div className="acct-menu-mobile-only" style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
-          <InstallMenuItem onClose={() => setOpen(false)} onShowIosHelp={onShowIosHelp} />
+          <InstallMenuItem install={install} onClose={() => setOpen(false)} onShowIosHelp={onShowIosHelp} />
           <Link to="/login" className="acct-menu-item acct-menu-login" onClick={() => setOpen(false)}>Login</Link>
           <Link to="/register" className="acct-menu-item acct-menu-register" onClick={() => setOpen(false)}>Register</Link>
         </div>
