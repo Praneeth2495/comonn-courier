@@ -168,7 +168,7 @@ function dashboardPath(role) {
   return '/dashboard';
 }
 
-export function SiteHeader({ onOpenAccount }) {
+export function SiteHeader({ onOpenAccount, onShowIosHelp }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
