@@ -1,64 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
-import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import ChangePassword from './ChangePassword';
 import EditProfile from './EditProfile';
 import SavedAddresses from './SavedAddresses';
 import logoFull from '../assets/logo-full.png';
 import logoFooter from '../assets/logo-footer.png';
 
-// Shared by both AccountMenu and GuestMenu dropdowns — hidden entirely once
-// the app is already installed or on a browser with no install path at all
-// (e.g. desktop Firefox), so it never shows up as a dead end. install* comes
-// from a single useInstallPrompt() call up in SiteHeader (always mounted),
-// not from this component — beforeinstallprompt fires once, early, right
-// after page load, well before a user has opened either dropdown, so a
-// listener registered only on menu-open would miss it every time.
-function InstallMenuItem({ install, onClose, onShowIosHelp }) {
-  const { canInstall, showIosHelp, promptInstall } = install;
-  if (!canInstall && !showIosHelp) return null;
-  return (
-    <button
-      type="button"
-      className="acct-menu-item"
-      onClick={() => {
-        onClose();
-        if (canInstall) promptInstall();
-        else onShowIosHelp();
-      }}
-    >
-      📲 Install app
-    </button>
-  );
-}
-
-function IosInstallHelpModal({ onClose }) {
-  return (
-    <div className="modal-overlay open" onClick={onClose}>
-      <div className="modal-box" style={{ maxWidth: 380 }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-          <button
-            onClick={onClose}
-            style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 14, color: 'var(--slate)', cursor: 'pointer' }}
-          >
-            ✕
-          </button>
-        </div>
-        <h3 style={{ marginTop: 0 }}>Install the Comonn app</h3>
-        <p style={{ color: 'var(--slate)', fontSize: 14 }}>iPhone/iPad don't let websites trigger this automatically — a couple of manual taps in Safari:</p>
-        <ol style={{ fontSize: 14, lineHeight: 1.8, paddingLeft: 20 }}>
-          <li>Tap the <b>Share</b> icon <span style={{ fontFamily: 'monospace' }}>⬆️</span> in Safari's toolbar</li>
-          <li>Scroll down and tap <b>Add to Home Screen</b></li>
-          <li>Tap <b>Add</b> in the top-right corner</li>
-        </ol>
-        <p style={{ color: 'var(--slate)', fontSize: 12.5 }}>Note: this only works in Safari, not Chrome or other browsers on iPhone.</p>
-      </div>
-    </div>
-  );
-}
-
-function AccountMenu({ name, onOpen, onLogout, install, onShowIosHelp }) {
+function AccountMenu({ name, onOpen, onLogout }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
