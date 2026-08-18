@@ -10,9 +10,13 @@ import logoFooter from '../assets/logo-footer.png';
 
 // Shared by both AccountMenu and GuestMenu dropdowns — hidden entirely once
 // the app is already installed or on a browser with no install path at all
-// (e.g. desktop Firefox), so it never shows up as a dead end.
-function InstallMenuItem({ onClose, onShowIosHelp }) {
-  const { canInstall, showIosHelp, promptInstall } = useInstallPrompt();
+// (e.g. desktop Firefox), so it never shows up as a dead end. install* comes
+// from a single useInstallPrompt() call up in SiteHeader (always mounted),
+// not from this component — beforeinstallprompt fires once, early, right
+// after page load, well before a user has opened either dropdown, so a
+// listener registered only on menu-open would miss it every time.
+function InstallMenuItem({ install, onClose, onShowIosHelp }) {
+  const { canInstall, showIosHelp, promptInstall } = install;
   if (!canInstall && !showIosHelp) return null;
   return (
     <button
