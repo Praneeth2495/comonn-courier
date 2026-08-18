@@ -58,7 +58,7 @@ function IosInstallHelpModal({ onClose }) {
   );
 }
 
-function AccountMenu({ name, onOpen, onLogout, onShowIosHelp }) {
+function AccountMenu({ name, onOpen, onLogout, install, onShowIosHelp }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
