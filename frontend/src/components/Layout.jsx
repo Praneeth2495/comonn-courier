@@ -202,6 +202,7 @@ export function SiteHeader({ onOpenAccount, onShowIosHelp }) {
               name={user.fullName?.split(' ')[0]}
               onOpen={onOpenAccount}
               onLogout={() => { logout(); navigate('/'); }}
+              onShowIosHelp={onShowIosHelp}
             />
           ) : (
             <>
@@ -210,7 +211,7 @@ export function SiteHeader({ onOpenAccount, onShowIosHelp }) {
                 <Link to="/register" className="btn btn-primary btn-sm">Register</Link>
               </div>
               <div className="guest-actions-mobile">
-                <GuestMenu />
+                <GuestMenu onShowIosHelp={onShowIosHelp} />
               </div>
             </>
           )}
