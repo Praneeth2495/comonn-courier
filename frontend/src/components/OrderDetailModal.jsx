@@ -169,6 +169,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         </div>
 
+        {canViewTracking && (
         <div className="detail-section">
           <div className="oda-section-head"><span className="icon">🚚</span><h4>Tracking</h4></div>
 
