@@ -1,0 +1,24 @@
+{
+  "appId": "in.comonn.courier",
+  "appName": "Comonn",
+  "webDir": "dist",
+  "server": {
+    "url": "https://comonn.in",
+    "cleartext": false
+  },
+  "backgroundColor": "#0E1B3D",
+  "android": {
+    "backgroundColor": "#0E1B3D"
+  },
+  "ios": {
+    "backgroundColor": "#0E1B3D"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#0E1B3D",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  }
+}
