@@ -337,9 +337,17 @@ model Asset {
   quantity     Int      @default(1)
   purchaseDate DateTime
   staffName    String
+  // Purchase invoice/receipt, optional. Stored as bytes in the DB rather
+  // than local disk — same reasoning as PartyInvoice.attachmentData: not
+  // derivable from other fields, so it would be permanently lost on a
+  // Railway redeploy if left on disk.
+  attachmentName String?
+  attachmentMime String?
+  attachmentData Bytes?
   createdById  String
   createdBy    User     @relation(fields: [createdById], references: [id])
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([purchaseDate])
 }
