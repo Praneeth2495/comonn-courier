@@ -324,6 +324,25 @@ model CustomsClient {
   @@index([countryCode])
 }
 
+// Company-owned assets (equipment, furniture, etc.) purchased over time —
+// tracked so the Overview page can show a running total of what the
+// company has spent on assets. `value` is the total price paid for that
+// purchase line (not a per-unit price), so the Overview total is a plain
+// sum across all rows regardless of quantity.
+model Asset {
+  id           String   @id @default(uuid())
+  name         String
+  value        Decimal  @db.Decimal(10, 2)
+  quantity     Int      @default(1)
+  purchaseDate DateTime
+  staffName    String
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([purchaseDate])
+}
+
 // ------------------------------------------------------------
 // Box Storage — customers rent a numbered physical box at the office
 // (3 sizes, day-based pricing) and get shown "<office address>, Box <N>"
