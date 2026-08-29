@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Asset" ADD COLUMN "attachmentName" TEXT;
+ALTER TABLE "Asset" ADD COLUMN "attachmentMime" TEXT;
+ALTER TABLE "Asset" ADD COLUMN "attachmentData" BYTEA;
+ALTER TABLE "Asset" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
