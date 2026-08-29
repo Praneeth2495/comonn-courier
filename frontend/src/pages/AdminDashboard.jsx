@@ -8,6 +8,7 @@ import BatchScanPanel from '../components/BatchScanPanel';
 import MerchantsPanel from '../components/MerchantsPanel';
 import PartyInvoicesPanel from '../components/PartyInvoicesPanel';
 import CustomsClientsPanel from '../components/CustomsClientsPanel';
+import AssetsPanel from '../components/AssetsPanel';
 import EmployeeOnboardingPanel from '../components/EmployeeOnboardingPanel';
 import StorageAdminPanel from '../components/StorageAdminPanel';
 import PrintLabelPanel from '../components/PrintLabelPanel';
