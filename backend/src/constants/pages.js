@@ -20,6 +20,7 @@ const PAGE_KEYS = [
   'onboarding',
   'customsclients',
   'storage',
+  'assets',
 ];
 
 const PAGE_LABELS = {
@@ -32,6 +33,7 @@ const PAGE_LABELS = {
   onboarding: 'Onboarding',
   customsclients: 'Customs Client',
   storage: 'Storage',
+  assets: 'Assets',
 };
 
 // Used once, at migration time, to backfill existing STAFF/ACCOUNTS users
