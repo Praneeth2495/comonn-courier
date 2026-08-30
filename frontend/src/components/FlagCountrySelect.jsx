@@ -54,13 +54,13 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
     <div
       ref={ref}
       className="flag"
-      // .flag's shared CSS fixes width:76px, sized for the disabled origin
-      // box ("IN"). Some destination codes ("AU", "NZ"...) render a touch
-      // wider than "IN" in this font, crowding the fixed-position chevron
-      // background-image with no gap — a few extra px here fixes that for
-      // every code rather than just the one that happened to be showing.
-      //
-      style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer', width: 80 }}
+      // Width itself lives in the .input-group .flag CSS rule (not here)
+      // specifically so the mobile breakpoint can widen it further — at
+      // that size the same rule bumps this box's font-size up to 16px
+      // (prevents iOS auto-zoom on focus), and a wider code like "AU"/"NZ"
+      // at that size needs more room before crowding the fixed-position
+      // chevron background-image.
+      style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer' }}
     >
       <button
         type="button"
