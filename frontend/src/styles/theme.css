@@ -292,7 +292,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @media(max-width:640px){
   .hero-row{padding:36px 16px 56px;gap:28px;}
   .hero-row > .card{max-width:100%;margin:0;}
-  .trust-row{margin-top:24px;}
+  .trust-row{display:none;}
   .hero-copy h1{font-size:32px;}
   .grid-2{grid-template-columns:1fr;}
   .item-row.equal{grid-template-columns:1fr;}
