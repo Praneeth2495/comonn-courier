@@ -266,6 +266,7 @@ export default function Home() {
 
   return (
     <div>
+      <BookingConfirmedToast />
       <div className="hero">
         <div className="hero-row">
           <div className="hero-copy">
