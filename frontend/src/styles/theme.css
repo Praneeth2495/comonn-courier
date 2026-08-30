@@ -711,6 +711,10 @@ table.data-table tr:hover td{background:#FAFAF7;}
    earlier override here would just lose to those later declarations. */
 @media(max-width:640px){
   .input,.select,.input-group input,.input-group .flag,.track-inline input,.track-box input,.search-box input{font-size:16px;}
+  /* At the bumped 16px above, a 2-letter code ("AU", "NZ"...) renders
+     noticeably wider than at the desktop 13px — widen the box too, or the
+     flag+code content crowds right up against the chevron with no gap. */
+  .input-group .flag{width:96px;}
 }
 
 /* Live "Booking confirmed" popup (Home.jsx) — see backend bookingFeed.js */
