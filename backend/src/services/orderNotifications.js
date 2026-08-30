@@ -79,10 +79,17 @@ async function notifyOrderStatusChange(orderId, status) {
         trackingNumber: true,
         whatsappOptIn: true,
         senderAddress: { select: { contactName: true, phone: true } },
-        receiverAddress: { select: { contactName: true, phone: true } },
+        receiverAddress: { select: { contactName: true, phone: true, city: true, countryCode: true } },
       },
     });
     if (!order) return;
+
+    // Public homepage "Booking confirmed" popup (see bookingFeed.js /
+    // Home.jsx) — unrelated to WhatsApp opt-in, so this fires unconditionally
+    // on the same PAID/PICKUP_CONFIRMED moment, independent of anything below.
+    if (isConfirmation) {
+      broadcastBookingConfirmed({ city: order.receiverAddress?.city, countryCode: order.receiverAddress?.countryCode });
+    }
 
     const templateName = isConfirmation ? CONFIRMATION_TEMPLATE : (order.whatsappOptIn ? updateTemplate : null);
     if (!templateName) return;
