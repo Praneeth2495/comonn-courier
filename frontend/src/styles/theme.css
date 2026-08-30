@@ -346,22 +346,22 @@ table.data-table tr:hover td{background:#FAFAF7;}
 }
 
 /* ============================================================
-   Global chrome: mobile/tablet header wrap (was overflowing —
-   brand + all nav links + Login/Register only had one shared row
-   until as narrow as 640px, which is too tight for tablet portrait
-   widths like 768-834px)
+   Global chrome: mobile/tablet header (brand + all nav links +
+   Login/Register don't fit one row below ~900px, e.g. tablet portrait
+   768-834px) — collapses to [hamburger] [centered logo] [account icon],
+   with every nav destination moving into the hamburger's dropdown
+   (MobileNavMenu) instead of a second wrapped row.
    ============================================================ */
 .guest-actions-mobile{display:none;}
-.acct-menu-mobile-only{display:none;}
+.mobile-nav-toggle{display:none;}
 @media(max-width:900px){
-  .site-header .row{padding:12px 16px;flex-wrap:wrap;gap:10px;}
-  .nav-links{order:3;width:100%;justify-content:center;border-top:1px solid var(--line-2);padding-top:8px;}
-  .nav-hide-mobile{display:none;}
-  .acct-menu-mobile-only{display:block;}
-  /* Services/About move into the GuestMenu dropdown at this same
-     breakpoint (see .nav-hide-mobile above), so the plain Login/Register
-     buttons need to swap for the dropdown avatar here too — otherwise
-     there'd be no way to reach them between 640-900px. */
+  .site-header .row{padding:12px 16px;}
+  .nav-links{display:none;}
+  .mobile-nav-toggle{display:flex;}
+  .brand{flex:1;justify-content:center;}
+  /* Account icon + dropdown replaces the plain Login/Register buttons at
+     this same breakpoint — otherwise there'd be no way to reach them once
+     .guest-actions-desktop is hidden. */
   .guest-actions-desktop{display:none;}
   .guest-actions-mobile{display:flex;}
 }
