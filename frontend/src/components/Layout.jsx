@@ -60,10 +60,10 @@ function AccountMenu({ name, onOpen, onLogout }) {
 }
 
 // Compact stand-in for the Login/Register button pair on narrow screens,
-// where those two buttons plus the logo don't fit on one line and push the
-// whole header into an awkward extra row. Mirrors AccountMenu's circular
-// avatar + dropdown, just with a generic person icon (no name yet) and
-// Login/Register as the menu options instead of profile/logout.
+// where those two buttons plus the logo don't fit on one line. Mirrors
+// AccountMenu's circular avatar + dropdown, just with a generic person icon
+// (no name yet) and Login/Register as the menu options instead of
+// profile/logout.
 function GuestMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
