@@ -154,26 +154,27 @@ export function SiteHeader({ onOpenAccount }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  // On mobile the second nav row is reserved for Book/Track/Storage —
-  // Services/About move into the account dropdown (AccountMenu/GuestMenu)
-  // instead, regardless of login state.
+  // Every nav destination — shown inline on desktop (.nav-links) and, on
+  // mobile where that row is hidden entirely, inside MobileNavMenu's
+  // hamburger dropdown instead (same array, same order).
   const links = [
     ...(user ? [[dashboardPath(user.role), 'Dashboard']] : []),
     ['/quote', 'Book'],
     ['/track', 'Track'],
     ['/storage', 'Storage'],
-    ['/services', 'Services', 'nav-hide-mobile'],
-    ['/about', 'About', 'nav-hide-mobile'],
+    ['/services', 'Services'],
+    ['/about', 'About'],
   ];
   return (
     <header className="site-header">
       <div className="row">
+        <MobileNavMenu links={links} />
         <Link to="/" className="brand">
           <img className="logo-img lg" src={logoFull} alt="Comonn" />
         </Link>
         <nav className="nav-links">
-          {links.map(([to, label, extraClass]) => (
-            <Link key={to} to={to} className={[pathname === to ? 'current' : '', extraClass].filter(Boolean).join(' ')}>
+          {links.map(([to, label]) => (
+            <Link key={to} to={to} className={pathname === to ? 'current' : ''}>
               {label}
             </Link>
           ))}
