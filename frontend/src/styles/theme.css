@@ -359,6 +359,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .nav-links{display:none;}
   .mobile-nav-toggle{display:flex;}
   .brand{flex:1;justify-content:center;}
+  .site-header .logo-img.lg{height:26px;}
   /* Account icon + dropdown replaces the plain Login/Register buttons at
      this same breakpoint — otherwise there'd be no way to reach them once
      .guest-actions-desktop is hidden. */
