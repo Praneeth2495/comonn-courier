@@ -46,7 +46,7 @@ export default function BookingConfirmedToast() {
     <div className="booking-toast" role="status">
       <span className="icon">✅</span>
       <div>
-        <div className="title">Booking confirmed</div>
+        <div className="title">Order confirmed</div>
         <div className="sub">Destination: {current.city}, {getCountryName(current.countryCode)}</div>
       </div>
     </div>
