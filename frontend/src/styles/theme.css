@@ -42,7 +42,7 @@ input,select,textarea{font-family:inherit;}
 .acct-menu-item:hover{background:var(--paper);}
 .acct-menu-item-danger{background:var(--danger-bg);color:var(--danger);}
 .acct-menu-item-danger:hover{background:var(--danger-bg);filter:brightness(0.97);}
-.acct-menu-login{background:var(--paper);font-weight:600;color:var(--navy);margin-bottom:6px;}
+.acct-menu-login{background:var(--paper);font-weight:600;color:var(--navy);margin-bottom:6px;text-align:center;}
 .acct-menu-login:hover{background:var(--line-2);}
 .acct-menu-register{background:var(--coral);color:#fff;font-weight:600;text-align:center;box-shadow:0 10px 24px -10px rgba(255,90,54,.55);}
 .acct-menu-register:hover{background:var(--coral-dark);}
