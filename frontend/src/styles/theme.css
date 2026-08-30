@@ -719,7 +719,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 
 /* Live "Booking confirmed" popup (Home.jsx) — see backend bookingFeed.js */
 .booking-toast{position:fixed;bottom:20px;right:20px;z-index:150;background:var(--card);border:1px solid var(--line-2);border-radius:var(--radius-md);box-shadow:var(--shadow-card);padding:14px 16px;min-width:230px;max-width:300px;display:flex;gap:10px;align-items:flex-start;animation:booking-toast-in .35s ease-out;}
-.booking-toast .icon{font-size:19px;flex:none;line-height:1;}
+.booking-toast .icon{flex:none;display:block;margin-top:1px;}
 .booking-toast .title{font-weight:700;font-size:13.5px;color:var(--navy);}
 .booking-toast .sub{font-size:12.5px;color:var(--slate);margin-top:2px;}
 @keyframes booking-toast-in{from{transform:translateY(14px);opacity:0;}to{transform:translateY(0);opacity:1;}}
