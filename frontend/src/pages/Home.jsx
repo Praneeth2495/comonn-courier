@@ -6,6 +6,7 @@ import LoadingLogo from '../components/LoadingLogo';
 import CountryFlag from '../components/CountryFlag';
 import FlagCountrySelect from '../components/FlagCountrySelect';
 import WorldOpsMap from '../components/WorldOpsMap';
+import BookingConfirmedToast from '../components/BookingConfirmedToast';
 import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
 
 const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
