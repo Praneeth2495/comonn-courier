@@ -97,7 +97,7 @@ function GuestMenu() {
         <span style={{ fontSize: 12, color: 'var(--slate)' }}>▾</span>
       </button>
       {open && (
-        <div className="card" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 160, zIndex: 50 }}>
+        <div className="card" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 130, zIndex: 50 }}>
           <Link to="/login" className="acct-menu-item acct-menu-login" onClick={() => setOpen(false)}>Login</Link>
           <Link to="/register" className="acct-menu-item acct-menu-register" onClick={() => setOpen(false)}>Register</Link>
         </div>
