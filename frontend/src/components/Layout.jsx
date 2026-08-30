@@ -98,11 +98,45 @@ function GuestMenu() {
       </button>
       {open && (
         <div className="card" style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, padding: 8, minWidth: 160, zIndex: 50 }}>
-          <Link to="/about" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>About</Link>
-          <Link to="/services" className="acct-menu-item acct-menu-mobile-only" onClick={() => setOpen(false)}>Services</Link>
-          <div className="acct-menu-mobile-only" style={{ borderTop: '1px solid var(--line-2)', margin: '6px 0' }} />
           <Link to="/login" className="acct-menu-item acct-menu-login" onClick={() => setOpen(false)}>Login</Link>
           <Link to="/register" className="acct-menu-item acct-menu-register" onClick={() => setOpen(false)}>Register</Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Left-side hamburger on mobile (see .mobile-nav-toggle) — holds every nav
+// destination (Dashboard when logged in, Book/Track/Storage/Services/About)
+// now that the header's middle row is gone on narrow screens; the same
+// `links` array SiteHeader already builds for the desktop nav-links row.
+function MobileNavMenu({ links }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function onClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="mobile-nav-toggle" style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Open menu"
+        style={{ width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 20, color: 'var(--navy)' }}
+      >
+        ☰
+      </button>
+      {open && (
+        <div className="card" style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, padding: 8, minWidth: 170, zIndex: 50 }}>
+          {links.map(([to, label]) => (
+            <Link key={to} to={to} className="acct-menu-item" onClick={() => setOpen(false)}>{label}</Link>
+          ))}
         </div>
       )}
     </div>
