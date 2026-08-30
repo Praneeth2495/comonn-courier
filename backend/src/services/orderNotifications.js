@@ -1,5 +1,6 @@
 const { prisma } = require('../config/db');
 const { sendTemplateMessage } = require('./whatsappService');
+const { broadcastBookingConfirmed } = require('./bookingFeed');
 
 // PAID/PICKUP_CONFIRMED are the "your order is booked" moment — this one
 // always sends, regardless of the customer's WhatsApp opt-in choice (see
