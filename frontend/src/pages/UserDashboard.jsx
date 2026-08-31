@@ -15,13 +15,14 @@ const STATUS_PILL = {
   LABEL_GENERATED: 'pill-cobalt',
   PICKED_UP: 'pill-cobalt',
   IN_TRANSIT: 'pill-cobalt',
+  CLEARED_DESTINATION_CUSTOMS: 'pill-cobalt',
   OUT_FOR_DELIVERY: 'pill-cobalt',
   DELIVERED: 'pill-success',
   CANCELLED: 'pill-danger',
   EXCEPTION: 'pill-danger',
 };
 const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
-const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
 const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['boxes', 'My Box']];
 
