@@ -846,7 +846,7 @@ function OrdersPanel() {
                     className="row-delete-btn"
                     title="Delete booking"
                     aria-label="Delete booking"
-                    disabled={['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(o.status)}
+                    disabled={['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(o.status)}
                     onClick={() => cancelBooking(o.id)}
                   >
                     🗑
