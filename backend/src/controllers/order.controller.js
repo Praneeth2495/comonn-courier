@@ -643,7 +643,7 @@ async function cancelOrder(req, res, next) {
     if (req.user.role === 'CUSTOMER' && order.userId !== req.user.id) {
       return res.status(403).json({ error: 'Not your order' });
     }
-    if (['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.status)) {
+    if (['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.status)) {
       return res.status(409).json({ error: 'Order already in transit — cannot cancel. Contact support.' });
     }
     const updated = await prisma.order.update({
