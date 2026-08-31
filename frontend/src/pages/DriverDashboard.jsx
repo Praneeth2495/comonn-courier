@@ -13,6 +13,7 @@ const STATUS_LABEL = {
   LABEL_GENERATED: 'Label Generated',
   PICKED_UP: 'Picked Up',
   IN_TRANSIT: 'In Transit',
+  CLEARED_DESTINATION_CUSTOMS: 'Cleared Destination Customs',
   OUT_FOR_DELIVERY: 'Out For Delivery',
   DELIVERED: 'Delivered',
   CANCELLED: 'Cancelled',
