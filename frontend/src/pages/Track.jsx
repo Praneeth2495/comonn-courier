@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 
-const SHIP_STAGES = ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'];
-const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered' };
+const SHIP_STAGES = ['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', CLEARED_DESTINATION_CUSTOMS: 'Cleared customs', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered' };
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
   UNFINISHED: 'pill-warn',
@@ -13,6 +13,7 @@ const STATUS_PILL = {
   LABEL_GENERATED: 'pill-cobalt',
   PICKED_UP: 'pill-cobalt',
   IN_TRANSIT: 'pill-cobalt',
+  CLEARED_DESTINATION_CUSTOMS: 'pill-cobalt',
   OUT_FOR_DELIVERY: 'pill-cobalt',
   DELIVERED: 'pill-success',
   CANCELLED: 'pill-danger',
