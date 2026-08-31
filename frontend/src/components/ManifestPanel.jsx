@@ -10,6 +10,7 @@ const STATUS_PILL = {
   LABEL_GENERATED: 'pill-cobalt',
   PICKED_UP: 'pill-cobalt',
   IN_TRANSIT: 'pill-cobalt',
+  CLEARED_DESTINATION_CUSTOMS: 'pill-cobalt',
   OUT_FOR_DELIVERY: 'pill-cobalt',
   DELIVERED: 'pill-success',
   CANCELLED: 'pill-danger',
