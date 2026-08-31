@@ -30,7 +30,7 @@ const WHATSAPP_STATUS_PILL = { failed: 'pill-danger', read: 'pill-success', deli
 // Statuses relevant once a package is moving/in last-mile — staff mirroring
 // a third-party carrier's own updates only ever move an order forward
 // through these, never back to a pre-shipment status.
-const TRACKING_UPDATE_STATUSES = ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'EXCEPTION'];
+const TRACKING_UPDATE_STATUSES = ['IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'EXCEPTION'];
 
 function paidAndDue(o) {
   const grandTotal = Number(o.grandTotal);
