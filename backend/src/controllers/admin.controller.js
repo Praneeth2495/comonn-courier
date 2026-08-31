@@ -43,7 +43,7 @@ async function computeOrderTotals(where) {
     prisma.order.count({ where }),
     prisma.order.count({ where: { ...where, status: 'PENDING_PAYMENT' } }),
     prisma.order.count({ where: { ...where, status: { notIn: UNPAID_STATUSES } } }),
-    prisma.order.count({ where: { ...where, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } } }),
+    prisma.order.count({ where: { ...where, status: { in: ['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY'] } } }),
     prisma.order.count({ where: { ...where, status: 'DELIVERED' } }),
     prisma.order.aggregate({
       _sum: { grandTotal: true },
