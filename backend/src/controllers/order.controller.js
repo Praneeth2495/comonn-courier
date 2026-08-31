@@ -342,7 +342,7 @@ async function listOrders(req, res, next) {
  */
 async function listDeliveryAirports(req, res, next) {
   try {
-    const where = await buildOrdersWhere({ ...req, query: { ...req.query, status: ['IN_TRANSIT', 'OUT_FOR_DELIVERY'].join(',') } });
+    const where = await buildOrdersWhere({ ...req, query: { ...req.query, status: ['IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY'].join(',') } });
     where.airportCode = { not: null };
 
     const orders = await prisma.order.findMany({
