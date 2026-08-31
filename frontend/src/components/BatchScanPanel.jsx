@@ -7,7 +7,7 @@ import LoadingLogo from './LoadingLogo';
 // the (mostly public) app bundle when only staff/admin/driver ever open it.
 const BarcodeCameraScanner = lazy(() => import('./BarcodeCameraScanner'));
 
-const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
+const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
 
 export default function BatchScanPanel() {
   const { user } = useAuth();
