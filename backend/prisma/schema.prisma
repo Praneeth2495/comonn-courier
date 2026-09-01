@@ -352,6 +352,34 @@ model Asset {
   @@index([purchaseDate])
 }
 
+// One row per shift — created on clock-in, updated in place on clock-out
+// (never a separate row), so "currently clocked in" is just
+// `clockOutAt: null`. Only one open shift per user is allowed at a time —
+// enforced in attendance.controller.js, not at the DB level, since Prisma
+// has no partial-unique-index support portable across this schema's usage.
+// Lat/lng are the raw browser geolocation reading; area is a human-readable
+// place name resolved server-side via reverse geocoding (see
+// services/geocoding.js) — either can be null if the user denied location
+// permission or the geocoding call failed, but that never blocks the
+// clock-in/out itself from being recorded.
+model AttendanceLog {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  clockInAt    DateTime  @default(now())
+  clockInLat   Float?
+  clockInLng   Float?
+  clockInArea  String?
+  clockOutAt   DateTime?
+  clockOutLat  Float?
+  clockOutLng  Float?
+  clockOutArea String?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([clockInAt])
+}
+
 // ------------------------------------------------------------
 // Box Storage — customers rent a numbered physical box at the office
 // (3 sizes, day-based pricing) and get shown "<office address>, Box <N>"
