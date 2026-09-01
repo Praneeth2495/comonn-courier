@@ -29,6 +29,7 @@ const partyInvoiceRoutes = require('./routes/partyInvoice.routes');
 const customsClientRoutes = require('./routes/customsClient.routes');
 const assetRoutes = require('./routes/asset.routes');
 const bookingFeedRoutes = require('./routes/bookingFeed.routes');
+const attendanceRoutes = require('./routes/attendance.routes');
 const boxBookingRoutes = require('./routes/boxBooking.routes');
 const hubRoutes = require('./routes/hub.routes');
 const manifestRegionRoutes = require('./routes/manifestRegion.routes');
