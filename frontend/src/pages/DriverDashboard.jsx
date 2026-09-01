@@ -67,6 +67,7 @@ export default function DriverDashboard() {
       <main className="app-main">
         {tab === 'jobs' && <MyJobs userName={user?.fullName} />}
         {tab === 'batchscan' && <BatchScanPanel />}
+        {tab === 'attendance' && <ClockInOutPanel />}
         {tab === 'profile' && <ChangePassword />}
       </main>
     </div>
