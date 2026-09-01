@@ -92,6 +92,7 @@ model User {
   partyInvoiceComments    PartyInvoiceComment[]
   customsClientsCreated   CustomsClient[]
   assetsCreated           Asset[]
+  attendanceLogs          AttendanceLog[]
   boxBookings             BoxBooking[]
   boxBookingComments      BoxBookingComment[]
   manifestsCreated        Manifest[]
