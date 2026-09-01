@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
+import ClockInOutPanel from '../components/ClockInOutPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import logoFooter from '../assets/logo-footer.png';
 
