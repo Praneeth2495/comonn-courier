@@ -133,11 +133,6 @@ function Overview() {
   // individually granted access (Users panel) — see requireOverviewBreakdownAccess
   // in admin.controller.js, which enforces the same rule server-side.
   const canSeeBreakdown = user?.role === 'ADMIN' || user?.canViewOverviewBreakdown;
-  // Same grant that shows/hides the Assets tab itself (Users panel > Page
-  // access) — the running total is company spend, so it stays behind the
-  // same gate as the underlying records.
-  const canViewAssets = user?.role === 'ADMIN' || !!user?.allowedPages?.includes('assets');
-  const [assetsTotalValue, setAssetsTotalValue] = useState(null);
 
   useEffect(() => {
     function load(silent) {
@@ -149,18 +144,6 @@ function Overview() {
     const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, [fromDate, toDate, subTab]);
-
-  // Independent of the order date-range filter above — this is an all-time
-  // running total, not scoped to "bookings from X to Y".
-  useEffect(() => {
-    if (!canViewAssets) return;
-    function load() {
-      client.get('/admin/assets').then(({ data }) => setAssetsTotalValue(Number(data.totalValue)));
-    }
-    load();
-    const interval = setInterval(load, 30 * 1000);
-    return () => clearInterval(interval);
-  }, [canViewAssets]);
 
   async function openDetail(id) {
     const { data } = await client.get(`/orders/${id}`);
