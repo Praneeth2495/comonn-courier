@@ -178,9 +178,6 @@ function Overview() {
               <Stat label="Paid" value={data.totals.paid} />
               <Stat label="In transit" value={data.totals.inTransit} />
               <Stat label="Delivered" value={data.totals.delivered} />
-              {canViewAssets && assetsTotalValue !== null && (
-                <Stat label="Total asset value" value={`₹${assetsTotalValue.toFixed(2)}`} />
-              )}
             </div>
 
             <h3 className="h-md" style={{ margin: '24px 0 12px' }}>Recent orders</h3>
