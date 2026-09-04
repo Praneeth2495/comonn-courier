@@ -101,6 +101,7 @@ async function createManualLabels(req, res, next) {
     const batch = await prisma.manualLabelBatch.create({
       data: {
         referenceNumber,
+        orderId: trimmedOrderId,
         fromAddress,
         toAddress,
         quantity: numericQuantity,
