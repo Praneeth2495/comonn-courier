@@ -130,7 +130,15 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   const barcodeHeight = 80;
   doc.image(barcodePng, contentLeft, barcodeTop, { fit: [contentWidth, barcodeHeight], align: 'center' });
   doc.y = barcodeTop + barcodeHeight + 10;
-  doc.font('Helvetica-Bold').fontSize(12).text(barcodeValue, contentLeft, doc.y, { width: contentWidth, align: 'center' });
+  // hideBarcodeText: manual labels show "Order ID: ..." right below instead
+  // (see numberLabel below) — printing the internal ML-prefixed barcode
+  // value too would just be confusing clutter now that it's not the
+  // identifier staff actually look for. Real order labels still print it,
+  // unchanged — it's the one thing staff can visually confirm without
+  // scanning.
+  if (!hideBarcodeText) {
+    doc.font('Helvetica-Bold').fontSize(12).text(barcodeValue, contentLeft, doc.y, { width: contentWidth, align: 'center' });
+  }
   if (!hideShipmentTracking && totalPackages > 1) {
     doc.font('Helvetica').fontSize(8).text(`Shipment tracking: ${order.trackingNumber}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
   }
