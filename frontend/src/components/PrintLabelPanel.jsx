@@ -1,4 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
+import client from '../api/client';
+import { COUNTRY_NAMES } from '../utils/countryNames';
 
 // Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
 // the (mostly public) app bundle when only staff/admin ever open it.
@@ -13,6 +15,8 @@ export default function PrintLabelPanel() {
   const [showCamera, setShowCamera] = useState(false);
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]); // recently printed, most recent first
+  const [showCreate, setShowCreate] = useState(false);
+  const [createdLabels, setCreatedLabels] = useState(null); // { referenceNumber, labels } after a successful Create
 
   function printByCode(raw) {
     const barcodeValue = (raw || '').trim();
