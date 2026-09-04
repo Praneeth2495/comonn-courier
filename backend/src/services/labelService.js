@@ -184,4 +184,4 @@ function formatAddress(addr) {
     .join('\n');
 }
 
-module.exports = { generateLabelPdf, renderBarcode, STORAGE_DIR };
+module.exports = { generateLabelPdf, generateMasterLabelPdf, renderBarcode, STORAGE_DIR };
