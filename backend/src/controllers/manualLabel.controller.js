@@ -1,6 +1,7 @@
 const fs = require('fs');
+const path = require('path');
 const { prisma } = require('../config/db');
-const { generateLabelPdf, generateMasterLabelPdf } = require('../services/labelService');
+const { generateLabelPdf, generateMasterLabelPdf, STORAGE_DIR } = require('../services/labelService');
 const { nextMonthlySequence, getIstDateParts } = require('../utils/orderNumber');
 const { COUNTRY_NAMES } = require('../utils/countryNames');
 
