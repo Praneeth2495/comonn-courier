@@ -54,6 +54,8 @@ const LABEL_PAGE_SIZE = { size: [288, 432], margin: 16 }; // 4in x 6in @72dpi
 async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, barcodeValue }) {
   const barcodePng = await renderBarcode(barcodeValue);
 
+  drawWatermark(doc);
+
   // Header — logo sits top-right; the info column starts at the very top
   // of the content area on the left, with no COMONN text duplicating it.
   const headerTop = doc.y;
