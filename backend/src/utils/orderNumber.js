@@ -49,4 +49,4 @@ async function generateOrderNumber() {
   return `${day}${month}${seq}`;
 }
 
-module.exports = { generateOrderNumber };
+module.exports = { generateOrderNumber, nextMonthlySequence, getIstDateParts };
