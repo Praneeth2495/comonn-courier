@@ -38,15 +38,31 @@ async function nextMonthlySequence(kind, year, month) {
 }
 
 /**
+ * Same idea as nextMonthlySequence but scoped to the whole year — the
+ * counter only resets on 1 January, not at the start of every month.
+ */
+async function nextYearlySequence(kind, year) {
+  const key = `${kind}-${year}`;
+  const counter = await prisma.sequenceCounter.upsert({
+    where: { key },
+    update: { value: { increment: 1 } },
+    create: { key, value: 1 },
+  });
+  return counter.value;
+}
+
+/**
  * Generates DM<seq> e.g. 881 for the 1st order created on 8 August (IST).
  * Day and month are plain numbers, never zero-padded (8, not 08; January is
- * 1, not 01). The sequence resets to 1 at the start of each calendar month
- * (IST) and is also never zero-padded, so it never repeats within a month.
+ * 1, not 01). The sequence resets to 1 once a year (1 January IST), not
+ * monthly — the visible number has no year in it, so day+month+seq staying
+ * unique for the whole year (not just within one month) is what actually
+ * matters here.
  */
 async function generateOrderNumber() {
   const { year, month, day } = getIstDateParts(new Date());
-  const seq = await nextMonthlySequence('order', year, month);
+  const seq = await nextYearlySequence('order', year);
   return `${day}${month}${seq}`;
 }
 
-module.exports = { generateOrderNumber, nextMonthlySequence, getIstDateParts };
+module.exports = { generateOrderNumber, nextMonthlySequence, nextYearlySequence, getIstDateParts };
