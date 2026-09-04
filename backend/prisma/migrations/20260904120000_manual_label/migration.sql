@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Label" ALTER COLUMN "orderId" DROP NOT NULL;
+ALTER TABLE "Label" ADD COLUMN "pdfData" BYTEA;
