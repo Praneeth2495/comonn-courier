@@ -224,7 +224,7 @@ function ManualLabelTab() {
 }
 
 function emptyAddress() {
-  return { businessName: '', street: '', suburb: '', city: '', state: '', countryCode: '' };
+  return { businessName: '', street: '', suburb: '', city: '', state: '', pin: '', countryCode: '' };
 }
 
 function AddressFields({ label, value, onChange }) {
