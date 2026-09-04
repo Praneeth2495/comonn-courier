@@ -179,7 +179,7 @@ function ManualLabelTab() {
           onCreated={(result) => {
             setShowCreate(false);
             load();
-            setViewing({ referenceNumber: result.batch.referenceNumber, batchId: result.batch.id, hasMaster: result.batch.hasMaster, labels: result.labels });
+            setViewing({ referenceNumber: result.batch.orderId || result.batch.referenceNumber, batchId: result.batch.id, hasMaster: result.batch.hasMaster, labels: result.labels });
           }}
         />
       )}
