@@ -14,6 +14,8 @@ async function generateManualLabelNumber() {
   return `ML${day}${month}${seq}`;
 }
 
+const MANUAL_LABEL_SERVICES = ['Express', 'Economy'];
+
 function validateAddress(addr, label) {
   if (!addr || typeof addr !== 'object') return `${label} address is required`;
   if (!addr.street?.trim()) return `${label} street is required`;
