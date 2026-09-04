@@ -190,6 +190,7 @@ function formatAddress(addr) {
   // leaving a stray leading comma/space when one's missing.
   const cityStatePostcode = [addr.city, addr.state].filter(Boolean).join(', ') + (addr.postcode ? ` ${addr.postcode}` : '');
   return [
+    addr.businessName,
     addr.contactName,
     addr.line1,
     addr.line2,
