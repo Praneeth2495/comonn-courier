@@ -134,11 +134,13 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   if (!hideShipmentTracking && totalPackages > 1) {
     doc.font('Helvetica').fontSize(8).text(`Shipment tracking: ${order.trackingNumber}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
   }
-  // Manual label's user-entered "Order ID"/"Reference number" (external
-  // references the staff typed in, unrelated to the internal ML-prefixed
-  // reference number above) — each shown only when actually provided.
+  // Manual label's mandatory user-entered Order ID and optional Reference
+  // number (external references the staff typed in, unrelated to the
+  // internal ML-prefixed reference number the barcode itself encodes) —
+  // same value as the "Order ID" header line above, repeated here so it's
+  // readable at a glance next to the barcode too.
   if (numberLabel) {
-    doc.font('Helvetica').fontSize(8).text(`Number: ${numberLabel}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
+    doc.font('Helvetica').fontSize(8).text(`Order ID: ${numberLabel}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
   }
   if (referenceLabel) {
     doc.font('Helvetica').fontSize(8).text(`Reference: ${referenceLabel}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
