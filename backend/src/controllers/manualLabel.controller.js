@@ -59,6 +59,7 @@ async function createManualLabels(req, res, next) {
   try {
     const { orderId, refNumber, service, fromAddress, toAddress, quantity, itemType, actualWeightKg, lengthCm, widthCm, heightCm, instructions } = req.body;
 
+    if (!orderId?.trim()) return res.status(400).json({ error: 'Order ID is required' });
     if (!MANUAL_LABEL_SERVICES.includes(service)) {
       return res.status(400).json({ error: 'Service must be Express or Economy' });
     }
