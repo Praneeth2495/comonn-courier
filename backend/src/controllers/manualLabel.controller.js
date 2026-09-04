@@ -24,6 +24,7 @@ function validateAddress(addr, label) {
 
 function toLabelShape(addr, instructions) {
   return {
+    businessName: addr.businessName?.trim() || null,
     contactName: null,
     line1: addr.street.trim(),
     line2: addr.suburb?.trim() || '',
