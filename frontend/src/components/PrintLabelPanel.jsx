@@ -187,7 +187,10 @@ function ManualLabelTab() {
       {viewing && (
         <div className="modal-overlay open" onClick={() => setViewing(null)}>
           <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginBottom: 4 }}>Labels</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+              <h3>Labels</h3>
+              <button onClick={() => setViewing(null)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+            </div>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>Reference <span className="mono">{viewing.referenceNumber}</span></p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {viewing.hasMaster && (
