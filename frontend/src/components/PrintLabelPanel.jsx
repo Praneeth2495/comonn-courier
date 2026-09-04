@@ -316,6 +316,25 @@ function CreateLabelModal({ onClose, onCreated }) {
           {Number(quantity) > 1 ? 'Generates one label per unit, plus a combined master label with every page.' : 'For a shipment with no order behind it — e.g. an internal transfer.'}
         </p>
         <form onSubmit={submit} className="form-stack">
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Order ID (optional)</label>
+              <input className="input" value={orderId} onChange={(e) => setOrderId(e.target.value)} />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Reference number (optional)</label>
+              <input className="input" value={refNumber} onChange={(e) => setRefNumber(e.target.value)} />
+            </div>
+          </div>
+          <div className="field">
+            <label>Service</label>
+            <select className="input" required value={service} onChange={(e) => setService(e.target.value)}>
+              <option value="" disabled>Select service</option>
+              <option value="Express">Express</option>
+              <option value="Economy">Economy</option>
+            </select>
+          </div>
+
           <AddressFields label="From" value={fromAddress} onChange={setFromAddress} />
           <AddressFields label="To" value={toAddress} onChange={setToAddress} />
 
