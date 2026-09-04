@@ -232,6 +232,10 @@ function AddressFields({ label, value, onChange }) {
     <div style={{ border: '1px solid var(--line-2)', borderRadius: 10, padding: 14, marginBottom: 14 }}>
       <h4 style={{ fontSize: 13.5, marginBottom: 10 }}>{label} address</h4>
       <div className="field">
+        <label>Business name (optional)</label>
+        <input className="input" value={value.businessName} onChange={(e) => set('businessName', e.target.value)} />
+      </div>
+      <div className="field">
         <label>Street</label>
         <input className="input" required value={value.street} onChange={(e) => set('street', e.target.value)} />
       </div>
