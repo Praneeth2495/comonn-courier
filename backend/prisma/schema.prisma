@@ -1091,7 +1091,16 @@ model Label {
 // when quantity is 1 — nothing to combine, the single Label IS the label.
 model ManualLabelBatch {
   id              String   @id @default(uuid())
+  // The internal system-generated code (ML<day><month><seq>) — still what
+  // the barcode itself encodes and what label filenames are built from, but
+  // no longer shown to staff anywhere; the history view and label print
+  // show `orderId` (the staff's own external reference) instead. Stays
+  // @unique since it's the barcode's source of truth.
   referenceNumber String   @unique
+  // Mandatory going forward (enforced in manualLabel.controller.js), but
+  // nullable here since the 3 batches created before this field existed
+  // have no value for it — never backfilled with a guess.
+  orderId         String?
   fromAddress     Json
   toAddress       Json
   quantity        Int
