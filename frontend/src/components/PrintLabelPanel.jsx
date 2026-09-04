@@ -137,11 +137,11 @@ function ManualLabelTab() {
       {batches === null ? <LoadingLogo /> : (
         <div className="table-wrap">
           <table className="data-table">
-            <thead><tr><th>Reference</th><th>From</th><th>To</th><th>Qty</th><th>Created by</th><th>Created</th><th></th></tr></thead>
+            <thead><tr><th>Reference (Order ID)</th><th>From</th><th>To</th><th>Qty</th><th>Created by</th><th>Created</th><th></th></tr></thead>
             <tbody>
               {batches.map((b) => (
                 <tr key={b.id}>
-                  <td className="mono">{b.referenceNumber}</td>
+                  <td className="mono">{b.orderId || b.referenceNumber}</td>
                   <td>{addressSummary(b.fromAddress)}</td>
                   <td>{addressSummary(b.toAddress)}</td>
                   <td>{b.quantity}</td>
@@ -152,7 +152,7 @@ function ManualLabelTab() {
                       <button
                         type="button"
                         className="btn btn-outline btn-sm"
-                        onClick={() => setViewing({ referenceNumber: b.referenceNumber, batchId: b.id, hasMaster: b.hasMaster, labels: b.labels })}
+                        onClick={() => setViewing({ referenceNumber: b.orderId || b.referenceNumber, batchId: b.id, hasMaster: b.hasMaster, labels: b.labels })}
                       >
                         Labels
                       </button>
