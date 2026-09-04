@@ -121,7 +121,8 @@ async function createManualLabels(req, res, next) {
       const barcodeValue = numericQuantity > 1 ? `${referenceNumber}-${i}` : referenceNumber;
       const pageArgs = {
         packageIndex: i, totalPackages: numericQuantity, item, barcodeValue,
-        hideZone: true, hideShipmentTracking: true, numberLabel: trimmedOrderId, referenceLabel: trimmedRefNumber,
+        hideZone: true, hideShipmentTracking: true, hideBarcodeText: true,
+        numberLabel: trimmedOrderId, referenceLabel: trimmedRefNumber,
       };
       pages.push(pageArgs);
       const { fileName, filePath } = await generateLabelPdf(fakeOrder, pageArgs);
