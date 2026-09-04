@@ -117,7 +117,10 @@ async function createManualLabels(req, res, next) {
     const labels = [];
     for (let i = 1; i <= numericQuantity; i++) {
       const barcodeValue = numericQuantity > 1 ? `${referenceNumber}-${i}` : referenceNumber;
-      const pageArgs = { packageIndex: i, totalPackages: numericQuantity, item, barcodeValue };
+      const pageArgs = {
+        packageIndex: i, totalPackages: numericQuantity, item, barcodeValue,
+        hideZone: true, hideShipmentTracking: true, numberLabel: trimmedOrderId, referenceLabel: trimmedRefNumber,
+      };
       pages.push(pageArgs);
       const { fileName, filePath } = await generateLabelPdf(fakeOrder, pageArgs);
       const pdfData = fs.readFileSync(filePath);
