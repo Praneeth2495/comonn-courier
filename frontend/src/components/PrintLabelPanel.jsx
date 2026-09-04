@@ -255,6 +255,10 @@ function AddressFields({ label, value, onChange }) {
           <label>State</label>
           <input className="input" required value={value.state} onChange={(e) => set('state', e.target.value)} />
         </div>
+        <div className="field" style={{ flex: 1 }}>
+          <label>Pin (optional)</label>
+          <input className="input" value={value.pin} onChange={(e) => set('pin', e.target.value)} />
+        </div>
       </div>
       <div className="field">
         <label>Country</label>
