@@ -93,6 +93,7 @@ model User {
   customsClientsCreated   CustomsClient[]
   assetsCreated           Asset[]
   attendanceLogs          AttendanceLog[]
+  manualLabelBatches      ManualLabelBatch[]
   boxBookings             BoxBooking[]
   boxBookingComments      BoxBookingComment[]
   manifestsCreated        Manifest[]
