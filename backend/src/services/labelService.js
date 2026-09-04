@@ -67,7 +67,10 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   doc.y = headerTop;
   doc.fontSize(8).font('Helvetica');
   doc.text(`Service: ${order.service.name}`);
-  doc.text(`Order: ${order.orderNumber}`);
+  // Manual labels (numberLabel set) show the staff's own mandatory Order ID
+  // here instead of the internal ML-prefixed reference number — real order
+  // labels are untouched, still showing their real order number as always.
+  doc.text(numberLabel ? `Order ID: ${numberLabel}` : `Order: ${order.orderNumber}`);
   doc.text(`Package ${packageIndex} of ${totalPackages}`);
   doc.moveDown(0.5);
 
