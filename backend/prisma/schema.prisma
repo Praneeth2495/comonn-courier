@@ -1071,8 +1071,43 @@ model Label {
   pdfData      Bytes?
   barcodeValue String   @unique
   generatedAt  DateTime @default(now())
+  // Set only for a label created via the manual-label tool — links it back
+  // to the single "Create Label" submission it came from (see
+  // ManualLabelBatch), so the Manual Label tab's history can show every
+  // individual label alongside the combined master PDF for that batch.
+  batchId      String?
+  batch        ManualLabelBatch? @relation(fields: [batchId], references: [id])
 
   @@index([orderId])
+  @@index([batchId])
+}
+
+// One row per "Create Label" submission on the Print Label page's Manual
+// Label tab — captures the form inputs (for the history view) plus the
+// combined multi-page "master label" PDF when quantity > 1 (one page per
+// individual label, same content as each Label's own PDF, just concatenated
+// into a single printable file). masterFileUrl/masterPdfData are both null
+// when quantity is 1 — nothing to combine, the single Label IS the label.
+model ManualLabelBatch {
+  id              String   @id @default(uuid())
+  referenceNumber String   @unique
+  fromAddress     Json
+  toAddress       Json
+  quantity        Int
+  itemType        String
+  actualWeightKg  Decimal  @db.Decimal(10, 3)
+  lengthCm        Decimal? @db.Decimal(10, 2)
+  widthCm         Decimal? @db.Decimal(10, 2)
+  heightCm        Decimal? @db.Decimal(10, 2)
+  instructions    String?
+  masterFileUrl   String?
+  masterPdfData   Bytes?
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+  createdAt       DateTime @default(now())
+  labels          Label[]
+
+  @@index([createdAt])
 }
 
 model Invoice {
