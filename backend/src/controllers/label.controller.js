@@ -437,19 +437,28 @@ async function serveLabelFile(label, req, res) {
   // Local disk doesn't persist across backend redeploys — regenerate on
   // the fly (same deterministic filename) if the file has gone missing.
   if (!fs.existsSync(filePath)) {
-    const order = await prisma.order.findUnique({
-      where: { id: label.orderId },
-      include: { items: true, service: true, senderAddress: true, receiverAddress: true },
-    });
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-    const packages = buildPackages(order);
-    const totalPackages = packages.length || 1;
-    await generateLabelPdf(order, {
-      packageIndex: label.packageIndex,
-      totalPackages,
-      item: packages[label.packageIndex - 1] || packages[0],
-      barcodeValue: label.barcodeValue,
-    });
+    if (label.orderId) {
+      const order = await prisma.order.findUnique({
+        where: { id: label.orderId },
+        include: { items: true, service: true, senderAddress: true, receiverAddress: true },
+      });
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+      const packages = buildPackages(order);
+      const totalPackages = packages.length || 1;
+      await generateLabelPdf(order, {
+        packageIndex: label.packageIndex,
+        totalPackages,
+        item: packages[label.packageIndex - 1] || packages[0],
+        barcodeValue: label.barcodeValue,
+      });
+    } else {
+      // Manual label — no Order to regenerate from, so its PDF bytes were
+      // kept in the DB at creation time (see manualLabel.controller.js) as
+      // the durable fallback. Just write them back to disk.
+      if (!label.pdfData) return res.status(404).json({ error: 'Label file not found' });
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, label.pdfData);
+    }
   }
   if (req.query.inline) {
     res.setHeader('Content-Type', 'application/pdf');
