@@ -128,8 +128,14 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   doc.image(barcodePng, contentLeft, barcodeTop, { fit: [contentWidth, barcodeHeight], align: 'center' });
   doc.y = barcodeTop + barcodeHeight + 10;
   doc.font('Helvetica-Bold').fontSize(12).text(barcodeValue, contentLeft, doc.y, { width: contentWidth, align: 'center' });
-  if (totalPackages > 1) {
+  if (!hideShipmentTracking && totalPackages > 1) {
     doc.font('Helvetica').fontSize(8).text(`Shipment tracking: ${order.trackingNumber}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
+  }
+  // Manual label's user-entered "Order ID" (an external reference the staff
+  // typed in, unrelated to the internal ML-prefixed reference number above)
+  // — shown as its own line only when actually provided.
+  if (numberLabel) {
+    doc.font('Helvetica').fontSize(8).text(`Number: ${numberLabel}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
   }
 }
 
