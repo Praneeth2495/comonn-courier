@@ -147,9 +147,9 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
  * within the order and writes it to disk. Returns the relative file path
  * for storage on the Label model.
  */
-async function generateLabelPdf(order, { packageIndex, totalPackages, item, barcodeValue }) {
+async function generateLabelPdf(order, pageArgs) {
   ensureStorageDir();
-  const fileName = `${order.orderNumber}-${packageIndex}.pdf`;
+  const fileName = `${order.orderNumber}-${pageArgs.packageIndex}.pdf`;
   const filePath = path.join(STORAGE_DIR, fileName);
 
   const doc = new PDFDocument(LABEL_PAGE_SIZE);
@@ -160,7 +160,11 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
     stream.on('error', reject);
   });
 
-  await drawLabelPage(doc, order, { packageIndex, totalPackages, item, barcodeValue });
+  // Forwarded as-is (not re-destructured) — the manual-label tool's extra
+  // options (hideZone, hideShipmentTracking, numberLabel, referenceLabel)
+  // must reach drawLabelPage unchanged; real order calls simply don't set
+  // them, so drawLabelPage's own defaults keep their output identical.
+  await drawLabelPage(doc, order, pageArgs);
   doc.end();
   await finished;
 
