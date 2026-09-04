@@ -126,11 +126,16 @@ async function generateLabelPdf(order, { packageIndex, totalPackages, item, barc
 }
 
 function formatAddress(addr) {
+  // City/state/postcode are always present for a real order's saved
+  // address, but a manual label's city (and suburb, via line2 above) is
+  // optional — build this line from whichever parts exist rather than
+  // leaving a stray leading comma/space when one's missing.
+  const cityStatePostcode = [addr.city, addr.state].filter(Boolean).join(', ') + (addr.postcode ? ` ${addr.postcode}` : '');
   return [
     addr.contactName,
     addr.line1,
     addr.line2,
-    `${addr.city}${addr.state ? ', ' + addr.state : ''} ${addr.postcode}`,
+    cityStatePostcode || null,
     getCountryName(addr.countryCode),
     addr.phone,
   ]
