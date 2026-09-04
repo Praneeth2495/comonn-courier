@@ -78,10 +78,12 @@ async function createManualLabels(req, res, next) {
 
     const referenceNumber = await generateManualLabelNumber();
     const trimmedInstructions = instructions?.trim() || null;
+    const trimmedOrderId = orderId?.trim() || null;
+    const trimmedRefNumber = refNumber?.trim() || null;
     const fakeOrder = {
       orderNumber: referenceNumber,
       trackingNumber: referenceNumber,
-      service: { name: 'Manual label' },
+      service: { name: service },
       zoneCode: 'MANUAL',
       contentsDescription: null,
       receiverAddress: toLabelShape(toAddress, trimmedInstructions),
