@@ -145,13 +145,13 @@ function AddressFields({ label, value, onChange }) {
         <input className="input" required value={value.street} onChange={(e) => set('street', e.target.value)} />
       </div>
       <div className="field">
-        <label>Sub-urb</label>
-        <input className="input" required value={value.suburb} onChange={(e) => set('suburb', e.target.value)} />
+        <label>Sub-urb (optional)</label>
+        <input className="input" value={value.suburb} onChange={(e) => set('suburb', e.target.value)} />
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
         <div className="field" style={{ flex: 1 }}>
-          <label>City</label>
-          <input className="input" required value={value.city} onChange={(e) => set('city', e.target.value)} />
+          <label>City (optional)</label>
+          <input className="input" value={value.city} onChange={(e) => set('city', e.target.value)} />
         </div>
         <div className="field" style={{ flex: 1 }}>
           <label>State</label>
