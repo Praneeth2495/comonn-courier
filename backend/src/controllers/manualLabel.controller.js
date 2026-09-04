@@ -30,7 +30,7 @@ function toLabelShape(addr, instructions) {
     line2: addr.suburb?.trim() || '',
     city: addr.city?.trim() || '',
     state: addr.state.trim(),
-    postcode: '',
+    postcode: addr.pin?.trim() || '',
     countryCode: addr.countryCode,
     phone: null,
     ...(instructions !== undefined ? { instructions } : {}),
