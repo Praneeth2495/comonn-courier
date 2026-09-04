@@ -51,7 +51,7 @@ const LABEL_PAGE_SIZE = { size: [288, 432], margin: 16 }; // 4in x 6in @72dpi
  * drift apart. Caller owns the PDFDocument's lifecycle (creation, adding
  * further pages, .end()) — this only draws, it never touches doc.pipe/.end.
  */
-async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, barcodeValue, hideZone = false, hideShipmentTracking = false, numberLabel = null, referenceLabel = null }) {
+async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, barcodeValue, hideZone = false, hideShipmentTracking = false, hideBarcodeText = false, numberLabel = null, referenceLabel = null }) {
   const barcodePng = await renderBarcode(barcodeValue);
 
   drawWatermark(doc);
