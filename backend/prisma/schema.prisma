@@ -1053,11 +1053,22 @@ model WhatsappMessage {
 // to the same order/tracking number.
 model Label {
   id           String   @id @default(uuid())
-  orderId      String
-  order        Order    @relation(fields: [orderId], references: [id])
+  // Nullable: a label created via the Print Label page's "Create Label"
+  // tool (manual/ad-hoc shipment, e.g. an internal transfer with no
+  // customer booking behind it) has no Order at all. Order-linked labels
+  // are unaffected — orderId is still always set for those, same as before.
+  orderId      String?
+  order        Order?   @relation(fields: [orderId], references: [id])
   packageIndex Int
   itemType     String
   fileUrl      String // path/URL to generated PDF
+  // Order-linked labels regenerate their PDF from the Order + OrderItem if
+  // the file goes missing from disk (Railway's local storage doesn't
+  // persist across redeploys) — see serveLabelFile. A manual label has no
+  // Order to regenerate from, so its PDF bytes are kept here too, as the
+  // durable fallback (same reasoning as PartyInvoice/Asset.attachmentData).
+  // Always null for order-linked labels.
+  pdfData      Bytes?
   barcodeValue String   @unique
   generatedAt  DateTime @default(now())
 
