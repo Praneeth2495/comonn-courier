@@ -6,9 +6,24 @@ const { getCountryName } = require('../utils/countryNames');
 
 const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
 const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
+const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
 
 function ensureStorageDir() {
   if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR, { recursive: true });
+}
+
+// Same recipe as invoiceService.js's drawWatermark — the icon-only mark
+// (not the full logo+text, illegible at this scale), faint, centered,
+// drawn first so it sits behind everything (pdfkit has no z-index). Sized
+// down from invoice's 320px to match this page's much smaller 288x432
+// canvas vs invoice's A4, roughly the same proportion of page width.
+function drawWatermark(doc) {
+  if (!fs.existsSync(LOGO_ICON_PATH)) return;
+  const size = 170;
+  const x = (doc.page.width - size) / 2;
+  const y = (doc.page.height - size) / 2;
+  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
+  doc.opacity(1);
 }
 
 /**
