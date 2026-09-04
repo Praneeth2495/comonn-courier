@@ -37,10 +37,15 @@ export default function PrintLabelPanel() {
 
   return (
     <div>
-      <h1 className="h-lg" style={{ marginBottom: 16 }}>Print Label</h1>
-      <p className="lead" style={{ marginBottom: 16, fontSize: 13.5 }}>
-        Scan (physical scanner or camera) or type a label's barcode to open and print it again.
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div>
+          <h1 className="h-lg">Print Label</h1>
+          <p className="lead" style={{ marginTop: 4, fontSize: 13.5 }}>
+            Scan (physical scanner or camera) or type a label's barcode to open and print it again.
+          </p>
+        </div>
+        <button type="button" className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Create Label</button>
+      </div>
 
       <div className="card" style={{ padding: 24, maxWidth: 480 }}>
         <div style={{ display: 'flex', gap: 8 }}>
