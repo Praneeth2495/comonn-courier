@@ -16,8 +16,6 @@ async function generateManualLabelNumber() {
 function validateAddress(addr, label) {
   if (!addr || typeof addr !== 'object') return `${label} address is required`;
   if (!addr.street?.trim()) return `${label} street is required`;
-  if (!addr.suburb?.trim()) return `${label} suburb is required`;
-  if (!addr.city?.trim()) return `${label} city is required`;
   if (!addr.state?.trim()) return `${label} state is required`;
   if (!addr.countryCode || !COUNTRY_NAMES[addr.countryCode]) return `${label} country must be one of the countries we serve`;
   return null;
