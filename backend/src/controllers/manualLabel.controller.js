@@ -57,8 +57,11 @@ function toBatchResponse(batch) {
  */
 async function createManualLabels(req, res, next) {
   try {
-    const { fromAddress, toAddress, quantity, itemType, actualWeightKg, lengthCm, widthCm, heightCm, instructions } = req.body;
+    const { orderId, refNumber, service, fromAddress, toAddress, quantity, itemType, actualWeightKg, lengthCm, widthCm, heightCm, instructions } = req.body;
 
+    if (!MANUAL_LABEL_SERVICES.includes(service)) {
+      return res.status(400).json({ error: 'Service must be Express or Economy' });
+    }
     const fromError = validateAddress(fromAddress, 'From');
     if (fromError) return res.status(400).json({ error: fromError });
     const toError = validateAddress(toAddress, 'To');
