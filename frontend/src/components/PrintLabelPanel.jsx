@@ -1,29 +1,45 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import client from '../api/client';
 import { COUNTRY_NAMES } from '../utils/countryNames';
+import LoadingLogo from './LoadingLogo';
 
 // Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
 // the (mostly public) app bundle when only staff/admin ever open it.
 const BarcodeCameraScanner = lazy(() => import('./BarcodeCameraScanner'));
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+
+export default function PrintLabelPanel() {
+  const [subTab, setSubTab] = useState('scan');
+
+  return (
+    <div>
+      <h1 className="h-lg" style={{ marginBottom: 16 }}>Print Label</h1>
+
+      <div className="dash-tabs" style={{ marginBottom: 16 }}>
+        <button className={`dash-tab ${subTab === 'scan' ? 'active' : ''}`} onClick={() => setSubTab('scan')}>Scan &amp; Print</button>
+        <button className={`dash-tab ${subTab === 'manual' ? 'active' : ''}`} onClick={() => setSubTab('manual')}>Manual Label</button>
+      </div>
+
+      {subTab === 'scan' && <ScanAndPrintTab />}
+      {subTab === 'manual' && <ManualLabelTab />}
+    </div>
+  );
+}
+
 // Staff enter or scan a label's printed barcode (physical scanner, camera,
 // or typed) to reprint it directly — no need to hunt down the order first.
 // Opens the label PDF inline (same ?inline=1 pattern as the "View label"
 // button elsewhere), letting the browser's own print dialog handle it.
-export default function PrintLabelPanel() {
+function ScanAndPrintTab() {
   const [code, setCode] = useState('');
   const [showCamera, setShowCamera] = useState(false);
-  const [error, setError] = useState('');
   const [history, setHistory] = useState([]); // recently printed, most recent first
-  const [showCreate, setShowCreate] = useState(false);
-  const [createdLabels, setCreatedLabels] = useState(null); // { referenceNumber, labels } after a successful Create
 
   function printByCode(raw) {
     const barcodeValue = (raw || '').trim();
     if (!barcodeValue) return;
-    setError('');
-    const base = import.meta.env.VITE_API_BASE_URL || '/api';
-    window.open(`${base}/labels/download/barcode/${encodeURIComponent(barcodeValue)}?inline=1`, '_blank');
+    window.open(`${API_BASE}/labels/download/barcode/${encodeURIComponent(barcodeValue)}?inline=1`, '_blank');
     setHistory((prev) => [barcodeValue, ...prev.filter((c) => c !== barcodeValue)].slice(0, 10));
     setCode('');
   }
@@ -37,15 +53,9 @@ export default function PrintLabelPanel() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-        <div>
-          <h1 className="h-lg">Print Label</h1>
-          <p className="lead" style={{ marginTop: 4, fontSize: 13.5 }}>
-            Scan (physical scanner or camera) or type a label's barcode to open and print it again.
-          </p>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Create Label</button>
-      </div>
+      <p className="lead" style={{ marginBottom: 16, fontSize: 13.5 }}>
+        Scan (physical scanner or camera) or type a label's barcode to open and print it again.
+      </p>
 
       <div className="card" style={{ padding: 24, maxWidth: 480 }}>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -69,7 +79,6 @@ export default function PrintLabelPanel() {
         >
           🖨️ Print label
         </button>
-        {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
       </div>
 
       {history.length > 0 && (
@@ -95,33 +104,115 @@ export default function PrintLabelPanel() {
           <BarcodeCameraScanner onScan={printByCode} onClose={() => setShowCamera(false)} />
         </Suspense>
       )}
+    </div>
+  );
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
+}
+
+function addressSummary(addr) {
+  return [addr.city, addr.suburb, addr.countryCode].filter(Boolean).join(', ') || '—';
+}
+
+function ManualLabelTab() {
+  const [batches, setBatches] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [viewing, setViewing] = useState(null); // { referenceNumber, batchId, hasMaster, labels }
+
+  function load() {
+    client.get('/labels/manual/history').then(({ data }) => setBatches(data.batches)).catch(() => setBatches([]));
+  }
+  useEffect(load, []);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <p className="lead" style={{ fontSize: 13.5, maxWidth: 480 }}>For a shipment with no order behind it — e.g. an internal transfer.</p>
+        <button type="button" className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Create Label</button>
+      </div>
+
+      <h3 className="h-md" style={{ marginBottom: 12 }}>History</h3>
+      {batches === null ? <LoadingLogo /> : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>Reference</th><th>From</th><th>To</th><th>Qty</th><th>Created by</th><th>Created</th><th></th></tr></thead>
+            <tbody>
+              {batches.map((b) => (
+                <tr key={b.id}>
+                  <td className="mono">{b.referenceNumber}</td>
+                  <td>{addressSummary(b.fromAddress)}</td>
+                  <td>{addressSummary(b.toAddress)}</td>
+                  <td>{b.quantity}</td>
+                  <td>{b.createdBy?.fullName || '—'}</td>
+                  <td>{fmtDate(b.createdAt)}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => setViewing({ referenceNumber: b.referenceNumber, batchId: b.id, hasMaster: b.hasMaster, labels: b.labels })}
+                      >
+                        Labels
+                      </button>
+                      {b.hasMaster && (
+                        <a className="btn btn-outline btn-sm" href={`${API_BASE}/labels/manual/${b.id}/master?inline=1`} target="_blank" rel="noreferrer">
+                          Master
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {batches.length === 0 && (
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No manual labels created yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showCreate && (
         <CreateLabelModal
           onClose={() => setShowCreate(false)}
-          onCreated={(result) => { setShowCreate(false); setCreatedLabels(result); }}
+          onCreated={(result) => {
+            setShowCreate(false);
+            load();
+            setViewing({ referenceNumber: result.batch.referenceNumber, batchId: result.batch.id, hasMaster: result.batch.hasMaster, labels: result.labels });
+          }}
         />
       )}
 
-      {createdLabels && (
-        <div className="modal-overlay open" onClick={() => setCreatedLabels(null)}>
+      {viewing && (
+        <div className="modal-overlay open" onClick={() => setViewing(null)}>
           <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginBottom: 4 }}>Labels created</h3>
-            <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>Reference <span className="mono">{createdLabels.referenceNumber}</span></p>
+            <h3 style={{ marginBottom: 4 }}>Labels</h3>
+            <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>Reference <span className="mono">{viewing.referenceNumber}</span></p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {createdLabels.labels.map((l) => (
+              {viewing.hasMaster && (
                 <a
-                  key={l.id}
-                  className="btn btn-outline btn-sm"
-                  href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/download/${l.id}?inline=1`}
+                  className="btn btn-primary btn-sm"
+                  href={`${API_BASE}/labels/manual/${viewing.batchId}/master?inline=1`}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  View &amp; print label {createdLabels.labels.length > 1 ? `${l.packageIndex} of ${createdLabels.labels.length}` : ''}
+                  View &amp; print master label (all {viewing.labels.length} pages)
+                </a>
+              )}
+              {viewing.labels.map((l) => (
+                <a
+                  key={l.id}
+                  className="btn btn-outline btn-sm"
+                  href={`${API_BASE}/labels/download/${l.id}?inline=1`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View &amp; print label {viewing.labels.length > 1 ? `${l.packageIndex} of ${viewing.labels.length}` : ''}
                 </a>
               ))}
             </div>
-            <button type="button" className="btn btn-primary block" style={{ marginTop: 16, padding: 12 }} onClick={() => setCreatedLabels(null)}>Done</button>
+            <button type="button" className="btn btn-primary block" style={{ marginTop: 16, padding: 12 }} onClick={() => setViewing(null)}>Done</button>
           </div>
         </div>
       )}
@@ -204,7 +295,9 @@ function CreateLabelModal({ onClose, onCreated }) {
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 520, maxHeight: '86vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
         <h3 style={{ marginBottom: 4 }}>Create Label</h3>
-        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>For a shipment with no order behind it — e.g. an internal transfer.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>
+          {Number(quantity) > 1 ? 'Generates one label per unit, plus a combined master label with every page.' : 'For a shipment with no order behind it — e.g. an internal transfer.'}
+        </p>
         <form onSubmit={submit} className="form-stack">
           <AddressFields label="From" value={fromAddress} onChange={setFromAddress} />
           <AddressFields label="To" value={toAddress} onChange={setToAddress} />
