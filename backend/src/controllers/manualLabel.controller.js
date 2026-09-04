@@ -163,8 +163,6 @@ async function downloadMasterLabel(req, res, next) {
     if (!batch) return res.status(404).json({ error: 'Batch not found' });
     if (!batch.masterPdfData) return res.status(404).json({ error: 'No master label for this batch' });
 
-    const { STORAGE_DIR } = require('../services/labelService');
-    const path = require('path');
     const filePath = path.resolve(path.join(STORAGE_DIR, batch.masterFileUrl));
     if (!fs.existsSync(filePath)) {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
