@@ -274,6 +274,9 @@ function AddressFields({ label, value, onChange }) {
 }
 
 function CreateLabelModal({ onClose, onCreated }) {
+  const [orderId, setOrderId] = useState('');
+  const [refNumber, setRefNumber] = useState('');
+  const [service, setService] = useState('');
   const [fromAddress, setFromAddress] = useState(emptyAddress());
   const [toAddress, setToAddress] = useState(emptyAddress());
   const [quantity, setQuantity] = useState('1');
@@ -292,7 +295,7 @@ function CreateLabelModal({ onClose, onCreated }) {
     setError('');
     try {
       const { data } = await client.post('/labels/manual', {
-        fromAddress, toAddress, quantity, itemType, actualWeightKg, lengthCm, widthCm, heightCm, instructions,
+        orderId, refNumber, service, fromAddress, toAddress, quantity, itemType, actualWeightKg, lengthCm, widthCm, heightCm, instructions,
       });
       onCreated(data);
     } catch (err) {
