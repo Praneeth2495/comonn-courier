@@ -1511,7 +1511,7 @@ function UsersPanel() {
               </tr>
             ))}
             {internalUsers.length === 0 && (
-              <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No accounts yet.</td></tr>
+              <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>{q.trim() ? 'No accounts match your search.' : 'No accounts yet.'}</td></tr>
             )}
           </tbody>
         </table>
