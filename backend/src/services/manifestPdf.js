@@ -88,15 +88,14 @@ async function generateManifestPdf(manifest) {
     // for several different airports within the same country — staff
     // physically sorting parcels need to see which airport each one routes
     // through, not just the destination country.
-    const colX = { order: 50, tracking: 122, receiver: 195, dest: 330, airport: 415, qty: 455, weight: 490 };
+    const colX = { order: 50, receiver: 145, dest: 300, airport: 405, qty: 450, weight: 490 };
     doc.font('Helvetica-Bold').fontSize(8);
-    doc.text('Order #', colX.order, doc.y, { continued: false, width: 70 });
-    doc.text('Tracking', colX.tracking, doc.y - 9, { width: 70 });
-    doc.text('Receiver', colX.receiver, doc.y - 9, { width: 130 });
-    doc.text('Dest.', colX.dest, doc.y - 9, { width: 80 });
-    doc.text('Airport', colX.airport, doc.y - 9, { width: 35 });
-    doc.text('Qty', colX.qty, doc.y - 9, { width: 30 });
-    doc.text('Wt (kg)', colX.weight, doc.y - 9, { width: 45 });
+    doc.text('Order #', colX.order, doc.y, { continued: false, width: 90 });
+    doc.text('Receiver', colX.receiver, doc.y - 9, { width: 150 });
+    doc.text('Dest.', colX.dest, doc.y - 9, { width: 100 });
+    doc.text('Airport', colX.airport, doc.y - 9, { width: 40 });
+    doc.text('Qty', colX.qty, doc.y - 9, { width: 35 });
+    doc.text('Wt (kg)', colX.weight, doc.y - 9, { width: 50 });
     doc.moveDown(0.5);
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
     doc.moveDown(0.3);
