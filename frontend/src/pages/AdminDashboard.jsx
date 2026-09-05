@@ -1397,8 +1397,13 @@ function UsersPanel() {
     return r.region ? `${r.state} · ${r.region}` : `${r.state} (all)`;
   }
 
-  const internalUsers = users.filter((u) => u.role !== 'CUSTOMER');
-  const customerUsers = users.filter((u) => u.role === 'CUSTOMER');
+  function matchesQuery(u) {
+    if (!q.trim()) return true;
+    const needle = q.trim().toLowerCase();
+    return [u.fullName, u.email, u.phone].filter(Boolean).some((v) => String(v).toLowerCase().includes(needle));
+  }
+  const internalUsers = users.filter((u) => u.role !== 'CUSTOMER' && matchesQuery(u));
+  const customerUsers = users.filter((u) => u.role === 'CUSTOMER' && matchesQuery(u));
 
   return (
     <div>
@@ -1408,6 +1413,10 @@ function UsersPanel() {
         <button className={`dash-tab ${subTab === 'internal' ? 'active' : ''}`} onClick={() => setSubTab('internal')}>Admin / Staff / Accounts / Rider</button>
         <button className={`dash-tab ${subTab === 'customers' ? 'active' : ''}`} onClick={() => setSubTab('customers')}>Customers</button>
       </div>
+
+      <form className="search-box" style={{ marginBottom: 16, maxWidth: 360 }} onSubmit={(e) => e.preventDefault()}>
+        🔍<input placeholder="Search name, email, mobile…" value={q} onChange={(e) => setQ(e.target.value)} />
+      </form>
 
       {subTab === 'internal' && (
       <div className="table-wrap">
