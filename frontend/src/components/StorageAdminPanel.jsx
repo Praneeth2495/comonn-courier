@@ -275,7 +275,11 @@ function BookingsTable() {
                 <td>
                   <select
                     className="select"
-                    style={{ fontSize: 12, padding: '4px 8px', width: 'auto' }}
+                    style={{
+                      fontSize: 12, padding: '4px 8px', width: 'auto',
+                      background: b.status === 'ACTIVE' ? 'var(--success-bg)' : b.status === 'EXPIRED' ? 'var(--danger-bg)' : undefined,
+                      color: b.status === 'ACTIVE' ? 'var(--success)' : b.status === 'EXPIRED' ? 'var(--danger)' : undefined,
+                    }}
                     value={b.status}
                     disabled={statusUpdatingId === b.id}
                     onChange={(e) => setBookingStatus(b.id, e.target.value)}
