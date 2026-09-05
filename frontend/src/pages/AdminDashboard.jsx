@@ -1541,7 +1541,7 @@ function UsersPanel() {
               </tr>
             ))}
             {customerUsers.length === 0 && (
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No customers yet.</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>{q.trim() ? 'No customers match your search.' : 'No customers yet.'}</td></tr>
             )}
           </tbody>
         </table>
