@@ -174,9 +174,10 @@ async function generateLabelPdf(order, pageArgs) {
   });
 
   // Forwarded as-is (not re-destructured) — the manual-label tool's extra
-  // options (hideZone, hideShipmentTracking, numberLabel, referenceLabel)
-  // must reach drawLabelPage unchanged; real order calls simply don't set
-  // them, so drawLabelPage's own defaults keep their output identical.
+  // options (hideShipmentTracking, hideBarcodeText, numberLabel,
+  // referenceLabel) must reach drawLabelPage unchanged; real order calls
+  // simply don't set them, so drawLabelPage's own defaults keep their
+  // output identical.
   await drawLabelPage(doc, order, pageArgs);
   doc.end();
   await finished;
