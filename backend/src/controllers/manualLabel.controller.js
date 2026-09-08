@@ -121,7 +121,7 @@ async function createManualLabels(req, res, next) {
       const barcodeValue = numericQuantity > 1 ? `${referenceNumber}-${i}` : referenceNumber;
       const pageArgs = {
         packageIndex: i, totalPackages: numericQuantity, item, barcodeValue,
-        hideZone: true, hideShipmentTracking: true, hideBarcodeText: true,
+        hideShipmentTracking: true, hideBarcodeText: true,
         numberLabel: trimmedOrderId, referenceLabel: trimmedRefNumber,
       };
       pages.push(pageArgs);
