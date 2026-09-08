@@ -91,15 +91,15 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   doc.moveDown(0.5);
 
   // This package's details — dims are optional at booking time, so omit
-  // that segment entirely rather than printing "0x0x0 cm". Zone is omitted
-  // entirely for manual labels (hideZone) — "MANUAL" isn't a real zone and
-  // was only ever a placeholder there; real order labels are unaffected.
+  // that segment entirely rather than printing "0x0x0 cm". Zone code isn't
+  // shown here at all anymore (removed from every label, not just manual
+  // ones) — an internal pricing detail, not something staff/customers need
+  // on the printed label itself.
   const dimsPart = (Number(item.lengthCm) && Number(item.widthCm) && Number(item.heightCm))
     ? ` | Dims: ${item.lengthCm}x${item.widthCm}x${item.heightCm} cm`
     : '';
-  const zonePart = hideZone ? '' : ` | Zone: ${order.zoneCode}`;
   doc.font('Helvetica').fontSize(8).text(
-    `${item.itemType} | Weight: ${item.actualWeightKg} kg${dimsPart}${zonePart}`
+    `${item.itemType} | Weight: ${item.actualWeightKg} kg${dimsPart}`
   );
   if (order.contentsDescription) doc.text(`Contents: ${order.contentsDescription}`);
   doc.moveDown(0.6);
