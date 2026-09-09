@@ -42,6 +42,20 @@ async function renderBarcode(value) {
   });
 }
 
+/**
+ * Renders a QR code PNG buffer encoding the same value as the Code128
+ * barcode — an alternative, camera-friendly way to scan the same label
+ * (no dedicated barcode scanner needed), shown under the logo in the
+ * header.
+ */
+async function renderQrCode(value) {
+  return bwipjs.toBuffer({
+    bcid: 'qrcode',
+    text: value,
+    scale: 4,
+  });
+}
+
 const LABEL_PAGE_SIZE = { size: [288, 432], margin: 16 }; // 4in x 6in @72dpi
 
 /**
