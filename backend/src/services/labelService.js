@@ -135,20 +135,20 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
     `${item.itemType} | Weight: ${item.actualWeightKg} kg${dimsPart}`
   );
   if (order.contentsDescription) doc.text(`Contents: ${order.contentsDescription}`);
-  doc.moveDown(0.6);
+  doc.moveDown(0.4);
 
   // Destination country badge — black rectangle, white bold text,
   // centered above the barcode so it's the first thing a sorter sees.
   const countryCode = order.receiverAddress.countryCode;
   if (countryCode) {
-    const badgeWidth = 50;
-    const badgeHeight = 22;
+    const badgeWidth = 46;
+    const badgeHeight = 20;
     const badgeX = (doc.page.width - badgeWidth) / 2;
     const badgeY = doc.y;
     doc.rect(badgeX, badgeY, badgeWidth, badgeHeight).fill('black');
-    doc.fillColor('white').font('Helvetica-Bold').fontSize(14).text(countryCode, badgeX, badgeY + 5, { width: badgeWidth, align: 'center' });
+    doc.fillColor('white').font('Helvetica-Bold').fontSize(13).text(countryCode, badgeX, badgeY + 4, { width: badgeWidth, align: 'center' });
     doc.fillColor('black');
-    doc.y = badgeY + badgeHeight + 8;
+    doc.y = badgeY + badgeHeight + 6;
   }
 
   // Barcode — position text explicitly below the image's fitted height,
@@ -160,7 +160,7 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   const contentLeft = doc.page.margins.left;
   const contentWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
   const barcodeTop = doc.y;
-  const barcodeHeight = 80;
+  const barcodeHeight = 60;
   doc.image(barcodePng, contentLeft, barcodeTop, { fit: [contentWidth, barcodeHeight], align: 'center' });
   doc.y = barcodeTop + barcodeHeight + 10;
   // hideBarcodeText: manual labels show "Order ID: ..." right below instead
