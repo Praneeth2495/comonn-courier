@@ -83,8 +83,8 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   const pageRight = doc.page.width - doc.page.margins.right;
   const logoWidth = 92;
   const logoHeight = logoWidth * LOGO_ASPECT_RATIO;
-  const qrSize = 46;
-  const qrGap = 6;
+  const qrSize = 34;
+  const qrGap = 3;
   if (fs.existsSync(LOGO_PATH)) {
     doc.image(LOGO_PATH, pageRight - logoWidth, headerTop, { width: logoWidth });
   }
@@ -98,30 +98,30 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   // labels are untouched, still showing their real order number as always.
   doc.text(numberLabel ? `Order ID: ${numberLabel}` : `Order: ${order.orderNumber}`);
   doc.text(`Package ${packageIndex} of ${totalPackages}`);
-  doc.moveDown(0.5);
+  doc.moveDown(0.3);
 
   // The right column (logo + QR) is taller than the left column's 3 lines
-  // of text — make sure "TO" starts below whichever column is taller, or
-  // long addresses (which wrap to the full content width) would run
-  // straight under the QR code.
+  // of text — make sure "TO" starts below whichever column is taller (a
+  // small +3 pad, not the wide gap this used to leave), or long addresses
+  // (which wrap to the full content width) would run under the QR code.
   const rightColumnBottom = headerTop + logoHeight + qrGap + qrSize;
-  doc.y = Math.max(doc.y, rightColumnBottom + 6);
+  doc.y = Math.max(doc.y, rightColumnBottom + 3);
 
   // Receiver / Sender — "To" is the delivery address and is what matters
   // most on the package, so it's rendered first and noticeably
   // larger/bolder than "From".
-  doc.font('Helvetica-Bold').fontSize(13).text('TO');
-  doc.font('Helvetica-Bold').fontSize(13).text(formatAddress(order.receiverAddress));
+  doc.font('Helvetica-Bold').fontSize(12).text('TO');
+  doc.font('Helvetica-Bold').fontSize(12).text(formatAddress(order.receiverAddress));
   if (order.receiverAddress.instructions) {
-    doc.moveDown(0.15);
+    doc.moveDown(0.1);
     doc.font('Helvetica-Bold').fontSize(8).text('Delivery instructions', { continued: false });
     doc.font('Helvetica').fontSize(8).text(order.receiverAddress.instructions, { width: 256 });
   }
-  doc.moveDown(0.4);
+  doc.moveDown(0.3);
   doc.font('Helvetica-Bold').fontSize(8).fillColor('#6B7280').text('FROM');
   doc.font('Helvetica').fontSize(8).fillColor('#6B7280').text(formatAddress(order.senderAddress));
   doc.fillColor('black');
-  doc.moveDown(0.5);
+  doc.moveDown(0.35);
 
   // This package's details — dims are optional at booking time, so omit
   // that segment entirely rather than printing "0x0x0 cm". Zone code isn't
