@@ -65,19 +65,31 @@ const LABEL_PAGE_SIZE = { size: [288, 432], margin: 16 }; // 4in x 6in @72dpi
  * drift apart. Caller owns the PDFDocument's lifecycle (creation, adding
  * further pages, .end()) — this only draws, it never touches doc.pipe/.end.
  */
+// logo-full.png's actual pixel dimensions (1852x313) — used to derive its
+// printed height from whatever width we place it at, since pdfkit's
+// `width`-only option scales proportionally but doesn't report the result.
+const LOGO_ASPECT_RATIO = 313 / 1852;
+
 async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, barcodeValue, hideShipmentTracking = false, hideBarcodeText = false, numberLabel = null, referenceLabel = null }) {
-  const barcodePng = await renderBarcode(barcodeValue);
+  const [barcodePng, qrPng] = await Promise.all([renderBarcode(barcodeValue), renderQrCode(barcodeValue)]);
 
   drawWatermark(doc);
 
-  // Header — logo sits top-right; the info column starts at the very top
-  // of the content area on the left, with no COMONN text duplicating it.
+  // Header — logo + QR code (same value as the barcode below, for a
+  // camera/phone scan instead of a dedicated scanner) sit top-right; the
+  // info column starts at the very top of the content area on the left,
+  // with no COMONN text duplicating it.
   const headerTop = doc.y;
   const pageRight = doc.page.width - doc.page.margins.right;
+  const logoWidth = 92;
+  const logoHeight = logoWidth * LOGO_ASPECT_RATIO;
+  const qrSize = 46;
+  const qrGap = 6;
   if (fs.existsSync(LOGO_PATH)) {
-    const logoWidth = 70;
     doc.image(LOGO_PATH, pageRight - logoWidth, headerTop, { width: logoWidth });
   }
+  doc.image(qrPng, pageRight - qrSize, headerTop + logoHeight + qrGap, { width: qrSize, height: qrSize });
+
   doc.y = headerTop;
   doc.fontSize(8).font('Helvetica');
   doc.text(`Service: ${order.service.name}`);
@@ -87,6 +99,13 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   doc.text(numberLabel ? `Order ID: ${numberLabel}` : `Order: ${order.orderNumber}`);
   doc.text(`Package ${packageIndex} of ${totalPackages}`);
   doc.moveDown(0.5);
+
+  // The right column (logo + QR) is taller than the left column's 3 lines
+  // of text — make sure "TO" starts below whichever column is taller, or
+  // long addresses (which wrap to the full content width) would run
+  // straight under the QR code.
+  const rightColumnBottom = headerTop + logoHeight + qrGap + qrSize;
+  doc.y = Math.max(doc.y, rightColumnBottom + 6);
 
   // Receiver / Sender — "To" is the delivery address and is what matters
   // most on the package, so it's rendered first and noticeably
