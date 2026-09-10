@@ -52,6 +52,7 @@ export default function App() {
             <Route path="/register" element={withLayout(<Register />)} />
             <Route path="/forgot-password" element={withLayout(<ForgotPassword />)} />
             <Route path="/set-password" element={withLayout(<SetPassword />)} />
+            <Route path="/onboarding-details" element={withLayout(<OnboardingDetails />)} />
             <Route path="/services" element={withLayout(<Services />)} />
             <Route path="/about" element={withLayout(<About />)} />
             <Route path="/quote" element={withLayout(<Quote />)} />
