@@ -138,13 +138,55 @@ model EmployeeProfile {
   idProofFileMime String?
   idProofFileData Bytes?
 
+  // Second ID document — same shape as the first, both optional (most
+  // hires only ever provide one, e.g. just Aadhaar; a second is for cases
+  // like Aadhaar + PAN).
+  idProofType2     String?
+  idProofNumber2   String?
+  idProofFileName2 String?
+  idProofFileMime2 String?
+  idProofFileData2 Bytes?
+
   bankAccountName   String?
   bankAccountNumber String?
   bankIfsc          String?
   bankName          String?
 
+  // Set once the employee submits their own details via the emailed
+  // self-fill link (see EmployeeOnboardingToken) — null for profiles the
+  // admin filled out directly in one sitting (createEmployee), since
+  // there's nothing separate to "submit" in that path.
+  detailsSubmittedAt DateTime?
+  // Set once ADMIN reviews and approves — for the admin-filled path this
+  // is stamped immediately at creation; for the share-link path, this is
+  // the gate that actually sends the employee their password-set email
+  // (see employee.controller.js's approveEmployee), so an invited hire
+  // can't log in on unreviewed self-reported details.
+  approvedAt         DateTime?
+  approvedById       String?
+  approvedBy         User?     @relation("EmployeeProfileApprovedBy", fields: [approvedById], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// A one-time link (see employee.controller.js's shareOnboardingLink) that
+// lets an invited employee fill in their own onboarding details — address,
+// emergency contact, ID proof, bank details — without needing to log in
+// first (they have no usable password yet; see EmployeeProfile.approvedAt).
+// Same shape/TTL pattern as PasswordSetToken, kept as its own model since
+// consuming one has a completely different effect (marks the profile
+// submitted, not a login).
+model EmployeeOnboardingToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // Internal admin/staff notes on an order. Deliberately separate from
