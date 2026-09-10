@@ -196,6 +196,14 @@ function ManualLabelTab() {
             </div>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>Order ID <span className="mono">{viewing.referenceNumber}</span></p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <a
+                className="btn btn-outline btn-sm"
+                href={`${API_BASE}/labels/manual/${viewing.batchId}/consignment?inline=1`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View &amp; print consignment sheet (sender + receiver copy)
+              </a>
               {viewing.hasMaster && (
                 <a
                   className="btn btn-primary btn-sm"
