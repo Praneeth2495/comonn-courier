@@ -200,19 +200,23 @@ const EMPTY_FORM = {
   designation: '', department: '', dateOfJoining: '',
   addressLine1: '', addressLine2: '', city: '', state: '', postcode: '',
   emergencyContactName: '', emergencyContactRelation: '', emergencyContactPhone: '',
-  idProofType: '', idProofNumber: '',
+  idProofType: '', idProofNumber: '', idProofType2: '', idProofNumber2: '',
   bankAccountName: '', bankAccountNumber: '', bankIfsc: '', bankName: '',
 };
 
 function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [status, setStatus] = useState(null);
   const [idProofFile, setIdProofFile] = useState(null);
+  const [idProofFile2, setIdProofFile2] = useState(null);
   const [existingIdProof, setExistingIdProof] = useState(false);
+  const [existingIdProof2, setExistingIdProof2] = useState(false);
   const [loading, setLoading] = useState(mode === 'edit');
   const [submitting, setSubmitting] = useState(false);
+  const [approving, setApproving] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  function load() {
     if (mode !== 'edit') return;
     client.get(`/admin/employees/${employeeId}`).then(({ data }) => {
       const e = data.employee;
@@ -226,13 +230,17 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
         emergencyContactName: p.emergencyContactName || '', emergencyContactRelation: p.emergencyContactRelation || '',
         emergencyContactPhone: p.emergencyContactPhone || '',
         idProofType: p.idProofType || '', idProofNumber: p.idProofNumber || '',
+        idProofType2: p.idProofType2 || '', idProofNumber2: p.idProofNumber2 || '',
         bankAccountName: p.bankAccountName || '', bankAccountNumber: p.bankAccountNumber || '',
         bankIfsc: p.bankIfsc || '', bankName: p.bankName || '',
       });
       setExistingIdProof(Boolean(p.hasIdProofFile));
+      setExistingIdProof2(Boolean(p.hasIdProofFile2));
+      setStatus(p.status || null);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [mode, employeeId]);
+  }
+  useEffect(load, [mode, employeeId]);
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -249,6 +257,7 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
         formData.append(key, value ?? '');
       });
       if (idProofFile) formData.append('idProofFile', idProofFile);
+      if (idProofFile2) formData.append('idProofFile2', idProofFile2);
 
       if (mode === 'create') {
         await client.post('/admin/employees', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -263,10 +272,30 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
     }
   }
 
+  async function approve() {
+    setApproving(true);
+    setError('');
+    try {
+      await client.patch(`/admin/employees/${employeeId}/approve`);
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not approve this employee.');
+      setApproving(false);
+    }
+  }
+
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
-        <h3 style={{ marginBottom: 16 }}>{mode === 'create' ? 'Add employee' : 'Employee details'}</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <h3>{mode === 'create' ? 'Add employee' : 'Employee details'}</h3>
+            {status && (
+              <span className={`pill ${STATUS_PILL[status] || 'pill-navy'}`} style={{ marginTop: 6, display: 'inline-block' }}>{STATUS_LABEL[status]}</span>
+            )}
+          </div>
+          <ModalCloseButton onClick={onClose} />
+        </div>
 
         {loading ? <LoadingLogo /> : (
           <form onSubmit={submit} className="form-stack">
