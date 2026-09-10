@@ -16,5 +16,6 @@ router.get('/manual/history', requireAuth, requireRole('ADMIN', 'STAFF'), requir
 // header at all; the batchId itself (an unguessable UUID) is the only gate,
 // same trust model the individual-label download routes already use.
 router.get('/manual/:batchId/master', optionalAuth, downloadMasterLabel);
+router.get('/manual/:batchId/consignment', optionalAuth, downloadConsignmentSheet);
 
 module.exports = router;
