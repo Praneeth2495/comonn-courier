@@ -84,11 +84,12 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   const logoWidth = 92;
   const logoHeight = logoWidth * LOGO_ASPECT_RATIO;
   const qrSize = 34;
-  const qrGap = 3;
+  const qrGap = 12;
+  const qrRightGap = 12;
   if (fs.existsSync(LOGO_PATH)) {
     doc.image(LOGO_PATH, pageRight - logoWidth, headerTop, { width: logoWidth });
   }
-  doc.image(qrPng, pageRight - qrSize, headerTop + logoHeight + qrGap, { width: qrSize, height: qrSize });
+  doc.image(qrPng, pageRight - qrSize - qrRightGap, headerTop + logoHeight + qrGap, { width: qrSize, height: qrSize });
 
   doc.y = headerTop;
   doc.fontSize(8).font('Helvetica');
