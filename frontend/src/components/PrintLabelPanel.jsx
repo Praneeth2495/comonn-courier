@@ -284,21 +284,32 @@ function AddressFields({ label, value, onChange }) {
   );
 }
 
+function emptyItem() {
+  return { itemType: 'Box', quantity: '1', actualWeightKg: '', lengthCm: '', widthCm: '', heightCm: '' };
+}
+
 function CreateLabelModal({ onClose, onCreated }) {
   const [orderId, setOrderId] = useState('');
   const [refNumber, setRefNumber] = useState('');
   const [service, setService] = useState('');
   const [fromAddress, setFromAddress] = useState(emptyAddress());
   const [toAddress, setToAddress] = useState(emptyAddress());
-  const [quantity, setQuantity] = useState('1');
-  const [itemType, setItemType] = useState('Box');
-  const [actualWeightKg, setActualWeightKg] = useState('');
-  const [lengthCm, setLengthCm] = useState('');
-  const [widthCm, setWidthCm] = useState('');
-  const [heightCm, setHeightCm] = useState('');
+  const [items, setItems] = useState([emptyItem()]);
   const [instructions, setInstructions] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  function updateItem(idx, field, value) {
+    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
+  }
+  function addItem() {
+    setItems((prev) => [...prev, emptyItem()]);
+  }
+  function removeItem(idx) {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  const totalQty = items.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
 
   async function submit(e) {
     e.preventDefault();
@@ -306,7 +317,7 @@ function CreateLabelModal({ onClose, onCreated }) {
     setError('');
     try {
       const { data } = await client.post('/labels/manual', {
-        orderId, refNumber, service, fromAddress, toAddress, quantity, itemType, actualWeightKg, lengthCm, widthCm, heightCm, instructions,
+        orderId, refNumber, service, fromAddress, toAddress, items, instructions,
       });
       onCreated(data);
     } catch (err) {
@@ -324,7 +335,7 @@ function CreateLabelModal({ onClose, onCreated }) {
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>
-          {Number(quantity) > 1 ? 'Generates one label per unit, plus a combined master label with every page.' : 'For a shipment with no order behind it — e.g. an internal transfer.'}
+          {totalQty > 1 ? 'Generates one label per unit, plus a combined master label with every page.' : 'For a shipment with no order behind it — e.g. an internal transfer.'}
         </p>
         <form onSubmit={submit} className="form-stack">
           <div style={{ display: 'flex', gap: 10 }}>
@@ -349,37 +360,50 @@ function CreateLabelModal({ onClose, onCreated }) {
           <AddressFields label="From" value={fromAddress} onChange={setFromAddress} />
           <AddressFields label="To" value={toAddress} onChange={setToAddress} />
 
-          <div style={{ display: 'flex', gap: 10 }}>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Quantity</label>
-              <input className="input" type="number" min="1" max="100" step="1" required value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-            </div>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Item type</label>
-              <select className="input" value={itemType} onChange={(e) => setItemType(e.target.value)}>
-                <option value="Box">Box</option>
-                <option value="Pallet">Pallet</option>
-              </select>
-            </div>
-          </div>
+          {items.map((it, idx) => (
+            <div key={idx} style={{ border: '1px solid var(--line-2)', borderRadius: 10, padding: 14, marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <h4 style={{ fontSize: 13.5 }}>Item {idx + 1}</h4>
+                {items.length > 1 && (
+                  <button type="button" className="btn btn-outline btn-sm" onClick={() => removeItem(idx)}>Remove</button>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Quantity</label>
+                  <input className="input" type="number" min="1" max="100" step="1" required value={it.quantity} onChange={(e) => updateItem(idx, 'quantity', e.target.value)} />
+                </div>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Item type</label>
+                  <select className="input" value={it.itemType} onChange={(e) => updateItem(idx, 'itemType', e.target.value)}>
+                    <option value="Box">Box</option>
+                    <option value="Pallet">Pallet</option>
+                  </select>
+                </div>
+              </div>
 
-          <div style={{ display: 'flex', gap: 10 }}>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Weight (kg)</label>
-              <input className="input" type="number" min="0.01" step="0.01" required value={actualWeightKg} onChange={(e) => setActualWeightKg(e.target.value)} />
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Weight (kg)</label>
+                  <input className="input" type="number" min="0.01" step="0.01" required value={it.actualWeightKg} onChange={(e) => updateItem(idx, 'actualWeightKg', e.target.value)} />
+                </div>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Length (cm)</label>
+                  <input className="input" type="number" min="0" step="0.1" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
+                </div>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Width (cm)</label>
+                  <input className="input" type="number" min="0" step="0.1" value={it.widthCm} onChange={(e) => updateItem(idx, 'widthCm', e.target.value)} />
+                </div>
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Height (cm)</label>
+                  <input className="input" type="number" min="0" step="0.1" value={it.heightCm} onChange={(e) => updateItem(idx, 'heightCm', e.target.value)} />
+                </div>
+              </div>
             </div>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Length (cm)</label>
-              <input className="input" type="number" min="0" step="0.1" value={lengthCm} onChange={(e) => setLengthCm(e.target.value)} />
-            </div>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Width (cm)</label>
-              <input className="input" type="number" min="0" step="0.1" value={widthCm} onChange={(e) => setWidthCm(e.target.value)} />
-            </div>
-            <div className="field" style={{ flex: 1 }}>
-              <label>Height (cm)</label>
-              <input className="input" type="number" min="0" step="0.1" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
-            </div>
+          ))}
+          <div style={{ marginTop: -6, marginBottom: 14 }}>
+            <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={(e) => { e.preventDefault(); addItem(); }}>+ Add another item</a>
           </div>
 
           <div className="field">
