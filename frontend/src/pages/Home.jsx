@@ -368,7 +368,7 @@ export default function Home() {
                   <select className="select"><option>Box</option><option>Pallet</option><option>Document</option><option>Envelope</option></select>
                   <select className="select" value={weightPreset} onChange={(e) => setWeightPreset(e.target.value)}>
                     <option disabled value="">Weight (kg)</option>
-                    {WEIGHT_OPTIONS.map((w) => <option key={w} value={w}>{w}</option>)}
+                    {WEIGHT_OPTIONS.map((w) => <option key={w} value={w}>{w === 'Not sure' ? 'Not sure, book pickup' : w}</option>)}
                   </select>
                   <div className="qty-stepper">
                     <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))}>–</button>
