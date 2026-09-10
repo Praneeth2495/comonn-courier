@@ -194,4 +194,15 @@ async function downloadMasterLabel(req, res, next) {
   }
 }
 
-module.exports = { createManualLabels, listManualLabelBatches, downloadMasterLabel };
+/** GET /api/labels/manual/:batchId/consignment — sender+receiver signature sheet for a batch, regenerated fresh each time */
+async function downloadConsignmentSheet(req, res, next) {
+  try {
+    const batch = await prisma.manualLabelBatch.findUnique({ where: { id: req.params.batchId } });
+    if (!batch) return res.status(404).json({ error: 'Batch not found' });
+    generateConsignmentSheet(batch, res);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createManualLabels, listManualLabelBatches, downloadMasterLabel, downloadConsignmentSheet };
