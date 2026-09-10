@@ -681,5 +681,6 @@ module.exports = {
   upsertSurcharge,
   listUsers,
   listDrivers,
+  getDriverDashboard,
   setUserRole,
 };
