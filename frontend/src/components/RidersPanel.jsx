@@ -95,17 +95,34 @@ export default function RidersPanel() {
       <h1 className="h-lg" style={{ marginBottom: 4 }}>Riders</h1>
       <p className="lead" style={{ marginBottom: 16 }}>Pick a rider to see their active jobs, job history, and last known location.</p>
 
-      <div className="card date-toolbar" style={{ marginBottom: 20, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Rider</span>
-        {drivers === null ? (
-          <span style={{ fontSize: 13, color: 'var(--slate-light)' }}>Loading riders…</span>
-        ) : (
-          <select className="select" style={{ maxWidth: 280 }} value={selectedId} onChange={(e) => setSelectedId(e.target.value)}>
-            <option value="">Select a rider…</option>
-            {drivers.map((d) => (
-              <option key={d.id} value={d.id}>{d.fullName}{d.driverRegion ? ` (${d.driverRegion})` : ''}</option>
-            ))}
-          </select>
+      <div className="card date-toolbar" style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14 }}>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Rider</span>
+          {drivers === null ? (
+            <span style={{ fontSize: 13, color: 'var(--slate-light)' }}>Loading riders…</span>
+          ) : (
+            <select className="select" style={{ maxWidth: 280 }} value={selectedId} onChange={(e) => setSelectedId(e.target.value)}>
+              <option value="">Select a rider…</option>
+              {drivers.map((d) => (
+                <option key={d.id} value={d.id}>{d.fullName}{d.driverRegion ? ` (${d.driverRegion})` : ''}</option>
+              ))}
+            </select>
+          )}
+          {selectedId && (
+            <>
+              <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>History from</span>
+              <input className="input" type="date" value={fromDate} max={toDate || undefined} onChange={(e) => setFromDate(e.target.value)} />
+              <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
+              <input className="input" type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)} />
+              {(fromDate || toDate) && <button type="button" className="btn btn-outline btn-sm" onClick={() => { setFromDate(''); setToDate(''); }}>Clear</button>}
+            </>
+          )}
+        </div>
+        {selectedId && dashboard && (
+          <div style={{ textAlign: 'right' }}>
+            <span className="lbl" style={{ display: 'block', marginBottom: 2 }}>Orders in this selection</span>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--navy)' }}>{historyJobs.length}</span>
+          </div>
         )}
       </div>
 
