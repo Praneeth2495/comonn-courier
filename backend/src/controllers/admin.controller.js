@@ -541,6 +541,51 @@ async function listDrivers(req, res, next) {
   }
 }
 
+/**
+ * GET /api/admin/drivers/:id/dashboard — ADMIN & STAFF: one rider's active
+ * jobs, job history, and last known location (from their most recent
+ * attendance clock-in/out — there's no separate live-GPS tracking, this
+ * reuses the same location already captured by Attendance). Lets dispatch
+ * staff check on a rider without needing the rider's own device.
+ */
+async function getDriverDashboard(req, res, next) {
+  try {
+    const driver = await prisma.user.findFirst({
+      where: { id: req.params.id, role: 'DRIVER' },
+      select: { id: true, fullName: true, email: true, phone: true, driverRegion: true },
+    });
+    if (!driver) return res.status(404).json({ error: 'Rider not found' });
+
+    const jobs = await prisma.order.findMany({
+      where: { assignedDriverId: driver.id },
+      include: {
+        senderAddress: true,
+        receiverAddress: true,
+        service: true,
+        items: true,
+        trackingEvents: { orderBy: { occurredAt: 'asc' } },
+      },
+      orderBy: { driverAssignedAt: 'desc' },
+    });
+
+    const lastLog = await prisma.attendanceLog.findFirst({
+      where: { userId: driver.id },
+      orderBy: { clockInAt: 'desc' },
+    });
+    const lastLocation = lastLog ? {
+      clockedIn: !lastLog.clockOutAt,
+      area: lastLog.clockOutAt ? lastLog.clockOutArea : lastLog.clockInArea,
+      lat: lastLog.clockOutAt ? lastLog.clockOutLat : lastLog.clockInLat,
+      lng: lastLog.clockOutAt ? lastLog.clockOutLng : lastLog.clockInLng,
+      at: lastLog.clockOutAt || lastLog.clockInAt,
+    } : null;
+
+    res.json({ driver, jobs, lastLocation });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function setUserRole(req, res, next) {
   try {
     const { role, isActive, driverRegion, canViewOverviewBreakdown, allowedPages } = req.body;
