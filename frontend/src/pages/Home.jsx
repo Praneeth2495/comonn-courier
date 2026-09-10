@@ -429,7 +429,7 @@ export default function Home() {
 
               {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
-              <button className="btn btn-primary block" style={{ marginTop: 18, padding: 13 }}>Get Instant Quote</button>
+              <button className="btn btn-primary block" style={{ marginTop: 18, padding: 13 }}>{weightPreset === 'Not sure' ? 'Book pickup →' : 'Get Instant Quote'}</button>
               <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--slate-light)', marginTop: 12 }}>📞 Enquiries: +91 91080 38783 (24/7)</p>
             </div>
           </form>
