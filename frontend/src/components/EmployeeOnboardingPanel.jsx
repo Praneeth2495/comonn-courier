@@ -362,6 +362,25 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
                   )}
                 </div>
               </div>
+              <div className="grid-2" style={{ marginTop: 10 }}>
+                <div className="field">
+                  <label>ID type 2 (optional)</label>
+                  <select className="select" value={form.idProofType2} onChange={(e) => update('idProofType2', e.target.value)}>
+                    <option value="">—</option>
+                    {ID_PROOF_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="field"><label>ID number 2</label><input className="input" value={form.idProofNumber2} onChange={(e) => update('idProofNumber2', e.target.value)} /></div>
+                <div className="field" style={{ gridColumn: '1 / -1' }}>
+                  <label>Attach ID document 2 (optional)</label>
+                  <input className="input" type="file" accept="image/*,.pdf" onChange={(e) => setIdProofFile2(e.target.files?.[0] || null)} />
+                  {existingIdProof2 && !idProofFile2 && (
+                    <button type="button" className="btn btn-outline btn-sm" style={{ marginTop: 8 }} onClick={() => downloadBlob(`/admin/employees/${employeeId}/id-proof-2`, 'id-proof-2')}>
+                      ⬇ Download attached document
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="detail-section">
