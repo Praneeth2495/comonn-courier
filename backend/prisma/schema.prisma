@@ -1103,12 +1103,18 @@ model ManualLabelBatch {
   orderId         String?
   fromAddress     Json
   toAddress       Json
+  // Total labels across every item (sum of each item's own quantity) —
+  // kept as its own column for the history table's "Qty" column and other
+  // quick reads that don't need to parse `items`.
   quantity        Int
-  itemType        String
-  actualWeightKg  Decimal  @db.Decimal(10, 3)
-  lengthCm        Decimal? @db.Decimal(10, 2)
-  widthCm         Decimal? @db.Decimal(10, 2)
-  heightCm        Decimal? @db.Decimal(10, 2)
+  // One entry per distinct item type in this batch — { itemType,
+  // actualWeightKg, lengthCm?, widthCm?, heightCm?, quantity }, mirroring
+  // Order.items but as a single JSON blob instead of its own table, since a
+  // manual label batch is a one-off with no other model referencing an
+  // individual item row. Replaced the old singular itemType/actualWeightKg/
+  // lengthCm/widthCm/heightCm columns (single-item-only) — see migration
+  // manual_label_items.
+  items           Json
   instructions    String?
   masterFileUrl   String?
   masterPdfData   Bytes?
