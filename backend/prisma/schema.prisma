@@ -98,6 +98,8 @@ model User {
   boxBookingComments      BoxBookingComment[]
   manifestsCreated        Manifest[]
   employeeProfile         EmployeeProfile?
+  onboardingTokens        EmployeeOnboardingToken[]
+  approvedEmployeeProfiles EmployeeProfile[] @relation("EmployeeProfileApprovedBy")
 
   @@index([email])
 }
