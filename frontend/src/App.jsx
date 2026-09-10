@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import SetPassword from './pages/SetPassword';
+import OnboardingDetails from './pages/OnboardingDetails';
 import Services from './pages/Services';
 import About from './pages/About';
 import Quote from './pages/Quote';
