@@ -77,7 +77,17 @@ export default function RidersPanel() {
 
   const jobs = dashboard?.jobs || [];
   const activeJobs = jobs.filter((j) => ACTIVE_STATUSES.includes(j.status));
-  const historyJobs = jobs.filter((j) => !ACTIVE_STATUSES.includes(j.status));
+  const historyJobs = jobs
+    .filter((j) => !ACTIVE_STATUSES.includes(j.status))
+    .filter((j) => {
+      if (!fromDate && !toDate) return true;
+      const at = completionDate(j);
+      if (!at) return true;
+      const d = isoDate(new Date(at));
+      if (fromDate && d < fromDate) return false;
+      if (toDate && d > toDate) return false;
+      return true;
+    });
   const loc = dashboard?.lastLocation;
 
   return (
