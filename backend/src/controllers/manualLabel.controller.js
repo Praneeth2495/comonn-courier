@@ -48,17 +48,64 @@ function toBatchResponse(batch) {
   return { ...rest, hasMaster: Boolean(masterPdfData) };
 }
 
+// Validates and normalizes the request's `items` array — mirrors
+// Quote.jsx/order-creation's per-item shape (itemType, weight, optional
+// dims, quantity), just flattened onto a manual label batch instead of a
+// real Order. Returns { items, error } — items is null when error is set.
+function parseItems(rawItems) {
+  if (!Array.isArray(rawItems) || rawItems.length === 0) {
+    return { items: null, error: 'At least one item is required' };
+  }
+  const items = [];
+  for (const raw of rawItems) {
+    const numericQuantity = Number(raw?.quantity);
+    if (!Number.isInteger(numericQuantity) || numericQuantity < 1 || numericQuantity > 100) {
+      return { items: null, error: 'Each item quantity must be a whole number between 1 and 100' };
+    }
+    const numericWeight = Number(raw?.actualWeightKg);
+    if (!Number.isFinite(numericWeight) || numericWeight <= 0) {
+      return { items: null, error: 'Each item needs a positive weight' };
+    }
+    items.push({
+      itemType: raw?.itemType?.trim() || 'Box',
+      actualWeightKg: numericWeight,
+      lengthCm: raw?.lengthCm ? Number(raw.lengthCm) : 0,
+      widthCm: raw?.widthCm ? Number(raw.widthCm) : 0,
+      heightCm: raw?.heightCm ? Number(raw.heightCm) : 0,
+      quantity: numericQuantity,
+    });
+  }
+  const totalQuantity = items.reduce((sum, it) => sum + it.quantity, 0);
+  if (totalQuantity > 100) {
+    return { items: null, error: 'Total quantity across all items cannot exceed 100' };
+  }
+  return { items, error: null };
+}
+
+// Flattens items (each with its own quantity) into one entry per physical
+// unit — mirrors label.controller.js's buildPackages for real orders, so a
+// batch with e.g. 2 Boxes + 1 Pallet prints 3 labels, each showing its own
+// item's weight/dims rather than the whole batch's first item.
+function buildPackages(items) {
+  const packages = [];
+  for (const it of items) {
+    for (let i = 0; i < it.quantity; i++) packages.push(it);
+  }
+  return packages;
+}
+
 /**
  * POST /api/labels/manual — the Print Label page's Manual Label tab.
- * Generates `quantity` independently-barcoded labels for an ad-hoc shipment
- * that has no real Order behind it (e.g. an internal transfer) — same PDF
- * layout/barcode format as an order's own labels, just not linked to one.
- * quantity > 1 also gets one combined "master label" PDF (all pages in one
- * file) alongside the individual ones.
+ * Generates one independently-barcoded label per unit across every item in
+ * `items` for an ad-hoc shipment that has no real Order behind it (e.g. an
+ * internal transfer) — same PDF layout/barcode format as an order's own
+ * labels, just not linked to one. More than one label total also gets one
+ * combined "master label" PDF (all pages in one file) alongside the
+ * individual ones.
  */
 async function createManualLabels(req, res, next) {
   try {
-    const { orderId, refNumber, service, fromAddress, toAddress, quantity, itemType, actualWeightKg, lengthCm, widthCm, heightCm, instructions } = req.body;
+    const { orderId, refNumber, service, fromAddress, toAddress, items: rawItems, instructions } = req.body;
 
     if (!orderId?.trim()) return res.status(400).json({ error: 'Order ID is required' });
     if (!MANUAL_LABEL_SERVICES.includes(service)) {
@@ -69,14 +116,8 @@ async function createManualLabels(req, res, next) {
     const toError = validateAddress(toAddress, 'To');
     if (toError) return res.status(400).json({ error: toError });
 
-    const numericQuantity = Number(quantity);
-    if (!Number.isInteger(numericQuantity) || numericQuantity < 1 || numericQuantity > 100) {
-      return res.status(400).json({ error: 'Quantity must be a whole number between 1 and 100' });
-    }
-    const numericWeight = Number(actualWeightKg);
-    if (!Number.isFinite(numericWeight) || numericWeight <= 0) {
-      return res.status(400).json({ error: 'Weight must be a positive number' });
-    }
+    const { items, error: itemsError } = parseItems(rawItems);
+    if (itemsError) return res.status(400).json({ error: itemsError });
 
     const referenceNumber = await generateManualLabelNumber();
     const trimmedInstructions = instructions?.trim() || null;
@@ -91,13 +132,9 @@ async function createManualLabels(req, res, next) {
       receiverAddress: toLabelShape(toAddress, trimmedInstructions),
       senderAddress: toLabelShape(fromAddress),
     };
-    const item = {
-      itemType: itemType?.trim() || 'Box',
-      actualWeightKg: numericWeight,
-      lengthCm: lengthCm ? Number(lengthCm) : 0,
-      widthCm: widthCm ? Number(widthCm) : 0,
-      heightCm: heightCm ? Number(heightCm) : 0,
-    };
+
+    const packages = buildPackages(items);
+    const totalQuantity = packages.length;
 
     const batch = await prisma.manualLabelBatch.create({
       data: {
@@ -105,12 +142,8 @@ async function createManualLabels(req, res, next) {
         orderId: trimmedOrderId,
         fromAddress,
         toAddress,
-        quantity: numericQuantity,
-        itemType: item.itemType,
-        actualWeightKg: item.actualWeightKg,
-        lengthCm: item.lengthCm || null,
-        widthCm: item.widthCm || null,
-        heightCm: item.heightCm || null,
+        quantity: totalQuantity,
+        items,
         instructions: trimmedInstructions,
         createdById: req.user.id,
       },
@@ -118,10 +151,11 @@ async function createManualLabels(req, res, next) {
 
     const pages = [];
     const labels = [];
-    for (let i = 1; i <= numericQuantity; i++) {
-      const barcodeValue = numericQuantity > 1 ? `${referenceNumber}-${i}` : referenceNumber;
+    for (let i = 0; i < packages.length; i++) {
+      const packageIndex = i + 1;
+      const barcodeValue = totalQuantity > 1 ? `${referenceNumber}-${packageIndex}` : referenceNumber;
       const pageArgs = {
-        packageIndex: i, totalPackages: numericQuantity, item, barcodeValue,
+        packageIndex, totalPackages: totalQuantity, item: packages[i], barcodeValue,
         hideShipmentTracking: true, hideBarcodeText: true,
         numberLabel: trimmedOrderId, referenceLabel: trimmedRefNumber,
       };
@@ -129,13 +163,13 @@ async function createManualLabels(req, res, next) {
       const { fileName, filePath } = await generateLabelPdf(fakeOrder, pageArgs);
       const pdfData = fs.readFileSync(filePath);
       const label = await prisma.label.create({
-        data: { orderId: null, batchId: batch.id, packageIndex: i, itemType: item.itemType, fileUrl: fileName, barcodeValue, pdfData },
+        data: { orderId: null, batchId: batch.id, packageIndex, itemType: packages[i].itemType, fileUrl: fileName, barcodeValue, pdfData },
       });
       labels.push(label);
     }
 
     let updatedBatch = batch;
-    if (numericQuantity > 1) {
+    if (totalQuantity > 1) {
       const masterFileName = `${referenceNumber}-master.pdf`;
       const { filePath: masterFilePath } = await generateMasterLabelPdf(fakeOrder, pages, masterFileName);
       const masterPdfData = fs.readFileSync(masterFilePath);
