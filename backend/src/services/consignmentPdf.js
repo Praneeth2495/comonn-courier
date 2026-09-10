@@ -98,12 +98,14 @@ function generateConsignmentSheet(batch, res) {
   const topStart = doc.page.margins.top;
   const midY = topStart + halfHeight;
 
+  drawWatermark(doc, topStart, halfHeight);
   drawCopy(doc, batch, topStart, 'SENDER COPY');
 
   doc.dash(4, { space: 4 }).moveTo(doc.page.margins.left, midY).lineTo(doc.page.width - doc.page.margins.right, midY).stroke().undash();
   doc.font('Helvetica').fontSize(7).fillColor('#999').text('cut here', doc.page.margins.left, midY - 9);
   doc.fillColor('black');
 
+  drawWatermark(doc, midY, halfHeight);
   drawCopy(doc, batch, midY, 'RECEIVER COPY');
 
   doc.end();
