@@ -161,6 +161,9 @@ function ManualLabelTab() {
                           Master
                         </a>
                       )}
+                      <a className="btn btn-outline btn-sm" href={`${API_BASE}/labels/manual/${b.id}/consignment?inline=1`} target="_blank" rel="noreferrer">
+                        Consignment sheet
+                      </a>
                     </div>
                   </td>
                 </tr>
