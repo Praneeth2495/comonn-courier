@@ -58,6 +58,8 @@ export default function RidersPanel() {
   const [dashboard, setDashboard] = useState(null);
   const [loadingDashboard, setLoadingDashboard] = useState(false);
   const [error, setError] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   useEffect(() => {
     client.get('/admin/drivers').then(({ data }) => setDrivers(data.drivers)).catch(() => setDrivers([]));
