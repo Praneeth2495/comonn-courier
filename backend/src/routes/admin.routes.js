@@ -45,5 +45,6 @@ router.get('/employees/:id/id-proof', requirePage('onboarding'), employee.downlo
 
 // Available to ADMIN & STAFF (both can dispatch pickup jobs to drivers)
 router.get('/drivers', requirePage('orders'), admin.listDrivers);
+router.get('/drivers/:id/dashboard', requirePage('orders'), admin.getDriverDashboard);
 
 module.exports = router;
