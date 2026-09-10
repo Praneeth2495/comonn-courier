@@ -16,11 +16,29 @@ async function downloadBlob(url, filename) {
 
 const ID_PROOF_TYPES = ['Aadhaar', 'PAN', 'Passport', 'Driving Licence', 'Voter ID', 'Other'];
 
+const STATUS_LABEL = { INVITED: 'Invited', SUBMITTED: 'Pending approval', APPROVED: 'Approved' };
+const STATUS_PILL = { INVITED: 'pill-navy', SUBMITTED: 'pill-cobalt', APPROVED: 'pill-success' };
+
+function ModalCloseButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Close"
+      style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}
+    >
+      ✕
+    </button>
+  );
+}
+
 export default function EmployeeOnboardingPanel() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [resendingId, setResendingId] = useState(null);
 
   function load() {
     setLoading(true);
@@ -30,17 +48,29 @@ export default function EmployeeOnboardingPanel() {
   }
   useEffect(load, []);
 
+  async function resendInvite(id) {
+    setResendingId(id);
+    try {
+      await client.post(`/admin/employees/${id}/resend-invite`);
+    } finally {
+      setResendingId(null);
+    }
+  }
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
         <h1 className="h-lg">Onboarding</h1>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Add employee</button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-outline" onClick={() => setShowInvite(true)}>Share to employee</button>
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Add employee</button>
+        </div>
       </div>
 
       {loading ? <LoadingLogo /> : (
         <div className="table-wrap">
           <table className="data-table">
-            <thead><tr><th>Name</th><th>Role</th><th>Designation</th><th>Department</th><th>Joined</th><th>Mobile</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Role</th><th>Designation</th><th>Department</th><th>Joined</th><th>Mobile</th><th>Status</th><th></th></tr></thead>
             <tbody>
               {employees.map((e) => (
                 <tr key={e.id}>
@@ -53,11 +83,23 @@ export default function EmployeeOnboardingPanel() {
                   <td>{e.profile?.department || '—'}</td>
                   <td>{e.profile?.dateOfJoining ? new Date(e.profile.dateOfJoining).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : '—'}</td>
                   <td className="mono">{e.phone || '—'}</td>
-                  <td><button className="btn btn-outline btn-sm" onClick={() => setSelectedId(e.id)}>View / Edit</button></td>
+                  <td><span className={`pill ${STATUS_PILL[e.profile?.status] || 'pill-navy'}`}>{STATUS_LABEL[e.profile?.status] || '—'}</span></td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <button className="btn btn-outline btn-sm" onClick={() => setSelectedId(e.id)}>
+                        {e.profile?.status === 'SUBMITTED' ? 'Review' : 'View / Edit'}
+                      </button>
+                      {e.profile?.status === 'INVITED' && (
+                        <button className="btn btn-outline btn-sm" disabled={resendingId === e.id} onClick={() => resendInvite(e.id)}>
+                          {resendingId === e.id ? '…' : 'Resend link'}
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
               {employees.length === 0 && (
-                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No employees onboarded yet.</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No employees onboarded yet.</td></tr>
               )}
             </tbody>
           </table>
@@ -71,6 +113,12 @@ export default function EmployeeOnboardingPanel() {
           onSaved={() => { setShowCreate(false); load(); }}
         />
       )}
+      {showInvite && (
+        <InviteEmployeeModal
+          onClose={() => setShowInvite(false)}
+          onSaved={() => { setShowInvite(false); load(); }}
+        />
+      )}
       {selectedId && (
         <EmployeeFormModal
           mode="edit"
@@ -79,6 +127,70 @@ export default function EmployeeOnboardingPanel() {
           onSaved={() => { setSelectedId(null); load(); }}
         />
       )}
+    </div>
+  );
+}
+
+const EMPTY_INVITE = { fullName: '', email: '', phone: '', role: 'STAFF', designation: '', department: '' };
+
+// The "Share to employee" quick-create — admin enters only the basics, the
+// employee fills in the rest themselves via an emailed one-time link (see
+// OnboardingDetails.jsx), and can't log in until an admin approves what
+// they submitted (see EmployeeFormModal's Approve button below).
+function InviteEmployeeModal({ onClose, onSaved }) {
+  const [form, setForm] = useState(EMPTY_INVITE);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  function update(field, value) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      await client.post('/admin/employees/invite', form);
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not send this invite.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <h3>Share to employee</h3>
+          <ModalCloseButton onClick={onClose} />
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
+          Enter the basics — we'll email them a link to fill in their own address, ID proof, and bank details. Nothing is finalized until you approve what they submit.
+        </p>
+        <form onSubmit={submit} className="form-stack">
+          <div className="field"><label>Full name</label><input className="input" required value={form.fullName} onChange={(e) => update('fullName', e.target.value)} /></div>
+          <div className="field"><label>Email</label><input className="input" type="email" required value={form.email} onChange={(e) => update('email', e.target.value)} /></div>
+          <div className="field"><label>Mobile (optional)</label><input className="input" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></div>
+          <div className="field">
+            <label>Role</label>
+            <select className="select" value={form.role} onChange={(e) => update('role', e.target.value)}>
+              <option value="STAFF">Staff</option>
+              <option value="DRIVER">Rider</option>
+            </select>
+          </div>
+          <div className="field"><label>Designation (optional)</label><input className="input" value={form.designation} onChange={(e) => update('designation', e.target.value)} /></div>
+          <div className="field"><label>Department (optional)</label><input className="input" value={form.department} onChange={(e) => update('department', e.target.value)} /></div>
+
+          {error && <div className="error-text">{error}</div>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? 'Sending…' : 'Share to employee'}</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
