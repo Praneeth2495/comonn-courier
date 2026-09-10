@@ -398,12 +398,22 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
                 A login will be created and a "set your password" link emailed to this address — you don't choose their password here.
               </p>
             )}
+            {status === 'SUBMITTED' && (
+              <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
+                Review the details this employee submitted above, then approve to send their "set your password" email.
+              </p>
+            )}
             {error && <div className="error-text">{error}</div>}
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
               <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>
                 {submitting ? 'Saving…' : mode === 'create' ? 'Create employee' : 'Save changes'}
               </button>
+              {status === 'SUBMITTED' && (
+                <button type="button" className="btn btn-primary" style={{ flex: 1, background: 'var(--success)' }} disabled={approving} onClick={approve}>
+                  {approving ? 'Approving…' : 'Approve'}
+                </button>
+              )}
             </div>
           </form>
         )}
