@@ -4,6 +4,20 @@ const PDFDocument = require('pdfkit');
 const { getCountryName } = require('../utils/countryNames');
 
 const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
+const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
+
+// Same faint centered watermark as invoiceService.js/labelService.js, just
+// centered within one half of the sheet instead of the whole page — each
+// half is its own standalone document once cut apart, so each gets its own
+// mark rather than one shared between both.
+function drawWatermark(doc, top, height) {
+  if (!fs.existsSync(LOGO_ICON_PATH)) return;
+  const size = Math.min(180, height * 0.85);
+  const x = (doc.page.width - size) / 2;
+  const y = top + (height - size) / 2;
+  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
+  doc.opacity(1);
+}
 
 function formatAddress(a) {
   if (!a) return '—';
