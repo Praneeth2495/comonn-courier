@@ -68,11 +68,13 @@ function drawCopy(doc, batch, top, copyLabel) {
   doc.font('Helvetica').fontSize(8).text(formatAddress(batch.toAddress), left + colWidth + 20, colTop + 11, { width: colWidth });
   y = Math.max(doc.y, colTop + 50) + 8;
 
-  const dimsPart = batch.lengthCm && batch.widthCm && batch.heightCm ? `, ${batch.lengthCm}x${batch.widthCm}x${batch.heightCm} cm` : '';
-  doc.font('Helvetica').fontSize(8).text(
-    `Item: ${batch.itemType} | Qty: ${batch.quantity} | Weight: ${batch.actualWeightKg} kg${dimsPart}`,
-    left, y, { width }
-  );
+  const itemsSummary = (batch.items || [])
+    .map((it) => {
+      const dimsPart = it.lengthCm && it.widthCm && it.heightCm ? `, ${it.lengthCm}x${it.widthCm}x${it.heightCm} cm` : '';
+      return `${it.itemType} x${it.quantity} (${it.actualWeightKg} kg${dimsPart})`;
+    })
+    .join('  |  ');
+  doc.font('Helvetica').fontSize(8).text(`Items: ${itemsSummary}`, left, y, { width });
   y = doc.y + 16;
 
   const sigColWidth = (width - 20) / 2;
