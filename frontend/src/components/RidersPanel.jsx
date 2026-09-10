@@ -69,6 +69,8 @@ export default function RidersPanel() {
     if (!selectedId) { setDashboard(null); return; }
     setLoadingDashboard(true);
     setError('');
+    setFromDate('');
+    setToDate('');
     client.get(`/admin/drivers/${selectedId}/dashboard`)
       .then(({ data }) => setDashboard(data))
       .catch((err) => setError(err.response?.data?.error || 'Could not load this rider.'))
