@@ -24,7 +24,14 @@ export default function FlagCountrySelect({ value, options, onChange, disabled }
         setOpen(false);
       }
     }
-    function onScrollOrResize() {
+    // Closes the menu when the PAGE scrolls (so it doesn't stay pinned to a
+    // now-stale position) — but 'scroll' doesn't bubble, so a capture-phase
+    // window listener like this also fires for the dropdown's own internal
+    // scroll (the list itself is a scrollable div). Without the target
+    // check below, every attempt to scroll the option list would close it
+    // on the very first scroll tick, making it look like it "can't scroll".
+    function onScrollOrResize(e) {
+      if (e?.target?.closest?.('[data-flag-select-menu]')) return;
       setOpen(false);
     }
     document.addEventListener('mousedown', onClickOutside);
