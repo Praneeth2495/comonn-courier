@@ -1186,7 +1186,14 @@ function RatesPanel() {
   const [form, setForm] = useState(EMPTY_RATE_FORM);
 
   function load() {
-    client.get('/admin/zones').then(({ data }) => setZones(data.zones));
+    // onlyMapped: the "To zone" picker should only offer zones the current
+    // Total Zones - Zones file actually assigns postcodes to — otherwise it
+    // fills up with stale zones left behind by an earlier source-file
+    // naming scheme that no customer postcode can resolve to anymore.
+    // Existing rate cards on those stale zones still display fine (the
+    // rate-cards table gets its zone info straight from /admin/rate-cards,
+    // not from this list) — this only narrows what you can pick for new ones.
+    client.get('/admin/zones', { params: { onlyMapped: '1' } }).then(({ data }) => setZones(data.zones));
     client.get('/admin/zones', { params: { kind: 'origin' } }).then(({ data }) => setOriginZones(data.zones));
     client.get('/admin/services').then(({ data }) => setServices(data.services));
     client.get('/admin/rate-cards').then(({ data }) => setRateCards(data.rateCards));
