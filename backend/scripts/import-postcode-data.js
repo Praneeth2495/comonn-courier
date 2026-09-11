@@ -116,7 +116,7 @@ async function importSuggestions(db) {
     if (!p || !p.postcode || !p.suburb) continue; // malformed row — skip rather than guess
     parsed.push({
       countryCode,
-      postcode: p.postcode,
+      postcode: normalizePostcode(countryCode, p.postcode),
       suburb: p.suburb,
       state: p.state,
       region: region ? region.trim() : null,
