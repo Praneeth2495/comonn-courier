@@ -82,18 +82,17 @@ function extractZoneMatchKey(countryCode, postcode) {
 
 /**
  * Resolve a destination country+postcode to its pricing Zone. Some
- * countries (currently AU/NZ/CA/GB/US) have postcode-level zones imported
- * into PostcodeZone (e.g. "Australia 2") that are more specific than the
- * single country-wide CountryZone mapping — those take priority when the
- * postcode is known.
+ * countries (currently AU/NZ/CA/GB/US/DE/MY/SG/ZA) have postcode-level
+ * zones imported into PostcodeZone (e.g. "Australia 2") that are more
+ * specific than the single country-wide CountryZone mapping — those take
+ * priority when the postcode is known.
  *
  * For a country that HAS postcode-level data, an unmatched/missing postcode
  * does NOT fall back to the country-level zone — that flat rate doesn't
  * reflect the real regional pricing the postcode data was imported for, so
  * instead we block with a message telling the customer to call in rather
  * than silently mis-price the shipment. Only countries with no postcode-level
- * data at all (e.g. Germany, Singapore...) use the plain country-level zone,
- * unchanged from before.
+ * data at all use the plain country-level zone, unchanged from before.
  */
 async function resolveZoneForDestination(countryCode, postcode) {
   const cc = countryCode.toUpperCase();
