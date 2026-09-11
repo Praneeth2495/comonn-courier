@@ -39,6 +39,21 @@ function slugCode(name) {
   return name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 
+// Germany/Malaysia/Singapore postcodes are always a fixed digit count
+// (5/5/6) by national postal standard — but the source file lost leading
+// zeros on some rows (almost certainly an Excel numeric-column export at
+// some point upstream), leaving e.g. Berlin's "10875" fine but Bonn's
+// "04160" stored as "4160". Zero-pad back to the correct fixed width so
+// these still exact-match whatever the customer actually types/picks from
+// suggestions — South Africa is already consistently 4 digits, included
+// here only so a future short row for it gets caught the same way.
+const FIXED_POSTCODE_LENGTH = { DE: 5, MY: 5, SG: 6, ZA: 4 };
+function normalizePostcode(countryCode, postcode) {
+  const len = FIXED_POSTCODE_LENGTH[countryCode];
+  if (!len || !postcode) return postcode;
+  return postcode.padStart(len, '0');
+}
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // The proxied Railway connection has hung mid-import before — not an
