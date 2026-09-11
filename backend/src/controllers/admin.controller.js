@@ -250,6 +250,14 @@ async function listZones(req, res, next) {
       const assignments = await prisma.staffZoneAssignment.findMany({ where: { userId: req.user.id }, select: { zoneId: true } });
       where = { ...where, id: { in: assignments.map((a) => a.zoneId) } };
     }
+    // Rate-card entry only wants zones the current Total Zones - Zones file
+    // actually assigns postcodes to — otherwise the "To zone" picker fills
+    // up with stale zones left behind by an earlier source-file naming
+    // scheme (see scripts/import-destination-zones.js) that no customer
+    // postcode can ever resolve to anymore.
+    if (req.query.onlyMapped === '1') {
+      where = { ...where, postcodeZones: { some: {} } };
+    }
     const zones = await prisma.zone.findMany({ where, include: { countries: true } });
     res.json({ zones });
   } catch (err) {
