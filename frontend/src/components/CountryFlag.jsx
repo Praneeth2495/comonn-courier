@@ -177,6 +177,10 @@ const FLAGS_BY_CODE = {
   NZ: NewZealandFlag,
   GB: UKFlag,
   US: USAFlag,
+  DE: GermanyFlag,
+  MY: MalaysiaFlag,
+  SG: SingaporeFlag,
+  ZA: SouthAfricaFlag,
 };
 
 export default function CountryFlag({ code, width = 20, height = 14, style, className }) {
