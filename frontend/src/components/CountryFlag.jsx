@@ -146,16 +146,20 @@ function SingaporeFlag() {
 }
 
 function SouthAfricaFlag() {
+  // Simplified approximation of the Y-shaped design (real flag also has a
+  // black-bordered triangle at the hoist) — close enough to read correctly
+  // at the small sizes this renders at, same "stylized, not pixel-perfect"
+  // bar as the other flags above (e.g. AU/NZ/UK's simplified Union Jack).
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
       <rect width="60" height="40" fill="#FFFFFF" />
       <rect width="60" height="17.5" fill="#DE3831" />
       <rect y="22.5" width="60" height="17.5" fill="#002395" />
-      <path d="M0 17.5 L24 20 L0 22.5 Z" fill="#FFFFFF" />
-      <path d="M0 15.5 L27 20 L0 24.5 Z" fill="#000000" />
-      <path d="M0 12.5 L30 20 L0 27.5 Z" fill="#007A4D" />
-      <path d="M0 12.5 L30 20 L0 27.5 L0 12.5" fill="none" />
-      <path d="M0 12 L31 20 L60 20 L60 40 L27 40 L0 27" fill="none" stroke="none" />
+      <path d="M0 12 L28 20 L0 28 Z" fill="#000000" />
+      <path d="M0 15 L30 20 L60 20 L60 40 L27 40 Z" fill="#007A4D" />
+      <path d="M0 17 L24 20 L0 23 Z" fill="#FFFFFF" />
+      <path d="M0 19 L21 20 L21 21 L0 22" fill="none" />
+      <rect x="0" y="19" width="60" height="1.5" fill="#FFB612" transform="skewY(0)" />
     </svg>
   );
 }
