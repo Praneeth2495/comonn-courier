@@ -102,6 +102,64 @@ function USAFlag() {
   );
 }
 
+function GermanyFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#000000" />
+      <rect y="13.33" width="60" height="13.34" fill="#DD0000" />
+      <rect y="26.67" width="60" height="13.33" fill="#FFCE00" />
+    </svg>
+  );
+}
+
+function MalaysiaFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#FFFFFF" />
+      {Array.from({ length: 7 }, (_, i) => (
+        <rect key={i} x={0} y={i * 5.71} width="60" height="2.86" fill="#CC0001" />
+      ))}
+      <rect width="34" height="20" fill="#010066" />
+      <circle cx="17" cy="10" r="7" fill="#FFCC00" />
+      <circle cx="19.5" cy="10" r="6" fill="#010066" />
+      <path d="M24 10 L28 7.5 L26.5 10 L28 12.5 Z" fill="#FFCC00" />
+    </svg>
+  );
+}
+
+function SingaporeFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#FFFFFF" />
+      <rect width="60" height="20" fill="#EF3340" />
+      <circle cx="14" cy="10" r="6.5" fill="#FFFFFF" />
+      <circle cx="16.5" cy="10" r="5.5" fill="#EF3340" />
+      {[0, 1, 2, 3, 4].map((i) => {
+        const angle = -90 + i * 72;
+        const rad = (angle * Math.PI) / 180;
+        const cx = 24 + 4.2 * Math.cos(rad);
+        const cy = 10 + 4.2 * Math.sin(rad);
+        return <circle key={i} cx={cx} cy={cy} r="1.3" fill="#FFFFFF" />;
+      })}
+    </svg>
+  );
+}
+
+function SouthAfricaFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#FFFFFF" />
+      <rect width="60" height="17.5" fill="#DE3831" />
+      <rect y="22.5" width="60" height="17.5" fill="#002395" />
+      <path d="M0 17.5 L24 20 L0 22.5 Z" fill="#FFFFFF" />
+      <path d="M0 15.5 L27 20 L0 24.5 Z" fill="#000000" />
+      <path d="M0 12.5 L30 20 L0 27.5 Z" fill="#007A4D" />
+      <path d="M0 12.5 L30 20 L0 27.5 L0 12.5" fill="none" />
+      <path d="M0 12 L31 20 L60 20 L60 40 L27 40 L0 27" fill="none" stroke="none" />
+    </svg>
+  );
+}
+
 function GenericFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
