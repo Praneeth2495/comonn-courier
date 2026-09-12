@@ -198,21 +198,27 @@ function SingaporeFlag() {
 
 function SouthAfricaFlag() {
   // The Y-shaped "pall" design, built the same way the AU/NZ/UK flags above
-  // draw their diagonal crosses: a wide white stroke underneath (the
-  // border) with a narrower colored stroke on top, just split into a
-  // black hoist wedge and a green band beyond it, per the real flag.
+  // draw their diagonal crosses: layered strokes, wide-to-narrow, on the
+  // same centerline. The green band additionally gets a gold layer between
+  // it and its white border — the real flag's 6th color, easy to miss but
+  // very noticeable in its absence since it's what gives the green band its
+  // characteristic trim.
   const apex = [13, 20 * (13 / 24)]; // point where the black wedge gives way to green, along the same diagonal
   const junction = [24, 20]; // where both arms meet the horizontal band
+  const topGreen = `${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`;
+  const bottomGreen = `${apex[0]},${(40 - apex[1]).toFixed(2)} ${junction[0]},${junction[1]}`;
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
       <polygon points="0,0 60,0 60,20 0,20" fill="#DE3831" />
       <polygon points="0,40 60,40 60,20 0,20" fill="#002395" />
-      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`} fill="none" stroke="#FFFFFF" strokeWidth="9" strokeLinejoin="round" />
-      <polyline points={`0,40 ${apex[0]},${40 - apex[1]} ${junction[0]},${junction[1]}`} fill="none" stroke="#FFFFFF" strokeWidth="9" strokeLinejoin="round" />
-      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)}`} fill="none" stroke="#000000" strokeWidth="6" />
-      <polyline points={`0,40 ${apex[0]},${40 - apex[1]}`} fill="none" stroke="#000000" strokeWidth="6" />
-      <polyline points={`${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`} fill="none" stroke="#007A4D" strokeWidth="6" strokeLinejoin="round" />
-      <polyline points={`${apex[0]},${40 - apex[1]} ${junction[0]},${junction[1]}`} fill="none" stroke="#007A4D" strokeWidth="6" />
+      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`} fill="none" stroke="#FFFFFF" strokeWidth="10" strokeLinejoin="round" />
+      <polyline points={`0,40 ${apex[0]},${(40 - apex[1]).toFixed(2)} ${junction[0]},${junction[1]}`} fill="none" stroke="#FFFFFF" strokeWidth="10" strokeLinejoin="round" />
+      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)}`} fill="none" stroke="#000000" strokeWidth="6.5" />
+      <polyline points={`0,40 ${apex[0]},${(40 - apex[1]).toFixed(2)}`} fill="none" stroke="#000000" strokeWidth="6.5" />
+      <polyline points={topGreen} fill="none" stroke="#FFB612" strokeWidth="7.8" strokeLinejoin="round" />
+      <polyline points={bottomGreen} fill="none" stroke="#FFB612" strokeWidth="7.8" />
+      <polyline points={topGreen} fill="none" stroke="#007A4D" strokeWidth="5.5" strokeLinejoin="round" />
+      <polyline points={bottomGreen} fill="none" stroke="#007A4D" strokeWidth="5.5" />
     </svg>
   );
 }
