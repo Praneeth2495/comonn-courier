@@ -468,7 +468,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         </div>
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
-        <div className="field">
+        <div className="field" style={{ gridColumn: regionConfig.hidden ? '1 / -1' : undefined }}>
           <label>City / Town</label>
           <input
             className="input"
@@ -479,20 +479,30 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
             onChange={(e) => onChange('city', e.target.value)}
           />
         </div>
-        <div className="field">
-          <label>State</label>
-          <input
-            className="input"
-            placeholder={hideCityStatePlaceholder ? '' : 'Telangana'}
-            disabled={isLocked('state')}
-            value={value.state}
-            onChange={(e) => onChange('state', e.target.value)}
-          />
-        </div>
+        {!regionConfig.hidden && (
+          <div className="field">
+            <label>{regionConfig.label}{regionConfig.required && <span style={{ color: 'var(--danger)', fontSize: 12 }}> *</span>}</label>
+            {regionConfig.options ? (
+              <select className="input" required={regionConfig.required} disabled={isLocked('state')} value={value.state} onChange={(e) => onChange('state', e.target.value)}>
+                <option value="">Select {regionConfig.label.toLowerCase()}</option>
+                {Object.values(regionConfig.options).map((name) => <option key={name} value={name}>{name}</option>)}
+              </select>
+            ) : (
+              <input
+                className="input"
+                placeholder={hideCityStatePlaceholder ? '' : regionConfig.label === 'County' ? 'Surrey' : 'Telangana'}
+                required={regionConfig.required}
+                disabled={isLocked('state')}
+                value={value.state}
+                onChange={(e) => onChange('state', e.target.value)}
+              />
+            )}
+          </div>
+        )}
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
         <div className="field" style={{ maxWidth: 220, position: 'relative' }}>
-          <label>Pin code</label>
+          <label>{value.countryCode === 'DE' ? 'PLZ' : 'Pin code'}</label>
           <input className="input" required disabled={isLocked('postcode')} value={value.postcode} onChange={(e) => handlePostcodeChange(e.target.value)} />
           {pinSuggestions.length > 0 && (
             <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
