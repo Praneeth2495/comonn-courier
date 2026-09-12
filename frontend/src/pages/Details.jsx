@@ -38,7 +38,7 @@ function fromSavedAddress(saved) {
     line1: saved.line1,
     line2: saved.line2 || '',
     city: saved.city,
-    state: saved.state || '',
+    state: normalizeRegionValue(saved.countryCode, saved.state) || '',
     postcode: saved.postcode,
     countryCode: saved.countryCode,
   };
