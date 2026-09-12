@@ -247,11 +247,12 @@ export default function Details() {
           type="button"
           className="btn btn-outline btn-sm"
           style={{ marginBottom: 16 }}
-          // navigate(-1) (real history back) rather than navigate('/quote')
-          // (a fresh push) — Quote.jsx tells the two apart to decide
-          // whether to land at the page top or scroll to the results, and
-          // only sees this as "back" if it's an actual POP navigation.
-          onClick={() => navigate(-1)}
+          // Flags this as a "came back" arrival via location state (rather
+          // than relying on navigate(-1)/history POP, which would land on
+          // Payment.jsx instead of Quote.jsx if the customer got here via
+          // Payment's own "← Back" button) — Quote.jsx uses this to land at
+          // the page top instead of scrolling straight to the results.
+          onClick={() => navigate('/quote', { state: { cameFromBack: true } })}
         >
           ← Back
         </button>
