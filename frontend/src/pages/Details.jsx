@@ -76,7 +76,7 @@ export default function Details() {
     const base = emptyAddress(quoteInput?.destinationCountryCode || '');
     if (quoteInput?.destinationPostcode) base.postcode = quoteInput.destinationPostcode;
     if (quoteInput?.destinationSuburb) base.city = quoteInput.destinationSuburb;
-    if (quoteInput?.destinationState) base.state = quoteInput.destinationState;
+    if (quoteInput?.destinationState) base.state = normalizeRegionValue(quoteInput.destinationCountryCode, quoteInput.destinationState);
     return base;
   });
   const [contentsDescription, setContentsDescription] = useState(isEditingExisting ? bookingOrder.contentsDescription || '' : '');
