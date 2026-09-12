@@ -29,6 +29,9 @@ function IndiaFlag() {
 }
 
 function AustraliaFlag() {
+  // Southern Cross (4 seven-pointed stars + 1 smaller five-pointed one) and
+  // the Commonwealth Star below the canton — real pointed stars, not the
+  // plain circles this used to render as.
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
       <rect width="60" height="40" fill="#00247D" />
@@ -41,15 +44,19 @@ function AustraliaFlag() {
       <rect x="0" y="7" width="30" height="6" fill="#FFFFFF" />
       <rect x="13.5" y="0" width="3" height="20" fill="#CF142B" />
       <rect x="0" y="8.5" width="30" height="3" fill="#CF142B" />
-      <circle cx="15" cy="29" r="3" fill="#FFFFFF" />
-      <circle cx="46" cy="9" r="2.6" fill="#FFFFFF" />
-      <circle cx="51" cy="18" r="2.6" fill="#FFFFFF" />
-      <circle cx="46" cy="29" r="2.6" fill="#FFFFFF" />
-      <circle cx="39" cy="24" r="2" fill="#FFFFFF" />
-      <circle cx="41" cy="14" r="1.8" fill="#FFFFFF" />
+      <polygon points={starPoints(15, 30, 3.4, 1.5, 7)} fill="#FFFFFF" />
+      <polygon points={starPoints(46, 9, 2.8, 1.25, 7)} fill="#FFFFFF" />
+      <polygon points={starPoints(51, 19, 2.8, 1.25, 7)} fill="#FFFFFF" />
+      <polygon points={starPoints(46, 29, 2.8, 1.25, 7)} fill="#FFFFFF" />
+      <polygon points={starPoints(39, 24, 2.1, 0.95, 7)} fill="#FFFFFF" />
+      <polygon points={starPoints(41.5, 14, 1.6, 0.7, 5)} fill="#FFFFFF" />
     </svg>
   );
 }
+
+// 11-point maple leaf silhouette (tiered lobes tapering to a stem) instead
+// of the plain 8-point-star blob this used to render as.
+const MAPLE_LEAF_PATH = 'M0,-16 L2,-11 L7,-13.5 L5.5,-7.5 L12,-6.5 L7.5,-2.5 L10.5,0.5 L4,1 L1.5,9.5 L-1.5,9.5 L-4,1 L-10.5,0.5 L-7.5,-2.5 L-12,-6.5 L-5.5,-7.5 L-7,-13.5 L-2,-11 Z';
 
 function CanadaFlag() {
   return (
@@ -57,7 +64,7 @@ function CanadaFlag() {
       <rect width="60" height="40" fill="#FFFFFF" />
       <rect x="0" y="0" width="15" height="40" fill="#D52B1E" />
       <rect x="45" y="0" width="15" height="40" fill="#D52B1E" />
-      <path d="M30 8 L32 15 L38 13 L34 19 L39 22 L33 23 L34 30 L30 26 L26 30 L27 23 L21 22 L26 19 L22 13 L28 15 Z" fill="#D52B1E" />
+      <path transform="translate(30,20)" d={MAPLE_LEAF_PATH} fill="#D52B1E" />
     </svg>
   );
 }
@@ -75,10 +82,10 @@ function NewZealandFlag() {
       <rect x="0" y="7" width="30" height="6" fill="#FFFFFF" />
       <rect x="13.5" y="0" width="3" height="20" fill="#CF142B" />
       <rect x="0" y="8.5" width="30" height="3" fill="#CF142B" />
-      <circle cx="46" cy="9" r="2.8" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
-      <circle cx="52" cy="17" r="2.4" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
-      <circle cx="46" cy="27" r="2.8" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
-      <circle cx="41" cy="20" r="2.2" fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.8" />
+      <polygon points={starPoints(46, 9, 3.2, 1.4, 5)} fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.6" />
+      <polygon points={starPoints(52, 18, 2.7, 1.15, 5)} fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.6" />
+      <polygon points={starPoints(46, 29, 3.2, 1.4, 5)} fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.6" />
+      <polygon points={starPoints(40, 22, 2.5, 1.05, 5)} fill="#CF142B" stroke="#FFFFFF" strokeWidth="0.6" />
     </svg>
   );
 }
