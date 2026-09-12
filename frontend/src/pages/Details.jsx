@@ -7,6 +7,7 @@ import Stepper from '../components/Stepper';
 import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
 import { PHONE_OPTIONS, getPhoneMeta } from '../utils/phoneCodes';
 import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
+import { getRegionFieldConfig, normalizeRegionValue } from '../utils/regionNames';
 
 const emptyAddress = (countryCode) => ({
   contactName: '',
