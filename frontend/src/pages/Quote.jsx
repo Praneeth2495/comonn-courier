@@ -131,11 +131,19 @@ export default function Quote() {
   // instant quote" teaser (which lands here with autoFetch and triggers
   // the same fetchQuotes) — funnel through this same `quotes` state, so
   // scrolling it to center on arrival covers both without extra wiring.
+  // Exception: arriving via the browser's Back button from Details.jsx
+  // remounts this page with `quotes` already populated (BookingContext's
+  // selectedQuote survives navigation) — that should land at the top of
+  // the page like a fresh visit, not jump straight to the results.
+  const navigationType = useNavigationType();
   useEffect(() => {
-    if (quotes && resultsRef.current) {
+    if (!quotes) return;
+    if (navigationType === 'POP') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [quotes]);
+  }, [quotes, navigationType]);
   const [emailAddress, setEmailAddress] = useState(user?.email || '');
   const [emailStatus, setEmailStatus] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
