@@ -112,17 +112,42 @@ function GermanyFlag() {
   );
 }
 
+// Five-pointed star polygon `points` string, centered at (cx,cy) — used for
+// Singapore's crescent-and-stars (real 5-point stars, not dots/circles).
+function starPoints(cx, cy, outerR, innerR, rotationDeg = -90) {
+  const pts = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const angle = ((rotationDeg + i * 36) * Math.PI) / 180;
+    pts.push(`${(cx + r * Math.cos(angle)).toFixed(2)},${(cy + r * Math.sin(angle)).toFixed(2)}`);
+  }
+  return pts.join(' ');
+}
+
 function MalaysiaFlag() {
+  // 14 alternating stripes (7 red, 7 white — the real count, representing
+  // the 13 states + federal government) and a blue canton covering exactly
+  // the top half, with a crescent + 14-point star (rendered as a radiating
+  // burst, which reads correctly at icon size — a literal 14-point star
+  // polygon is indistinguishable from a circle this small).
+  const stripeH = 40 / 14;
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
       <rect width="60" height="40" fill="#FFFFFF" />
-      {Array.from({ length: 7 }, (_, i) => (
-        <rect key={i} x={0} y={i * 5.71} width="60" height="2.86" fill="#CC0001" />
+      {Array.from({ length: 14 }, (_, i) => i % 2 === 0 && (
+        <rect key={i} x={0} y={i * stripeH} width="60" height={stripeH} fill="#CC0001" />
       ))}
-      <rect width="34" height="20" fill="#010066" />
-      <circle cx="17" cy="10" r="7" fill="#FFCC00" />
-      <circle cx="19.5" cy="10" r="6" fill="#010066" />
-      <path d="M24 10 L28 7.5 L26.5 10 L28 12.5 Z" fill="#FFCC00" />
+      <rect width="30" height="20" fill="#010066" />
+      <circle cx="13" cy="10" r="6.5" fill="#FFCC00" />
+      <circle cx="15.5" cy="10" r="5.5" fill="#010066" />
+      <g transform="translate(22,10)" stroke="#FFCC00" strokeWidth="1.3" strokeLinecap="round">
+        {Array.from({ length: 14 }, (_, i) => {
+          const angle = (i * 360) / 14;
+          const rad = (angle * Math.PI) / 180;
+          return <line key={i} x1="0" y1="0" x2={(5 * Math.cos(rad)).toFixed(2)} y2={(5 * Math.sin(rad)).toFixed(2)} />;
+        })}
+      </g>
+      <circle cx="22" cy="10" r="1.6" fill="#FFCC00" />
     </svg>
   );
 }
@@ -137,27 +162,31 @@ function SingaporeFlag() {
       {[0, 1, 2, 3, 4].map((i) => {
         const angle = -90 + i * 72;
         const rad = (angle * Math.PI) / 180;
-        const cx = 24 + 4.2 * Math.cos(rad);
-        const cy = 10 + 4.2 * Math.sin(rad);
-        return <circle key={i} cx={cx} cy={cy} r="1.3" fill="#FFFFFF" />;
+        const cx = 25 + 4.6 * Math.cos(rad);
+        const cy = 10 + 4.6 * Math.sin(rad);
+        return <polygon key={i} points={starPoints(cx, cy, 1.7, 0.68)} fill="#FFFFFF" />;
       })}
     </svg>
   );
 }
 
 function SouthAfricaFlag() {
-  // Simplified approximation of the Y-shaped design — close enough to read
-  // correctly at the small sizes this renders at, same "stylized, not
-  // pixel-perfect" bar as the other flags above (e.g. AU/NZ/UK's
-  // simplified Union Jack).
+  // The Y-shaped "pall" design, built the same way the AU/NZ/UK flags above
+  // draw their diagonal crosses: a wide white stroke underneath (the
+  // border) with a narrower colored stroke on top, just split into a
+  // black hoist wedge and a green band beyond it, per the real flag.
+  const apex = [13, 20 * (13 / 24)]; // point where the black wedge gives way to green, along the same diagonal
+  const junction = [24, 20]; // where both arms meet the horizontal band
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
-      <rect width="60" height="40" fill="#FFFFFF" />
-      <rect width="60" height="17.5" fill="#DE3831" />
-      <rect y="22.5" width="60" height="17.5" fill="#002395" />
-      <path d="M0 11 L29 20 L0 29 Z" fill="#000000" />
-      <path d="M0 14.5 L30.5 20 L60 20 L60 40 L26.5 40 Z" fill="#007A4D" />
-      <path d="M0 17 L24 20 L0 23 Z" fill="#FFFFFF" />
+      <polygon points="0,0 60,0 60,20 0,20" fill="#DE3831" />
+      <polygon points="0,40 60,40 60,20 0,20" fill="#002395" />
+      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`} fill="none" stroke="#FFFFFF" strokeWidth="9" strokeLinejoin="round" />
+      <polyline points={`0,40 ${apex[0]},${40 - apex[1]} ${junction[0]},${junction[1]}`} fill="none" stroke="#FFFFFF" strokeWidth="9" strokeLinejoin="round" />
+      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)}`} fill="none" stroke="#000000" strokeWidth="6" />
+      <polyline points={`0,40 ${apex[0]},${40 - apex[1]}`} fill="none" stroke="#000000" strokeWidth="6" />
+      <polyline points={`${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`} fill="none" stroke="#007A4D" strokeWidth="6" strokeLinejoin="round" />
+      <polyline points={`${apex[0]},${40 - apex[1]} ${junction[0]},${junction[1]}`} fill="none" stroke="#007A4D" strokeWidth="6" />
     </svg>
   );
 }
