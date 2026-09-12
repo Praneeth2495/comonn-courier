@@ -45,12 +45,13 @@ export function normalizeRegionValue(countryCode, value) {
 
 // Per-country config for the receiver/sender address form's "State" field —
 // hidden entirely for countries with no meaningful equivalent, a dropdown
-// of full names for CA/US, a required free-text field for GB (no source
-// data for county, so staff/customers type it), and a plain optional
-// free-text field (the original behavior) for anything else.
+// of full names for CA/US, a plain free-text field for GB labeled "County"
+// (no source data to auto-fill it from, so staff/customers type it in),
+// and the same plain free-text field (the original behavior) for anything
+// else.
 export function getRegionFieldConfig(countryCode) {
   if (countryCode === 'DE' || countryCode === 'SG') return { hidden: true };
-  if (countryCode === 'GB') return { label: 'County', required: true };
+  if (countryCode === 'GB') return { label: 'County' };
   if (REGION_OPTIONS_BY_COUNTRY[countryCode]) {
     return { label: countryCode === 'CA' ? 'Province/Territory' : 'State', options: REGION_OPTIONS_BY_COUNTRY[countryCode] };
   }
