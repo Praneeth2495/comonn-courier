@@ -617,7 +617,7 @@ export default function Quote() {
         </form>
 
         {quotes && originPostcode && destinationCountryCode && (
-          <div>
+          <div ref={resultsRef}>
             <h3 className="h-md" style={{ marginBottom: 16 }}>Choose a service</h3>
             {quotes.map((q) => {
               const isSelected = selected?.service.code === q.service.code;
