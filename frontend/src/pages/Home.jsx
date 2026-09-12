@@ -40,6 +40,7 @@ function volumetricWeightNote({ showDims, weightPreset, lengthCm, widthCm, heigh
 }
 
 const COUNTRIES = [
+  { name: 'India', code: 'IN' },
   { name: 'Australia', code: 'AU' },
   { name: 'Canada', code: 'CA' },
   { name: 'New Zealand', code: 'NZ' },
