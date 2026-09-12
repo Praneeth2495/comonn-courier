@@ -131,19 +131,25 @@ export default function Quote() {
   // instant quote" teaser (which lands here with autoFetch and triggers
   // the same fetchQuotes) — funnel through this same `quotes` state, so
   // scrolling it to center on arrival covers both without extra wiring.
-  // Exception: arriving via the browser's Back button from Details.jsx
-  // remounts this page with `quotes` already populated (BookingContext's
-  // selectedQuote survives navigation) — that should land at the top of
-  // the page like a fresh visit, not jump straight to the results.
+  // Exception: arriving "back" from Details.jsx remounts this page with
+  // `quotes` already populated (BookingContext's selectedQuote survives
+  // navigation) — that should land at the top of the page like a fresh
+  // visit, not jump straight to the results. Checked two ways: a real
+  // browser Back/Forward is a POP navigation; Details.jsx's own "← Back"
+  // button is a plain navigate() (so it doesn't land on Payment.jsx if the
+  // customer came via Payment's own back button instead), flagged via
+  // location state.
   const navigationType = useNavigationType();
+  const location = useLocation();
+  const cameFromBack = navigationType === 'POP' || Boolean(location.state?.cameFromBack);
   useEffect(() => {
     if (!quotes) return;
-    if (navigationType === 'POP') {
+    if (cameFromBack) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [quotes, navigationType]);
+  }, [quotes, cameFromBack]);
   const [emailAddress, setEmailAddress] = useState(user?.email || '');
   const [emailStatus, setEmailStatus] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
