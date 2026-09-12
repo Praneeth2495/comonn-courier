@@ -386,6 +386,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
   const debounceRef = useRef(null);
   const isLocked = (field) => lockedFields.includes(field);
   const phoneMeta = getPhoneMeta(value.dialCode);
+  const regionConfig = getRegionFieldConfig(value.countryCode);
 
   function handlePostcodeChange(raw) {
     const v = sanitizePostcode(raw, value.countryCode);
