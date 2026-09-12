@@ -125,18 +125,6 @@ function GermanyFlag() {
   );
 }
 
-// Five-pointed star polygon `points` string, centered at (cx,cy) — used for
-// Singapore's crescent-and-stars (real 5-point stars, not dots/circles).
-function starPoints(cx, cy, outerR, innerR, rotationDeg = -90) {
-  const pts = [];
-  for (let i = 0; i < 10; i++) {
-    const r = i % 2 === 0 ? outerR : innerR;
-    const angle = ((rotationDeg + i * 36) * Math.PI) / 180;
-    pts.push(`${(cx + r * Math.cos(angle)).toFixed(2)},${(cy + r * Math.sin(angle)).toFixed(2)}`);
-  }
-  return pts.join(' ');
-}
-
 function MalaysiaFlag() {
   // 14 alternating stripes (7 red, 7 white — the real count, representing
   // the 13 states + federal government) and a blue canton covering exactly
