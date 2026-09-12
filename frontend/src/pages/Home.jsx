@@ -45,6 +45,10 @@ const COUNTRIES = [
   { name: 'New Zealand', code: 'NZ' },
   { name: 'UK', code: 'GB' },
   { name: 'USA', code: 'US' },
+  { name: 'Germany', code: 'DE' },
+  { name: 'Malaysia', code: 'MY' },
+  { name: 'Singapore', code: 'SG' },
+  { name: 'South Africa', code: 'ZA' },
 ];
 
 const HIW_STEPS = [
