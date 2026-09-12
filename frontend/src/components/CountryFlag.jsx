@@ -3,6 +3,19 @@
 // OS/fonts (e.g. as a generic waving-flag glyph instead of a flat rectangle
 // when the platform has no compound flag glyph for that country), so a real
 // vector shape is used everywhere a country flag needs to show up.
+// N-pointed star polygon `points` string, centered at (cx,cy) — real
+// pointed stars (not circles/dots) for every flag below that carries one.
+function starPoints(cx, cy, outerR, innerR, points = 5, rotationDeg = -90) {
+  const pts = [];
+  const halfStep = 180 / points;
+  for (let i = 0; i < points * 2; i++) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const angle = ((rotationDeg + i * halfStep) * Math.PI) / 180;
+    pts.push(`${(cx + r * Math.cos(angle)).toFixed(2)},${(cy + r * Math.sin(angle)).toFixed(2)}`);
+  }
+  return pts.join(' ');
+}
+
 function IndiaFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
