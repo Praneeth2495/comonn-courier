@@ -106,6 +106,23 @@ function UKFlag() {
   );
 }
 
+// A 5-row (6/5/6/5/6) star field — the real 9-and-8 alternating pattern
+// simplified slightly, since 50 individual stars is more than this renders
+// legibly at icon size, but a plain solid canton (no stars at all, as this
+// used to be) reads as nothing like the US flag.
+function usStarField() {
+  const stars = [];
+  for (let row = 0; row < 5; row++) {
+    const cols = row % 2 === 0 ? 6 : 5;
+    const cy = 2.4 + row * 4.2;
+    for (let col = 0; col < cols; col++) {
+      const cx = row % 2 === 0 ? 2.3 + col * 4.3 : 4.4 + col * 4.3;
+      stars.push(<polygon key={`${row}-${col}`} points={starPoints(cx, cy, 1.15, 0.48)} fill="#FFFFFF" />);
+    }
+  }
+  return stars;
+}
+
 function USAFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
@@ -118,6 +135,7 @@ function USAFlag() {
       <rect x="0" y="30.77" width="60" height="3.08" fill="#B22234" />
       <rect x="0" y="36.9" width="60" height="3.08" fill="#B22234" />
       <rect x="0" y="0" width="26" height="21.5" fill="#3C3B6E" />
+      {usStarField()}
     </svg>
   );
 }
