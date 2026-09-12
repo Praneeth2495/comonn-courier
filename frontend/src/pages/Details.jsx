@@ -386,11 +386,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
   const debounceRef = useRef(null);
   const phoneMeta = getPhoneMeta(value.dialCode);
   const regionConfig = getRegionFieldConfig(value.countryCode);
-  // A required region field (currently just GB's County) has no source to
-  // have been auto-filled from in the first place — postcode suggestions
-  // never carry a state/county for GB — so it must never be locked, or the
-  // customer would have a mandatory field with no way to fill it in.
-  const isLocked = (field) => lockedFields.includes(field) && !(field === 'state' && regionConfig.required);
+  const isLocked = (field) => lockedFields.includes(field) && !(field === 'state' && regionConfig.alwaysEditable);
 
   function handlePostcodeChange(raw) {
     const v = sanitizePostcode(raw, value.countryCode);
