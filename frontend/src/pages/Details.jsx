@@ -404,7 +404,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
 
   function pickSuggestion(s) {
     onChange('city', s.suburb);
-    onChange('state', s.state);
+    onChange('state', normalizeRegionValue(value.countryCode, s.state));
     setPinSuggestions([]);
   }
 
