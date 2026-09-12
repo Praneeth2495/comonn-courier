@@ -134,14 +134,15 @@ export default function Quote() {
   // Exception: arriving "back" from Details.jsx remounts this page with
   // `quotes` already populated (BookingContext's selectedQuote survives
   // navigation) — that should land at the top of the page like a fresh
-  // visit, not jump straight to the results. Checked two ways: a real
-  // browser Back/Forward is a POP navigation; Details.jsx's own "← Back"
-  // button is a plain navigate() (so it doesn't land on Payment.jsx if the
-  // customer came via Payment's own back button instead), flagged via
-  // location state.
-  const navigationType = useNavigationType();
+  // visit, not jump straight to the results. Deliberately NOT keyed off
+  // useNavigationType()'s POP/PUSH — a fresh direct visit to this page is
+  // ALSO reported as POP (it's the browser's very first history action),
+  // which would wrongly treat every first-time visit as "came back" and
+  // scroll to top instead of centering. Details.jsx's "← Back" button
+  // flags this explicitly via location state instead, which a real
+  // browser Back/Forward to that same history entry preserves too.
   const location = useLocation();
-  const cameFromBack = navigationType === 'POP' || Boolean(location.state?.cameFromBack);
+  const cameFromBack = Boolean(location.state?.cameFromBack);
   useEffect(() => {
     if (!quotes) return;
     if (cameFromBack) {
