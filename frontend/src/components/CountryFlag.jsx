@@ -17,13 +17,20 @@ function starPoints(cx, cy, outerR, innerR, points = 5, rotationDeg = -90) {
 }
 
 function IndiaFlag() {
+  // The Ashoka Chakra's 24 spokes — a plain ring+dot (no spokes at all)
+  // doesn't read as a chakra, just a circle.
+  const spokes = Array.from({ length: 24 }, (_, i) => {
+    const rad = ((i * 360) / 24 * Math.PI) / 180;
+    return <line key={i} x1="30" y1="20" x2={(30 + 5.2 * Math.cos(rad)).toFixed(2)} y2={(20 + 5.2 * Math.sin(rad)).toFixed(2)} />;
+  });
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
       <rect width="60" height="40" fill="#FF9933" />
       <rect y="13.3" width="60" height="13.3" fill="#FFFFFF" />
       <rect y="26.6" width="60" height="13.4" fill="#138808" />
-      <circle cx="30" cy="20" r="5.6" fill="none" stroke="#00008B" strokeWidth="0.9" />
-      <circle cx="30" cy="20" r="1.1" fill="#00008B" />
+      <g stroke="#00008B" strokeWidth="0.55">{spokes}</g>
+      <circle cx="30" cy="20" r="5.2" fill="none" stroke="#00008B" strokeWidth="0.9" />
+      <circle cx="30" cy="20" r="1" fill="#00008B" />
     </svg>
   );
 }
