@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
