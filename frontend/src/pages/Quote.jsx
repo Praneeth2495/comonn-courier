@@ -125,6 +125,17 @@ export default function Quote() {
   const [selected, setSelected] = useState(selectedQuote || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const resultsRef = useRef(null);
+
+  // Both entry points — this page's own form submit and Home's "Get
+  // instant quote" teaser (which lands here with autoFetch and triggers
+  // the same fetchQuotes) — funnel through this same `quotes` state, so
+  // scrolling it to center on arrival covers both without extra wiring.
+  useEffect(() => {
+    if (quotes && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [quotes]);
   const [emailAddress, setEmailAddress] = useState(user?.email || '');
   const [emailStatus, setEmailStatus] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
