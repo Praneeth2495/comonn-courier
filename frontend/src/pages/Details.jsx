@@ -66,7 +66,7 @@ export default function Details() {
     const base = emptyAddress('IN');
     if (quoteInput?.originPostcode) base.postcode = quoteInput.originPostcode;
     if (quoteInput?.originSuburb) base.city = quoteInput.originSuburb;
-    if (quoteInput?.originState) base.state = quoteInput.originState;
+    if (quoteInput?.originState) base.state = normalizeRegionValue('IN', quoteInput.originState);
     return base;
   });
   const [receiver, setReceiver] = useState(() => {
