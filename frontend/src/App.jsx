@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+// /react (not /next) — this is a Vite React SPA, not a Next.js app; the
+// /next entry point pulls in Next-specific router hooks that don't exist
+// here and would break the build.
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './api/AuthContext';
 import { BookingProvider } from './api/BookingContext';
 import { PublicLayout } from './components/Layout';
