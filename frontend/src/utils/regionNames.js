@@ -48,10 +48,32 @@ const IN_STATES = {
   UK: 'Uttarakhand', WB: 'West Bengal',
 };
 
+// Same story for AU/NZ/MY's own postcode-suggestion data — standard
+// state/region abbreviations, normalized for display only (see IN_STATES
+// above for why these don't also become dropdowns).
+const AU_STATES = {
+  ACT: 'Australian Capital Territory', NSW: 'New South Wales', NT: 'Northern Territory',
+  QLD: 'Queensland', SA: 'South Australia', TAS: 'Tasmania', VIC: 'Victoria', WA: 'Western Australia',
+};
+
+const NZ_REGIONS = {
+  AUK: 'Auckland', BOP: 'Bay of Plenty', CAN: 'Canterbury', GIS: 'Gisborne', HKB: "Hawke's Bay",
+  MBH: 'Marlborough', MWT: 'Manawatū-Whanganui', NSN: 'Nelson', NTL: 'Northland', OTA: 'Otago',
+  STL: 'Southland', TAS: 'Tasman', TKI: 'Taranaki', WGN: 'Wellington', WKO: 'Waikato', WTC: 'West Coast',
+};
+
+const MY_STATES = {
+  JHR: 'Johor', KDH: 'Kedah', KTN: 'Kelantan', KUL: 'Kuala Lumpur', LBN: 'Labuan',
+  MLK: 'Melaka', NSN: 'Negeri Sembilan', PHG: 'Pahang', PJY: 'Putrajaya', PLS: 'Perlis',
+  PNG: 'Pulau Pinang', PRK: 'Perak', SBH: 'Sabah', SGR: 'Selangor', SRW: 'Sarawak', TRG: 'Terengganu',
+};
+
 const REGION_OPTIONS_BY_COUNTRY = { CA: CA_PROVINCES, US: US_STATES };
-// Superset used only for value normalization (display/storage) — includes
-// India on top of the dropdown-driving countries above.
-const REGION_ABBREVIATIONS_BY_COUNTRY = { ...REGION_OPTIONS_BY_COUNTRY, IN: IN_STATES };
+// Superset used only for value normalization (display/storage) — every
+// country whose postcode-suggestion data carries an abbreviated state/
+// region, whether or not it also gets a dropdown (see getRegionFieldConfig
+// below — only CA/US do).
+const REGION_ABBREVIATIONS_BY_COUNTRY = { ...REGION_OPTIONS_BY_COUNTRY, IN: IN_STATES, AU: AU_STATES, NZ: NZ_REGIONS, MY: MY_STATES };
 
 // Expands a stored 2-letter code to its full name for the given country —
 // a no-op for any value that isn't a recognized code (already a full name,
