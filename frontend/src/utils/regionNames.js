@@ -32,13 +32,32 @@ export const US_STATES = {
   WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
 };
 
+// India's own postcode-suggestion data uses the same informal 2-letter
+// vehicle-registration-style codes (e.g. "TG", "AP") — the sender address
+// is always India, so this only ever needs normalizing for display, never
+// a dropdown (unlike CA/US below, whose fuller REGION_OPTIONS_BY_COUNTRY
+// map also drives the State/Province field being a <select> at all).
+const IN_STATES = {
+  AN: 'Andaman and Nicobar Islands', AP: 'Andhra Pradesh', AR: 'Arunachal Pradesh', AS: 'Assam',
+  BR: 'Bihar', CH: 'Chandigarh', CG: 'Chhattisgarh', DN: 'Dadra and Nagar Haveli and Daman and Diu',
+  DL: 'Delhi', GA: 'Goa', GJ: 'Gujarat', HR: 'Haryana', HP: 'Himachal Pradesh',
+  JK: 'Jammu and Kashmir', JH: 'Jharkhand', KA: 'Karnataka', KL: 'Kerala', LA: 'Ladakh',
+  LD: 'Lakshadweep', MP: 'Madhya Pradesh', MH: 'Maharashtra', MN: 'Manipur', ML: 'Meghalaya',
+  MZ: 'Mizoram', NL: 'Nagaland', OD: 'Odisha', PY: 'Puducherry', PB: 'Punjab', RJ: 'Rajasthan',
+  SK: 'Sikkim', TN: 'Tamil Nadu', TG: 'Telangana', TR: 'Tripura', UP: 'Uttar Pradesh',
+  UK: 'Uttarakhand', WB: 'West Bengal',
+};
+
 const REGION_OPTIONS_BY_COUNTRY = { CA: CA_PROVINCES, US: US_STATES };
+// Superset used only for value normalization (display/storage) — includes
+// India on top of the dropdown-driving countries above.
+const REGION_ABBREVIATIONS_BY_COUNTRY = { ...REGION_OPTIONS_BY_COUNTRY, IN: IN_STATES };
 
 // Expands a stored 2-letter code to its full name for the given country —
 // a no-op for any value that isn't a recognized code (already a full name,
 // or a country with no such map), so this is safe to call unconditionally.
 export function normalizeRegionValue(countryCode, value) {
-  const options = REGION_OPTIONS_BY_COUNTRY[countryCode];
+  const options = REGION_ABBREVIATIONS_BY_COUNTRY[countryCode];
   if (!options || !value) return value;
   return options[value.trim().toUpperCase()] || value;
 }
