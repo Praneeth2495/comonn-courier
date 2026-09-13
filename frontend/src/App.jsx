@@ -50,6 +50,7 @@ export default function App() {
       <BookingProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <Analytics />
           <Routes>
             <Route path="/" element={withLayout(<Home />)} />
             <Route path="/login" element={withLayout(<Login />)} />
