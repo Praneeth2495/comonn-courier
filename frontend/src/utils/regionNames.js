@@ -92,11 +92,12 @@ export function normalizeRegionValue(countryCode, value) {
 // else.
 export function getRegionFieldConfig(countryCode) {
   if (countryCode === 'DE' || countryCode === 'SG') return { hidden: true };
-  // alwaysEditable: postcode suggestions never carry a county for GB, so
-  // there's nothing to have auto-filled this from — it must stay editable
-  // even where the receiver's other fields (postcode/city) are locked to
-  // whatever was quoted.
+  // alwaysEditable: postcode suggestions never carry a county/suburb for
+  // GB/ZA, so there's nothing to have auto-filled this from — it must stay
+  // editable even where the receiver's other fields (postcode/city) are
+  // locked to whatever was quoted.
   if (countryCode === 'GB') return { label: 'County', alwaysEditable: true };
+  if (countryCode === 'ZA') return { label: 'Suburb', alwaysEditable: true };
   if (REGION_OPTIONS_BY_COUNTRY[countryCode]) {
     return { label: countryCode === 'CA' ? 'Province/Territory' : 'State', options: REGION_OPTIONS_BY_COUNTRY[countryCode] };
   }
