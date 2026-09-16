@@ -496,7 +496,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
             ) : (
               <input
                 className="input"
-                placeholder={hideCityStatePlaceholder ? '' : regionConfig.label === 'County' ? 'Surrey' : 'Telangana'}
+                placeholder={hideCityStatePlaceholder ? '' : regionConfig.label === 'County' ? 'Surrey' : regionConfig.label === 'Suburb' ? 'Sandton' : 'Telangana'}
                 required={regionConfig.required}
                 disabled={isLocked('state')}
                 value={value.state}
