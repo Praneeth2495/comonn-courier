@@ -564,6 +564,7 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
       {showAddOrders && manifest && (
         <AddOrdersModal manifest={manifest} onClose={() => setShowAddOrders(false)} onAdded={onOrdersAdded} />
       )}
+      {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
     </div>
   );
 }
