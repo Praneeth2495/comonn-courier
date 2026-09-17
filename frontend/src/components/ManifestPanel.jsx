@@ -234,7 +234,7 @@ function BuildManifest() {
                       {visibleOrders.map((o) => (
                         <tr key={o.id}>
                           <td><input type="checkbox" checked={selectedOrderIds.includes(o.id)} onChange={() => toggleOrder(o.id)} /></td>
-                          <td className="mono">{o.orderNumber}</td>
+                          <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
                           <td>{o.receiverAddress?.contactName || '—'}</td>
                           <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
                           <td className="mono">{o.airportCode}</td>
