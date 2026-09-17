@@ -261,6 +261,7 @@ function BuildManifest() {
           onCreated={onCreated}
         />
       )}
+      {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
     </div>
   );
 }
