@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
+import { OrderDetailModal } from './OrderDetailModal';
 
 const STATUS_PILL = {
   UNFINISHED: 'pill-warn',
