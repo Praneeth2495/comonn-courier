@@ -71,6 +71,12 @@ function BuildManifest() {
   const [selectedOriginStates, setSelectedOriginStates] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [justCreated, setJustCreated] = useState(null);
+  const [detailOrder, setDetailOrder] = useState(null);
+
+  async function openDetail(id) {
+    const { data } = await client.get(`/orders/${id}`);
+    setDetailOrder(data.order);
+  }
 
   function loadAirports() {
     setLoadingAirports(true);
