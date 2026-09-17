@@ -221,7 +221,7 @@ function BuildManifest() {
                   {visibleOrders.length > 0 && (
                     <input type="checkbox" checked={visibleOrders.every((o) => selectedOrderIds.includes(o.id))} onChange={toggleSelectAll} />
                   )}
-                  {selectedOrderIds.length} selected · {visibleOrders.length} shown
+                  {selectedOrderIds.length} selected · {visibleOrders.length} shown · Weight: {selectedWeightKg.toFixed(2)} kg
                 </label>
                 <button className="btn btn-primary btn-sm" disabled={selectedOrderIds.length === 0} onClick={() => setShowCreateModal(true)}>
                   Create Manifest
