@@ -163,8 +163,10 @@ function BuildManifest() {
     loadAirports();
   }
 
-  const selectedOrderAirportCodes = [...new Set(eligibleOrders.filter((o) => selectedOrderIds.includes(o.id)).map((o) => o.airportCode))];
+  const selectedOrders = eligibleOrders.filter((o) => selectedOrderIds.includes(o.id));
+  const selectedOrderAirportCodes = [...new Set(selectedOrders.map((o) => o.airportCode))];
   const selectedAirportObjs = airports.filter((a) => selectedOrderAirportCodes.includes(a.airportCode));
+  const selectedWeightKg = selectedOrders.reduce((sum, o) => sum + Number(o.chargeableWeightKg), 0);
 
   if (loadingAirports) return <LoadingLogo />;
 
