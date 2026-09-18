@@ -860,6 +860,20 @@ model Order {
   addons    OrderAddon[]
   promoCode String?
 
+  // How much of the customer's wallet balance was applied toward this
+  // order (opt-in checkbox at checkout — see Payment.jsx) — the remaining
+  // (grandTotal - walletAmountUsed) is what actually goes through
+  // Razorpay. Debited via its own WalletTransaction(type: ORDER_PAYMENT)
+  // at the same time this is set, so the two never drift apart.
+  walletAmountUsed  Decimal @default(0) @db.Decimal(10, 2)
+  // The referral code entered/carried at booking time (before the
+  // customer necessarily has an account yet) — consumed once, when
+  // accountProvisioning.js first creates the account this order belongs
+  // to, to set that new User.referredById. Left as-is afterward even
+  // though it's no longer actionable, as a record of what was entered.
+  referralCodeUsed String?
+  walletTransactions WalletTransaction[]
+
   // "Not sure, book pickup": weight/dimensions unknown at booking time, so
   // no price is computed — courier assesses and collects cash at pickup.
   // No label/invoice is generated for these; a booking-confirmation email
