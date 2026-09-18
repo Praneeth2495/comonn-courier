@@ -90,6 +90,22 @@ export default function App() {
               }
             />
             <Route
+              path="/wallet"
+              element={
+                <ProtectedRoute roles={['CUSTOMER']}>
+                  {withLayout(<Wallet />)}
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-box"
+              element={
+                <ProtectedRoute roles={['CUSTOMER']}>
+                  {withLayout(<MyBox />)}
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin"
               element={
                 <ProtectedRoute roles={['ADMIN', 'STAFF', 'ACCOUNTS']}>
