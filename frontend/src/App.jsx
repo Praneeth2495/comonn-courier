@@ -45,6 +45,17 @@ function ScrollToTop() {
   return null;
 }
 
+// Catches a shared referral link's ?ref=CODE on whatever page it lands on
+// (not just Home) — a friend might share a link straight to /quote, for
+// instance — and stashes it for the rest of the session (see utils/referral.js).
+function CaptureReferral() {
+  const { search } = useLocation();
+  useEffect(() => {
+    captureReferralCodeFromUrl();
+  }, [search]);
+  return null;
+}
+
 export default function App() {
   return (
     <AuthProvider>
