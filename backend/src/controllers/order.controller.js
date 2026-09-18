@@ -182,6 +182,7 @@ async function createOrder(req, res, next) {
         currency: quote.pricing.currency,
         pricingBreakdown: quote,
         status: 'UNFINISHED',
+        referralCodeUsed,
       };
     }
 
