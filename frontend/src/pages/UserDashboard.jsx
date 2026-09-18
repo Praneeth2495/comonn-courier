@@ -30,7 +30,15 @@ export default function UserDashboard() {
   const { user } = useAuth();
   const { setBooking } = useBooking();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('active');
+  const [searchParams] = useSearchParams();
+  const validTabKeys = ACCT_TABS.map(([key]) => key);
+  // Lets the header's "My Box" link deep-link straight into that tab (see
+  // Layout.jsx's dashboardLinks) — only read once, at mount, so switching
+  // tabs afterward doesn't fight the URL.
+  const [tab, setTab] = useState(() => {
+    const requested = searchParams.get('tab');
+    return validTabKeys.includes(requested) ? requested : 'active';
+  });
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState('');
