@@ -8,6 +8,7 @@ import { AuthProvider } from './api/AuthContext';
 import { BookingProvider } from './api/BookingContext';
 import { PublicLayout } from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import { captureReferralCodeFromUrl } from './utils/referral';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
