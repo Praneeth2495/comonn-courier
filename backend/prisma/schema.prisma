@@ -101,7 +101,59 @@ model User {
   onboardingTokens        EmployeeOnboardingToken[]
   approvedEmployeeProfiles EmployeeProfile[] @relation("EmployeeProfileApprovedBy")
 
+  // ---- Referral + wallet (CUSTOMER-only in practice, but not role-gated
+  // in the schema itself — nothing stops any account from having a code) ----
+  // Shareable code (see referralService.js) — lazily generated the first
+  // time it's needed (GET /api/auth/me) rather than at every signup, so
+  // existing accounts pick one up on next login without a backfill.
+  referralCode          String?  @unique
+  // Who referred THIS user, captured once at account-creation time (either
+  // real registration or the guest-checkout auto-provisioned account — see
+  // accountProvisioning.js) from Order.referralCodeUsed. Never changed
+  // afterward — a user can only ever have been referred by one person.
+  referredById          String?
+  referredBy            User?    @relation("Referrals", fields: [referredById], references: [id])
+  referrals             User[]   @relation("Referrals")
+  // Set the first (and only) time the referrer's ₹300 reward is granted for
+  // THIS user — guards against paying out again on a second/third order.
+  referralRewardGranted Boolean  @default(false)
+  walletBalance         Decimal  @default(0) @db.Decimal(10, 2)
+  walletTransactions    WalletTransaction[] @relation("WalletTransactionOwner")
+  walletAdjustmentsMade WalletTransaction[] @relation("WalletTransactionActor")
+
   @@index([email])
+}
+
+// An append-only ledger backing User.walletBalance — every credit/debit is
+// its own row (positive amount = credit, negative = debit) so the running
+// balance is always independently auditable/reconstructable, same
+// reasoning as TrackingEvent backing Order.status. walletBalance itself
+// stays as a denormalized running total for cheap reads (profile page,
+// checkout), updated transactionally alongside each new row here.
+model WalletTransaction {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation("WalletTransactionOwner", fields: [userId], references: [id])
+
+  amount Decimal @db.Decimal(10, 2)
+  // 'REFERRAL_REWARD' | 'ADMIN_CREDIT' | 'ADMIN_DEBIT' | 'ORDER_PAYMENT'
+  type   String
+  note   String?
+
+  // The referred user's first paid order (REFERRAL_REWARD) or the order a
+  // wallet balance was spent on (ORDER_PAYMENT) — null for a plain manual
+  // admin/staff adjustment.
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  // Which staff/admin made a manual adjustment — null for system-generated
+  // rows (referral rewards, order-payment debits).
+  createdById String?
+  createdBy   User?   @relation("WalletTransactionActor", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // One-to-one HR record for a STAFF/DRIVER account, created via the admin
