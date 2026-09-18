@@ -179,7 +179,7 @@ export function SiteHeader({ onOpenAccount }) {
         </Link>
         <nav className="nav-links">
           {links.map(([to, label]) => (
-            <Link key={to} to={to} className={isNavCurrent(pathname, search, to) ? 'current' : ''}>
+            <Link key={to} to={to} className={pathname === to ? 'current' : ''}>
               {label}
             </Link>
           ))}
