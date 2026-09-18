@@ -55,6 +55,7 @@ async function markOrdersPaidForProviderOrder(providerOrderId, extra = {}) {
         await sendReceiverBookingNotification({ ...order, trackingNumber: order.orderNumber });
       }
       notifyOrderStatusChange(order.id, 'PAID');
+      await awardReferralRewardIfEligible(order);
     }
   }
 }
