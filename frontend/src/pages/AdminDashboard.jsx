@@ -1043,6 +1043,7 @@ function AccountsPanel() {
 
       {subTab === 'receivable' && <PartyInvoicesPanel direction="RECEIVABLE" />}
       {subTab === 'payable' && <PartyInvoicesPanel direction="PAYABLE" />}
+      {subTab === 'assets' && hasAssetsAccess && <AssetsPanel />}
     </div>
   );
 }
