@@ -14,6 +14,7 @@ import AttendanceAdminPanel from '../components/AttendanceAdminPanel';
 import EmployeeOnboardingPanel from '../components/EmployeeOnboardingPanel';
 import StorageAdminPanel from '../components/StorageAdminPanel';
 import RidersPanel from '../components/RidersPanel';
+import CustomersPanel from '../components/CustomersPanel';
 import PrintLabelPanel from '../components/PrintLabelPanel';
 import ManifestPanel from '../components/ManifestPanel';
 import LoadingLogo from '../components/LoadingLogo';
