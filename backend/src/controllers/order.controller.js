@@ -565,6 +565,10 @@ async function updateOrderStatus(req, res, next) {
       notifyOrderStatusChange(order.id, status);
     }
 
+    if (isManualPaidMark) {
+      await awardReferralRewardIfEligible(order);
+    }
+
     res.json({ order });
   } catch (err) {
     next(err);
