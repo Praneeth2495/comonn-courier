@@ -45,6 +45,7 @@ async function ensureCustomerAccount(order) {
       },
     });
     isNewAccount = true;
+    await applyReferralToNewUser(user.id, order.referralCodeUsed);
   }
 
   await prisma.order.update({ where: { id: order.id }, data: { userId: user.id } });
