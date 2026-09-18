@@ -663,6 +663,22 @@ async function cancelOrder(req, res, next) {
       },
     });
     notifyOrderStatusChange(updated.id, 'CANCELLED');
+
+    // Refund whatever wallet balance was applied — this shipment isn't
+    // happening, so that money was never actually "spent". Razorpay's
+    // portion (if any) isn't auto-refunded here, same as before this
+    // feature existed; that's handled manually/outside the app.
+    if (order.userId && Number(order.walletAmountUsed) > 0) {
+      const refundAmount = Number(order.walletAmountUsed);
+      await prisma.$transaction([
+        prisma.user.update({ where: { id: order.userId }, data: { walletBalance: { increment: refundAmount } } }),
+        prisma.walletTransaction.create({
+          data: { userId: order.userId, amount: refundAmount, type: 'ORDER_PAYMENT', note: `Refund — order ${order.orderNumber} cancelled`, orderId: order.id },
+        }),
+        prisma.order.update({ where: { id: order.id }, data: { walletAmountUsed: 0 } }),
+      ]);
+    }
+
     res.json({ order: updated });
   } catch (err) {
     next(err);
