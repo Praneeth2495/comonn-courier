@@ -52,4 +52,11 @@ router.get('/employees/:id/id-proof-2', requirePage('onboarding'), employee.down
 router.get('/drivers', requirePage('orders'), admin.listDrivers);
 router.get('/drivers/:id/dashboard', requirePage('orders'), admin.getDriverDashboard);
 
+// Deliberately separate from /users above (ADMIN-only role management) —
+// gated by its own 'customers' page key so it's grantable to STAFF without
+// widening their access to staff/admin accounts or roles at all.
+router.get('/customers', requirePage('customers'), customer.listCustomers);
+router.get('/customers/:id', requirePage('customers'), customer.getCustomer);
+router.post('/customers/:id/wallet-adjust', requirePage('customers'), customer.adjustWallet);
+
 module.exports = router;
