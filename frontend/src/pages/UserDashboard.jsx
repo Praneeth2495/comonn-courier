@@ -103,7 +103,7 @@ export default function UserDashboard() {
         ))}
       </div>
 
-      {tab !== 'boxes' && (
+      {tab !== 'boxes' && tab !== 'wallet' && (
         <>
           <form className="search-box" style={{ marginBottom: 20, maxWidth: 360 }} onSubmit={search}>
             🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
