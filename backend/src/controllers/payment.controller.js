@@ -67,6 +67,7 @@ async function markOrdersPaidForProviderOrder(providerOrderId, extra = {}) {
  */
 async function createOrder(req, res, next) {
   try {
+    const { useWallet } = req.body;
     const order = await prisma.order.findUnique({
       where: { id: req.params.orderId },
       include: { payment: true },
@@ -82,19 +83,59 @@ async function createOrder(req, res, next) {
       return res.status(409).json({ error: 'Please verify your email before proceeding to payment' });
     }
 
+    // Opt-in wallet balance, applied at most once per order — a repeat call
+    // (page reload, retrying Checkout) must never debit the wallet twice,
+    // so once walletAmountUsed is set on the order, that's final.
+    let walletAmountUsed = Number(order.walletAmountUsed || 0);
+    if (useWallet && walletAmountUsed === 0 && order.userId) {
+      const walletUser = await prisma.user.findUnique({ where: { id: order.userId }, select: { walletBalance: true } });
+      const available = Number(walletUser?.walletBalance || 0);
+      if (available > 0) {
+        walletAmountUsed = round2(Math.min(available, Number(order.grandTotal)));
+        await prisma.$transaction([
+          prisma.user.update({ where: { id: order.userId }, data: { walletBalance: { decrement: walletAmountUsed } } }),
+          prisma.walletTransaction.create({
+            data: { userId: order.userId, amount: -walletAmountUsed, type: 'ORDER_PAYMENT', note: `Applied to order ${order.orderNumber}`, orderId: order.id },
+          }),
+          prisma.order.update({ where: { id: order.id }, data: { walletAmountUsed } }),
+        ]);
+      }
+    }
+
+    const remainingAmount = round2(Number(order.grandTotal) - walletAmountUsed);
+
+    // Wallet balance covered the whole order — no Razorpay charge needed at
+    // all, mark it paid the same way the webhook/confirm path would.
+    if (remainingAmount <= 0) {
+      const { count } = await prisma.order.updateMany({
+        where: { id: order.id, status: { in: PAYABLE_STATUSES } },
+        data: { status: 'PAID', trackingNumber: order.orderNumber },
+      });
+      if (count > 0) {
+        const paidOrder = await prisma.order.findUnique({ where: { id: order.id }, include: { senderAddress: true, receiverAddress: true } });
+        await prisma.trackingEvent.create({ data: { orderId: order.id, status: 'PAID', note: 'Paid in full using wallet balance' } });
+        if (order.pricingPending) {
+          await sendReceiverBookingNotification({ ...paidOrder, trackingNumber: order.orderNumber });
+        }
+        notifyOrderStatusChange(order.id, 'PAID');
+        await awardReferralRewardIfEligible(paidOrder);
+      }
+      return res.json({ paidByWallet: true, walletAmountUsed });
+    }
+
     // Reuse an existing unpaid Razorpay order rather than creating duplicates
-    // — but only if the amount still matches (add-ons/promo can change the
-    // total after an order was first created).
+    // — but only if the amount still matches (add-ons/promo/wallet can
+    // change the remaining total after one was first created).
     if (
       order.payment?.providerOrderId &&
       order.payment.status === 'REQUIRES_PAYMENT' &&
-      Number(order.payment.amount) === Number(order.grandTotal)
+      Number(order.payment.amount) === remainingAmount
     ) {
-      return res.json({ payment: order.payment, keyId: process.env.RAZORPAY_KEY_ID });
+      return res.json({ payment: order.payment, keyId: process.env.RAZORPAY_KEY_ID, walletAmountUsed });
     }
 
     const rzpOrder = await createRazorpayOrder({
-      amount: order.grandTotal,
+      amount: remainingAmount,
       currency: order.currency,
       orderId: order.id,
       orderNumber: order.orderNumber,
@@ -104,20 +145,20 @@ async function createOrder(req, res, next) {
       where: { orderId: order.id },
       update: {
         providerOrderId: rzpOrder.id,
-        amount: order.grandTotal,
+        amount: remainingAmount,
         currency: order.currency,
         status: 'REQUIRES_PAYMENT',
       },
       create: {
         orderId: order.id,
         providerOrderId: rzpOrder.id,
-        amount: order.grandTotal,
+        amount: remainingAmount,
         currency: order.currency,
         status: 'REQUIRES_PAYMENT',
       },
     });
 
-    res.json({ payment, keyId: process.env.RAZORPAY_KEY_ID });
+    res.json({ payment, keyId: process.env.RAZORPAY_KEY_ID, walletAmountUsed });
   } catch (err) {
     next(err);
   }
