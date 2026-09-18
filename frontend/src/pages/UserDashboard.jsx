@@ -103,78 +103,72 @@ export default function UserDashboard() {
         ))}
       </div>
 
-      <>
-          <form className="search-box" style={{ marginBottom: 20, maxWidth: 360 }} onSubmit={search}>
-            🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
-          </form>
+      <form className="search-box" style={{ marginBottom: 20, maxWidth: 360 }} onSubmit={search}>
+        🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
+      </form>
 
-          {!loading && (
-            <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 14 }}>
-              {total} {tab === 'history' ? 'past' : 'active'} order{total === 1 ? '' : 's'}
-            </p>
-          )}
-
-          {loading && <LoadingLogo label="Loading orders…" />}
-          {!loading && orders.length === 0 && (
-            <div className="empty-state card">
-              <p>No {tab === 'history' ? 'past' : 'active'} orders yet.</p>
-            </div>
-          )}
-
-          {orders.map((o) => {
-            const label = o.labels?.[0];
-            return (
-              <div className="card order-card" key={o.id}>
-                <div className="order-card-top">
-                  <div>
-                    <div className="order-route">
-                      {o.senderAddress.city} <span className="arrow">→</span> {o.receiverAddress.city}
-                    </div>
-                    <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
-                      Order ID: <span className="mono">{o.orderNumber}</span> · {o.service.name}
-                    </p>
-                  </div>
-                  <span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span>
-                </div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {['UNFINISHED', 'PENDING_PAYMENT'].includes(o.status) && (
-                    <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Continue booking →</button>
-                  )}
-                  {o.trackingNumber && (
-                    <button className="btn btn-primary btn-sm" onClick={() => navigate(`/track?id=${encodeURIComponent(o.trackingNumber)}`)}>
-                      Track order →
-                    </button>
-                  )}
-                  <button className="btn btn-outline btn-sm" onClick={() => openDetail(o.id)}>View details</button>
-                  {label && (
-                    <a
-                      className="btn btn-outline btn-sm"
-                      href={`${import.meta.env.VITE_API_BASE_URL || '/api'}${label.downloadUrl}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Download label
-                    </a>
-                  )}
-                  {label && (
-                    <a
-                      className="btn btn-outline btn-sm"
-                      href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${o.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Download invoice
-                    </a>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </>
+      {!loading && (
+        <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 14 }}>
+          {total} {tab === 'history' ? 'past' : 'active'} order{total === 1 ? '' : 's'}
+        </p>
       )}
 
-      {tab === 'boxes' && <BoxBookings />}
-      {tab === 'wallet' && <WalletReferralPanel />}
+      {loading && <LoadingLogo label="Loading orders…" />}
+      {!loading && orders.length === 0 && (
+        <div className="empty-state card">
+          <p>No {tab === 'history' ? 'past' : 'active'} orders yet.</p>
+        </div>
+      )}
+
+      {orders.map((o) => {
+        const label = o.labels?.[0];
+        return (
+          <div className="card order-card" key={o.id}>
+            <div className="order-card-top">
+              <div>
+                <div className="order-route">
+                  {o.senderAddress.city} <span className="arrow">→</span> {o.receiverAddress.city}
+                </div>
+                <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
+                  Order ID: <span className="mono">{o.orderNumber}</span> · {o.service.name}
+                </p>
+              </div>
+              <span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {['UNFINISHED', 'PENDING_PAYMENT'].includes(o.status) && (
+                <button className="btn btn-primary btn-sm" onClick={() => continueBooking(o.id)}>Continue booking →</button>
+              )}
+              {o.trackingNumber && (
+                <button className="btn btn-primary btn-sm" onClick={() => navigate(`/track?id=${encodeURIComponent(o.trackingNumber)}`)}>
+                  Track order →
+                </button>
+              )}
+              <button className="btn btn-outline btn-sm" onClick={() => openDetail(o.id)}>View details</button>
+              {label && (
+                <a
+                  className="btn btn-outline btn-sm"
+                  href={`${import.meta.env.VITE_API_BASE_URL || '/api'}${label.downloadUrl}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Download label
+                </a>
+              )}
+              {label && (
+                <a
+                  className="btn btn-outline btn-sm"
+                  href={`${import.meta.env.VITE_API_BASE_URL || '/api'}/labels/invoice/download/${o.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Download invoice
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       {selected && <OrderDetailModal order={selected} onClose={() => setSelected(null)} canManageLabels={false} canViewComments={false} canManageTracking={false} canViewWhatsapp={false} canViewTracking={false} />}
     </div>
