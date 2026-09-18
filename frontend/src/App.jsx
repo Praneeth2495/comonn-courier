@@ -26,6 +26,8 @@ import Labels from './pages/Labels';
 import Track from './pages/Track';
 import Storage from './pages/Storage';
 import UserDashboard from './pages/UserDashboard';
+import Wallet from './pages/Wallet';
+import MyBox from './pages/MyBox';
 import AdminDashboard from './pages/AdminDashboard';
 import DriverDashboard from './pages/DriverDashboard';
 
