@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { prisma } = require('../config/db');
+const { applyReferralToNewUser } = require('./referralService');
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
