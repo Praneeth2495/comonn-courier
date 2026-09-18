@@ -42,7 +42,6 @@ export default function AdminDashboard() {
     ['overview', 'Overview'],
     ['orders', 'Orders'],
     ...(hasPage('accounts') ? [['accounts', 'Accounts']] : []),
-    ...(hasPage('assets') ? [['assets', 'Assets']] : []),
     ['inventory', 'Inventory'],
     ...(hasPage('batchscan') ? [['batchscan', 'Scan']] : []),
     ...(hasPage('printlabel') ? [['printlabel', 'Print Label']] : []),
