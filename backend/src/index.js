@@ -74,6 +74,7 @@ app.use('/api/labels', labelRoutes);
 app.use('/api/track', trackingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/onboarding-invite', onboardingInviteRoutes);
+app.use('/api/wallet', walletRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/driver', driverRoutes);
 app.use('/api/inventory', inventoryRoutes);
