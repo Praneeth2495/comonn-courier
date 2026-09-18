@@ -24,21 +24,13 @@ const STATUS_PILL = {
 const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
 const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
-const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history'], ['boxes', 'My Box'], ['wallet', 'Wallet & Referrals']];
+const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history']];
 
 export default function UserDashboard() {
   const { user } = useAuth();
   const { setBooking } = useBooking();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const validTabKeys = ACCT_TABS.map(([key]) => key);
-  // Lets the header's "My Box" link deep-link straight into that tab (see
-  // Layout.jsx's dashboardLinks) — only read once, at mount, so switching
-  // tabs afterward doesn't fight the URL.
-  const [tab, setTab] = useState(() => {
-    const requested = searchParams.get('tab');
-    return validTabKeys.includes(requested) ? requested : 'active';
-  });
+  const [tab, setTab] = useState('active');
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState('');
