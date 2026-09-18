@@ -60,7 +60,9 @@ async function createOrder(req, res, next) {
       contentsDescription,
       taxRate = 0,
       pricingPending = false, // "Not sure, book pickup": weight unknown, no price, cash at pickup
+      referralCode, // whoever referred the customer, if any — see referralService.js
     } = req.body;
+    const referralCodeUsed = referralCode?.trim().toUpperCase() || null;
 
     if (!pricingPending && !serviceCode) {
       return res.status(400).json({ error: 'serviceCode is required' });
