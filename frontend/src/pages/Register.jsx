@@ -50,6 +50,7 @@ export default function Register() {
         email: form.email,
         phone: `${form.countryCode.split(' ')[1]} ${form.phoneNumber}`.trim(),
         password: form.password,
+        referralCode: getStoredReferralCode() || undefined,
       });
       navigate('/dashboard');
     } catch (err) {
