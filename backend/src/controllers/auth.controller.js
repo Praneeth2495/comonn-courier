@@ -88,9 +88,14 @@ async function me(req, res, next) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: { id: true, email: true, fullName: true, phone: true, company: true, role: true, canViewOverviewBreakdown: true, allowedPages: true, createdAt: true },
+      select: { id: true, email: true, fullName: true, phone: true, company: true, role: true, canViewOverviewBreakdown: true, allowedPages: true, createdAt: true, referralCode: true, walletBalance: true },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
+    // Lazily backfilled here (not at every signup) so existing accounts
+    // pick one up the first time their profile page actually needs it.
+    if (user.role === 'CUSTOMER' && !user.referralCode) {
+      user.referralCode = await ensureReferralCode(user.id);
+    }
     res.json({ user });
   } catch (err) {
     next(err);
