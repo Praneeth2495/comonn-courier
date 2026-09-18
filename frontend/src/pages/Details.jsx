@@ -177,6 +177,10 @@ export default function Details() {
       declaredValue: Number(declaredValue) || 0,
       contentsDescription,
       pricingPending,
+      // Only meaningful the first time this order is created (see
+      // referralService.js — consumed once, when the customer's account
+      // itself is first created); harmless to omit on an edit.
+      ...(isEditingExisting ? {} : { referralCode: getStoredReferralCode() || undefined }),
     };
     // If an order already exists from a prior visit to this step (e.g. the
     // customer went back and changed something, or staff are editing an
