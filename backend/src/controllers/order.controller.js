@@ -133,6 +133,7 @@ async function createOrder(req, res, next) {
         grandTotal: 0,
         currency: 'INR',
         status: 'UNFINISHED',
+        referralCodeUsed,
       };
     } else {
       // Re-price authoritatively on the server.
