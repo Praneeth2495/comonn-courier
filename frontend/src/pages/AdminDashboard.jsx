@@ -84,7 +84,6 @@ export default function AdminDashboard() {
         {tab === 'overview' && <Overview />}
         {tab === 'orders' && <OrdersPanel />}
         {tab === 'accounts' && hasPage('accounts') && <AccountsPanel />}
-        {tab === 'assets' && hasPage('assets') && <AssetsPanel />}
         {tab === 'inventory' && <InventoryPanel />}
         {tab === 'batchscan' && hasPage('batchscan') && <BatchScanPanel />}
         {tab === 'printlabel' && hasPage('printlabel') && <PrintLabelPanel />}
