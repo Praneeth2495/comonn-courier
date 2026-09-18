@@ -21,6 +21,7 @@ const PAGE_KEYS = [
   'customsclients',
   'storage',
   'assets',
+  'customers',
 ];
 
 const PAGE_LABELS = {
@@ -34,6 +35,11 @@ const PAGE_LABELS = {
   customsclients: 'Customs Client',
   storage: 'Storage',
   assets: 'Assets',
+  // Separate from the ADMIN-only "Users" tab (role/permission management)
+  // — this only shows customer accounts, their orders, and wallet balance,
+  // with no ability to touch staff/admin accounts or roles at all, so it's
+  // safe to grant to STAFF individually.
+  customers: 'Customers',
 };
 
 // Used once, at migration time, to backfill existing STAFF/ACCOUNTS users
