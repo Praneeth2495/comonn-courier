@@ -62,6 +62,7 @@ export default function App() {
       <BookingProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <CaptureReferral />
           <Analytics />
           <Routes>
             <Route path="/" element={withLayout(<Home />)} />
