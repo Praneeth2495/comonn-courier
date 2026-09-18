@@ -964,6 +964,9 @@ function AccountsPanel() {
         <button className={`dash-tab ${subTab === 'bookings' ? 'active' : ''}`} onClick={() => setSubTab('bookings')}>Bookings</button>
         <button className={`dash-tab ${subTab === 'receivable' ? 'active' : ''}`} onClick={() => setSubTab('receivable')}>Receivable</button>
         <button className={`dash-tab ${subTab === 'payable' ? 'active' : ''}`} onClick={() => setSubTab('payable')}>Payable</button>
+        {hasAssetsAccess && (
+          <button className={`dash-tab ${subTab === 'assets' ? 'active' : ''}`} onClick={() => setSubTab('assets')}>Assets</button>
+        )}
       </div>
 
       {subTab === 'bookings' && (
