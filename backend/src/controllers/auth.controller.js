@@ -24,7 +24,7 @@ function passwordPolicyError(password) {
 
 async function register(req, res, next) {
   try {
-    const { email, password, fullName, phone, company } = req.body;
+    const { email, password, fullName, phone, company, referralCode } = req.body;
     if (!email || !password || !fullName) {
       return res.status(400).json({ error: 'email, password and fullName are required' });
     }
@@ -51,6 +51,7 @@ async function register(req, res, next) {
         passwordSetAt: new Date(),
       },
     });
+    if (referralCode) await applyReferralToNewUser(user.id, referralCode);
 
     const token = signUserToken(user);
     res.status(201).json({
