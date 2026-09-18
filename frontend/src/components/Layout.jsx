@@ -144,21 +144,35 @@ function MobileNavMenu({ links }) {
 }
 
 // Where "Dashboard" in the header should go for a logged-in user, by role.
-function dashboardPath(role) {
-  if (role === 'ADMIN' || role === 'STAFF' || role === 'ACCOUNTS') return '/admin';
-  if (role === 'DRIVER') return '/driver';
-  return '/dashboard';
+// A CUSTOMER gets two separate links instead of one generic "Dashboard" —
+// "Orders" (the same page's default Active/History tabs) and "My Box" (a
+// direct deep-link into that page's Boxes tab) — every other role still
+// gets the single "Dashboard" link into their own dashboard.
+function dashboardLinks(role) {
+  if (role === 'ADMIN' || role === 'STAFF' || role === 'ACCOUNTS') return [['/admin', 'Dashboard']];
+  if (role === 'DRIVER') return [['/driver', 'Dashboard']];
+  return [['/dashboard', 'Orders'], ['/dashboard?tab=boxes', 'My Box']];
+}
+
+// A link is "current" if its path matches — and, for the two /dashboard
+// links which share a path, only the one whose ?tab= (or lack of one)
+// matches what's actually showing.
+function isNavCurrent(pathname, search, to) {
+  const [toPath, toQuery] = to.split('?');
+  if (pathname !== toPath) return false;
+  if (!toQuery) return !search.includes('tab=boxes');
+  return search.includes(toQuery);
 }
 
 export function SiteHeader({ onOpenAccount }) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   // Every nav destination — shown inline on desktop (.nav-links) and, on
   // mobile where that row is hidden entirely, inside MobileNavMenu's
   // hamburger dropdown instead (same array, same order).
   const links = [
-    ...(user ? [[dashboardPath(user.role), 'Dashboard']] : []),
+    ...(user ? dashboardLinks(user.role) : []),
     ['/quote', 'Book'],
     ['/track', 'Track'],
     ['/storage', 'Storage'],
@@ -174,7 +188,7 @@ export function SiteHeader({ onOpenAccount }) {
         </Link>
         <nav className="nav-links">
           {links.map(([to, label]) => (
-            <Link key={to} to={to} className={pathname === to ? 'current' : ''}>
+            <Link key={to} to={to} className={isNavCurrent(pathname, search, to) ? 'current' : ''}>
               {label}
             </Link>
           ))}
