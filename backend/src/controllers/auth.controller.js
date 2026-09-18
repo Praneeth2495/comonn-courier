@@ -4,6 +4,7 @@ const { prisma } = require('../config/db');
 const { signUserToken } = require('../utils/jwt');
 const { sendEmail } = require('../services/emailService');
 const { issuePasswordSetToken, passwordSetUrl } = require('../services/accountProvisioning');
+const { ensureReferralCode, applyReferralToNewUser } = require('../services/referralService');
 
 // Shared by every place a customer picks their own password (register,
 // change-password, set-password) — guest-checkout accounts are exempt
