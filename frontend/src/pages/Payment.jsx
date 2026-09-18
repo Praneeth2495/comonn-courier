@@ -994,12 +994,25 @@ export default function Payment() {
                 </div>
                 {promoError && <div className="error-text" style={{ marginBottom: 8 }}>{promoError}</div>}
 
-                <div className="sum-line total"><span>Total</span><span className="v">₹{Number(order.grandTotal).toFixed(2)}</span></div>
+                {user?.role === 'CUSTOMER' && Number(user?.walletBalance) > 0 && (() => {
+                  const walletAvailable = Math.min(Number(user.walletBalance), Number(order.grandTotal));
+                  return (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, margin: '10px 0', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={useWallet} onChange={(e) => setUseWallet(e.target.checked)} />
+                      Use wallet balance (₹{Number(user.walletBalance).toFixed(2)} available — up to ₹{walletAvailable.toFixed(2)} applied here)
+                    </label>
+                  );
+                })()}
+                {useWallet && Number(user?.walletBalance) > 0 && (
+                  <div className="sum-line"><span>Wallet balance applied</span><span className="v" style={{ color: 'var(--success)' }}>−₹{Math.min(Number(user.walletBalance), Number(order.grandTotal)).toFixed(2)}</span></div>
+                )}
+
+                <div className="sum-line total"><span>Total</span><span className="v">₹{payableTotal.toFixed(2)}</span></div>
 
                 {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
 
                 <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || submitting} onClick={handlePay}>
-                  {submitting ? 'Processing…' : `Pay ₹${Number(order.grandTotal).toFixed(2)} now`}
+                  {submitting ? 'Processing…' : payableTotal <= 0 ? 'Pay with wallet balance' : `Pay ₹${payableTotal.toFixed(2)} now`}
                 </button>
                 {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to pay.</p>}
               </>
