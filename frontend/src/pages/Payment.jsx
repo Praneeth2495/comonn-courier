@@ -318,11 +318,25 @@ export default function Payment() {
     setSubmitting(true);
     let checkoutData;
     try {
-      const { data } = await client.post(`/payments/${order.id}/order`);
+      const { data } = await client.post(`/payments/${order.id}/order`, { useWallet });
       checkoutData = data;
     } catch (err) {
       setError(err.response?.data?.error || 'Could not start payment.');
       setSubmitting(false);
+      return;
+    }
+
+    // Wallet balance covered the whole order — nothing left to charge via
+    // Razorpay at all, so skip straight to the same "paid" landing the
+    // Checkout.js handler below reaches after a real payment.
+    if (checkoutData.paidByWallet) {
+      try {
+        const { data } = await client.get(`/orders/${order.id}`);
+        setBooking({ order: { ...order, ...data.order } });
+      } catch {
+        setBooking({ order: { ...order, status: 'PAID', trackingNumber: order.orderNumber } });
+      }
+      navigate('/labels');
       return;
     }
 
