@@ -48,11 +48,9 @@ async function getCustomer(req, res, next) {
         referredBy: { select: { id: true, fullName: true, email: true } },
       },
     });
-    if (!customer || customer.role) {
-      // fallthrough guarded below — role isn't selected above, re-check via a
-      // dedicated lookup so a non-customer id (e.g. a staff account) 404s
-      // rather than silently exposing it through this customer-only view.
-    }
+    // role isn't in the select above (only ever fetched to gate access, not
+    // shown) — a separate check so a non-customer id (e.g. a staff account)
+    // 404s rather than silently exposing it through this customer-only view.
     const roleCheck = await prisma.user.findUnique({ where: { id: req.params.id }, select: { role: true } });
     if (!customer || !roleCheck || roleCheck.role !== 'CUSTOMER') {
       return res.status(404).json({ error: 'Customer not found' });
