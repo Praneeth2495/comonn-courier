@@ -756,6 +756,12 @@ export default function Payment() {
   const selectedWarrantyPrice = WARRANTY_TIERS.find((t) => t.coverage === warrantyCoverage)?.price || 0;
   const canPay = dgAcknowledged && otpVerified;
   const pricingPending = Boolean(order.pricingPending);
+  // What's actually left to charge via Razorpay once the opt-in wallet
+  // checkbox is applied — mirrors payment.controller.js's own
+  // walletAmountUsed/remainingAmount math so the displayed total always
+  // matches what the backend will actually do.
+  const walletApplied = useWallet ? Math.min(Number(user?.walletBalance || 0), Number(order.grandTotal)) : 0;
+  const payableTotal = Math.max(0, Number(order.grandTotal) - walletApplied);
 
   // Pricing-pending ("Not sure, book pickup") saved bookings have no real
   // amount to charge — they're confirmed separately (cash at pickup), so
