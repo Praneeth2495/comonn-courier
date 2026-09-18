@@ -175,6 +175,7 @@ export default function UserDashboard() {
       )}
 
       {tab === 'boxes' && <BoxBookings />}
+      {tab === 'wallet' && <WalletReferralPanel />}
 
       {selected && <OrderDetailModal order={selected} onClose={() => setSelected(null)} canManageLabels={false} canViewComments={false} canManageTracking={false} canViewWhatsapp={false} canViewTracking={false} />}
     </div>
