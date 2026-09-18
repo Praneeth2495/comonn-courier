@@ -8,6 +8,7 @@ import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
 import { PHONE_OPTIONS, getPhoneMeta } from '../utils/phoneCodes';
 import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
 import { getRegionFieldConfig, normalizeRegionValue } from '../utils/regionNames';
+import { getStoredReferralCode } from '../utils/referral';
 
 const emptyAddress = (countryCode) => ({
   contactName: '',
