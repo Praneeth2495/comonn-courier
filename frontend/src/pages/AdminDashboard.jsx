@@ -899,6 +899,8 @@ function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
 function monthEnd(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
 
 function AccountsPanel() {
+  const { user } = useAuth();
+  const hasAssetsAccess = user?.role === 'ADMIN' || !!user?.allowedPages?.includes('assets');
   const [subTab, setSubTab] = useState('bookings');
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
