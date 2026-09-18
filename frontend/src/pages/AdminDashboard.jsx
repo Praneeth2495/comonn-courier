@@ -96,6 +96,7 @@ export default function AdminDashboard() {
         {tab === 'customsclients' && hasPage('customsclients') && <CustomsClientsPanel />}
         {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
         {tab === 'riders' && hasPage('orders') && <RidersPanel />}
+        {tab === 'customers' && hasPage('customers') && <CustomersPanel />}
         {tab === 'attendance' && <AttendancePanel isAdmin={isAdmin} />}
         {tab === 'account' && <ChangePassword />}
       </main>
