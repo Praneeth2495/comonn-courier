@@ -91,6 +91,7 @@ export default function Payment() {
   const [promoError, setPromoError] = useState('');
 
   const [payMethodTab, setPayMethodTab] = useState('card');
+  const [useWallet, setUseWallet] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
