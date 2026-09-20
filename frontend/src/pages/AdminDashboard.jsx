@@ -1317,28 +1317,47 @@ function RatesPanel() {
         </form>
       </div>
 
-      <div className="table-wrap">
-        <table className="data-table">
-          <thead><tr><th>Service</th><th>From zone</th><th>To zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th>Delivery days</th><th></th></tr></thead>
-          <tbody>
-            {rateCards.map((r) => (
-              <tr key={r.id}>
-                <td>{r.service.name}</td>
-                <td>{r.fromZone ? r.fromZone.name : <span style={{ color: 'var(--slate-light)' }}>Any</span>}</td>
-                <td>{r.zone.code}</td>
-                <td>{r.weightFromKg} – {r.weightToKg} kg</td>
-                <td>₹{Number(r.basePrice).toFixed(2)}</td>
-                <td>₹{Number(r.perKgOverage).toFixed(2)}</td>
-                <td>{r.transitDaysMin != null && r.transitDaysMax != null ? `${r.transitDaysMin}-${r.transitDaysMax}` : <span style={{ color: 'var(--slate-light)' }}>Service default</span>}</td>
-                <td style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-outline btn-sm" onClick={() => startEdit(r)}>Edit</button>
-                  <button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {rateCards.length === 0 ? (
+        <div className="empty-state card"><p>No rate brackets yet.</p></div>
+      ) : (
+        Object.entries(
+          rateCards.reduce((acc, r) => {
+            const country = zoneCountryName(r.zone.code);
+            (acc[country] ||= []).push(r);
+            return acc;
+          }, {})
+        )
+          .sort(([a], [b]) => (a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b)))
+          .map(([country, cards]) => (
+            <div className="card" key={country} style={{ padding: 0, marginBottom: 20, overflow: 'hidden' }}>
+              <h4 style={{ padding: '14px 16px', margin: 0, borderBottom: '1px solid var(--line-2)', color: 'var(--navy)' }}>
+                {country} <span style={{ fontWeight: 400, color: 'var(--slate-light)', fontSize: 12.5 }}>· {cards.length} bracket{cards.length === 1 ? '' : 's'}</span>
+              </h4>
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Service</th><th>From zone</th><th>To zone</th><th>Weight range</th><th>Base price</th><th>Overage ₹/kg</th><th>Delivery days</th><th></th></tr></thead>
+                  <tbody>
+                    {cards.map((r) => (
+                      <tr key={r.id}>
+                        <td>{r.service.name}</td>
+                        <td>{r.fromZone ? r.fromZone.name : <span style={{ color: 'var(--slate-light)' }}>Any</span>}</td>
+                        <td>{r.zone.code}</td>
+                        <td>{r.weightFromKg} – {r.weightToKg} kg</td>
+                        <td>₹{Number(r.basePrice).toFixed(2)}</td>
+                        <td>₹{Number(r.perKgOverage).toFixed(2)}</td>
+                        <td>{r.transitDaysMin != null && r.transitDaysMax != null ? `${r.transitDaysMin}-${r.transitDaysMax}` : <span style={{ color: 'var(--slate-light)' }}>Service default</span>}</td>
+                        <td style={{ display: 'flex', gap: 8 }}>
+                          <button className="btn btn-outline btn-sm" onClick={() => startEdit(r)}>Edit</button>
+                          <button className="btn btn-outline btn-sm" onClick={() => remove(r.id)}>Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))
+      )}
     </div>
   );
 }
