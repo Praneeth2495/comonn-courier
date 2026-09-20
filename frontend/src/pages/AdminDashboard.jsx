@@ -1179,6 +1179,34 @@ function InventoryPanel() {
 
 const EMPTY_RATE_FORM = { id: null, serviceId: '', fromZoneId: '', zoneId: '', weightFromKg: '', weightToKg: '', basePrice: '', perKgOverage: '', currency: 'INR', transitDaysMin: '', transitDaysMax: '' };
 
+// A rate card only carries a destination Zone (e.g. "AUSTRALIA_2",
+// "GB1_METRO") — never a country directly — and one country can span
+// several zone tiers (metro/urban/rural etc), including leftover zones
+// from an earlier naming scheme (see the "onlyMapped" note on `load`
+// above). Group by the zone code's prefix so the admin sees one box per
+// destination country instead of one long flat list. Order matters only
+// where one prefix is a substring of another possible match (kept apart
+// here so each still resolves to the right country either way).
+const ZONE_COUNTRY_PREFIXES = [
+  ['AUSTRALIA', 'Australia'],
+  ['NEW_ZEALAND', 'New Zealand'],
+  ['NZ', 'New Zealand'],
+  ['CANADA', 'Canada'],
+  ['CA', 'Canada'],
+  ['USA', 'United States'],
+  ['US', 'United States'],
+  ['GB', 'United Kingdom'],
+  ['SIN', 'Singapore'],
+  ['EAST_MALAYSIA', 'Malaysia'],
+  ['MY', 'Malaysia'],
+  ['DE', 'Germany'],
+  ['ZA', 'South Africa'],
+];
+function zoneCountryName(zoneCode) {
+  const hit = ZONE_COUNTRY_PREFIXES.find(([prefix]) => zoneCode.startsWith(prefix));
+  return hit ? hit[1] : 'Other';
+}
+
 // Document Express and Pickup Booking aren't priced via weight/zone rate
 // brackets (Document is retired, Pickup is priced by staff at collection) —
 // hidden from "Add a rate bracket", but kept selectable if a bracket for one
