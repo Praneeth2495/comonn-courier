@@ -301,7 +301,12 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .item-row.equal .qty-stepper{width:100%;}
   .banner-grid{grid-template-columns:1fr;padding:28px 16px;}
   .grid-3,.grid-5,.why-row,.values-grid,.stat-row,.steps-row{grid-template-columns:1fr!important;}
-  .country-row{gap:16px;}
+  /* Flexbox's justify-content:center re-centers each wrapped row on its own
+     content width, so a shorter last row starts further right than a full
+     row above it — every flag ends up at a different left position. A grid
+     keeps every row locked to the same columns, so flags always start at
+     the same x position regardless of how many are on the last row. */
+  .country-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));justify-items:center;gap:16px;}
 }
 
 /* ============================================================
