@@ -250,6 +250,18 @@ function NetherlandsFlag() {
   );
 }
 
+function SwedenFlag() {
+  // Nordic cross, off-center toward the hoist side (shorter left arm) —
+  // same shifted-cross layout as Norway/Denmark/Finland, not a centered plus.
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#006AA7" />
+      <rect x="20" width="8" height="40" fill="#FECC00" />
+      <rect y="16" width="60" height="8" fill="#FECC00" />
+    </svg>
+  );
+}
+
 function GenericFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
