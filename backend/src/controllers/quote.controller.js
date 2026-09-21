@@ -225,6 +225,21 @@ async function postcodeSuggestions(req, res, next) {
       return res.json({ suggestions });
     }
 
+    // Ireland: the customer types their full 7-character Eircode (e.g.
+    // "D02 AF30"), not a prefix of a stored value — only the first 3
+    // characters (the routing key) are matchable against our suggestion
+    // data at all, so look those up by exact match instead of startsWith.
+    if (countryCode === 'IE') {
+      const routingKey = postcode.replace(/\s+/g, '').toUpperCase().slice(0, 3);
+      if (routingKey.length < 3) return res.json({ suggestions: [] });
+      const suggestions = await prisma.postcodeSuggestion.findMany({
+        where: { countryCode: 'IE', postcode: routingKey },
+        select: { postcode: true, suburb: true, state: true },
+        orderBy: { suburb: 'asc' },
+      });
+      return res.json({ suggestions });
+    }
+
     if (postcode.length < 3) return res.json({ suggestions: [] });
     const suggestions = await prisma.postcodeSuggestion.findMany({
       where: { countryCode, postcode: { startsWith: postcode.toUpperCase() } },
