@@ -532,30 +532,36 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         )}
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
-        <div className="field" style={{ maxWidth: 220, position: 'relative' }}>
-          <label>{value.countryCode === 'DE' ? 'PLZ' : value.countryCode === 'IE' ? 'Routing key' : 'Pin code'}</label>
-          <input className="input" required disabled={isLocked('postcode')} value={value.postcode} onChange={(e) => handlePostcodeChange(e.target.value)} />
-          {pinSuggestions.length > 0 && (
-            <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
-              {pinSuggestions.map((s, i) => (
-                <button
-                  type="button"
-                  key={i}
-                  className="acct-menu-item"
-                  onClick={() => pickSuggestion(s)}
-                >
-                  {formatPostcodeSuggestion(value.postcode, s.suburb, s.state, value.countryCode)}
-                </button>
-              ))}
-            </div>
-          )}
-          {!isLocked('postcode') && (
-            <p style={{ fontSize: 11, color: 'var(--slate-light)', marginTop: 4 }}>{getPostcodeRule(value.countryCode).hint}</p>
-          )}
-        </div>
+        {value.countryCode !== 'IE' && (
+          <div className="field" style={{ maxWidth: 220, position: 'relative' }}>
+            <label>{value.countryCode === 'DE' ? 'PLZ' : 'Pin code'}</label>
+            <input className="input" required disabled={isLocked('postcode')} value={value.postcode} onChange={(e) => handlePostcodeChange(e.target.value)} />
+            {pinSuggestions.length > 0 && (
+              <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
+                {pinSuggestions.map((s, i) => (
+                  <button
+                    type="button"
+                    key={i}
+                    className="acct-menu-item"
+                    onClick={() => pickSuggestion(s)}
+                  >
+                    {formatPostcodeSuggestion(value.postcode, s.suburb, s.state, value.countryCode)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {!isLocked('postcode') && (
+              <p style={{ fontSize: 11, color: 'var(--slate-light)', marginTop: 4 }}>{getPostcodeRule(value.countryCode).hint}</p>
+            )}
+          </div>
+        )}
+        {/* Ireland shows only the Eircode here (not the 3-character routing
+            key it's derived from, which stays locked internally on
+            value.postcode for pricing/zone/airport resolution) — same one
+            postcode-style field every other country gets. */}
         {value.countryCode === 'IE' && (
           <div className="field" style={{ maxWidth: 220 }}>
-            <label>Full Eircode</label>
+            <label>Eircode</label>
             <input
               className="input"
               required
@@ -566,7 +572,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
               onChange={(e) => onChange('eircode', e.target.value.toUpperCase())}
             />
             <p style={{ fontSize: 11, color: 'var(--slate-light)', marginTop: 4 }}>
-              Needed to pinpoint the exact building — the routing key alone only narrows it down to an area.
+              Needed to pinpoint the exact building.
             </p>
           </div>
         )}
