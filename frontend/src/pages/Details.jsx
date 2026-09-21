@@ -306,7 +306,7 @@ export default function Details() {
                 <div className="lbl">Destination</div>
                 <p>
                   {quoteInput.destinationPostcode
-                    ? [quoteInput.destinationPostcode, quoteInput.destinationSuburb, quoteInput.destinationState].filter(Boolean).join(', ')
+                    ? [quoteInput.destinationEircode || quoteInput.destinationPostcode, quoteInput.destinationSuburb, quoteInput.destinationState].filter(Boolean).join(', ')
                     : pricingPending ? quoteInput.destinationCountryName : selectedQuote.zone.name}
                 </p>
               </div>
