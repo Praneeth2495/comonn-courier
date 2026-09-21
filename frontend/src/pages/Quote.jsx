@@ -319,8 +319,12 @@ export default function Quote() {
   function destinationPostcodeForApi() {
     return destinationCountryCode === 'IE' && destinationPicked ? destinationPicked.postcode : destinationPostcode;
   }
+  // Only ever carry forward a complete Eircode — an incomplete one has no
+  // business being "auto-filled" (and, since Details.jsx locks this field
+  // once it's non-empty, saving a partial value here would leave the
+  // customer stuck with a wrong, un-editable Eircode).
   function destinationEircodeForApi() {
-    return destinationCountryCode === 'IE' ? destinationPostcode : undefined;
+    return destinationCountryCode === 'IE' && destinationPostcode.replace(/\s+/g, '').length >= 7 ? destinationPostcode : undefined;
   }
 
   function addItem() {
