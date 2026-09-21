@@ -6,7 +6,7 @@ import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import LoadingLogo from '../components/LoadingLogo';
 import FlagCountrySelect from '../components/FlagCountrySelect';
-import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel } from '../utils/postcodeRules';
+import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, getSuggestMinLength } from '../utils/postcodeRules';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
