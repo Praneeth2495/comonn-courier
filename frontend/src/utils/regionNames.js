@@ -105,6 +105,9 @@ export function getRegionFieldConfig(countryCode) {
   // Netherlands' postcode-suggestion data (GeoNames) carries a province per
   // row too — same locked-to-quote behavior as IE/India, just relabeled.
   if (countryCode === 'NL') return { label: 'Province' };
+  // Sweden's postcode-suggestion data (GeoNames) carries a county per row —
+  // same locked-to-quote behavior, just relabeled.
+  if (countryCode === 'SE') return { label: 'County' };
   if (REGION_OPTIONS_BY_COUNTRY[countryCode]) {
     return { label: countryCode === 'CA' ? 'Province/Territory' : 'State', options: REGION_OPTIONS_BY_COUNTRY[countryCode] };
   }
