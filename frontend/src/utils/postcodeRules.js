@@ -20,6 +20,7 @@ export const POSTCODE_RULES = {
   // letters are part of the code itself, so this can't be digits-only.
   IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland postcodes use a 3-character routing key, e.g. D02' },
   NL: { maxLength: 4, digitsOnly: true, hint: 'Netherlands postcodes are 4 digits' },
+  SE: { maxLength: 5, digitsOnly: true, hint: 'Sweden postcodes are 5 digits' },
 };
 
 export function getPostcodeRule(countryCode) {
