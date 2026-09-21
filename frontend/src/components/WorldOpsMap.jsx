@@ -22,6 +22,7 @@ const ORIGIN = { name: 'India', x: 46.5, y: 15.59 };
 const CONTINENTS = [
   { name: 'Europe', x: 33.5, y: 5.2, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['United Kingdom', 'Germany', 'Ireland', 'Netherlands', 'Sweden'] },
   { name: 'North America', x: 17.25, y: 10.8, dx: -1, dy: -2, anchor: 'end', countries: ['Canada', 'United States'] },
+  { name: 'Middle East', x: 39.5, y: 13.86, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['UAE', 'Saudi Arabia', 'Kuwait'] },
   { name: 'Asia', x: 51, y: 19.92, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['Malaysia', 'Singapore'] },
   { name: 'Africa', x: 35.5, y: 25.98, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['South Africa'] },
   { name: 'Oceania', x: 61.75, y: 27.28, dx: 1.4, dy: 0.9, anchor: 'start', countries: ['Australia', 'New Zealand'] },
