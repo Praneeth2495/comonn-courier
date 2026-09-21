@@ -114,6 +114,13 @@ export default function Details() {
   // Emirate picker, so its "suburb" is just the Emirate name repeated, not
   // the customer's actual area — city must stay editable in both cases.
   const receiverCityLocked = isEditingExisting || (Boolean(quoteInput?.destinationSuburb) && quoteInput?.destinationCountryCode !== 'AE');
+  // Same idea for Ireland's full Eircode — lock it once we actually have one
+  // (from the quote step, or already saved on an existing order), but leave
+  // it editable if there's nothing to lock to yet (e.g. an older IE order
+  // from before this field existed) so it isn't stuck disabled and blank.
+  const receiverEircodeLocked = isEditingExisting
+    ? Boolean(bookingOrder?.receiverAddress?.eircode)
+    : Boolean(quoteInput?.destinationEircode);
 
   const norm = (s) => (s || '').trim().toLowerCase();
   // Only surface saved addresses that fully match this quote's chosen
