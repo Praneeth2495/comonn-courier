@@ -7,6 +7,7 @@ import Stepper from '../components/Stepper';
 import LoadingLogo from '../components/LoadingLogo';
 import FlagCountrySelect from '../components/FlagCountrySelect';
 import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
+import { suburbStateSuffix } from '../utils/addressDisplay';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 
