@@ -40,7 +40,7 @@ export function getPostcodeRule(countryCode) {
 // Label for the destination field itself — most countries call it a
 // postcode, but AE/SA/KW have no usable numeric postcode data, so their
 // suggestion lists are keyed by place name instead (Emirate/city/area).
-const DESTINATION_FIELD_LABEL = { AE: 'Destination Emirate', SA: 'Destination city', KW: 'Destination area' };
+const DESTINATION_FIELD_LABEL = { AE: 'Destination Emirate', SA: 'Destination city', KW: 'Destination area', IE: 'Destination Eircode' };
 export function getDestinationFieldLabel(countryCode) {
   return DESTINATION_FIELD_LABEL[countryCode] || 'Destination postcode';
 }
