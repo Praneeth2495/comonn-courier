@@ -359,7 +359,7 @@ export default function Details() {
               hideCityStatePlaceholder
               savedAddresses={receiverSavedAddresses}
               onSelectSaved={pickSavedReceiverAddress}
-              lockedFields={receiverLocked ? ['postcode', ...(receiverCityLocked ? ['city'] : []), 'state', 'countryCode'] : []}
+              lockedFields={receiverLocked ? ['postcode', ...(receiverCityLocked ? ['city'] : []), ...(receiverEircodeLocked ? ['eircode'] : []), 'state', 'countryCode'] : []}
             />
           </div>
 
