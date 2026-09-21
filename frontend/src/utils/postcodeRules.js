@@ -50,9 +50,13 @@ export function getPostcodeRule(countryCode) {
 // How many characters must be typed before querying for suggestions at
 // all — defaults to 3 (a reasonable narrowing point for most countries),
 // overridden per-country above where that default returns too many/useless
-// matches (see SE).
-export function getSuggestMinLength(countryCode) {
+// matches (see SE/NL), or where the count needs to ignore a formatting
+// space (see IE, "D02 AF30").
+function getSuggestMinLength(countryCode) {
   return getPostcodeRule(countryCode).suggestMinLength || 3;
+}
+export function isReadyForSuggestions(raw, countryCode) {
+  return raw.replace(/\s+/g, '').length >= getSuggestMinLength(countryCode);
 }
 
 // Label for the destination field itself — most countries call it a
