@@ -173,6 +173,7 @@ export default function Details() {
       city: addr.city,
       state: addr.state,
       postcode: addr.postcode,
+      eircode: addr.countryCode === 'IE' ? addr.eircode : undefined,
       countryCode: addr.countryCode,
     };
   }
