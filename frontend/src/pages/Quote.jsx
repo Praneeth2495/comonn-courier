@@ -457,7 +457,7 @@ export default function Quote() {
       await client.post('/quote/email', {
         email: emailAddress,
         destinationCountryCode,
-        destinationPostcode,
+        destinationPostcode: destinationPostcodeForApi(),
         destinationSuburb: destinationPicked?.suburb,
         destinationState: destinationPicked?.state,
         items: parsedItems,
