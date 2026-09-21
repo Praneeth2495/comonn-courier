@@ -20,7 +20,10 @@ export const POSTCODE_RULES = {
   // letters are part of the code itself, so this can't be digits-only.
   IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland Eircodes use a 3-character routing key, e.g. D02' },
   NL: { maxLength: 4, digitsOnly: true, hint: 'Netherlands postcodes are 4 digits' },
-  SE: { maxLength: 5, digitsOnly: true, hint: 'Sweden postcodes are 5 digits' },
+  // suggestMinLength: with 18,887 Swedish postcodes, a 3-digit prefix match
+  // (the default gate below) returns dozens of unhelpful rows — only worth
+  // querying once the full 5-digit code is typed.
+  SE: { maxLength: 5, digitsOnly: true, suggestMinLength: 5, hint: 'Sweden postcodes are 5 digits' },
   // UAE has no real postal code system — this field is repurposed as an
   // Emirate picker instead (see the 7 PostcodeSuggestion rows seeded for
   // AE), so it must accept letters, not just digits.
