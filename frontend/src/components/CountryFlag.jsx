@@ -262,6 +262,46 @@ function SwedenFlag() {
   );
 }
 
+function UAEFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#00732F" />
+      <rect y="13.33" width="60" height="13.34" fill="#FFFFFF" />
+      <rect y="26.67" width="60" height="13.33" fill="#000000" />
+      <rect width="15" height="40" fill="#FF0000" />
+    </svg>
+  );
+}
+
+// The real flag carries the Shahada in white Kufic script on green, above a
+// white sword — reproducing Arabic calligraphy accurately via hand-coded
+// SVG paths isn't reasonable at icon size, so this keeps just the green
+// field and a simplified sword silhouette (same simplification precedent
+// as Malaysia's star rendered as a radiating burst above).
+function SaudiArabiaFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#006C35" />
+      <rect x="14" y="28" width="32" height="2.2" rx="1.1" fill="#FFFFFF" />
+      <path d="M14,28 L40,21 L42,22.5 L16,29.8 Z" fill="#FFFFFF" />
+    </svg>
+  );
+}
+
+function KuwaitFlag() {
+  const stripeH = 40 / 3;
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height={stripeH} fill="#007A3D" />
+      <rect y={stripeH} width="60" height={stripeH} fill="#FFFFFF" />
+      <rect y={stripeH * 2} width="60" height={stripeH} fill="#CE1126" />
+      <path d={`M0,0 L18,0 L0,${stripeH} Z`} fill="#000000" />
+      <path d={`M0,${stripeH} L18,0 L0,${40 - stripeH} Z`} fill="#000000" />
+      <path d={`M0,${40 - stripeH} L18,0 L0,40 Z`} fill="#000000" />
+    </svg>
+  );
+}
+
 function GenericFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
