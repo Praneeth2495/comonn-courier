@@ -106,10 +106,21 @@ export default function Quote() {
   const carryOverOrder = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role)) ? bookingOrder : null;
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || 'AU');
-  const [destinationPostcode, setDestinationPostcode] = useState(quoteInput?.destinationPostcode || '');
+  // Ireland: quoteInput.destinationPostcode carries the matched routing key
+  // (for pricing), not what the customer actually typed — the input itself
+  // should keep showing their full Eircode (destinationEircode) instead.
+  const [destinationPostcode, setDestinationPostcode] = useState(
+    quoteInput?.destinationCountryCode === 'IE' && quoteInput?.destinationEircode
+      ? quoteInput.destinationEircode
+      : (quoteInput?.destinationPostcode || '')
+  );
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [destinationSuggestLoading, setDestinationSuggestLoading] = useState(false);
-  const [destinationPicked, setDestinationPicked] = useState(quoteInput?.destinationSuburb ? { suburb: quoteInput.destinationSuburb, state: quoteInput.destinationState } : null);
+  const [destinationPicked, setDestinationPicked] = useState(
+    quoteInput?.destinationSuburb
+      ? { postcode: quoteInput.destinationPostcode, suburb: quoteInput.destinationSuburb, state: quoteInput.destinationState }
+      : null
+  );
   const [destinationFocused, setDestinationFocused] = useState(false);
   const destinationDebounceRef = useRef(null);
   const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || '');
