@@ -270,6 +270,7 @@ const FLAGS_BY_CODE = {
   SG: SingaporeFlag,
   ZA: SouthAfricaFlag,
   IE: IrelandFlag,
+  NL: NetherlandsFlag,
 };
 
 export default function CountryFlag({ code, width = 20, height = 14, style, className }) {
