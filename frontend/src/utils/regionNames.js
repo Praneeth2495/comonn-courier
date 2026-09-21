@@ -108,6 +108,11 @@ export function getRegionFieldConfig(countryCode) {
   // Sweden's postcode-suggestion data (GeoNames) carries a county per row —
   // same locked-to-quote behavior, just relabeled.
   if (countryCode === 'SE') return { label: 'County' };
+  // UAE/Saudi Arabia/Kuwait have no state/province breakdown data at all
+  // (same as DE/SG) — UAE's Emirate lives in the postcode slot instead (see
+  // AE's PostcodeSuggestion rows, one per Emirate), and SA/KW have no
+  // postcode-suggestion data at all, so there's nothing to put here either.
+  if (countryCode === 'AE' || countryCode === 'SA' || countryCode === 'KW') return { hidden: true };
   if (REGION_OPTIONS_BY_COUNTRY[countryCode]) {
     return { label: countryCode === 'CA' ? 'Province/Territory' : 'State', options: REGION_OPTIONS_BY_COUNTRY[countryCode] };
   }
