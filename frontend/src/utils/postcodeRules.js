@@ -25,14 +25,24 @@ export const POSTCODE_RULES = {
   // Emirate picker instead (see the 7 PostcodeSuggestion rows seeded for
   // AE), so it must accept letters, not just digits.
   AE: { maxLength: 20, digitsOnly: false, hint: 'Select your destination Emirate' },
-  // Saudi Arabia/Kuwait do have real postcodes, but no suggestion data
-  // exists for either yet — plain free-text entry, no autocomplete.
-  SA: { maxLength: 5, digitsOnly: true, hint: 'Saudi Arabia postcodes are 5 digits' },
-  KW: { maxLength: 5, digitsOnly: true, hint: 'Kuwait postcodes are 5 digits' },
+  // Saudi Arabia/Kuwait do have real per-district postal codes, but no
+  // reliable public dataset exists for either (unofficial sources gave
+  // conflicting numeric codes for the same city) — so, like AE, this field
+  // is repurposed as a city/area picker instead of a real numeric postcode.
+  SA: { maxLength: 40, digitsOnly: false, hint: 'Select your destination city' },
+  KW: { maxLength: 40, digitsOnly: false, hint: 'Select your destination area' },
 };
 
 export function getPostcodeRule(countryCode) {
   return POSTCODE_RULES[countryCode] || POSTCODE_RULES.IN;
+}
+
+// Label for the destination field itself — most countries call it a
+// postcode, but AE/SA/KW have no usable numeric postcode data, so their
+// suggestion lists are keyed by place name instead (Emirate/city/area).
+const DESTINATION_FIELD_LABEL = { AE: 'Destination Emirate', SA: 'Destination city', KW: 'Destination area' };
+export function getDestinationFieldLabel(countryCode) {
+  return DESTINATION_FIELD_LABEL[countryCode] || 'Destination postcode';
 }
 
 // Sanitizes a raw postcode input against a country's rule — strips
