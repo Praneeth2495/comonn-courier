@@ -276,7 +276,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
             <div className="detail-row"><span className="k">Delivery instructions</span><span className="v">{order.receiverAddress?.instructions || '—'}</span></div>
             <div className="detail-row" style={{ gridColumn: '1/-1' }}>
               <span className="k">Address</span>
-              <span className="v">{order.receiverAddress?.line1}{order.receiverAddress?.line2 ? `, ${order.receiverAddress.line2}` : ''}, {order.receiverAddress?.city}{order.receiverAddress?.state ? `, ${order.receiverAddress.state}` : ''} {order.receiverAddress?.postcode}, {order.receiverAddress?.countryCode}</span>
+              <span className="v">{order.receiverAddress?.line1}{order.receiverAddress?.line2 ? `, ${order.receiverAddress.line2}` : ''}, {order.receiverAddress?.city}{order.receiverAddress?.state ? `, ${order.receiverAddress.state}` : ''} {order.receiverAddress?.eircode || order.receiverAddress?.postcode}, {order.receiverAddress?.countryCode}</span>
             </div>
           </div>
         </div>
