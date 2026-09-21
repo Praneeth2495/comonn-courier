@@ -240,6 +240,16 @@ function IrelandFlag() {
   );
 }
 
+function NetherlandsFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#21468B" />
+      <rect width="60" height="26.67" fill="#FFFFFF" />
+      <rect width="60" height="13.33" fill="#AE1C28" />
+    </svg>
+  );
+}
+
 function GenericFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
