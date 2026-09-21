@@ -246,7 +246,12 @@ export default function Home() {
       const countryObj = countries.find((c) => c.countryCode === destinationCountryCode);
       quoteInput.destinationCountryCode = destinationCountryCode;
       quoteInput.destinationCountryName = countryObj?.countryName || destinationCountryCode;
-      quoteInput.destinationPostcode = destinationPostcode;
+      // Ireland: send the matched routing key for pricing/zone/airport
+      // resolution (that's what PostcodeSuggestion is keyed by), but keep
+      // the customer's own full Eircode alongside so Details.jsx can
+      // auto-fill the exact-building field with it.
+      quoteInput.destinationPostcode = destinationCountryCode === 'IE' && destinationPicked ? destinationPicked.postcode : destinationPostcode;
+      quoteInput.destinationEircode = destinationCountryCode === 'IE' ? destinationPostcode : undefined;
       quoteInput.destinationSuburb = destinationPicked?.suburb;
       quoteInput.destinationState = destinationPicked?.state;
       hasData = true;
