@@ -6,11 +6,11 @@ export function suburbStateSuffix(suburb, state) {
   return state && state !== suburb ? `, ${state}` : '';
 }
 
-// Sweden's suggestion list/dropdown intentionally shows just postcode +
-// city/town, never the county — county is still auto-filled into the
-// receiver's address behind the scenes (see pickDestinationSuggestion),
-// just not shown in this label.
-const SUGGESTION_LABEL_HIDES_STATE = ['SE'];
+// Sweden/Netherlands' suggestion list/dropdown intentionally shows just
+// postcode + city/town, never the county/province — that's still
+// auto-filled into the receiver's address behind the scenes (see
+// pickDestinationSuggestion), just not shown in this label.
+const SUGGESTION_LABEL_HIDES_STATE = ['SE', 'NL'];
 
 // UAE has no real postcode system — its PostcodeSuggestion rows use the
 // Emirate name as both postcode and suburb (e.g. postcode="Dubai",
