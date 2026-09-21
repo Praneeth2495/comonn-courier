@@ -98,6 +98,10 @@ export function getRegionFieldConfig(countryCode) {
   // locked to whatever was quoted.
   if (countryCode === 'GB') return { label: 'County', alwaysEditable: true };
   if (countryCode === 'ZA') return { label: 'Suburb', alwaysEditable: true };
+  // Ireland's postcode-suggestion data (Eircode routing keys) does carry a
+  // county per row, unlike GB/ZA above — so this stays locked-to-quote like
+  // the default case, just relabeled.
+  if (countryCode === 'IE') return { label: 'County' };
   if (REGION_OPTIONS_BY_COUNTRY[countryCode]) {
     return { label: countryCode === 'CA' ? 'Province/Territory' : 'State', options: REGION_OPTIONS_BY_COUNTRY[countryCode] };
   }
