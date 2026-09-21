@@ -552,6 +552,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
             <input
               className="input"
               required
+              disabled={isLocked('eircode')}
               placeholder="e.g. D02 AF30"
               maxLength={8}
               value={value.eircode}
