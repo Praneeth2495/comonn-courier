@@ -229,6 +229,11 @@ export default function Home() {
       return;
     }
 
+    if (destinationCountryCode === 'IE' && destinationPostcode.replace(/\s+/g, '').length < 7) {
+      setError('Please enter your full 7-character Eircode.');
+      return;
+    }
+
     if (originPostcode && destinationCountryCode && !weightPreset) {
       setError('Please choose a weight.');
       return;
