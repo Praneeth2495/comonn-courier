@@ -184,7 +184,7 @@ export default function Home() {
     setDestinationPostcode(v);
     setDestinationPicked(null);
     clearTimeout(destinationDebounceRef.current);
-    if (v.trim().length < getSuggestMinLength(destinationCountryCode) || !destinationCountryCode) {
+    if (!isReadyForSuggestions(v, destinationCountryCode) || !destinationCountryCode) {
       setDestinationSuggestions([]);
       setDestinationSuggestLoading(false);
       return;
