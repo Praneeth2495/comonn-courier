@@ -171,7 +171,7 @@ async function getInstantQuote(req, res, next) {
 // SIN1, ZA1-Metro/ZA2-Urban): a customer can select them and enter a
 // postcode, but the quote itself will fail until rate cards are added for
 // those zones via the Zones & Rates admin panel.
-const DESTINATION_COUNTRY_CODES = ['AU', 'NZ', 'CA', 'GB', 'US', 'DE', 'MY', 'SG', 'ZA', 'IE', 'NL'];
+const DESTINATION_COUNTRY_CODES = ['AU', 'NZ', 'CA', 'GB', 'US', 'DE', 'MY', 'SG', 'ZA', 'IE', 'NL', 'SE'];
 
 /** GET /api/quote/countries — for the destination dropdown, grouped by zone */
 async function listCountries(req, res, next) {
