@@ -252,7 +252,10 @@ function formatAddress(addr) {
   // address, but a manual label's city (and suburb, via line2 above) is
   // optional — build this line from whichever parts exist rather than
   // leaving a stray leading comma/space when one's missing.
-  const cityStatePostcode = [addr.city, addr.state].filter(Boolean).join(', ') + (addr.postcode ? ` ${addr.postcode}` : '');
+  // Ireland: print the full Eircode (pinpoints one building) instead of
+  // just the 3-character routing key stored in postcode, when we have it.
+  const postcodeForLabel = addr.eircode || addr.postcode;
+  const cityStatePostcode = [addr.city, addr.state].filter(Boolean).join(', ') + (postcodeForLabel ? ` ${postcodeForLabel}` : '');
   return [
     addr.businessName,
     addr.contactName,
