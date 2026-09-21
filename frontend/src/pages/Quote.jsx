@@ -293,7 +293,10 @@ export default function Quote() {
   }
 
   function pickDestinationSuggestion(s) {
-    setDestinationPostcode(s.postcode);
+    // Ireland: the input holds the customer's own full Eircode, not the
+    // 3-character routing key `s.postcode` matched against — overwriting it
+    // would throw away the exact-building detail they just typed.
+    if (destinationCountryCode !== 'IE') setDestinationPostcode(s.postcode);
     setDestinationPicked(s);
     setDestinationSuggestions([]);
   }
