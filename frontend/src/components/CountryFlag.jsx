@@ -322,6 +322,9 @@ const FLAGS_BY_CODE = {
   IE: IrelandFlag,
   NL: NetherlandsFlag,
   SE: SwedenFlag,
+  AE: UAEFlag,
+  SA: SaudiArabiaFlag,
+  KW: KuwaitFlag,
 };
 
 export default function CountryFlag({ code, width = 20, height = 14, style, className }) {
