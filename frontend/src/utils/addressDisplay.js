@@ -5,3 +5,13 @@
 export function suburbStateSuffix(suburb, state) {
   return state && state !== suburb ? `, ${state}` : '';
 }
+
+// UAE has no real postcode system — its PostcodeSuggestion rows use the
+// Emirate name as both postcode and suburb (e.g. postcode="Dubai",
+// suburb="Dubai"), which would otherwise display as "Dubai, Dubai". Skip
+// the suburb segment whenever it's identical to the postcode.
+export function formatPostcodeSuggestion(postcode, suburb, state) {
+  const suffix = suburbStateSuffix(suburb, state);
+  if (suburb === postcode) return `${postcode}${suffix}`;
+  return `${postcode}, ${suburb}${suffix}`;
+}
