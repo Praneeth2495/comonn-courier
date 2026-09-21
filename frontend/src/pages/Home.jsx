@@ -306,7 +306,7 @@ export default function Home() {
                   <FlagCountrySelect value="IN" options={['IN']} disabled />
                   <input
                     placeholder="Pickup pincode"
-                    value={originFocused || !originPicked ? originPostcode : `${originPostcode}, ${originPicked.suburb}${originPicked.state ? `, ${originPicked.state}` : ''}`}
+                    value={originFocused || !originPicked ? originPostcode : `${originPostcode}, ${originPicked.suburb}${suburbStateSuffix(originPicked.suburb, originPicked.state)}`}
                     onChange={(e) => handleOriginPostcodeChange(e.target.value)}
                     onFocus={() => setOriginFocused(true)}
                     onBlur={() => setOriginFocused(false)}
