@@ -40,6 +40,14 @@ export function getPostcodeRule(countryCode) {
   return POSTCODE_RULES[countryCode] || POSTCODE_RULES.IN;
 }
 
+// How many characters must be typed before querying for suggestions at
+// all — defaults to 3 (a reasonable narrowing point for most countries),
+// overridden per-country above where that default returns too many/useless
+// matches (see SE).
+export function getSuggestMinLength(countryCode) {
+  return getPostcodeRule(countryCode).suggestMinLength || 3;
+}
+
 // Label for the destination field itself — most countries call it a
 // postcode, but AE/SA/KW have no usable numeric postcode data, so their
 // suggestion lists are keyed by place name instead (Emirate/city/area).
