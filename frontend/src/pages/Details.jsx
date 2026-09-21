@@ -22,6 +22,7 @@ const emptyAddress = (countryCode) => ({
   city: '',
   state: '',
   postcode: '',
+  eircode: '',
   countryCode,
 });
 
