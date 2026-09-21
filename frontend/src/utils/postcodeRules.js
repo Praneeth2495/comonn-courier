@@ -19,7 +19,10 @@ export const POSTCODE_RULES = {
   // key (e.g. "D02", "D6W", "T12") rather than a full 7-character Eircode —
   // letters are part of the code itself, so this can't be digits-only.
   IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland Eircodes use a 3-character routing key, e.g. D02' },
-  NL: { maxLength: 4, digitsOnly: true, hint: 'Netherlands postcodes are 4 digits' },
+  // suggestMinLength: with 4,086 Dutch postcodes, a 3-digit prefix match
+  // (the default gate below) returns a long, unhelpful list — only worth
+  // querying once the full 4-digit code is typed.
+  NL: { maxLength: 4, digitsOnly: true, suggestMinLength: 4, hint: 'Netherlands postcodes are 4 digits' },
   // suggestMinLength: with 18,887 Swedish postcodes, a 3-digit prefix match
   // (the default gate below) returns dozens of unhelpful rows — only worth
   // querying once the full 5-digit code is typed.
