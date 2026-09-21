@@ -545,6 +545,22 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
             <p style={{ fontSize: 11, color: 'var(--slate-light)', marginTop: 4 }}>{getPostcodeRule(value.countryCode).hint}</p>
           )}
         </div>
+        {value.countryCode === 'IE' && (
+          <div className="field" style={{ maxWidth: 220 }}>
+            <label>Full Eircode</label>
+            <input
+              className="input"
+              required
+              placeholder="e.g. D02 AF30"
+              maxLength={8}
+              value={value.eircode}
+              onChange={(e) => onChange('eircode', e.target.value.toUpperCase())}
+            />
+            <p style={{ fontSize: 11, color: 'var(--slate-light)', marginTop: 4 }}>
+              Needed to pinpoint the exact building — the routing key alone only narrows it down to an area.
+            </p>
+          </div>
+        )}
         <div className="field" style={{ maxWidth: 220 }}>
           <label>Country</label>
           {isLocked('countryCode') ? (
