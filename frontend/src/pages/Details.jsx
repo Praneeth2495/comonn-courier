@@ -9,7 +9,7 @@ import { PHONE_OPTIONS, getPhoneMeta } from '../utils/phoneCodes';
 import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
 import { getRegionFieldConfig, normalizeRegionValue } from '../utils/regionNames';
 import { getStoredReferralCode } from '../utils/referral';
-import { suburbStateSuffix } from '../utils/addressDisplay';
+import { formatPostcodeSuggestion } from '../utils/addressDisplay';
 
 const emptyAddress = (countryCode) => ({
   contactName: '',
