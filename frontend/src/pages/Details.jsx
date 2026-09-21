@@ -103,6 +103,13 @@ export default function Details() {
   // Same lock for the receiver's postcode/suburb/state — these come from
   // the destination autocomplete picked on the Book page.
   const receiverLocked = true;
+  // City still comes from that same autocomplete pick — locking it makes
+  // sense normally, but two cases have no real suburb to lock to: countries
+  // with zero postcode-suggestion data at all (destinationSuburb was never
+  // set), and UAE specifically, where the "postcode" field is really an
+  // Emirate picker, so its "suburb" is just the Emirate name repeated, not
+  // the customer's actual area — city must stay editable in both cases.
+  const receiverCityLocked = isEditingExisting || (Boolean(quoteInput?.destinationSuburb) && quoteInput?.destinationCountryCode !== 'AE');
 
   const norm = (s) => (s || '').trim().toLowerCase();
   // Only surface saved addresses that fully match this quote's chosen
