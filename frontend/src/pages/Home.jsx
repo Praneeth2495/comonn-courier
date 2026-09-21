@@ -344,9 +344,9 @@ export default function Home() {
                     onChange={handleDestinationCountryChange}
                   />
                   <input
-                    placeholder="Destination postcode"
+                    placeholder={destinationCountryCode === 'AE' ? 'Destination Emirate' : 'Destination postcode'}
                     disabled={!destinationCountryCode}
-                    value={destinationFocused || !destinationPicked ? destinationPostcode : `${destinationPostcode}, ${destinationPicked.suburb}${suburbStateSuffix(destinationPicked.suburb, destinationPicked.state)}`}
+                    value={destinationFocused || !destinationPicked ? destinationPostcode : formatPostcodeSuggestion(destinationPostcode, destinationPicked.suburb, destinationPicked.state)}
                     onChange={(e) => handleDestinationPostcodeChange(e.target.value)}
                     onFocus={() => setDestinationFocused(true)}
                     onBlur={() => setDestinationFocused(false)}
