@@ -8,6 +8,7 @@ import FlagCountrySelect from '../components/FlagCountrySelect';
 import WorldOpsMap from '../components/WorldOpsMap';
 import BookingConfirmedToast from '../components/BookingConfirmedToast';
 import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
+import { suburbStateSuffix } from '../utils/addressDisplay';
 
 const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
 
