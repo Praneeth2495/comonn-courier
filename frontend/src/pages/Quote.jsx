@@ -278,7 +278,7 @@ export default function Quote() {
     setDestinationPostcode(v);
     setDestinationPicked(null);
     clearTimeout(destinationDebounceRef.current);
-    if (v.trim().length < 3 || !destinationCountryCode) {
+    if (v.trim().length < getSuggestMinLength(destinationCountryCode) || !destinationCountryCode) {
       setDestinationSuggestions([]);
       setDestinationSuggestLoading(false);
       return;
