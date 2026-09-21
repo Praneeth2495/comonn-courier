@@ -256,7 +256,11 @@ export default function Home() {
       // the customer's own full Eircode alongside so Details.jsx can
       // auto-fill the exact-building field with it.
       quoteInput.destinationPostcode = destinationCountryCode === 'IE' && destinationPicked ? destinationPicked.postcode : destinationPostcode;
-      quoteInput.destinationEircode = destinationCountryCode === 'IE' ? destinationPostcode : undefined;
+      // Only ever carry forward a complete Eircode — an incomplete one has
+      // no business being "auto-filled" (and, since Details.jsx locks this
+      // field once it's non-empty, saving a partial value here would leave
+      // the customer stuck with a wrong, un-editable Eircode).
+      quoteInput.destinationEircode = destinationCountryCode === 'IE' && destinationPostcode.replace(/\s+/g, '').length >= 7 ? destinationPostcode : undefined;
       quoteInput.destinationSuburb = destinationPicked?.suburb;
       quoteInput.destinationState = destinationPicked?.state;
       hasData = true;
