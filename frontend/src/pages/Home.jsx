@@ -361,7 +361,7 @@ export default function Home() {
                   <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
                     {destinationSuggestions.map((s, i) => (
                       <button type="button" key={i} className="acct-menu-item" onClick={() => pickDestinationSuggestion(s)}>
-                        {s.postcode}, {s.suburb}{s.state ? `, ${s.state}` : ''}
+                        {s.postcode}, {s.suburb}{suburbStateSuffix(s.suburb, s.state)}
                       </button>
                     ))}
                   </div>
