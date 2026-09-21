@@ -18,6 +18,7 @@ export const PHONE_OPTIONS = [
   { code: 'ZA', dial: '+27', flag: '🇿🇦', digits: 9 },
   { code: 'IE', dial: '+353', flag: '🇮🇪', digits: 9 },
   { code: 'NL', dial: '+31', flag: '🇳🇱', digits: 9 },
+  { code: 'SE', dial: '+46', flag: '🇸🇪', digits: 9 },
 ];
 
 export function getPhoneMeta(countryCode) {
