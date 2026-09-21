@@ -49,7 +49,8 @@ function fromSavedAddress(saved) {
 }
 
 function isAddressFilled(addr) {
-  return !!(addr.contactName && addr.phoneNumber && addr.line1 && addr.city && addr.postcode && addr.countryCode);
+  const eircodeOk = addr.countryCode !== 'IE' || !!addr.eircode;
+  return !!(addr.contactName && addr.phoneNumber && addr.line1 && addr.city && addr.postcode && addr.countryCode) && eircodeOk;
 }
 
 export default function Details() {
