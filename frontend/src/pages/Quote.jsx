@@ -508,7 +508,7 @@ export default function Quote() {
                   onChange={handleDestinationCountryChange}
                 />
                 <input
-                  placeholder={destinationCountryCode === 'AE' ? 'Destination Emirate' : 'Destination postcode'}
+                  placeholder={getDestinationFieldLabel(destinationCountryCode)}
                   disabled={!destinationCountryCode}
                   value={destinationFocused || !destinationPicked ? destinationPostcode : formatPostcodeSuggestion(destinationPostcode, destinationPicked.suburb, destinationPicked.state)}
                   onChange={(e) => handleDestinationPostcodeChange(e.target.value)}
