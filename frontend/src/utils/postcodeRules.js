@@ -15,6 +15,11 @@ export const POSTCODE_RULES = {
   MY: { maxLength: 5, digitsOnly: true, hint: 'Malaysia postcodes are 5 digits' },
   SG: { maxLength: 6, digitsOnly: true, hint: 'Singapore postcodes are 6 digits' },
   ZA: { maxLength: 4, digitsOnly: true, hint: 'South Africa postcodes are 4 digits' },
+  // Ireland's suggestion data is keyed by the 3-character Eircode routing
+  // key (e.g. "D02", "D6W", "T12") rather than a full 7-character Eircode —
+  // letters are part of the code itself, so this can't be digits-only.
+  IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland postcodes use a 3-character routing key, e.g. D02' },
+  NL: { maxLength: 4, digitsOnly: true, hint: 'Netherlands postcodes are 4 digits' },
 };
 
 export function getPostcodeRule(countryCode) {
