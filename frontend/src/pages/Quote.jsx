@@ -393,7 +393,8 @@ export default function Quote() {
         quoteInput: {
           destinationCountryCode,
           destinationCountryName: countryObj?.countryName || destinationCountryCode,
-          destinationPostcode,
+          destinationPostcode: destinationPostcodeForApi(),
+          destinationEircode: destinationEircodeForApi(),
           destinationSuburb: destinationPicked?.suburb,
           destinationState: destinationPicked?.state,
           items: pickupItems,
