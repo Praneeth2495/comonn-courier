@@ -18,7 +18,7 @@ export const POSTCODE_RULES = {
   // Ireland's suggestion data is keyed by the 3-character Eircode routing
   // key (e.g. "D02", "D6W", "T12") rather than a full 7-character Eircode —
   // letters are part of the code itself, so this can't be digits-only.
-  IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland Eircodes use a 3-character routing key, e.g. D02' },
+  IE: { maxLength: 3, digitsOnly: false, suggestMinLength: 3, hint: 'Ireland Eircodes use a 3-character routing key, e.g. D02' },
   // suggestMinLength: with 4,086 Dutch postcodes, a 3-digit prefix match
   // (the default gate below) returns a long, unhelpful list — only worth
   // querying once the full 4-digit code is typed.
