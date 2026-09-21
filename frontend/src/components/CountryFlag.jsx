@@ -295,9 +295,7 @@ function KuwaitFlag() {
       <rect width="60" height={stripeH} fill="#007A3D" />
       <rect y={stripeH} width="60" height={stripeH} fill="#FFFFFF" />
       <rect y={stripeH * 2} width="60" height={stripeH} fill="#CE1126" />
-      <path d={`M0,0 L18,0 L0,${stripeH} Z`} fill="#000000" />
-      <path d={`M0,${stripeH} L18,0 L0,${40 - stripeH} Z`} fill="#000000" />
-      <path d={`M0,${40 - stripeH} L18,0 L0,40 Z`} fill="#000000" />
+      <polygon points="0,0 0,40 22,40 10,20 22,0" fill="#000000" />
     </svg>
   );
 }
