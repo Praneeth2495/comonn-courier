@@ -18,7 +18,7 @@ export const POSTCODE_RULES = {
   // Ireland's suggestion data is keyed by the 3-character Eircode routing
   // key (e.g. "D02", "D6W", "T12") rather than a full 7-character Eircode —
   // letters are part of the code itself, so this can't be digits-only.
-  IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland postcodes use a 3-character routing key, e.g. D02' },
+  IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland Eircodes use a 3-character routing key, e.g. D02' },
   NL: { maxLength: 4, digitsOnly: true, hint: 'Netherlands postcodes are 4 digits' },
   SE: { maxLength: 5, digitsOnly: true, hint: 'Sweden postcodes are 5 digits' },
   // UAE has no real postal code system — this field is repurposed as an
