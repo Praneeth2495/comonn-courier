@@ -15,10 +15,14 @@ export const POSTCODE_RULES = {
   MY: { maxLength: 5, digitsOnly: true, hint: 'Malaysia postcodes are 5 digits' },
   SG: { maxLength: 6, digitsOnly: true, hint: 'Singapore postcodes are 6 digits' },
   ZA: { maxLength: 4, digitsOnly: true, hint: 'South Africa postcodes are 4 digits' },
-  // Ireland's suggestion data is keyed by the 3-character Eircode routing
-  // key (e.g. "D02", "D6W", "T12") rather than a full 7-character Eircode —
-  // letters are part of the code itself, so this can't be digits-only.
-  IE: { maxLength: 3, digitsOnly: false, suggestMinLength: 3, hint: 'Ireland Eircodes use a 3-character routing key, e.g. D02' },
+  // The customer types their full 7-character Eircode here (e.g.
+  // "D02 AF30") — maxLength 8 allows for the space. Suggestions only query
+  // once all 7 characters are in (see isReadyForSuggestions below), matched
+  // against the first-3-character routing key against our suggestion data
+  // (see quote.controller.js's IE branch) — the remaining 4 characters
+  // identify one specific building, which no suggestion list could ever
+  // enumerate, so they're taken as-is rather than matched against anything.
+  IE: { maxLength: 8, digitsOnly: false, suggestMinLength: 7, hint: 'Enter your full Eircode, e.g. D02 AF30' },
   // suggestMinLength: with 4,086 Dutch postcodes, a 3-digit prefix match
   // (the default gate below) returns a long, unhelpful list — only worth
   // querying once the full 4-digit code is typed.
