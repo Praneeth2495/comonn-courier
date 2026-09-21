@@ -21,6 +21,14 @@ export const POSTCODE_RULES = {
   IE: { maxLength: 3, digitsOnly: false, hint: 'Ireland postcodes use a 3-character routing key, e.g. D02' },
   NL: { maxLength: 4, digitsOnly: true, hint: 'Netherlands postcodes are 4 digits' },
   SE: { maxLength: 5, digitsOnly: true, hint: 'Sweden postcodes are 5 digits' },
+  // UAE has no real postal code system — this field is repurposed as an
+  // Emirate picker instead (see the 7 PostcodeSuggestion rows seeded for
+  // AE), so it must accept letters, not just digits.
+  AE: { maxLength: 20, digitsOnly: false, hint: 'Select your destination Emirate' },
+  // Saudi Arabia/Kuwait do have real postcodes, but no suggestion data
+  // exists for either yet — plain free-text entry, no autocomplete.
+  SA: { maxLength: 5, digitsOnly: true, hint: 'Saudi Arabia postcodes are 5 digits' },
+  KW: { maxLength: 5, digitsOnly: true, hint: 'Kuwait postcodes are 5 digits' },
 };
 
 export function getPostcodeRule(countryCode) {
