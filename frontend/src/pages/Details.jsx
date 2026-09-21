@@ -43,6 +43,7 @@ function fromSavedAddress(saved) {
     city: saved.city,
     state: normalizeRegionValue(saved.countryCode, saved.state) || '',
     postcode: saved.postcode,
+    eircode: saved.eircode || '',
     countryCode: saved.countryCode,
   };
 }
