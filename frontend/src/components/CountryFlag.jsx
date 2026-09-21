@@ -230,6 +230,16 @@ function SouthAfricaFlag() {
   );
 }
 
+function IrelandFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="20" height="40" fill="#169B62" />
+      <rect x="20" width="20" height="40" fill="#FFFFFF" />
+      <rect x="40" width="20" height="40" fill="#FF883E" />
+    </svg>
+  );
+}
+
 function GenericFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
