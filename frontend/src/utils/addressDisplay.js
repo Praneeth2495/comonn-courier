@@ -10,7 +10,7 @@ export function suburbStateSuffix(suburb, state) {
 // postcode + city/town, never the county/province — that's still
 // auto-filled into the receiver's address behind the scenes (see
 // pickDestinationSuggestion), just not shown in this label.
-const SUGGESTION_LABEL_HIDES_STATE = ['SE', 'NL'];
+const SUGGESTION_LABEL_HIDES_STATE = ['SE', 'NL', 'IE'];
 
 // UAE has no real postcode system — its PostcodeSuggestion rows use the
 // Emirate name as both postcode and suburb (e.g. postcode="Dubai",
