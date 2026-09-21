@@ -349,7 +349,7 @@ export default function Home() {
                   <input
                     placeholder={getDestinationFieldLabel(destinationCountryCode)}
                     disabled={!destinationCountryCode}
-                    value={destinationFocused || !destinationPicked ? destinationPostcode : formatPostcodeSuggestion(destinationPostcode, destinationPicked.suburb, destinationPicked.state)}
+                    value={destinationFocused || !destinationPicked ? destinationPostcode : formatPostcodeSuggestion(destinationPostcode, destinationPicked.suburb, destinationPicked.state, destinationCountryCode)}
                     onChange={(e) => handleDestinationPostcodeChange(e.target.value)}
                     onFocus={() => setDestinationFocused(true)}
                     onBlur={() => setDestinationFocused(false)}
