@@ -397,6 +397,11 @@ export default function Quote() {
       return;
     }
 
+    if (destinationCountryCode === 'IE' && destinationPostcode.replace(/\s+/g, '').length < 7) {
+      setError('Please enter your full 7-character Eircode.');
+      return;
+    }
+
     if (isPickupOnly) {
       const pickupItems = items.map((it) => ({ itemType: it.itemType, quantity: Number(it.quantity) || 1 }));
       const countryObj = countries.find((c) => c.countryCode === destinationCountryCode);
