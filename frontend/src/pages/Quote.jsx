@@ -428,7 +428,8 @@ export default function Quote() {
     setBooking({
       quoteInput: {
         destinationCountryCode,
-        destinationPostcode,
+        destinationPostcode: destinationPostcodeForApi(),
+        destinationEircode: destinationEircodeForApi(),
         destinationSuburb: destinationPicked?.suburb,
         destinationState: destinationPicked?.state,
         items: parsedItems,
