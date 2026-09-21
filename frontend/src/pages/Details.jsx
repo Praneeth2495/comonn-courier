@@ -525,7 +525,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
                   className="acct-menu-item"
                   onClick={() => pickSuggestion(s)}
                 >
-                  {value.postcode}, {s.suburb}{suburbStateSuffix(s.suburb, s.state)}
+                  {formatPostcodeSuggestion(value.postcode, s.suburb, s.state)}
                 </button>
               ))}
             </div>
