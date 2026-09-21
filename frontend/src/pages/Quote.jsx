@@ -301,6 +301,17 @@ export default function Quote() {
     setDestinationSuggestions([]);
   }
 
+  // Ireland: send the matched routing key for pricing/zone/airport
+  // resolution (that's what PostcodeSuggestion is keyed by), but keep the
+  // customer's own full Eircode alongside so Details.jsx can auto-fill the
+  // exact-building field with it.
+  function destinationPostcodeForApi() {
+    return destinationCountryCode === 'IE' && destinationPicked ? destinationPicked.postcode : destinationPostcode;
+  }
+  function destinationEircodeForApi() {
+    return destinationCountryCode === 'IE' ? destinationPostcode : undefined;
+  }
+
   function addItem() {
     setItems((prev) => [...prev, emptyItem()]);
   }
