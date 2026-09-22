@@ -63,6 +63,11 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
   doc.text(`     Date: ${fmtDate(batch.createdAt)}`);
   y = doc.y + 6;
 
+  if (batch.refNumber) {
+    doc.font('Helvetica').fontSize(8.5).text(`Reference: ${batch.refNumber}`, left, y, { width });
+    y = doc.y + 6;
+  }
+
   const colWidth = (width - 20) / 2;
   const colTop = y;
   doc.font('Helvetica-Bold').fontSize(8.5).text('FROM (Sender)', left, colTop);
