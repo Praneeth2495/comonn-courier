@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const { getCountryName } = require('../utils/countryNames');
+const { sanitizePdfText } = require('../utils/pdfText');
 
 const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
 const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
