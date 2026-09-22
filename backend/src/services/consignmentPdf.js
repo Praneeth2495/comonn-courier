@@ -89,7 +89,7 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
   // — never both the sender and receiver on the same half, since neither is
   // present for the other's end of the trip.
   const sigColWidth = (width - 20) / 2;
-  const sigY = top + halfHeight - 47;
+  const sigY = top + halfHeight - 70;
   const [leftRole, rightRole] = isSenderCopy ? ['Sender', 'Driver'] : ['Driver', 'Receiver'];
   drawSignatureBlock(doc, leftRole, left, sigY, sigColWidth);
   drawSignatureBlock(doc, rightRole, left + sigColWidth + 20, sigY, sigColWidth);
