@@ -31,6 +31,7 @@ function formatAddress(addr) {
   const postcodeForInvoice = addr.eircode || addr.postcode;
   return [addr.contactName, addr.line1, addr.line2, `${addr.city}${addr.state ? ', ' + addr.state : ''} ${postcodeForInvoice}`, getCountryName(addr.countryCode)]
     .filter(Boolean)
+    .map(sanitizePdfText)
     .join('\n');
 }
 
