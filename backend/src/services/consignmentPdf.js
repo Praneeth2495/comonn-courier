@@ -121,7 +121,7 @@ function generateConsignmentSheet(batch, res) {
   doc.fillColor('black');
 
   drawWatermark(doc, midY, halfHeight);
-  drawCopy(doc, batch, midY, 'RECEIVER COPY');
+  drawCopy(doc, batch, midY, halfHeight, 'RECEIVER COPY', false);
 
   doc.end();
 }
