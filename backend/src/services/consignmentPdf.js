@@ -60,12 +60,12 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
   y += 16;
 
   doc.font('Helvetica').fontSize(8.5);
-  doc.text(`Order ID: ${batch.orderId || batch.referenceNumber}`, left, y, { continued: true, width });
+  doc.text(`Order ID: ${sanitizePdfText(batch.orderId || batch.referenceNumber)}`, left, y, { continued: true, width });
   doc.text(`     Date: ${fmtDate(batch.createdAt)}`);
   y = doc.y + 6;
 
   if (batch.refNumber) {
-    doc.font('Helvetica').fontSize(8.5).text(`Reference: ${batch.refNumber}`, left, y, { width });
+    doc.font('Helvetica').fontSize(8.5).text(`Reference: ${sanitizePdfText(batch.refNumber)}`, left, y, { width });
     y = doc.y + 6;
   }
 
