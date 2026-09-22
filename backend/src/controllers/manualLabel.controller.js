@@ -25,6 +25,21 @@ function validateAddress(addr, label) {
   return null;
 }
 
+// A copy-pasted spreadsheet cell can carry trailing tabs/non-breaking
+// spaces into these fields (e.g. "Bellis Australia Pty Ltd \t\t") — those
+// survive into fromAddress/toAddress verbatim if not trimmed here, which
+// then render as garbled glyphs wherever this batch's address is printed
+// later (labels, invoice, consignment sheet — see pdfText.js). Trimming at
+// save time, not just at render time, means the stored record itself is
+// clean for every future reprint.
+function trimAddressFields(addr) {
+  const trimmed = {};
+  for (const [key, value] of Object.entries(addr)) {
+    trimmed[key] = typeof value === 'string' ? value.trim() : value;
+  }
+  return trimmed;
+}
+
 function toLabelShape(addr, instructions) {
   return {
     businessName: addr.businessName?.trim() || null,
