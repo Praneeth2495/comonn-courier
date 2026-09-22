@@ -1,16 +1,21 @@
 /**
  * PDFKit's standard 14 fonts (Helvetica etc., used by every PDF this app
- * generates) only reliably render WinAnsi/Latin-1-range characters —
- * "smart" typographic punctuation from Word/Google Docs copy-paste (curly
- * quotes, em/en dashes, non-breaking spaces, trademark/copyright/registered
- * symbols) renders as garbled glyphs otherwise, e.g. "Ltd™" showing up
- * mangled, or a non-breaking space before a word showing as "'Â word".
- * That second pattern is actually a *different*, more corrosive bug: it's
- * the classic signature of UTF-8 bytes that got misread one-byte-at-a-time
- * as Latin-1 somewhere upstream (a non-breaking space, UTF-8 bytes C2 A0,
- * decoded as Latin-1 becomes "Â" + a literal space) — this repairs that
- * too, but only when the tell-tale byte pattern is actually present, so
- * correctly-encoded text is never touched.
+ * generates) only reliably render WinAnsi/Latin-1-range printable
+ * characters. Two distinct failure modes both show up as garbled address
+ * text:
+ *
+ * 1. Raw TAB/control characters and non-breaking spaces ending up in
+ *    stored address fields — traced to a real production batch where
+ *    copy-pasting out of a spreadsheet left literal tab characters and a
+ *    non-breaking space trailing the business name/pin/street (e.g.
+ *    "Bellis Australia Pty Ltd \t\t"). These aren't in Helvetica's
+ *    printable glyph set, so PDFKit renders something else in their place
+ *    — this is what showed up as a stray "™" and garbage characters
+ *    swallowing the start of "Australia" in the reported bug.
+ * 2. "Smart" typographic punctuation from Word/Google Docs copy-paste
+ *    (curly quotes, em/en dashes, ellipsis, trademark/copyright/registered
+ *    symbols) — valid Unicode, just outside what these fonts render
+ *    correctly.
  */
 function sanitizePdfText(input) {
   if (!input) return input;
