@@ -3,6 +3,7 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const bwipjs = require('bwip-js');
 const { getCountryName } = require('../utils/countryNames');
+const { sanitizePdfText } = require('../utils/pdfText');
 
 const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
 const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
