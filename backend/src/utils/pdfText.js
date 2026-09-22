@@ -41,7 +41,14 @@ function sanitizePdfText(input) {
     .replace(/©/g, '(C)')
     // Anything still outside Latin-1 has no glyph in these fonts at all —
     // stripped rather than left to render as tofu/garbage.
-    .replace(/[^\x00-\xFF]/g, '');
+    .replace(/[^\x00-\xFF]/g, '')
+    // Tabs/newlines/other control characters (and any run of whitespace
+    // they create) collapse to a single space — this is what actually
+    // caused the reported bug (see #1 above), not the typographic
+    // punctuation cases above.
+    .replace(/[\x00-\x1F\x7F]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 module.exports = { sanitizePdfText };
