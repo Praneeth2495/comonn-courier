@@ -80,7 +80,7 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
   const itemsSummary = (batch.items || [])
     .map((it) => {
       const dimsPart = it.lengthCm && it.widthCm && it.heightCm ? `, ${it.lengthCm}x${it.widthCm}x${it.heightCm} cm` : '';
-      return `${it.itemType} x${it.quantity} (${it.actualWeightKg} kg${dimsPart})`;
+      return `${sanitizePdfText(it.itemType)} x${it.quantity} (${it.actualWeightKg} kg${dimsPart})`;
     })
     .join('  |  ');
   doc.font('Helvetica').fontSize(8).text(`Items: ${itemsSummary}`, left, y, { width });
