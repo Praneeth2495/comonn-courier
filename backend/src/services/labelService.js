@@ -267,6 +267,7 @@ function formatAddress(addr) {
     addr.phone,
   ]
     .filter(Boolean)
+    .map(sanitizePdfText)
     .join('\n');
 }
 
