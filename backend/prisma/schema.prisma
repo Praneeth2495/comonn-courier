@@ -1217,6 +1217,11 @@ model ManualLabelBatch {
   // nullable here since the 3 batches created before this field existed
   // have no value for it — never backfilled with a guess.
   orderId         String?
+  // Optional staff-entered reference (e.g. a customer PO number) — printed
+  // on the individual sticker labels already (as `referenceLabel`, see
+  // manualLabel.controller.js) but wasn't persisted on the batch itself
+  // until the consignment sheet needed to show it too.
+  refNumber       String?
   fromAddress     Json
   toAddress       Json
   // Total labels across every item (sum of each item's own quantity) —
