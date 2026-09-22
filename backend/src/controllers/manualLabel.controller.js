@@ -140,6 +140,7 @@ async function createManualLabels(req, res, next) {
       data: {
         referenceNumber,
         orderId: trimmedOrderId,
+        refNumber: trimmedRefNumber,
         fromAddress,
         toAddress,
         quantity: totalQuantity,
