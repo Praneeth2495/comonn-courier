@@ -83,11 +83,16 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
     })
     .join('  |  ');
   doc.font('Helvetica').fontSize(8).text(`Items: ${itemsSummary}`, left, y, { width });
-  y = doc.y + 16;
 
+  // Footer: each half is signed by whoever's actually present for that leg
+  // of the handover — sender+driver at pickup, driver+receiver at delivery
+  // — never both the sender and receiver on the same half, since neither is
+  // present for the other's end of the trip.
   const sigColWidth = (width - 20) / 2;
-  drawSignatureBlock(doc, 'Sender', left, y, sigColWidth);
-  drawSignatureBlock(doc, 'Receiver', left + sigColWidth + 20, y, sigColWidth);
+  const sigY = top + halfHeight - 47;
+  const [leftRole, rightRole] = isSenderCopy ? ['Sender', 'Driver'] : ['Driver', 'Receiver'];
+  drawSignatureBlock(doc, leftRole, left, sigY, sigColWidth);
+  drawSignatureBlock(doc, rightRole, left + sigColWidth + 20, sigY, sigColWidth);
 }
 
 /**
