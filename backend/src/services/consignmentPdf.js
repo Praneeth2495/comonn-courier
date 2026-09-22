@@ -37,11 +37,14 @@ function drawSignatureBlock(doc, role, x, y, width) {
 }
 
 // Draws one copy (sender's or receiver's, by which half of the sheet it's
-// printed on) of the consignment note. Both halves carry the exact same
-// content — shipment details plus BOTH parties' name/signature lines — so
-// whichever half ends up torn off and kept still stands alone as full proof
-// of custody, rather than only half the story.
-function drawCopy(doc, batch, top, copyLabel) {
+// printed on) of the consignment note. Each half is signed by the two
+// people actually present for that leg of the handover — the sender copy
+// is signed by the sender (drop-off) and the driver, the receiver copy by
+// the driver and the receiver (delivery) — rather than both parties on
+// both halves, since the sender is never present at delivery and vice
+// versa. Signatures sit near the bottom of each half (its own footer),
+// not immediately under the item list.
+function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
   const left = doc.page.margins.left;
   const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
   let y = top + 10;
