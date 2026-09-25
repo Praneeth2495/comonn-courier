@@ -86,7 +86,7 @@ export default function Services() {
         </div>
       </div>
 
-      <div className="section" style={{ background: '#fff' }}>
+      <div className="section" style={{ background: '#fff' }} ref={addonsSectionRef}>
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 32 }}>
           <h2 className="h-lg">International courier add-ons</h2>
         </div>
