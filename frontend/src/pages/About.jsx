@@ -41,7 +41,7 @@ export default function About() {
         </div>
       </div>
 
-      <div className="section" style={{ background: '#fff' }}>
+      <div className="section" style={{ background: '#fff' }} ref={valuesSectionRef}>
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 32 }}>
           <h2 className="h-lg">Our values</h2>
         </div>
