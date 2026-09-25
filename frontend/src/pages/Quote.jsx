@@ -154,15 +154,21 @@ export default function Quote() {
   // flags this explicitly via location state instead, which a real
   // browser Back/Forward to that same history entry preserves too.
   const location = useLocation();
-  const cameFromBack = Boolean(location.state?.cameFromBack);
+  // One-shot: only the very first quotes render after arriving via Back
+  // should scroll to top — once consumed, editing the form and requesting
+  // a fresh quote on this same page visit must center on the results like
+  // any other quote request, not keep jumping to the top forever.
+  const [cameFromBack, setCameFromBack] = useState(Boolean(location.state?.cameFromBack));
   useEffect(() => {
     if (!quotes) return;
     if (cameFromBack) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCameFromBack(false);
     } else if (resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [quotes, cameFromBack]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quotes]);
   const [emailAddress, setEmailAddress] = useState(user?.email || '');
   const [emailStatus, setEmailStatus] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
