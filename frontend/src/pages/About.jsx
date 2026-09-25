@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BackToTop from '../components/BackToTop';
 
 const VALUES = [
   { icon: '🎯', bg: '#EAF0FF', title: 'Reliability first', body: 'We commit to delivery windows and hold ourselves to them.' },
