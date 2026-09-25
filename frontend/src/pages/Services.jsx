@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import client from '../api/client';
+import BackToTop from '../components/BackToTop';
 
 const SERVICES = [
   { icon: '⚡', bg: 'var(--warn-bg)', pill: 'pill-warn', pillLabel: '3–5 days', title: 'Express Delivery', body: 'Premium, time-definite delivery to all major destinations. A dedicated round-the-clock team manages every milestone — from rapid pickup to customs clearance and final-mile delivery.' },
