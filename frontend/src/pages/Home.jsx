@@ -114,21 +114,21 @@ function ArrowIcon() {
   );
 }
 
-// Home-page-only "back to top" button — appears once the customer has
-// scrolled a bit down the page, hidden again near the very top so it isn't
-// just sitting over the hero. Plain window scroll listener (passive, no
-// layout thrashing) rather than an IntersectionObserver since we only care
-// about a simple scrollY threshold, not any specific element's visibility.
-function BackToTop() {
+// Home-page-only "back to top" button — hidden until the customer scrolls
+// down as far as the "How it works" section (not just some arbitrary pixel
+// count down the hero), so it isn't sitting over the hero/instant-quote
+// form. IntersectionObserver on that section is the natural fit here —
+// it's already tracking exactly the "has this section been reached" signal
+// we want, rather than re-deriving it from raw scroll position.
+function BackToTop({ targetRef }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    function onScroll() {
-      setVisible(window.scrollY > 480);
-    }
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    const el = targetRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [targetRef]);
 
   if (!visible) return null;
   return (
