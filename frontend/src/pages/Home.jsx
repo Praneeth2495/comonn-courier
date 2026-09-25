@@ -91,6 +91,21 @@ const NEWS = [
   ['UK', 'UK customs: what to expect', 'Your goods are financially protected with warranty coverage up to ₹1,50,000.'],
 ];
 
+const FAQS = [
+  ['Which countries can I ship to with Comonn?', "We currently service 15 countries — Australia, Canada, Germany, Ireland, Kuwait, Malaysia, the Netherlands, New Zealand, Saudi Arabia, Singapore, South Africa, Sweden, UAE, the UK, and the USA. Enter your destination on the Book page to get an instant, country-specific quote."],
+  ['How is my shipping cost calculated?', "Price depends on the destination zone, chargeable weight (the greater of actual or volumetric weight), and the service you choose — Economy or Express. Enter your origin, destination, and parcel details on the Book page for an instant quote before you commit to anything."],
+  ['How long does international delivery take?', 'Transit time depends on the destination and service level, typically ranging from 3-5 business days for Express to 5-9 business days for Economy. The exact estimate for your route is shown alongside your quote before you book.'],
+  ['What items can I not ship?', "Dangerous goods are restricted across our network — lithium-ion batteries can't be sent via air freight, and all fluids must be drained from machine parts before shipping. You'll see the full list and acknowledge it during checkout."],
+  ['Is my shipment insured?', "Yes — every shipment includes ₹10,000 of transit warranty free. You can upgrade to higher coverage, up to ₹1,50,000, for a small additional fee at checkout if you're shipping something valuable."],
+  ['Can I track my order in real time?', "Yes — every shipment gets a tracking number the moment it's booked. Use the Track page to see live status updates from pickup all the way through customs clearance to final delivery."],
+  ['Do you collect the package from my doorstep?', "Yes — once you book, our courier collects your package directly from your address on your scheduled pickup date, so you never need to visit a drop-off counter."],
+  ['What happens if my price beat guarantee applies?', "Found a genuinely cheaper like-for-like quote elsewhere for the same route and service level? We'll beat it by 5% — just share the competing quote with our team before you book."],
+  ['What is Comonn Storage and how does it work?', "Comonn Storage lets you rent a secure box at our facility to store belongings for as long as you need — book a box size online, drop off your items, and access or renew whenever you like."],
+  ['What size storage boxes are available, and how is pricing worked out?', 'Box sizes range from small to large depending on how much you need to store. Pricing is a simple monthly rate per box size, shown upfront when you reserve — no hidden fees.'],
+  ['Can I renew or extend my storage booking?', "Yes — from your account's My Box page, you can renew any active box for as many extra days as you need, right before or even after it expires, with payment handled securely online."],
+  ['Is my stored property protected?', 'Yes — your box is kept in a secured, access-controlled facility, and your storage invoice and address details are always available in your account for reference.'],
+];
+
 function ArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
