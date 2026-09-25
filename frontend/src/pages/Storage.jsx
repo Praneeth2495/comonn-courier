@@ -31,6 +31,7 @@ function ArrowIcon() {
 
 export default function Storage() {
   const { user } = useAuth();
+  const whySectionRef = useRef(null);
   const [sizes, setSizes] = useState(null);
   const [selectedSizeId, setSelectedSizeId] = useState(null);
   const [days, setDays] = useState(30);
