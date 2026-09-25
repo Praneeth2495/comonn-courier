@@ -114,6 +114,34 @@ function ArrowIcon() {
   );
 }
 
+function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Each item opens/closes independently (not single-open-at-a-time) — the
+// grid-template-rows 0fr/1fr trick animates height smoothly without ever
+// having to measure the answer's rendered height in JS.
+function FaqItem({ question, answer }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`faq-item${open ? ' open' : ''}`}>
+      <button type="button" className="faq-question" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        {question}
+        <span className="faq-chevron"><ChevronIcon /></span>
+      </button>
+      <div className="faq-answer-wrap">
+        <div className="faq-answer-inner">
+          <p>{answer}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const { setBooking } = useBooking();
