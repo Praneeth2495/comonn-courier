@@ -76,6 +76,21 @@ export default function Track() {
 
       {error && <div className="wrap" style={{ maxWidth: 760, margin: '20px auto 0', textAlign: 'center' }}><div className="error-text">{error}</div></div>}
 
+      {/* Default state (nothing searched yet) — otherwise this is just a
+          blank gap between the hero and the footer. */}
+      {!result && !error && (
+        <div className="section">
+          <div className="wrap" style={{ textAlign: 'center', marginBottom: 36 }}>
+            <h2 className="h-lg">How tracking works</h2>
+          </div>
+          <div className="wrap steps-row">
+            {TRACK_STEPS.map(([n, title, body]) => (
+              <div className="hiw-card" key={n}><div className="hiw-num">{n}</div><h4>{title}</h4><p>{body}</p></div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {result && (
         <>
           <div className="card track-status-card">
