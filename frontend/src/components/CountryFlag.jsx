@@ -203,36 +203,40 @@ function SingaporeFlag() {
   );
 }
 
+// A stroked-centerline never fully fills the wedge near the hoist once the
+// bands are this wide relative to the flag's height — the true fix is
+// filling each band as its own closed Y-shaped ("pall") polygon, so there's
+// no gap for red/blue to show through no matter how wide the bands are.
+function pallHexagon(centerX, centerY, halfWidth) {
+  return [
+    [0, 0],
+    [centerX, centerY - halfWidth],
+    [60, centerY - halfWidth],
+    [60, centerY + halfWidth],
+    [centerX, centerY + halfWidth],
+    [0, 40],
+  ].map(([x, y]) => `${x},${y.toFixed(2)}`).join(' ');
+}
+
 function SouthAfricaFlag() {
-  // The Y-shaped "pall" design, built the same way the AU/NZ/UK flags above
-  // draw their diagonal crosses: layered strokes, wide-to-narrow, on the
-  // same centerline. The green band additionally gets a gold layer between
-  // it and its white border — the real flag's 6th color, easy to miss but
-  // very noticeable in its absence since it's what gives the green band its
-  // characteristic trim.
-  const apex = [13, 20 * (13 / 24)]; // point where the black wedge gives way to green, along the same diagonal
-  const junction = [24, 20]; // where both arms meet the horizontal band
-  // Both the top and bottom diagonal strokes continue all the way to the
-  // fly edge (not just to the junction) — each stroke's own end cap is cut
-  // perpendicular to ITS OWN diagonal angle, not to the horizontal band, so
-  // stopping exactly at the junction left a wedge-shaped gap there (the
-  // background colour showing through right where the horizontal band
-  // should be solid green). Drawing the horizontal segment redundantly on
-  // both means that gap is always covered by the other stroke instead.
-  const topGreen = `${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`;
-  const bottomGreen = `${apex[0]},${(40 - apex[1]).toFixed(2)} ${junction[0]},${junction[1]} 60,20`;
+  // The Y-shaped "pall" design: white (widest), gold, then green (narrowest)
+  // all share the same hoist corners and bend point, each a fully filled
+  // polygon — not a stroke — so the whole enclosed area is solid colour,
+  // however wide the band. The black triangle is drawn last, on top, only
+  // reaching partway to the bend — it visually replaces the innermost
+  // sliver of white/gold/green near the hoist, exactly as the real flag's
+  // black wedge sits within (not past) the white border.
+  const centerX = 24;
+  const centerY = 20;
+  const blackApexX = 14;
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
       <polygon points="0,0 60,0 60,20 0,20" fill="#DE3831" />
       <polygon points="0,40 60,40 60,20 0,20" fill="#002395" />
-      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)} ${junction[0]},${junction[1]} 60,20`} fill="none" stroke="#FFFFFF" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round" />
-      <polyline points={`0,40 ${apex[0]},${(40 - apex[1]).toFixed(2)} ${junction[0]},${junction[1]} 60,20`} fill="none" stroke="#FFFFFF" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round" />
-      <polyline points={`0,0 ${apex[0]},${apex[1].toFixed(2)}`} fill="none" stroke="#000000" strokeWidth="6.5" strokeLinecap="round" />
-      <polyline points={`0,40 ${apex[0]},${(40 - apex[1]).toFixed(2)}`} fill="none" stroke="#000000" strokeWidth="6.5" strokeLinecap="round" />
-      <polyline points={topGreen} fill="none" stroke="#FFB612" strokeWidth="7.8" strokeLinejoin="round" strokeLinecap="round" />
-      <polyline points={bottomGreen} fill="none" stroke="#FFB612" strokeWidth="7.8" strokeLinejoin="round" strokeLinecap="round" />
-      <polyline points={topGreen} fill="none" stroke="#007A4D" strokeWidth="5.5" strokeLinejoin="round" strokeLinecap="round" />
-      <polyline points={bottomGreen} fill="none" stroke="#007A4D" strokeWidth="5.5" strokeLinejoin="round" strokeLinecap="round" />
+      <polygon points={pallHexagon(centerX, centerY, 5.4)} fill="#FFFFFF" />
+      <polygon points={pallHexagon(centerX, centerY, 4.1)} fill="#FFB612" />
+      <polygon points={pallHexagon(centerX, centerY, 2.9)} fill="#007A4D" />
+      <polygon points={`0,0 ${blackApexX},${centerY} 0,40`} fill="#000000" />
     </svg>
   );
 }
