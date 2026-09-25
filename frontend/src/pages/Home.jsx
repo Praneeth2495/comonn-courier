@@ -377,7 +377,7 @@ export default function Home() {
   return (
     <div>
       <BookingConfirmedToast />
-      <BackToTop />
+      <BackToTop targetRef={hiwSectionRef} />
       <div className="hero">
         <div className="hero-row">
           <div className="hero-copy">
