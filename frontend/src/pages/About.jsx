@@ -10,9 +10,11 @@ const VALUES = [
 
 export default function About() {
   const navigate = useNavigate();
+  const valuesSectionRef = useRef(null);
 
   return (
     <div>
+      <BackToTop targetRef={valuesSectionRef} />
       <div className="about-hero">
         <h1>Built for the everyday international shipper.</h1>
         <p>We started Comonn to make sending a parcel overseas as easy as sending one across town — with honest pricing and real-time visibility, end to end.</p>
