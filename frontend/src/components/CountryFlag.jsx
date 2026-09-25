@@ -274,16 +274,25 @@ function UAEFlag() {
 }
 
 // The real flag carries the Shahada in white Kufic script on green, above a
-// white sword — reproducing Arabic calligraphy accurately via hand-coded
-// SVG paths isn't reasonable at icon size, so this keeps just the green
-// field and a simplified sword silhouette (same simplification precedent
-// as Malaysia's star rendered as a radiating burst above).
+// white sword (blade pointing to the hoist). An <svg> <text> element (real
+// Unicode Arabic, not a hand-drawn approximation) lets the browser's own
+// font engine render the actual calligraphy — illegible at this icon size,
+// same as India's 24-spoke chakra above, but recognizable as text-shaped
+// rather than a blank field. The sword below it is a proper blade+hilt
+// silhouette instead of a bare line.
 function SaudiArabiaFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
       <rect width="60" height="40" fill="#006C35" />
-      <rect x="14" y="28" width="32" height="2.2" rx="1.1" fill="#FFFFFF" />
-      <path d="M14,28 L40,21 L42,22.5 L16,29.8 Z" fill="#FFFFFF" />
+      <text x="30" y="18" textAnchor="middle" fontSize="8" fontFamily="'Traditional Arabic','Geeza Pro','Arial',sans-serif" fill="#FFFFFF">
+        لا إله إلا الله محمد رسول الله
+      </text>
+      <g transform="translate(30,27)">
+        <polygon points="-19,0 -14,-1.4 -14,1.4" fill="#FFFFFF" />
+        <line x1="-14" y1="0" x2="13" y2="0" stroke="#FFFFFF" strokeWidth="1.7" strokeLinecap="round" />
+        <line x1="11" y1="-2.8" x2="11" y2="2.8" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />
+        <line x1="13" y1="0" x2="17" y2="0" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" />
+      </g>
     </svg>
   );
 }
