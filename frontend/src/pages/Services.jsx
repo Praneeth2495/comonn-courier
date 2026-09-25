@@ -59,6 +59,7 @@ export default function Services() {
 
   return (
     <div>
+      <BackToTop targetRef={addonsSectionRef} />
       <div className="svc-hero">
         <h1>Our services</h1>
         <p>From express air freight to ocean cargo — pick the speed and coverage that fits your shipment.</p>
