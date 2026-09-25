@@ -7,6 +7,7 @@ import CountryFlag from '../components/CountryFlag';
 import FlagCountrySelect from '../components/FlagCountrySelect';
 import WorldOpsMap from '../components/WorldOpsMap';
 import BookingConfirmedToast from '../components/BookingConfirmedToast';
+import BackToTop from '../components/BackToTop';
 import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, isReadyForSuggestions } from '../utils/postcodeRules';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
 
