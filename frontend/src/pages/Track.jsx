@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 
+const TRACK_STEPS = [
+  ['1', 'Enter your Order ID', "Find it in your booking confirmation email or SMS — it's the same number on your label."],
+  ['2', 'See live status', 'Every milestone from pickup to customs clearance, updated as it happens.'],
+  ['3', 'Know your ETA', "We'll show the expected delivery window at a glance, right up to the door."],
+];
+
 const SHIP_STAGES = ['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', CLEARED_DESTINATION_CUSTOMS: 'Cleared customs', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered' };
 const STATUS_PILL = {
