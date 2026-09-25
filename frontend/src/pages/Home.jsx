@@ -125,7 +125,13 @@ function BackToTop({ targetRef }) {
   useEffect(() => {
     const el = targetRef.current;
     if (!el) return;
-    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0 });
+    const observer = new IntersectionObserver(([entry]) => {
+      // Once scrolled past the section further down the page, it's no
+      // longer "intersecting" either — but that's exactly where the button
+      // should stay visible, not disappear again. Only hide it when the
+      // section is below the viewport (scrolled back up above it).
+      setVisible(entry.isIntersecting || entry.boundingClientRect.top < 0);
+    }, { threshold: 0 });
     observer.observe(el);
     return () => observer.disconnect();
   }, [targetRef]);
