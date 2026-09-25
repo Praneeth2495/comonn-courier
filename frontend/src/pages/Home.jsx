@@ -588,6 +588,16 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      <div className="section">
+        <div className="wrap" style={{ textAlign: 'center', marginBottom: 32 }}>
+          <h2 className="h-lg">Frequently asked questions</h2>
+          <p className="lead" style={{ marginTop: 8 }}>Everything you need to know about shipping and storage with us.</p>
+        </div>
+        <div className="wrap faq-list">
+          {FAQS.map(([q, a]) => <FaqItem key={q} question={q} answer={a} />)}
+        </div>
+      </div>
     </div>
   );
 }
