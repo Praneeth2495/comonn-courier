@@ -1,8 +1,9 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from '../components/LoadingLogo';
+import BackToTop from '../components/BackToTop';
 
 const DAY_PRESETS = [7, 30, 90];
 
