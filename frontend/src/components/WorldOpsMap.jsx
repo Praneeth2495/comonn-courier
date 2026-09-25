@@ -96,8 +96,8 @@ export default function WorldOpsMap() {
           </g>
         ))}
 
-        <circle className="wom-pin-ring" cx={ORIGIN.x} cy={ORIGIN.y} r={1.1} />
-        <circle className="wom-pin-origin" cx={ORIGIN.x} cy={ORIGIN.y} r={1.15} />
+        <circle className="wom-pin-ring" cx={ORIGIN.x} cy={ORIGIN.y} r={0.85} />
+        <circle className="wom-pin-origin" cx={ORIGIN.x} cy={ORIGIN.y} r={0.9} />
         <text className="wom-label wom-label-origin" x={ORIGIN.x} y={ORIGIN.y + 3.3} textAnchor="middle">
           India
         </text>
