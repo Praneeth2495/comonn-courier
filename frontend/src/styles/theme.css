@@ -289,8 +289,8 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .wom-pin-hit{fill:transparent;}
 .wom-pin-group:hover .wom-pin-dest-ring,.wom-pin-group:focus-visible .wom-pin-dest-ring{stroke:#fff;}
 .wom-pin-group:hover .wom-label,.wom-pin-group:focus-visible .wom-label{fill:#fff;}
-.wom-label{font-size:1.7px;font-weight:600;fill:#C7CEE6;letter-spacing:.01em;transition:fill .15s ease;}
-.wom-label-origin{font-size:1.9px;font-weight:700;fill:#FF9478;}
+.wom-label{font-size:1.35px;font-weight:600;fill:#C7CEE6;letter-spacing:.01em;transition:fill .15s ease;}
+.wom-label-origin{font-size:1.5px;font-weight:700;fill:#FF9478;}
 .wom-dropdown{position:absolute;transform:translate(-50%,10px);min-width:132px;background:#1B2A57;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 12px;box-shadow:0 12px 28px rgba(0,0,0,.35);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:5;}
 .wom-dropdown.is-flipped{transform:translate(-100%,10px);}
 .wom-dropdown.is-open{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,16px);}
