@@ -66,7 +66,7 @@ export default function WorldOpsMap() {
     <div className="world-ops-map-wrap">
       <svg className="world-ops-map" viewBox="-2 -2 67 36" role="img" aria-label="Map showing Comonn's shipping network from India to Europe, North America, Asia, Africa and Oceania">
         {LAND_DOTS.map(([x, y], i) => (
-          <circle key={i} className="wom-dot" cx={x} cy={y} r={0.45} />
+          <circle key={i} className="wom-dot" cx={x} cy={y} r={0.32} />
         ))}
 
         {CONTINENTS.map((p) => (
