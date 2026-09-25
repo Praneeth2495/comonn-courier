@@ -567,7 +567,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="section">
+      <div className="section" ref={hiwSectionRef}>
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 36 }}>
           <h2 className="h-lg">How it works</h2>
         </div>
