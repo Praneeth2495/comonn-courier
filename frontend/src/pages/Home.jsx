@@ -370,6 +370,7 @@ export default function Home() {
   return (
     <div>
       <BookingConfirmedToast />
+      <BackToTop />
       <div className="hero">
         <div className="hero-row">
           <div className="hero-copy">
