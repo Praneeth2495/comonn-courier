@@ -87,9 +87,9 @@ export default function WorldOpsMap() {
             onBlur={() => close(p.name)}
             onClick={() => setActive((cur) => (cur === p.name ? null : p.name))}
           >
-            <circle className="wom-pin-hit" cx={p.x} cy={p.y} r={3.2} />
-            <circle className="wom-pin-dest-ring" cx={p.x} cy={p.y} r={1.3} />
-            <circle className="wom-pin-dest" cx={p.x} cy={p.y} r={0.75} />
+            <circle className="wom-pin-hit" cx={p.x} cy={p.y} r={2.6} />
+            <circle className="wom-pin-dest-ring" cx={p.x} cy={p.y} r={1} />
+            <circle className="wom-pin-dest" cx={p.x} cy={p.y} r={0.55} />
             <text className="wom-label" x={p.x + p.dx} y={p.y + p.dy} textAnchor={p.anchor}>
               {p.name}
             </text>
