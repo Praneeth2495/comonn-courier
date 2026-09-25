@@ -23,6 +23,7 @@ const WHY_US = [
 ];
 
 export default function Services() {
+  const addonsSectionRef = useRef(null);
   const [showTalkModal, setShowTalkModal] = useState(false);
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
