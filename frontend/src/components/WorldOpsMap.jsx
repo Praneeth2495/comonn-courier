@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // Decorative "where we operate" dot map for the homepage hero — fills the
-// empty navy space below the trust-row. Dot coordinates were generated
+// hero-copy column below the headline/lead text. Dot coordinates were generated
 // offline via the `dotted-map` npm package (MIT licensed) at build time
 // (height:32, grid:'diagonal' world projection) and pasted here as a
 // static asset, so the app itself carries no runtime dependency on that
