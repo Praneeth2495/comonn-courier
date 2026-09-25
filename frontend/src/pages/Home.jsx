@@ -349,12 +349,6 @@ export default function Home() {
             <p className="lead">
               Book an international shipment in under two minutes.
             </p>
-            <div className="trust-row">
-              <div className="trust-item"><div className="ic">🛡️</div><span>Warranty up to ₹1,50,000</span></div>
-              <div className="trust-item"><div className="ic">📍</div><span>Real time tracking</span></div>
-              <div className="trust-item"><div className="ic">💸</div><span>We beat any price by 5%</span></div>
-            </div>
-
             <WorldOpsMap />
           </div>
 
