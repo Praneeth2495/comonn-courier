@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { formatDateTime } from '../utils/dateFormat';
+import { razorpayAvailable, openRazorpayCheckout } from '../utils/razorpayCheckout';
 
 const LOW_STOCK_THRESHOLD = 1;
 
