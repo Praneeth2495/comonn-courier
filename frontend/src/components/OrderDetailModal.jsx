@@ -394,7 +394,7 @@ export function OrderCommentsModal({ order, onClose }) {
               <div className="comment-item" key={c.id}>
                 <div className="meta">
                   <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
-                  <span>{new Date(c.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</span>
+                  <span>{formatDateTime(c.createdAt)}</span>
                 </div>
                 <p className="body">{c.body}</p>
               </div>
