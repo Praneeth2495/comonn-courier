@@ -4,14 +4,7 @@ const PDFDocument = require('pdfkit');
 const bwipjs = require('bwip-js');
 const { getCountryName } = require('../utils/countryNames');
 const { sanitizePdfText } = require('../utils/pdfText');
-
-const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
-const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
-const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
-
-function ensureStorageDir() {
-  if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR, { recursive: true });
-}
+const { STORAGE_DIR, LOGO_PATH, ensureStorageDir, drawWatermark: drawWatermarkAt } = require('../utils/pdfHelpers');
 
 // Same recipe as invoiceService.js's drawWatermark — the icon-only mark
 // (not the full logo+text, illegible at this scale), faint, centered,
@@ -19,12 +12,7 @@ function ensureStorageDir() {
 // down from invoice's 320px to match this page's much smaller 288x432
 // canvas vs invoice's A4, roughly the same proportion of page width.
 function drawWatermark(doc) {
-  if (!fs.existsSync(LOGO_ICON_PATH)) return;
-  const size = 170;
-  const x = (doc.page.width - size) / 2;
-  const y = (doc.page.height - size) / 2;
-  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
-  doc.opacity(1);
+  drawWatermarkAt(doc, 170);
 }
 
 /**
