@@ -1106,6 +1106,8 @@ model Payment {
   rawWebhookPayload Json?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+
+  @@index([providerOrderId])
 }
 
 // An additional charge collected after an order was already paid once —
