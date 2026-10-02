@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import client from '../api/client';
 import { COUNTRY_NAMES } from '../utils/countryNames';
 import LoadingLogo from './LoadingLogo';
+import { formatDateTime as fmtDate } from '../utils/dateFormat';
 
 // Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
 // the (mostly public) app bundle when only staff/admin ever open it.
