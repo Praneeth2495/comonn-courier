@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
-import { formatDateShort } from '../utils/dateFormat';
+import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 import { STATUS_PILL } from '../utils/orderStatus';
 
 const LABEL_ELIGIBLE_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
