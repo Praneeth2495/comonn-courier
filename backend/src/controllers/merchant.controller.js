@@ -154,38 +154,13 @@ async function updateInvoiceStatus(req, res, next) {
   }
 }
 
-/** GET /api/admin/merchants/invoices/:id/comments */
-async function listInvoiceComments(req, res, next) {
-  try {
-    const comments = await prisma.merchantInvoiceComment.findMany({
-      where: { invoiceId: req.params.id },
-      include: { author: { select: { fullName: true, email: true } } },
-      orderBy: { createdAt: 'asc' },
-    });
-    res.json({ comments });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/** POST /api/admin/merchants/invoices/:id/comments */
-async function addInvoiceComment(req, res, next) {
-  try {
-    const { body } = req.body;
-    if (!body || !body.trim()) return res.status(400).json({ error: 'Comment body is required' });
-
-    const invoice = await prisma.merchantInvoice.findUnique({ where: { id: req.params.id } });
-    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
-
-    const comment = await prisma.merchantInvoiceComment.create({
-      data: { invoiceId: invoice.id, authorId: req.user.id, body: body.trim() },
-      include: { author: { select: { fullName: true, email: true } } },
-    });
-    res.status(201).json({ comment });
-  } catch (err) {
-    next(err);
-  }
-}
+/** GET/POST /api/admin/merchants/invoices/:id/comments */
+const { listComments: listInvoiceComments, addComment: addInvoiceComment } = makeCommentHandlers({
+  commentModel: 'merchantInvoiceComment',
+  parentModel: 'merchantInvoice',
+  fkField: 'invoiceId',
+  notFoundError: 'Invoice not found',
+});
 
 module.exports = {
   listMerchants,
