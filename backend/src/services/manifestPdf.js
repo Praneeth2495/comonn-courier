@@ -89,9 +89,9 @@ async function generateManifestPdf(manifest) {
       }
       const rowY = doc.y;
       const qty = (order.items || []).reduce((sum, it) => sum + it.quantity, 0);
-      doc.text(order.orderNumber, colX.order, rowY, { width: 90 });
-      doc.text(order.receiverAddress?.contactName || '', colX.receiver, rowY, { width: 180 });
-      doc.text(`${order.receiverAddress?.city || ''}, ${order.receiverAddress?.countryCode || ''}`, colX.dest, rowY, { width: 120 });
+      doc.text(sanitizePdfText(order.orderNumber), colX.order, rowY, { width: 90 });
+      doc.text(sanitizePdfText(order.receiverAddress?.contactName || ''), colX.receiver, rowY, { width: 180 });
+      doc.text(sanitizePdfText(`${order.receiverAddress?.city || ''}, ${order.receiverAddress?.countryCode || ''}`), colX.dest, rowY, { width: 120 });
       doc.text(String(qty), colX.qty, rowY, { width: 35 });
       doc.text(Number(order.chargeableWeightKg).toFixed(2), colX.weight, rowY, { width: 45 });
       doc.moveDown(0.6);
