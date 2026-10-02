@@ -1,26 +1,11 @@
-const { prisma } = require('../config/db');
-
-/**
- * Atomically advances the named yearly counter and returns the new value.
- * Same upsert+increment pattern as the monthly order-number sequence, just
- * keyed per calendar year instead of per month.
- */
-async function nextYearlySequence(kind, now) {
-  const key = `${kind}-${now.getFullYear()}`;
-  const counter = await prisma.sequenceCounter.upsert({
-    where: { key },
-    update: { value: { increment: 1 } },
-    create: { key, value: 1 },
-  });
-  return counter.value;
-}
+const { nextYearlySequence } = require('./sequenceCounter');
 
 /**
  * Generates IN<seq> e.g. IN1, IN2, IN3... The sequence only resets when the
  * calendar year changes — unlike order numbers, it does not reset monthly.
  */
 async function generateInvoiceNumber() {
-  const seq = await nextYearlySequence('invoice', new Date());
+  const seq = await nextYearlySequence('invoice', new Date().getFullYear());
   return `IN${seq}`;
 }
 
@@ -32,19 +17,19 @@ async function generateInvoiceNumber() {
 async function generatePartyInvoiceNumber(direction) {
   const kind = direction === 'PAYABLE' ? 'payable' : 'receivable';
   const prefix = direction === 'PAYABLE' ? 'PIN' : 'RIN';
-  const seq = await nextYearlySequence(kind, new Date());
+  const seq = await nextYearlySequence(kind, new Date().getFullYear());
   return `${prefix}${seq}`;
 }
 
 /** Generates SIN<seq> (Storage Invoice Number) for Box Storage bookings, same yearly-resetting idiom. */
 async function generateBoxInvoiceNumber() {
-  const seq = await nextYearlySequence('storage', new Date());
+  const seq = await nextYearlySequence('storage', new Date().getFullYear());
   return `SIN${seq}`;
 }
 
 /** Generates MAN<seq> for air-freight manifests, same yearly-resetting idiom. */
 async function generateManifestNumber() {
-  const seq = await nextYearlySequence('manifest', new Date());
+  const seq = await nextYearlySequence('manifest', new Date().getFullYear());
   return `MAN${seq}`;
 }
 
