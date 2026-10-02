@@ -117,7 +117,7 @@ function RenewBoxModal({ booking, onClose, onRenewed }) {
 
   async function pay() {
     setError('');
-    if (!window.Razorpay) {
+    if (!razorpayAvailable()) {
       setError('Payment checkout failed to load. Please refresh and try again.');
       return;
     }
@@ -132,12 +132,11 @@ function RenewBoxModal({ booking, onClose, onRenewed }) {
       return;
     }
 
-    const rzp = new window.Razorpay({
-      key: checkout.keyId,
-      order_id: checkout.providerOrderId,
-      name: 'Comonn',
+    openRazorpayCheckout({
+      keyId: checkout.keyId,
+      providerOrderId: checkout.providerOrderId,
       description: `Renew ${booking.boxSize.name} — ${days} days`,
-      handler: async (response) => {
+      onSuccess: async (response) => {
         try {
           await client.post(`/box-bookings/${booking.id}/confirm`, response);
           onRenewed();
@@ -146,11 +145,9 @@ function RenewBoxModal({ booking, onClose, onRenewed }) {
           setSubmitting(false);
         }
       },
-      modal: { ondismiss: () => setSubmitting(false) },
-      theme: { color: '#0f172a' },
+      onFailure: () => { setError('Payment failed. Please try again.'); setSubmitting(false); },
+      onDismiss: () => setSubmitting(false),
     });
-    rzp.on('payment.failed', () => { setError('Payment failed. Please try again.'); setSubmitting(false); });
-    rzp.open();
   }
 
   return (
