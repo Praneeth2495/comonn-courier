@@ -34,11 +34,19 @@ async function markOrdersPaidForProviderOrder(providerOrderId, extra = {}) {
     data: { status: 'SUCCEEDED', ...extra },
   });
 
+  // One batched fetch instead of one findUnique per payment — a single
+  // Razorpay order can cover multiple Comonn orders (see the doc comment
+  // above), so this is N round-trips collapsed into 1. The per-order
+  // update + side-effects below stay exactly as before (sequential, each
+  // gated by its own atomic PAYABLE_STATUSES-checked updateMany).
+  const orders = await prisma.order.findMany({
+    where: { id: { in: payments.map((p) => p.orderId) } },
+    include: { senderAddress: true, receiverAddress: true },
+  });
+  const orderById = new Map(orders.map((o) => [o.id, o]));
+
   for (const payment of payments) {
-    const order = await prisma.order.findUnique({
-      where: { id: payment.orderId },
-      include: { senderAddress: true, receiverAddress: true },
-    });
+    const order = orderById.get(payment.orderId);
     if (!order) continue;
 
     const { count } = await prisma.order.updateMany({
