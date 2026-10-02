@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from '../components/LoadingLogo';
 import BackToTop from '../components/BackToTop';
+import { razorpayAvailable, openRazorpayCheckout } from '../utils/razorpayCheckout';
 
 const DAY_PRESETS = [7, 30, 90];
 
