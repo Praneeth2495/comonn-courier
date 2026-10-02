@@ -3,6 +3,7 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from './LoadingLogo';
 import { downloadBlob } from '../utils/downloadBlob';
+import { formatDateShort } from '../utils/dateFormat';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -61,7 +62,7 @@ export default function AssetsPanel() {
                   <td>{a.name}</td>
                   <td>₹{Number(a.value).toFixed(2)}</td>
                   <td>{a.quantity}</td>
-                  <td>{new Date(a.purchaseDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
+                  <td>{formatDateShort(a.purchaseDate)}</td>
                   <td>{a.staffName}</td>
                   <td>{a.createdBy?.fullName || '—'}</td>
                   <td>
