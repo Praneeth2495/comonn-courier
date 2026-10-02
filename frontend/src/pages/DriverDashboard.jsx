@@ -107,26 +107,12 @@ function MyJobs({ userName }) {
   // shipment has since moved (IN_TRANSIT/OUT_FOR_DELIVERY/DELIVERED all
   // belong here too, not just PICKED_UP — previously those two statuses
   // fell through neither bucket and wrongly stayed listed as active).
-  const ACTIVE_STATUSES = ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED'];
   const activeJobs = jobs
     .filter((j) => ACTIVE_STATUSES.includes(j.status))
     .filter((j) => {
       if (!j.driverAssignedAt) return true;
       return isoDate(new Date(j.driverAssignedAt)) === selectedDate;
     });
-  // The date a completed job is pinned to — pickedUpAt if the driver marked
-  // it via the app, else the earliest tracking event that took it past the
-  // active statuses (covers jobs whose status was advanced by staff instead,
-  // which never sets pickedUpAt). Deliberately NOT updatedAt: that gets
-  // touched by any later edit (e.g. staff pushing the status further along
-  // after pickup), which would wrongly move an already-completed job to
-  // whatever day that unrelated edit happened.
-  function completionDate(job) {
-    if (job.pickedUpAt) return job.pickedUpAt;
-    const firstTerminalEvent = (job.trackingEvents || []).find((t) => !ACTIVE_STATUSES.includes(t.status));
-    if (firstTerminalEvent) return firstTerminalEvent.occurredAt;
-    return job.updatedAt;
-  }
   const completedJobs = jobs
     .filter((j) => !ACTIVE_STATUSES.includes(j.status))
     .filter((j) => {
