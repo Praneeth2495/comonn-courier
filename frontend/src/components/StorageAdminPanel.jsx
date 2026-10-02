@@ -354,7 +354,7 @@ function NewBookingModal({ onClose, onCreated }) {
     setError('');
     const size = sizes.find((s) => s.id === boxSizeId);
     if (!size) { setError('Please choose a box size.'); return; }
-    if (!window.Razorpay) { setError('Payment checkout failed to load. Please refresh and try again.'); return; }
+    if (!razorpayAvailable()) { setError('Payment checkout failed to load. Please refresh and try again.'); return; }
     setSubmitting(true);
     let checkout;
     try {
@@ -367,12 +367,11 @@ function NewBookingModal({ onClose, onCreated }) {
       return;
     }
 
-    const rzp = new window.Razorpay({
-      key: checkout.keyId,
-      order_id: checkout.providerOrderId,
-      name: 'Comonn',
+    openRazorpayCheckout({
+      keyId: checkout.keyId,
+      providerOrderId: checkout.providerOrderId,
       description: `${size.name} — ${days} days storage (${checkout.customer.fullName})`,
-      handler: async (response) => {
+      onSuccess: async (response) => {
         try {
           await client.post(`/box-bookings/${checkout.booking.id}/confirm`, response);
           onCreated();
@@ -381,11 +380,9 @@ function NewBookingModal({ onClose, onCreated }) {
           setSubmitting(false);
         }
       },
-      modal: { ondismiss: () => setSubmitting(false) },
-      theme: { color: '#0f172a' },
+      onFailure: () => { setError('Payment failed. Please try again.'); setSubmitting(false); },
+      onDismiss: () => setSubmitting(false),
     });
-    rzp.on('payment.failed', () => { setError('Payment failed. Please try again.'); setSubmitting(false); });
-    rzp.open();
   }
 
   const selectedSize = sizes.find((s) => s.id === boxSizeId);
