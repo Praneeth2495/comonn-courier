@@ -1,18 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
-
-async function downloadBlob(url, filename) {
-  const { data } = await client.get(url, { responseType: 'blob' });
-  const objectUrl = URL.createObjectURL(data);
-  const a = document.createElement('a');
-  a.href = objectUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(objectUrl);
-}
+import { downloadBlob } from '../utils/downloadBlob';
 
 const ID_PROOF_TYPES = ['Aadhaar', 'PAN', 'Passport', 'Driving Licence', 'Voter ID', 'Other'];
 
