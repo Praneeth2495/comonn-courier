@@ -479,7 +479,7 @@ export default function Payment() {
       setError('Please verify your email before paying.');
       return;
     }
-    if (!window.Razorpay) {
+    if (!razorpayAvailable()) {
       setError('Payment checkout failed to load. Please refresh and try again.');
       return;
     }
@@ -496,12 +496,11 @@ export default function Payment() {
       return;
     }
 
-    const rzp = new window.Razorpay({
-      key: checkoutData.keyId,
-      order_id: checkoutData.payment.providerOrderId,
-      name: 'Comonn',
+    openRazorpayCheckout({
+      keyId: checkoutData.keyId,
+      providerOrderId: checkoutData.payment.providerOrderId,
       description: `${allOrders.length} bookings`,
-      handler: async (response) => {
+      onSuccess: async (response) => {
         try {
           await client.post(`/payments/${order.id}/confirm`, response);
           const succeeded = await pollForSuccess();
@@ -526,16 +525,9 @@ export default function Payment() {
           setCombinedSubmitting(false);
         }
       },
-      modal: { ondismiss: () => setCombinedSubmitting(false) },
-      theme: { color: '#0f172a' },
+      onFailure: () => { setError('Payment failed. Please try again.'); setCombinedSubmitting(false); },
+      onDismiss: () => setCombinedSubmitting(false),
     });
-
-    rzp.on('payment.failed', () => {
-      setError('Payment failed. Please try again.');
-      setCombinedSubmitting(false);
-    });
-
-    rzp.open();
   }
 
   async function handleConfirmCashBooking() {
