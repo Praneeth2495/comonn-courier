@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 // /react (not /next) — this is a Vite React SPA, not a Next.js app; the
 // /next entry point pulls in Next-specific router hooks that don't exist
@@ -8,6 +8,7 @@ import { AuthProvider } from './api/AuthContext';
 import { BookingProvider } from './api/BookingContext';
 import { PublicLayout } from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import LoadingLogo from './components/LoadingLogo';
 import { captureReferralCodeFromUrl } from './utils/referral';
 
 import Home from './pages/Home';
@@ -28,8 +29,17 @@ import Storage from './pages/Storage';
 import UserDashboard from './pages/UserDashboard';
 import Wallet from './pages/Wallet';
 import MyBox from './pages/MyBox';
-import AdminDashboard from './pages/AdminDashboard';
-import DriverDashboard from './pages/DriverDashboard';
+
+// Lazy-loaded: these two pull in every admin/driver sub-panel (10+
+// components for AdminDashboard alone) and were previously bundled into
+// the main chunk that every visitor downloads, even someone just viewing
+// the public homepage — neither role ever needs them on first paint.
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const DriverDashboard = lazy(() => import('./pages/DriverDashboard'));
+
+function PageLoadingFallback() {
+  return <div className="wrap section-narrow" style={{ textAlign: 'center', paddingTop: 60 }}><LoadingLogo /></div>;
+}
 
 function withLayout(el) {
   return <PublicLayout>{el}</PublicLayout>;
