@@ -1268,6 +1268,8 @@ model TrackingEvent {
   location   String?
   note       String?
   occurredAt DateTime @default(now())
+
+  @@index([orderId])
 }
 
 // ------------------------------------------------------------
