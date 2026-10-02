@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
+import { downloadBlob } from '../utils/downloadBlob';
 
 const RECURRENCE_LABELS = { NONE: '—', WEEKLY: 'Weekly', MONTHLY: 'Monthly', YEARLY: 'Yearly' };
 
@@ -8,18 +9,6 @@ function statusPill(invoice) {
   if (invoice.status === 'PAID') return <span className="pill pill-success">Paid</span>;
   if (invoice.overdue) return <span className="pill pill-danger">Overdue</span>;
   return <span className="pill pill-warn">Unpaid</span>;
-}
-
-async function downloadBlob(url, filename) {
-  const { data } = await client.get(url, { responseType: 'blob' });
-  const objectUrl = URL.createObjectURL(data);
-  const a = document.createElement('a');
-  a.href = objectUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(objectUrl);
 }
 
 export default function PartyInvoicesPanel({ direction }) {
