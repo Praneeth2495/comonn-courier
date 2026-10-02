@@ -2,33 +2,8 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { OrderDetailModal } from './OrderDetailModal';
-
-const STATUS_PILL = {
-  UNFINISHED: 'pill-warn',
-  PENDING_PAYMENT: 'pill-warn',
-  PICKUP_CONFIRMED: 'pill-cobalt',
-  PAID: 'pill-cobalt',
-  LABEL_GENERATED: 'pill-cobalt',
-  PICKED_UP: 'pill-cobalt',
-  IN_TRANSIT: 'pill-cobalt',
-  CLEARED_DESTINATION_CUSTOMS: 'pill-cobalt',
-  OUT_FOR_DELIVERY: 'pill-cobalt',
-  DELIVERED: 'pill-success',
-  CANCELLED: 'pill-danger',
-  EXCEPTION: 'pill-danger',
-};
-
-async function downloadBlob(url, filename) {
-  const { data } = await client.get(url, { responseType: 'blob' });
-  const objectUrl = URL.createObjectURL(data);
-  const a = document.createElement('a');
-  a.href = objectUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(objectUrl);
-}
+import { downloadBlob } from '../utils/downloadBlob';
+import { STATUS_PILL } from '../utils/orderStatus';
 
 function todayIso() {
   const d = new Date();
