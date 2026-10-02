@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { prisma } = require('../config/db');
 const { hashApiKey } = require('../middleware/merchantAuth');
 const { INVOICE_DUE_DAYS } = require('../services/merchantInvoiceGenerator');
+const { makeCommentHandlers } = require('../utils/commentHandlers');
 
 function isOverdue(invoice) {
   if (invoice.status !== 'UNPAID') return false;
