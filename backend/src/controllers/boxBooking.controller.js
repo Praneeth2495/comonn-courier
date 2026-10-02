@@ -8,6 +8,7 @@ const { createOrder: createRazorpayOrder, verifyPaymentSignature, refundPayment 
 const { sendEmail } = require('../services/emailService');
 const { generateBoxInvoiceNumber } = require('../utils/invoiceNumber');
 const { generateBoxBookingInvoicePdf, STORAGE_DIR } = require('../services/boxBookingInvoice');
+const { makeCommentHandlers } = require('../utils/commentHandlers');
 
 const BOX_STORAGE_ADDRESS = process.env.BOX_STORAGE_ADDRESS || '<office address not configured — set BOX_STORAGE_ADDRESS>';
 
