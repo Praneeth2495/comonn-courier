@@ -1,35 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
-
-const STORAGE_DIR = process.env.LABEL_STORAGE_DIR || path.join(__dirname, '../../storage/labels');
-const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
-const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
-
-function ensureStorageDir() {
-  if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR, { recursive: true });
-}
-
-// PDFKit's standard Helvetica font doesn't include the ₹ glyph — use "Rs."
-// in generated PDFs, same as invoiceService.js.
-function money(n) {
-  return `Rs. ${Number(n).toFixed(2)}`;
-}
-
-function line(doc, label, value, opts = {}) {
-  const y = doc.y;
-  doc.font(opts.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(opts.size || 10).text(label, 50, y, { continued: false });
-  doc.font(opts.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(opts.size || 10).text(value, 400, y, { width: 145, align: 'right' });
-}
-
-function drawWatermark(doc) {
-  if (!fs.existsSync(LOGO_ICON_PATH)) return;
-  const size = 320;
-  const x = (doc.page.width - size) / 2;
-  const y = (doc.page.height - size) / 2;
-  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
-  doc.opacity(1);
-}
+const { sanitizePdfText } = require('../utils/pdfText');
+const { STORAGE_DIR, LOGO_PATH, ensureStorageDir, money, drawLine: line, drawWatermark } = require('../utils/pdfHelpers');
 
 /**
  * Generates an A4 PDF for a PartyInvoice (Receivable or Payable). Safe to
