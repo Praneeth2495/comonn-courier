@@ -306,8 +306,14 @@ async function generateQuote(input) {
     throw err;
   }
 
-  const zone = await resolveZoneForDestination(destinationCountryCode, destinationPostcode);
-  const airportCode = await resolveAirportForDestination(destinationCountryCode, destinationPostcode);
+  // These three lookups are independent of each other (none's input depends
+  // on another's result) — resolving them concurrently instead of
+  // sequentially saves two DB round-trips off every quote request.
+  const [zone, airportCode, fromZoneId] = await Promise.all([
+    resolveZoneForDestination(destinationCountryCode, destinationPostcode),
+    resolveAirportForDestination(destinationCountryCode, destinationPostcode),
+    resolveFromZoneForPostcode(originCountryCode, originPostcode),
+  ]);
 
   const pricedItems = items.map((it) => priceItem(it, service.volumetricDivisor));
 
@@ -315,7 +321,6 @@ async function generateQuote(input) {
   const volumetricWeightKg = round2(pricedItems.reduce((sum, it) => sum + it.volumetricWeightKgTotal, 0));
   const chargeableWeightKg = round2(pricedItems.reduce((sum, it) => sum + it.chargeableWeightKg, 0));
 
-  const fromZoneId = await resolveFromZoneForPostcode(originCountryCode, originPostcode);
   const { bracket, extrapolated } = await findRateBracket({
     serviceId: service.id,
     zoneId: zone.id,
