@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { downloadBlob } from '../utils/downloadBlob';
+import { formatDateShort } from '../utils/dateFormat';
 
 const ID_PROOF_TYPES = ['Aadhaar', 'PAN', 'Passport', 'Driving Licence', 'Voter ID', 'Other'];
 
@@ -70,7 +71,7 @@ export default function EmployeeOnboardingPanel() {
                   <td>{e.role === 'DRIVER' ? 'Rider' : 'Staff'}</td>
                   <td>{e.profile?.designation || '—'}</td>
                   <td>{e.profile?.department || '—'}</td>
-                  <td>{e.profile?.dateOfJoining ? new Date(e.profile.dateOfJoining).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : '—'}</td>
+                  <td>{e.profile?.dateOfJoining ? formatDateShort(e.profile.dateOfJoining) : '—'}</td>
                   <td className="mono">{e.phone || '—'}</td>
                   <td><span className={`pill ${STATUS_PILL[e.profile?.status] || 'pill-navy'}`}>{STATUS_LABEL[e.profile?.status] || '—'}</span></td>
                   <td>
