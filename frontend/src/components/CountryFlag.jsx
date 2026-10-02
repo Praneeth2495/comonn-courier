@@ -203,40 +203,34 @@ function SingaporeFlag() {
   );
 }
 
-// A stroked-centerline never fully fills the wedge near the hoist once the
-// bands are this wide relative to the flag's height — the true fix is
-// filling each band as its own closed Y-shaped ("pall") polygon, so there's
-// no gap for red/blue to show through no matter how wide the bands are.
-function pallHexagon(centerX, centerY, halfWidth) {
-  return [
-    [0, 0],
-    [centerX, centerY - halfWidth],
-    [60, centerY - halfWidth],
-    [60, centerY + halfWidth],
-    [centerX, centerY + halfWidth],
-    [0, 40],
-  ].map(([x, y]) => `${x},${y.toFixed(2)}`).join(' ');
-}
+// Matches the government's own construction (Schedule 1, Constitution of
+// South Africa) exactly, traced straight from the official flag SVG's path
+// data: the gold border only ever runs alongside the two hoist-side diagonal
+// arms of the Y, inside a clip of the hoist triangle — it never continues
+// along the horizontal arm out to the fly edge. The earlier version stacked
+// a full-width gold Y underneath the green one, so a gold stripe wrongly ran
+// the whole way to the fly edge instead of stopping at the centre bend.
+let zaClipSeq = 0;
 
 function SouthAfricaFlag() {
-  // The Y-shaped "pall" design: white (widest), gold, then green (narrowest)
-  // all share the same hoist corners and bend point, each a fully filled
-  // polygon — not a stroke — so the whole enclosed area is solid colour,
-  // however wide the band. The black triangle is drawn last, on top, only
-  // reaching partway to the bend — it visually replaces the innermost
-  // sliver of white/gold/green near the hoist, exactly as the real flag's
-  // black wedge sits within (not past) the white border.
-  const centerX = 24;
-  const centerY = 20;
-  const blackApexX = 14;
+  const clipId = `za-clip-${(zaClipSeq += 1)}`;
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
-      <polygon points="0,0 60,0 60,20 0,20" fill="#DE3831" />
-      <polygon points="0,40 60,40 60,20 0,20" fill="#002395" />
-      <polygon points={pallHexagon(centerX, centerY, 5.4)} fill="#FFFFFF" />
-      <polygon points={pallHexagon(centerX, centerY, 4.1)} fill="#FFB612" />
-      <polygon points={pallHexagon(centerX, centerY, 2.9)} fill="#007A4D" />
-      <polygon points={`0,0 ${blackApexX},${centerY} 0,40`} fill="#000000" />
+      <defs>
+        <clipPath id={`${clipId}-t`}>
+          <path d="M0,0 L30,20 L0,40 Z" />
+        </clipPath>
+        <clipPath id={`${clipId}-f`}>
+          <path d="M0,0 H60 V40 H0 Z" />
+        </clipPath>
+      </defs>
+      <path fill="#E03C31" d="M0,0 H60 V20 H30 Z" />
+      <path fill="#001489" d="M0,40 H60 V20 H30 Z" />
+      <g clipPath={`url(#${clipId}-f)`} fill="none">
+        <path stroke="#FFFFFF" strokeWidth="13.33" d="M60,20 H30 L0,0 V40 L30,20" />
+        <path fill="#000000" stroke="#FFB81C" strokeWidth="13.33" clipPath={`url(#${clipId}-t)`} d="M0,0 L30,20 L0,40" />
+        <path stroke="#007749" strokeWidth="8" d="M0,0 L30,20 H60 M0,40 L30,20" />
+      </g>
     </svg>
   );
 }
