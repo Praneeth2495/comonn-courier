@@ -432,6 +432,7 @@ async function recomputeOrderTotals(orderId) {
 
 module.exports = {
   round2,
+  totalPaidForOrder,
   calcVolumetricWeightKg,
   calcChargeableWeightKg,
   resolveZoneForCountry,
