@@ -377,27 +377,29 @@ async function generateLabel(req, res, next) {
     const packages = buildPackages(order);
     const totalPackages = packages.length || 1;
 
-    const labels = [];
-    for (let i = 0; i < packages.length; i++) {
+    // Each package writes its own PDF file and its own Label row — fully
+    // independent of every other package — so these run concurrently
+    // instead of one-at-a-time; Promise.all preserves the array order
+    // regardless of completion order.
+    const labels = await Promise.all(packages.map(async (pkg, i) => {
       const packageIndex = i + 1;
       const barcodeValue = totalPackages > 1 ? `${order.trackingNumber}-${packageIndex}` : order.trackingNumber;
       const { fileName } = await generateLabelPdf(order, {
         packageIndex,
         totalPackages,
-        item: packages[i],
+        item: pkg,
         barcodeValue,
       });
-      const label = await prisma.label.create({
+      return prisma.label.create({
         data: {
           orderId: order.id,
           packageIndex,
-          itemType: packages[i].itemType,
+          itemType: pkg.itemType,
           fileUrl: fileName,
           barcodeValue,
         },
       });
-      labels.push(label);
-    }
+    }));
 
     const invoice = await ensureInvoice(order);
 
