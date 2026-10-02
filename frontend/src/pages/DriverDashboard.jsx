@@ -7,30 +7,7 @@ import BatchScanPanel from '../components/BatchScanPanel';
 import ClockInOutPanel from '../components/ClockInOutPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import logoFooter from '../assets/logo-footer.png';
-
-const STATUS_LABEL = {
-  PICKUP_CONFIRMED: 'Pickup Confirmed',
-  PAID: 'Paid',
-  LABEL_GENERATED: 'Label Generated',
-  PICKED_UP: 'Picked Up',
-  IN_TRANSIT: 'In Transit',
-  CLEARED_DESTINATION_CUSTOMS: 'Cleared Destination Customs',
-  OUT_FOR_DELIVERY: 'Out For Delivery',
-  DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
-};
-
-function formatAddress(a) {
-  if (!a) return '—';
-  return `${a.line1}${a.line2 ? `, ${a.line2}` : ''}, ${a.city}${a.state ? `, ${a.state}` : ''} ${a.postcode}, ${a.countryCode}`;
-}
-
-// Couriers operate in IST — comparing dates in UTC (toISOString()) would
-// misfile any pickup between midnight and 5:30am IST under the previous
-// calendar day. en-CA locale formats as YYYY-MM-DD.
-function isoDate(d) {
-  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-}
+import { STATUS_LABEL, ACTIVE_STATUSES, formatAddress, isoDate, completionDate } from '../utils/driverJobs';
 
 export default function DriverDashboard() {
   const { user, logout } = useAuth();
