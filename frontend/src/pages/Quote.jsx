@@ -8,36 +8,9 @@ import LoadingLogo from '../components/LoadingLogo';
 import FlagCountrySelect from '../components/FlagCountrySelect';
 import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, isReadyForSuggestions } from '../utils/postcodeRules';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
+import { STANDARD_DIVISOR, maxDimsHint, volumetricWeightNote } from '../utils/volumetricWeight';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
-
-// Standard international air-freight volumetric divisor (cm3/kg) — matches
-// the pricing engine's default, used here only to preview the max size a
-// customer could pack at their chosen weight before it costs more than the
-// actual-weight price (final pricing still runs server-side per service).
-const STANDARD_DIVISOR = 5000;
-
-// Mirrors pricingEngine.js's calcVolumetricWeightKg exactly (ceil to the
-// nearest whole kg — standard courier billing convention) so this preview
-// matches the price actually quoted server-side.
-function volumetricWeightNote(it) {
-  if (!it.showDims || it.weightPreset === 'NOT_SURE' || !it.weightPreset) return null;
-  const l = Number(it.lengthCm), w = Number(it.widthCm), h = Number(it.heightCm);
-  const actualWeightKg = Number(it.weightPreset.replace(' kg', ''));
-  if (!l || !w || !h || !actualWeightKg) return null;
-  const volumetricWeightKg = Math.ceil((l * w * h) / STANDARD_DIVISOR);
-  if (volumetricWeightKg <= actualWeightKg) return null;
-  return { l, w, h, actualWeightKg, volumetricWeightKg };
-}
-
-function maxDimsHint(weightPreset) {
-  if (!weightPreset || weightPreset === 'NOT_SURE') return null;
-  const weightKg = Number(weightPreset.replace(' kg', ''));
-  if (!weightKg) return null;
-  const side = Math.cbrt(weightKg * STANDARD_DIVISOR);
-  const sumCm = Math.round(side * 3 * 10) / 10;
-  return `${sumCm} cm (Length + Width + Height)`;
-}
 
 function emptyItem() {
   return { itemType: 'Box', weightPreset: '', lengthCm: '', widthCm: '', heightCm: '', quantity: 1, showDims: false };
