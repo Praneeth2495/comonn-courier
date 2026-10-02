@@ -40,21 +40,21 @@ async function listCustomers(req, res, next) {
 /** GET /api/admin/customers/:id — one customer's own orders + wallet ledger */
 async function getCustomer(req, res, next) {
   try {
-    const customer = await prisma.user.findUnique({
+    const customerRecord = await prisma.user.findUnique({
       where: { id: req.params.id },
       select: {
         id: true, fullName: true, email: true, phone: true, company: true, walletBalance: true,
-        referralCode: true, createdAt: true, isActive: true,
+        referralCode: true, createdAt: true, isActive: true, role: true,
         referredBy: { select: { id: true, fullName: true, email: true } },
       },
     });
-    // role isn't in the select above (only ever fetched to gate access, not
-    // shown) — a separate check so a non-customer id (e.g. a staff account)
-    // 404s rather than silently exposing it through this customer-only view.
-    const roleCheck = await prisma.user.findUnique({ where: { id: req.params.id }, select: { role: true } });
-    if (!customer || !roleCheck || roleCheck.role !== 'CUSTOMER') {
+    if (!customerRecord || customerRecord.role !== 'CUSTOMER') {
       return res.status(404).json({ error: 'Customer not found' });
     }
+    // role is only ever fetched to gate access above, never shown — stripped
+    // out here rather than left out of the select, so that gate and this
+    // response can share the one query instead of two round-trips.
+    const { role: _role, ...customer } = customerRecord;
 
     const orders = await prisma.order.findMany({
       where: { userId: customer.id },
