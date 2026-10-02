@@ -6,6 +6,7 @@ const { generatePartyInvoiceNumber } = require('../utils/invoiceNumber');
 const { generatePartyInvoicePdf, STORAGE_DIR } = require('../services/partyInvoicePdf');
 const { advance } = require('../services/partyInvoiceRecurrence');
 const { sendEmail } = require('../services/emailService');
+const { makeCommentHandlers } = require('../utils/commentHandlers');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }).single('attachment');
 
