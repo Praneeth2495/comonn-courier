@@ -686,38 +686,13 @@ async function cancelOrder(req, res, next) {
   }
 }
 
-/** GET /api/orders/:id/comments — internal admin/staff notes, never exposed publicly */
-async function listOrderComments(req, res, next) {
-  try {
-    const comments = await prisma.orderComment.findMany({
-      where: { orderId: req.params.id },
-      include: { author: { select: { fullName: true, email: true } } },
-      orderBy: { createdAt: 'asc' },
-    });
-    res.json({ comments });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/** POST /api/orders/:id/comments */
-async function addOrderComment(req, res, next) {
-  try {
-    const { body } = req.body;
-    if (!body || !body.trim()) return res.status(400).json({ error: 'Comment body is required' });
-
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-
-    const comment = await prisma.orderComment.create({
-      data: { orderId: order.id, authorId: req.user.id, body: body.trim() },
-      include: { author: { select: { fullName: true, email: true } } },
-    });
-    res.status(201).json({ comment });
-  } catch (err) {
-    next(err);
-  }
-}
+/** GET/POST /api/orders/:id/comments — internal admin/staff notes, never exposed publicly */
+const { listComments: listOrderComments, addComment: addOrderComment } = makeCommentHandlers({
+  commentModel: 'orderComment',
+  parentModel: 'order',
+  fkField: 'orderId',
+  notFoundError: 'Order not found',
+});
 
 /**
  * PATCH /api/orders/:id/details
