@@ -311,7 +311,7 @@ export default function Payment() {
       setError('Please verify your email before paying.');
       return;
     }
-    if (!window.Razorpay) {
+    if (!razorpayAvailable()) {
       setError('Payment checkout failed to load. Please refresh and try again.');
       return;
     }
@@ -341,12 +341,11 @@ export default function Payment() {
       return;
     }
 
-    const rzp = new window.Razorpay({
-      key: checkoutData.keyId,
-      order_id: checkoutData.payment.providerOrderId,
-      name: 'Comonn',
+    openRazorpayCheckout({
+      keyId: checkoutData.keyId,
+      providerOrderId: checkoutData.payment.providerOrderId,
       description: `Order ${order.orderNumber}`,
-      handler: async (response) => {
+      onSuccess: async (response) => {
         try {
           await client.post(`/payments/${order.id}/confirm`, response);
           const succeeded = await pollForSuccess();
@@ -358,7 +357,7 @@ export default function Payment() {
             // status in context. If the customer then navigated back to
             // Details, it still looked editable client-side even though
             // the server had already moved past that — producing "This
-            // order can no longer be edited" on resubmit. Keep the
+            // order can no longer be ededited" on resubmit. Keep the
             // richer address/items/service data already in context
             // (this endpoint's response doesn't include those).
             try {
@@ -382,16 +381,9 @@ export default function Payment() {
           setSubmitting(false);
         }
       },
-      modal: { ondismiss: () => setSubmitting(false) },
-      theme: { color: '#0f172a' },
+      onFailure: () => { setError('Payment failed. Please try again.'); setSubmitting(false); },
+      onDismiss: () => setSubmitting(false),
     });
-
-    rzp.on('payment.failed', () => {
-      setError('Payment failed. Please try again.');
-      setSubmitting(false);
-    });
-
-    rzp.open();
   }
 
   async function pollForBalanceSuccess(providerOrderId) {
