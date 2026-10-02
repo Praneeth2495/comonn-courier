@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
-import { formatDateShort } from '../utils/dateFormat';
+import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 
 const INVOICE_DUE_DAYS = 2; // must match backend's merchantInvoiceGenerator.js INVOICE_DUE_DAYS
 
