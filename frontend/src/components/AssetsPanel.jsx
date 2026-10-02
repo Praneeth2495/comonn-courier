@@ -2,21 +2,10 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from './LoadingLogo';
+import { downloadBlob } from '../utils/downloadBlob';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
-}
-
-async function downloadBlob(url, filename) {
-  const { data } = await client.get(url, { responseType: 'blob' });
-  const objectUrl = URL.createObjectURL(data);
-  const a = document.createElement('a');
-  a.href = objectUrl;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(objectUrl);
 }
 
 export default function AssetsPanel() {
