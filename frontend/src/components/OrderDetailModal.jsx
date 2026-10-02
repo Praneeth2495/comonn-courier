@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
+import { formatDateShort } from '../utils/dateFormat';
 
 const STATUS_PILL = {
   DRAFT: 'pill-warn',
@@ -157,7 +158,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
           <div className="item">
             <span className="lbl">Booked</span>
-            <span className="val">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</span>
+            <span className="val">{formatDateShort(order.createdAt)}</span>
           </div>
         </div>
 
