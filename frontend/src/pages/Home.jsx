@@ -10,36 +10,9 @@ import BookingConfirmedToast from '../components/BookingConfirmedToast';
 import BackToTop from '../components/BackToTop';
 import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, isReadyForSuggestions } from '../utils/postcodeRules';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
+import { STANDARD_DIVISOR, maxDimsHint, volumetricWeightNote } from '../utils/volumetricWeight';
 
 const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
-
-// Standard international air-freight volumetric divisor (cm3/kg) — matches
-// the pricing engine's default, used here only to preview the max size a
-// customer could pack at their chosen weight before it costs more than the
-// actual-weight price (final pricing still runs server-side on the Quote page).
-const STANDARD_DIVISOR = 5000;
-
-function maxDimsHint(weightPreset) {
-  if (!weightPreset || weightPreset === 'Not sure') return null;
-  const weightKg = Number(weightPreset.replace(' kg', ''));
-  if (!weightKg) return null;
-  const side = Math.cbrt(weightKg * STANDARD_DIVISOR);
-  const sumCm = Math.round(side * 3 * 10) / 10;
-  return `${sumCm} cm (Length + Width + Height)`;
-}
-
-// Mirrors Quote.jsx's volumetricWeightNote / pricingEngine.js's
-// calcVolumetricWeightKg exactly (ceil to the nearest whole kg) so this
-// preview matches the price actually quoted on the Book page.
-function volumetricWeightNote({ showDims, weightPreset, lengthCm, widthCm, heightCm }) {
-  if (!showDims || !weightPreset || weightPreset === 'Not sure') return null;
-  const l = Number(lengthCm), w = Number(widthCm), h = Number(heightCm);
-  const actualWeightKg = Number(weightPreset.replace(' kg', ''));
-  if (!l || !w || !h || !actualWeightKg) return null;
-  const volumetricWeightKg = Math.ceil((l * w * h) / STANDARD_DIVISOR);
-  if (volumetricWeightKg <= actualWeightKg) return null;
-  return { l, w, h, actualWeightKg, volumetricWeightKg };
-}
 
 const COUNTRIES = [
   { name: 'India', code: 'IN' },
