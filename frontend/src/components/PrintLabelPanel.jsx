@@ -109,10 +109,6 @@ function ScanAndPrintTab() {
   );
 }
 
-function fmtDate(iso) {
-  return new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
-}
-
 function addressSummary(addr) {
   return [addr.city, addr.suburb, addr.countryCode].filter(Boolean).join(', ') || '—';
 }
