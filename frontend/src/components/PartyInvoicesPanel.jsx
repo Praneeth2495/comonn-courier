@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { downloadBlob } from '../utils/downloadBlob';
-import { formatDateShort } from '../utils/dateFormat';
+import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 
 const RECURRENCE_LABELS = { NONE: '—', WEEKLY: 'Weekly', MONTHLY: 'Monthly', YEARLY: 'Yearly' };
 
