@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
+import { formatDateShort as fmtDate } from '../utils/dateFormat';
 
 const WALLET_TXN_LABEL = {
   REFERRAL_REWARD: 'Referral reward',
@@ -8,10 +9,6 @@ const WALLET_TXN_LABEL = {
   ADMIN_DEBIT: 'Deducted by staff',
   ORDER_PAYMENT: 'Order payment',
 };
-
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
-}
 
 /**
  * Deliberately separate from the ADMIN-only Users tab (role/permission
