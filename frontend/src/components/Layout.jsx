@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
+import { useClickOutside } from '../utils/useClickOutside';
 import ChangePassword from './ChangePassword';
 import EditProfile from './EditProfile';
 import SavedAddresses from './SavedAddresses';
@@ -11,13 +12,7 @@ function AccountMenu({ name, onOpen, onLogout }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  useEffect(() => {
-    function onClickOutside(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
+  useClickOutside(ref, () => setOpen(false));
 
   function choose(section) {
     setOpen(false);
