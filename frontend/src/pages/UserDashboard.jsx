@@ -5,22 +5,8 @@ import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
 import LoadingLogo from '../components/LoadingLogo';
 import { OrderDetailModal } from '../components/OrderDetailModal';
+import { STATUS_PILL } from '../utils/orderStatus';
 
-const STATUS_PILL = {
-  DRAFT: 'pill-warn',
-  UNFINISHED: 'pill-warn',
-  PENDING_PAYMENT: 'pill-warn',
-  PICKUP_CONFIRMED: 'pill-cobalt',
-  PAID: 'pill-cobalt',
-  LABEL_GENERATED: 'pill-cobalt',
-  PICKED_UP: 'pill-cobalt',
-  IN_TRANSIT: 'pill-cobalt',
-  CLEARED_DESTINATION_CUSTOMS: 'pill-cobalt',
-  OUT_FOR_DELIVERY: 'pill-cobalt',
-  DELIVERED: 'pill-success',
-  CANCELLED: 'pill-danger',
-  EXCEPTION: 'pill-danger',
-};
 const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
 const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
