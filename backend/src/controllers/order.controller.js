@@ -10,6 +10,7 @@ const { ensureCustomerAccount, issuePasswordSetToken } = require('../services/ac
 const { notifyOrderStatusChange } = require('../services/orderNotifications');
 const { awardReferralRewardIfEligible } = require('../services/referralService');
 const { makeCommentHandlers } = require('../utils/commentHandlers');
+const { findMissingAddressField } = require('../utils/addressValidation');
 
 // UNFINISHED: a customer created a quote + entered details but hasn't
 // completed payment yet — the resting status for every newly-created order.
