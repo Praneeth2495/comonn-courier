@@ -4,6 +4,7 @@ import LoadingLogo from './LoadingLogo';
 import { OrderDetailModal } from './OrderDetailModal';
 import { downloadBlob } from '../utils/downloadBlob';
 import { STATUS_PILL } from '../utils/orderStatus';
+import { formatDateShort } from '../utils/dateFormat';
 
 function todayIso() {
   const d = new Date();
@@ -391,7 +392,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
           <div className="field">
             <label>Manifest date</label>
-            <input className="input" disabled value={new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })} />
+            <input className="input" disabled value={formatDateShort()} />
           </div>
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
