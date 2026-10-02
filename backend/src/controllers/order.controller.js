@@ -74,9 +74,8 @@ async function createOrder(req, res, next) {
       return res.status(400).json({ error: 'sender, receiver and at least one item are required' });
     }
     for (const [label, addr] of [['sender', sender], ['receiver', receiver]]) {
-      for (const f of ['contactName', 'phone', 'line1', 'city', 'postcode', 'countryCode']) {
-        if (!addr[f]) return res.status(400).json({ error: `${label}.${f} is required` });
-      }
+      const missingFieldError = findMissingAddressField(addr, label);
+      if (missingFieldError) return res.status(400).json({ error: missingFieldError });
     }
 
     // Only a real customer booking their own shipment should own this
@@ -739,9 +738,8 @@ async function updateOrderDetails(req, res, next) {
       return res.status(400).json({ error: 'sender, receiver and at least one item are required' });
     }
     for (const [label, addr] of [['sender', sender], ['receiver', receiver]]) {
-      for (const f of ['contactName', 'phone', 'line1', 'city', 'postcode', 'countryCode']) {
-        if (!addr[f]) return res.status(400).json({ error: `${label}.${f} is required` });
-      }
+      const missingFieldError = findMissingAddressField(addr, label);
+      if (missingFieldError) return res.status(400).json({ error: missingFieldError });
     }
 
     let orderData;
