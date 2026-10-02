@@ -2,6 +2,7 @@ import { useEffect, lazy, Suspense, useState } from 'react';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from './LoadingLogo';
+import { formatDateShort } from '../utils/dateFormat';
 
 // Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
 // the (mostly public) app bundle when only staff/admin/driver ever open it.
@@ -422,7 +423,7 @@ export default function BatchScanPanel() {
                   </td>
                   <td>{b._count.items}</td>
                   <td>{b.createdBy?.fullName || '—'}</td>
-                  <td>{new Date(b.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
+                  <td>{formatDateShort(b.createdAt)}</td>
                   <td style={{ display: 'flex', gap: 6 }}>
                     <button className="btn btn-outline btn-sm" disabled={loadingView} onClick={() => viewBatch(b.id)}>View</button>
                     <button className="btn btn-outline btn-sm" onClick={() => deleteBatch(b.id)}>Delete</button>
