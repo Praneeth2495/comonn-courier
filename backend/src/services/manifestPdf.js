@@ -1,23 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
-const { renderBarcode, STORAGE_DIR } = require('./labelService');
-
-const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
-const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
-
-function ensureStorageDir() {
-  if (!fs.existsSync(STORAGE_DIR)) fs.mkdirSync(STORAGE_DIR, { recursive: true });
-}
-
-function drawWatermark(doc) {
-  if (!fs.existsSync(LOGO_ICON_PATH)) return;
-  const size = 320;
-  const x = (doc.page.width - size) / 2;
-  const y = (doc.page.height - size) / 2;
-  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
-  doc.opacity(1);
-}
+const { renderBarcode } = require('./labelService');
+const { sanitizePdfText } = require('../utils/pdfText');
+const { STORAGE_DIR, LOGO_PATH, ensureStorageDir, drawWatermark } = require('../utils/pdfHelpers');
 
 /**
  * Generates the manifest "sheet" PDF: from/to, date, totals, the manifest's
