@@ -392,7 +392,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
           <div className="field">
             <label>Manifest date</label>
-            <input className="input" disabled value={formatDateShort()} />
+            <input className="input" disabled value={formatDateShort(new Date())} />
           </div>
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
