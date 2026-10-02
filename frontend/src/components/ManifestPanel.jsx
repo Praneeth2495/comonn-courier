@@ -429,7 +429,7 @@ function ManifestHistory() {
                 <td className="mono">{m.manifestNumber}</td>
                 <td>{m.hub?.name || '—'}</td>
                 <td>{m.region?.name || m.countryCode}</td>
-                <td>{new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</td>
+                <td>{formatDateTime(m.createdAt)}</td>
                 <td>{m._count?.orders ?? m.orderCount}</td>
                 <td>{m.totalQty}</td>
                 <td>{Number(m.totalWeightKg).toFixed(2)} kg</td>
