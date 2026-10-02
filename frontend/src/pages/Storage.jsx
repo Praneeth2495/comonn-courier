@@ -65,7 +65,7 @@ export default function Storage() {
       setError('Please choose a box size.');
       return;
     }
-    if (!window.Razorpay) {
+    if (!razorpayAvailable()) {
       setError('Payment checkout failed to load. Please refresh and try again.');
       return;
     }
@@ -80,12 +80,11 @@ export default function Storage() {
       return;
     }
 
-    const rzp = new window.Razorpay({
-      key: checkout.keyId,
-      order_id: checkout.providerOrderId,
-      name: 'Comonn',
+    openRazorpayCheckout({
+      keyId: checkout.keyId,
+      providerOrderId: checkout.providerOrderId,
       description: `${selectedSize.name} — ${days} days storage`,
-      handler: async (response) => {
+      onSuccess: async (response) => {
         try {
           const { data } = await client.post(`/box-bookings/${checkout.booking.id}/confirm`, response);
           setConfirmed(data.booking);
@@ -94,11 +93,9 @@ export default function Storage() {
           setSubmitting(false);
         }
       },
-      modal: { ondismiss: () => setSubmitting(false) },
-      theme: { color: '#0f172a' },
+      onFailure: () => { setError('Payment failed. Please try again.'); setSubmitting(false); },
+      onDismiss: () => setSubmitting(false),
     });
-    rzp.on('payment.failed', () => { setError('Payment failed. Please try again.'); setSubmitting(false); });
-    rzp.open();
   }
 
   if (confirmed) {
