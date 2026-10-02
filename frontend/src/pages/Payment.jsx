@@ -357,7 +357,7 @@ export default function Payment() {
             // status in context. If the customer then navigated back to
             // Details, it still looked editable client-side even though
             // the server had already moved past that — producing "This
-            // order can no longer be ededited" on resubmit. Keep the
+            // order can no longer be edited" on resubmit. Keep the
             // richer address/items/service data already in context
             // (this endpoint's response doesn't include those).
             try {
