@@ -20,6 +20,7 @@ import ManifestPanel from '../components/ManifestPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import { OrderDetailModal, OrderCommentsModal } from '../components/OrderDetailModal';
 import logoFooter from '../assets/logo-footer.png';
+import { formatDateShort } from '../utils/dateFormat';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('overview');
@@ -1493,7 +1494,7 @@ function UsersPanel() {
                 <td>{u.fullName}</td>
                 <td>{u.email}</td>
                 <td>{u.phone || '—'}</td>
-                <td>{new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
+                <td>{formatDateShort(u.createdAt)}</td>
                 <td>
                   <select className="select" style={{ padding: '6px 8px', fontSize: 12.5 }} value={u.role} onChange={(e) => setRole(u.id, e.target.value)}>
                     <option value="CUSTOMER">Customer</option>
@@ -1593,7 +1594,7 @@ function UsersPanel() {
                 <td>{u.fullName}</td>
                 <td>{u.email}</td>
                 <td>{u.phone || '—'}</td>
-                <td>{new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
+                <td>{formatDateShort(u.createdAt)}</td>
                 <td>
                   <select className="select" style={{ padding: '6px 8px', fontSize: 12.5 }} value={u.role} onChange={(e) => setRole(u.id, e.target.value)}>
                     <option value="CUSTOMER">Customer</option>
