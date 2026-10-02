@@ -22,11 +22,10 @@ function validateAddress(label, addr, res) {
     res.status(400).json({ error: `${label} is required` });
     return false;
   }
-  for (const f of ['contactName', 'phone', 'line1', 'city', 'postcode', 'countryCode']) {
-    if (!addr[f]) {
-      res.status(400).json({ error: `${label}.${f} is required` });
-      return false;
-    }
+  const err = findMissingAddressField(addr, label);
+  if (err) {
+    res.status(400).json({ error: err });
+    return false;
   }
   return true;
 }
