@@ -60,8 +60,7 @@ function requirePage(...pageKeys) {
 
 /** Populates req.user if a valid token is present, but does not reject if absent. */
 function optionalAuth(req, _res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const token = extractBearerToken(req);
   if (!token) return next();
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
