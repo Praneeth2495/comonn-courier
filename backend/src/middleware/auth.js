@@ -1,9 +1,13 @@
 const jwt = require('jsonwebtoken');
 const { prisma } = require('../config/db');
 
-function requireAuth(req, res, next) {
+function extractBearerToken(req) {
   const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  return header.startsWith('Bearer ') ? header.slice(7) : null;
+}
+
+function requireAuth(req, res, next) {
+  const token = extractBearerToken(req);
   if (!token) return res.status(401).json({ error: 'Missing bearer token' });
 
   try {
