@@ -4,7 +4,7 @@ import LoadingLogo from './LoadingLogo';
 import { OrderDetailModal } from './OrderDetailModal';
 import { downloadBlob } from '../utils/downloadBlob';
 import { STATUS_PILL } from '../utils/orderStatus';
-import { formatDateShort } from '../utils/dateFormat';
+import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 
 function todayIso() {
   const d = new Date();
