@@ -454,15 +454,6 @@ async function confirmCashBooking(req, res, next) {
 // stays a clean, untouched record, and an order can be topped up more
 // than once over time.
 
-/** Sum of every SUCCEEDED payment on an order — original + every top-up. Caller must include `payment` and `balancePayments`. */
-function totalPaidForOrder(order) {
-  const original = order.payment?.status === 'SUCCEEDED' ? Number(order.payment.amount) : 0;
-  const topUps = (order.balancePayments || [])
-    .filter((p) => p.status === 'SUCCEEDED')
-    .reduce((sum, p) => sum + Number(p.amount), 0);
-  return round2(original + topUps);
-}
-
 /**
  * POST /api/payments/:orderId/balance-order — same public, order-id-scoped
  * trust model as createOrder/getOrderForPayment: reachable by staff
