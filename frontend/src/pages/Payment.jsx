@@ -5,6 +5,7 @@ import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import { getCountryName } from '../utils/countryNames';
+import { razorpayAvailable, openRazorpayCheckout } from '../utils/razorpayCheckout';
 
 // UNFINISHED: fresh order, not yet paid. PENDING_PAYMENT: a pickup-booking
 // order staff have just priced, ready for actual payment. Both mean "still
