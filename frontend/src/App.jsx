@@ -121,7 +121,9 @@ export default function App() {
               path="/admin"
               element={
                 <ProtectedRoute roles={['ADMIN', 'STAFF', 'ACCOUNTS']}>
-                  <AdminDashboard />
+                  <Suspense fallback={<PageLoadingFallback />}>
+                    <AdminDashboard />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
@@ -129,7 +131,9 @@ export default function App() {
               path="/driver"
               element={
                 <ProtectedRoute roles={['DRIVER']}>
-                  <DriverDashboard />
+                  <Suspense fallback={<PageLoadingFallback />}>
+                    <DriverDashboard />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
