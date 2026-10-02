@@ -45,14 +45,12 @@ async function sendExpiryReminders() {
           </div>
         `,
       });
-      for (const member of staff) {
-        await sendEmail({
-          to: member.email,
-          from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
-          subject: `Storage box ${boxAddress(booking.box)} expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`,
-          html: `<p style="font-family:sans-serif;font-size:13.5px;color:#171C2C;">${booking.customer.fullName || booking.customer.email} — ${boxAddress(booking.box)} — expires ${new Date(booking.endDate).toLocaleDateString('en-IN')}. Check whether it needs to be cleared once expired.</p>`,
-        });
-      }
+      await Promise.all(staff.map((member) => sendEmail({
+        to: member.email,
+        from: process.env.EMAIL_FROM_NOREPLY || 'Comonn <noreply@comonn.in>',
+        subject: `Storage box ${boxAddress(booking.box)} expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`,
+        html: `<p style="font-family:sans-serif;font-size:13.5px;color:#171C2C;">${booking.customer.fullName || booking.customer.email} — ${boxAddress(booking.box)} — expires ${new Date(booking.endDate).toLocaleDateString('en-IN')}. Check whether it needs to be cleared once expired.</p>`,
+      })));
       await prisma.boxBooking.update({ where: { id: booking.id }, data: { expiryReminderSentAt: new Date() } });
       sent += 1;
     } catch (err) {
