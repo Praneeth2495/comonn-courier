@@ -1,50 +1,8 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
-
-const STATUS_LABEL = {
-  PICKUP_CONFIRMED: 'Pickup Confirmed',
-  PAID: 'Paid',
-  LABEL_GENERATED: 'Label Generated',
-  PICKED_UP: 'Picked Up',
-  IN_TRANSIT: 'In Transit',
-  CLEARED_DESTINATION_CUSTOMS: 'Cleared Destination Customs',
-  OUT_FOR_DELIVERY: 'Out For Delivery',
-  DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
-};
-
-const ACTIVE_STATUSES = ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED'];
-
-function formatAddress(a) {
-  if (!a) return '—';
-  return `${a.line1}${a.line2 ? `, ${a.line2}` : ''}, ${a.city}${a.state ? `, ${a.state}` : ''} ${a.postcode}, ${a.countryCode}`;
-}
-
-function fmtTime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
-}
-
-// Couriers operate in IST — comparing dates in UTC (toISOString()) would
-// misfile any pickup between midnight and 5:30am IST under the previous
-// calendar day. en-CA locale formats as YYYY-MM-DD.
-function isoDate(d) {
-  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-}
-
-// The date a completed job is pinned to — pickedUpAt if the rider marked it
-// via their app, else the earliest tracking event that took it past the
-// active statuses (covers jobs whose status was advanced by staff instead,
-// which never sets pickedUpAt). Deliberately NOT updatedAt alone: mirrors
-// DriverDashboard.jsx's own completionDate logic so a job lands on the same
-// day in both views.
-function completionDate(job) {
-  if (job.pickedUpAt) return job.pickedUpAt;
-  const firstTerminalEvent = (job.trackingEvents || []).find((t) => !ACTIVE_STATUSES.includes(t.status));
-  if (firstTerminalEvent) return firstTerminalEvent.occurredAt;
-  return job.updatedAt;
-}
+import { fmtTime } from '../utils/attendanceFormat';
+import { STATUS_LABEL, ACTIVE_STATUSES, formatAddress, isoDate, completionDate } from '../utils/driverJobs';
 
 /**
  * Admin/Staff-facing view into a single rider's dashboard — active jobs,
