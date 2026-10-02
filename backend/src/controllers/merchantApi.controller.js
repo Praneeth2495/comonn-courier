@@ -4,6 +4,7 @@ const { generateOrderNumber } = require('../utils/orderNumber');
 const { generateInvoiceNumber } = require('../utils/invoiceNumber');
 const { INVOICE_DUE_DAYS } = require('../services/merchantInvoiceGenerator');
 const { notifyOrderStatusChange } = require('../services/orderNotifications');
+const { findMissingAddressField } = require('../utils/addressValidation');
 
 // Blocks new shipments once a merchant has any invoice more than
 // INVOICE_DUE_DAYS past its invoiceDate and still unpaid — reinstated only
