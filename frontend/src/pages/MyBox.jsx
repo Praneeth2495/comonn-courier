@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from '../components/LoadingLogo';
+import { razorpayAvailable, openRazorpayCheckout } from '../utils/razorpayCheckout';
 
 const BOX_STATUS_PILL = { PENDING: 'pill-warn', ACTIVE: 'pill-success', EXPIRED: 'pill-danger', CANCELLED: 'pill-navy' };
 
