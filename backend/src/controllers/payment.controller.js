@@ -5,7 +5,8 @@ const {
   verifyWebhookSignature,
 } = require('../services/paymentService');
 const { sendReceiverBookingNotification } = require('./label.controller');
-const { PAYABLE_STATUSES, round2 } = require('./order.controller');
+const { PAYABLE_STATUSES } = require('./order.controller');
+const { round2, totalPaidForOrder } = require('../services/pricingEngine');
 const { notifyOrderStatusChange } = require('../services/orderNotifications');
 const { markBoxBookingPaid } = require('./boxBooking.controller');
 const { awardReferralRewardIfEligible } = require('../services/referralService');
