@@ -15,18 +15,6 @@ function formatAddress(addr) {
     .join('\n');
 }
 
-// Large, faint icon centered on the page, behind everything else — drawn
-// first (pdfkit has no z-index, later draws sit on top) so all subsequent
-// text remains fully legible over it.
-function drawWatermark(doc) {
-  if (!fs.existsSync(LOGO_ICON_PATH)) return;
-  const size = 320;
-  const x = (doc.page.width - size) / 2;
-  const y = (doc.page.height - size) / 2;
-  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
-  doc.opacity(1);
-}
-
 /**
  * Generates an A4 invoice PDF for the order (one invoice per order,
  * regardless of how many physical packages/labels it has).
