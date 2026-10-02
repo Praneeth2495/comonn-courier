@@ -401,7 +401,7 @@ export default function Payment() {
   // balance-confirm endpoints so the original payment record stays untouched.
   async function handlePayBalance() {
     setBalanceError('');
-    if (!window.Razorpay) {
+    if (!razorpayAvailable()) {
       setBalanceError('Payment checkout failed to load. Please refresh and try again.');
       return;
     }
@@ -416,12 +416,11 @@ export default function Payment() {
       return;
     }
 
-    const rzp = new window.Razorpay({
-      key: checkoutData.keyId,
-      order_id: checkoutData.payment.providerOrderId,
-      name: 'Comonn',
+    openRazorpayCheckout({
+      keyId: checkoutData.keyId,
+      providerOrderId: checkoutData.payment.providerOrderId,
       description: `Balance due — order ${order.orderNumber}`,
-      handler: async (response) => {
+      onSuccess: async (response) => {
         try {
           await client.post(`/payments/${order.id}/balance-confirm`, response);
           const succeeded = await pollForBalanceSuccess(checkoutData.payment.providerOrderId);
@@ -446,16 +445,9 @@ export default function Payment() {
           setBalanceSubmitting(false);
         }
       },
-      modal: { ondismiss: () => setBalanceSubmitting(false) },
-      theme: { color: '#0f172a' },
+      onFailure: () => { setBalanceError('Payment failed. Please try again.'); setBalanceSubmitting(false); },
+      onDismiss: () => setBalanceSubmitting(false),
     });
-
-    rzp.on('payment.failed', () => {
-      setBalanceError('Payment failed. Please try again.');
-      setBalanceSubmitting(false);
-    });
-
-    rzp.open();
   }
 
   // Staff-only fallback for a balance collected outside Razorpay (customer
