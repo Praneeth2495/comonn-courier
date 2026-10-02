@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { downloadBlob } from '../utils/downloadBlob';
+import { formatDateShort } from '../utils/dateFormat';
 
 const RECURRENCE_LABELS = { NONE: '—', WEEKLY: 'Weekly', MONTHLY: 'Monthly', YEARLY: 'Yearly' };
 
@@ -55,7 +56,7 @@ export default function PartyInvoicesPanel({ direction }) {
                   <td className="mono">{inv.invoiceNumber}</td>
                   <td>{inv.partyName}{inv.businessName ? <span style={{ color: 'var(--slate-light)' }}> · {inv.businessName}</span> : null}</td>
                   <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
-                  <td>{new Date(inv.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
+                  <td>{formatDateShort(inv.dueDate)}</td>
                   <td>{RECURRENCE_LABELS[inv.recurrence] || '—'}</td>
                   <td>{statusPill(inv)}</td>
                   <td><button className="btn btn-outline btn-sm" onClick={() => setSelectedId(inv.id)}>View</button></td>
