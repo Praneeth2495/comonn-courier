@@ -603,38 +603,13 @@ async function updateBookingStatus(req, res, next) {
   }
 }
 
-/** GET /api/box-bookings/admin/bookings/:id/comments — internal admin/staff notes, never exposed to the customer. */
-async function listBookingComments(req, res, next) {
-  try {
-    const comments = await prisma.boxBookingComment.findMany({
-      where: { bookingId: req.params.id },
-      include: { author: { select: { fullName: true, email: true } } },
-      orderBy: { createdAt: 'asc' },
-    });
-    res.json({ comments });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/** POST /api/box-bookings/admin/bookings/:id/comments */
-async function addBookingComment(req, res, next) {
-  try {
-    const { body } = req.body;
-    if (!body || !body.trim()) return res.status(400).json({ error: 'Comment body is required' });
-
-    const booking = await prisma.boxBooking.findUnique({ where: { id: req.params.id } });
-    if (!booking) return res.status(404).json({ error: 'Booking not found' });
-
-    const comment = await prisma.boxBookingComment.create({
-      data: { bookingId: booking.id, authorId: req.user.id, body: body.trim() },
-      include: { author: { select: { fullName: true, email: true } } },
-    });
-    res.status(201).json({ comment });
-  } catch (err) {
-    next(err);
-  }
-}
+/** GET/POST /api/box-bookings/admin/bookings/:id/comments — internal admin/staff notes, never exposed to the customer. */
+const { listComments: listBookingComments, addComment: addBookingComment } = makeCommentHandlers({
+  commentModel: 'boxBookingComment',
+  parentModel: 'boxBooking',
+  fkField: 'bookingId',
+  notFoundError: 'Booking not found',
+});
 
 module.exports = {
   listBoxSizes,
