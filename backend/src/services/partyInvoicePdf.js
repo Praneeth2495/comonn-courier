@@ -45,7 +45,7 @@ async function generatePartyInvoicePdf(invoice) {
     const partyTop = doc.y;
     doc.font('Helvetica-Bold').fontSize(10).text(invoice.direction === 'PAYABLE' ? 'Payable To' : 'Bill To', 50, partyTop);
     doc.font('Helvetica').fontSize(9).text(
-      [invoice.partyName, invoice.businessName, invoice.email, invoice.phone].filter(Boolean).join('\n'),
+      [invoice.partyName, invoice.businessName, invoice.email, invoice.phone].filter(Boolean).map(sanitizePdfText).join('\n'),
       50, partyTop + 14, { width: 320 }
     );
     doc.y = Math.max(doc.y, partyTop + 70);
