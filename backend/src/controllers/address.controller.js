@@ -14,14 +14,11 @@ async function listAddresses(req, res, next) {
   }
 }
 
-const REQUIRED_FIELDS = ['contactName', 'phone', 'line1', 'city', 'postcode', 'countryCode'];
-
 /** POST /api/addresses */
 async function createAddress(req, res, next) {
   try {
-    for (const f of REQUIRED_FIELDS) {
-      if (!req.body[f]) return res.status(400).json({ error: `${f} is required` });
-    }
+    const missingFieldError = findMissingAddressField(req.body);
+    if (missingFieldError) return res.status(400).json({ error: missingFieldError });
     const { label, contactName, phone, email, instructions, line1, line2, city, state, postcode, countryCode, isDefault } = req.body;
 
     if (isDefault) {
