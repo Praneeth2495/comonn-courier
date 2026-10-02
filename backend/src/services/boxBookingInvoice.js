@@ -44,7 +44,7 @@ async function generateBoxBookingInvoicePdf(booking) {
     const partyTop = doc.y;
     doc.font('Helvetica-Bold').fontSize(10).text('Bill To', 50, partyTop);
     doc.font('Helvetica').fontSize(9).text(
-      [booking.customer?.fullName, booking.customer?.email, booking.customer?.phone].filter(Boolean).join('\n'),
+      [booking.customer?.fullName, booking.customer?.email, booking.customer?.phone].filter(Boolean).map(sanitizePdfText).join('\n'),
       50, partyTop + 14, { width: 320 }
     );
     doc.y = Math.max(doc.y, partyTop + 70);
