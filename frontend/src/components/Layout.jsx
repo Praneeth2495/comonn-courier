@@ -103,13 +103,7 @@ function MobileNavMenu({ links }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  useEffect(() => {
-    function onClickOutside(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
+  useClickOutside(ref, () => setOpen(false));
 
   return (
     <div ref={ref} className="mobile-nav-toggle" style={{ position: 'relative' }}>
