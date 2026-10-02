@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from '../components/LoadingLogo';
+import { formatDateShort } from '../utils/dateFormat';
 
 const WALLET_TXN_LABEL = {
   REFERRAL_REWARD: 'Referral reward',
@@ -68,7 +69,7 @@ export default function Wallet() {
             <tbody>
               {transactions.map((t) => (
                 <tr key={t.id}>
-                  <td>{new Date(t.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</td>
+                  <td>{formatDateShort(t.createdAt)}</td>
                   <td>{WALLET_TXN_LABEL[t.type] || t.type}</td>
                   <td style={{ color: 'var(--slate-light)', fontSize: 12.5 }}>{t.note || '—'}</td>
                   <td className="mono" style={{ color: Number(t.amount) >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 700 }}>
