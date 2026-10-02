@@ -9,6 +9,7 @@ const { sendReceiverBookingNotification, regenerateInvoiceIfExists } = require('
 const { ensureCustomerAccount, issuePasswordSetToken } = require('../services/accountProvisioning');
 const { notifyOrderStatusChange } = require('../services/orderNotifications');
 const { awardReferralRewardIfEligible } = require('../services/referralService');
+const { makeCommentHandlers } = require('../utils/commentHandlers');
 
 // UNFINISHED: a customer created a quote + entered details but hasn't
 // completed payment yet — the resting status for every newly-created order.
