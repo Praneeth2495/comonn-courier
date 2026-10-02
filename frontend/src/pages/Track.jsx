@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import client from '../api/client';
+import { STATUS_PILL } from '../utils/orderStatus';
 
 const TRACK_STEPS = [
   ['1', 'Enter your Order ID', "Find it in your booking confirmation email or SMS — it's the same number on your label."],
@@ -10,21 +11,6 @@ const TRACK_STEPS = [
 
 const SHIP_STAGES = ['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', CLEARED_DESTINATION_CUSTOMS: 'Cleared customs', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered' };
-const STATUS_PILL = {
-  DRAFT: 'pill-warn',
-  UNFINISHED: 'pill-warn',
-  PENDING_PAYMENT: 'pill-warn',
-  PICKUP_CONFIRMED: 'pill-cobalt',
-  PAID: 'pill-cobalt',
-  LABEL_GENERATED: 'pill-cobalt',
-  PICKED_UP: 'pill-cobalt',
-  IN_TRANSIT: 'pill-cobalt',
-  CLEARED_DESTINATION_CUSTOMS: 'pill-cobalt',
-  OUT_FOR_DELIVERY: 'pill-cobalt',
-  DELIVERED: 'pill-success',
-  CANCELLED: 'pill-danger',
-  EXCEPTION: 'pill-danger',
-};
 
 export default function Track() {
   const [searchParams] = useSearchParams();
