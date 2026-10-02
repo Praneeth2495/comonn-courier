@@ -22,6 +22,22 @@ function round2(n) {
 }
 
 /**
+ * Sum of every SUCCEEDED payment on an order — the original checkout
+ * payment plus every balance top-up since (see BalancePayment,
+ * schema.prisma). Caller must include/select `payment` and `balancePayments`.
+ * Lives here (not order.controller.js or payment.controller.js) since both
+ * of those already import round2 from here, and this used to be copy-pasted
+ * between them to avoid a circular require.
+ */
+function totalPaidForOrder(order) {
+  const original = order.payment?.status === 'SUCCEEDED' ? Number(order.payment.amount) : 0;
+  const topUps = (order.balancePayments || [])
+    .filter((p) => p.status === 'SUCCEEDED')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  return round2(original + topUps);
+}
+
+/**
  * Compute volumetric weight (kg) from cm dimensions and a divisor.
  * Standard international air-freight divisor is 5000 (cm3/kg);
  * some carriers use 4000 for domestic/road.
