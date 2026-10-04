@@ -11,6 +11,16 @@ export const COUNTRY_NAMES = {
   MY: 'Malaysia',
   SG: 'Singapore',
   ZA: 'South Africa',
+  IE: 'Ireland',
+  NL: 'Netherlands',
+  SE: 'Sweden',
+  AE: 'United Arab Emirates',
+  SA: 'Saudi Arabia',
+  KW: 'Kuwait',
+  FR: 'France',
+  PT: 'Portugal',
+  ES: 'Spain',
+  IT: 'Italy',
 };
 
 export function getCountryName(code) {
