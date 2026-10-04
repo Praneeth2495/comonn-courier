@@ -70,7 +70,7 @@ const NEWS = [
 ];
 
 const FAQS = [
-  ['Which countries can I ship to with Comonn?', "We currently service 15 countries — Australia, Canada, Germany, Ireland, Kuwait, Malaysia, the Netherlands, New Zealand, Saudi Arabia, Singapore, South Africa, Sweden, UAE, the UK, and the USA. Enter your destination on the Book page to get an instant, country-specific quote."],
+  ['Which countries can I ship to with Comonn?', "We currently service 19 countries — Australia, Canada, France, Germany, Ireland, Italy, Kuwait, Malaysia, the Netherlands, New Zealand, Portugal, Saudi Arabia, Singapore, South Africa, Spain, Sweden, UAE, the UK, and the USA. Enter your destination on the Book page to get an instant, country-specific quote."],
   ['How is my shipping cost calculated?', "Price depends on the destination zone, chargeable weight (the greater of actual or volumetric weight), and the service you choose — Economy or Express. Enter your origin, destination, and parcel details on the Book page for an instant quote before you commit to anything."],
   ['How long does international delivery take?', 'Transit time depends on the destination and service level, typically ranging from 3-5 business days for Express to 5-9 business days for Economy. The exact estimate for your route is shown alongside your quote before you book.'],
   ['What items can I not ship?', "Dangerous goods are restricted across our network — lithium-ion batteries can't be sent via air freight, and all fluids must be drained from machine parts before shipping. You'll see the full list and acknowledge it during checkout."],
