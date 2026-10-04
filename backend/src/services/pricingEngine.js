@@ -91,6 +91,12 @@ function extractZoneMatchKey(countryCode, postcode) {
       // UK inward code is always exactly 3 characters (digit+letter+letter);
       // everything before it is the outward code/zone key, 2-4 characters.
       return compact.length > 3 ? compact.slice(0, -3) : compact;
+    case 'PT':
+      // Portugal's "NNNN-NNN" format is granular down to street level
+      // (~207k distinct suggestion rows) but the whole country is one
+      // pricing zone — PostcodeZone is keyed by just the 4-digit prefix
+      // before the hyphen (750 unique values) rather than every full code.
+      return compact.split('-')[0];
     default:
       return compact;
   }
