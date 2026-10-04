@@ -22,6 +22,10 @@ export const PHONE_OPTIONS = [
   { code: 'AE', dial: '+971', flag: '🇦🇪', digits: 9 },
   { code: 'SA', dial: '+966', flag: '🇸🇦', digits: 9 },
   { code: 'KW', dial: '+965', flag: '🇰🇼', digits: 8 },
+  { code: 'FR', dial: '+33', flag: '🇫🇷', digits: 9 },
+  { code: 'PT', dial: '+351', flag: '🇵🇹', digits: 9 },
+  { code: 'ES', dial: '+34', flag: '🇪🇸', digits: 9 },
+  { code: 'IT', dial: '+39', flag: '🇮🇹', digits: 10 },
 ];
 
 export function getPhoneMeta(countryCode) {
