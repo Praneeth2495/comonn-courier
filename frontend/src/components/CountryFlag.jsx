@@ -383,6 +383,10 @@ const FLAGS_BY_CODE = {
   AE: UAEFlag,
   SA: SaudiArabiaFlag,
   KW: KuwaitFlag,
+  FR: FranceFlag,
+  PT: PortugalFlag,
+  ES: SpainFlag,
+  IT: ItalyFlag,
 };
 
 export default function CountryFlag({ code, width = 20, height = 14, style, className }) {
