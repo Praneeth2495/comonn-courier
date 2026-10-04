@@ -20,7 +20,7 @@ const ORIGIN = { name: 'India', x: 46.5, y: 15.59 };
 // Continent-level pins. Each `countries` entry is a country we currently
 // list, shown in a dropdown when the continent is hovered/focused.
 const CONTINENTS = [
-  { name: 'Europe', x: 33.5, y: 5.2, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['United Kingdom', 'Germany', 'Ireland', 'Netherlands', 'Sweden'] },
+  { name: 'Europe', x: 33.5, y: 5.2, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['United Kingdom', 'Germany', 'Ireland', 'Netherlands', 'Sweden', 'France', 'Portugal', 'Spain', 'Italy'] },
   { name: 'North America', x: 17.25, y: 10.8, dx: -1, dy: -2, anchor: 'end', countries: ['Canada', 'United States'] },
   { name: 'Middle East', x: 39.5, y: 13.86, dx: -1.8, dy: 0.4, anchor: 'end', countries: ['UAE', 'Saudi Arabia', 'Kuwait'] },
   { name: 'Asia', x: 51, y: 19.92, dx: 1.8, dy: 0.4, anchor: 'start', countries: ['Malaysia', 'Singapore'] },
