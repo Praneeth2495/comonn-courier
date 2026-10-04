@@ -314,6 +314,50 @@ function KuwaitFlag() {
   );
 }
 
+function FranceFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="20" height="40" fill="#0055A4" />
+      <rect x="20" width="20" height="40" fill="#FFFFFF" />
+      <rect x="40" width="20" height="40" fill="#EF4135" />
+    </svg>
+  );
+}
+
+function ItalyFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="20" height="40" fill="#008C45" />
+      <rect x="20" width="20" height="40" fill="#FFFFFF" />
+      <rect x="40" width="20" height="40" fill="#CD212A" />
+    </svg>
+  );
+}
+
+function SpainFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="60" height="40" fill="#AA151B" />
+      <rect y="10" width="60" height="20" fill="#F1BF00" />
+    </svg>
+  );
+}
+
+// Simplified from the real flag's full coat of arms (shield + castles +
+// lions + armillary sphere) — a single gold armillary-sphere roundel at
+// the green/red boundary reads as "there's an emblem here" at icon size,
+// which a bare two-colour field wouldn't.
+function PortugalFlag() {
+  return (
+    <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
+      <rect width="24" height="40" fill="#046A38" />
+      <rect x="24" width="36" height="40" fill="#DA291C" />
+      <circle cx="24" cy="20" r="7" fill="#FFCC00" stroke="#FFFFFF" strokeWidth="0.8" />
+      <circle cx="24" cy="20" r="4.2" fill="#DA291C" stroke="#FFCC00" strokeWidth="0.6" />
+    </svg>
+  );
+}
+
 function GenericFlag() {
   return (
     <svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: 'block' }}>
