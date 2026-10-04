@@ -118,6 +118,13 @@ export function getRegionFieldConfig(countryCode) {
   // info here though, unlike AE, so it stays a locked-to-quote field.
   if (countryCode === 'SA') return { label: 'Region' };
   if (countryCode === 'KW') return { label: 'Governorate' };
+  // France/Spain/Italy's postcode-suggestion data (GeoNames) carries each
+  // row's admin_name1 — officially "Région"/"Comunidad Autónoma"/"Regione"
+  // in each language, all best translated as "Region" — same locked-to-
+  // quote behavior as IE/NL/SE.
+  if (countryCode === 'FR' || countryCode === 'ES' || countryCode === 'IT') return { label: 'Region' };
+  // Portugal's admin_name1 is officially "Distrito" (District).
+  if (countryCode === 'PT') return { label: 'District' };
   if (REGION_OPTIONS_BY_COUNTRY[countryCode]) {
     return { label: countryCode === 'CA' ? 'Province/Territory' : 'State', options: REGION_OPTIONS_BY_COUNTRY[countryCode] };
   }
