@@ -31,6 +31,10 @@ const COUNTRIES = [
   { name: 'UAE', code: 'AE' },
   { name: 'Saudi Arabia', code: 'SA' },
   { name: 'Kuwait', code: 'KW' },
+  { name: 'France', code: 'FR' },
+  { name: 'Portugal', code: 'PT' },
+  { name: 'Spain', code: 'ES' },
+  { name: 'Italy', code: 'IT' },
 ];
 
 const HIW_STEPS = [
