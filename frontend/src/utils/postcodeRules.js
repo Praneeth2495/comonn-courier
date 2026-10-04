@@ -41,6 +41,13 @@ export const POSTCODE_RULES = {
   // is repurposed as a city/area picker instead of a real numeric postcode.
   SA: { maxLength: 40, digitsOnly: false, hint: 'Select your destination city' },
   KW: { maxLength: 40, digitsOnly: false, hint: 'Select your destination area' },
+  FR: { maxLength: 5, digitsOnly: true, hint: 'France postcodes are 5 digits' },
+  ES: { maxLength: 5, digitsOnly: true, hint: 'Spain postcodes are 5 digits' },
+  IT: { maxLength: 5, digitsOnly: true, hint: 'Italy postcodes are 5 digits' },
+  // Portugal's "NNNN-NNN" format is granular down to street level
+  // (~207k rows) — only worth querying suggestions once the 4-digit
+  // district prefix (before the hyphen) is fully typed.
+  PT: { maxLength: 8, digitsOnly: false, suggestMinLength: 4, hint: 'Portugal postcodes look like 1000-001' },
 };
 
 export function getPostcodeRule(countryCode) {
