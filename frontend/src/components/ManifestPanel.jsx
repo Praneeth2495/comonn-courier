@@ -620,7 +620,7 @@ function AddOrdersModal({ manifest, onClose, onAdded }) {
         </div>
         {loading ? <LoadingLogo size={40} /> : (
           <div style={{ maxHeight: 340, overflowY: 'auto', marginBottom: 14 }}>
-            {orders.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No further eligible orders for {manifest.countryCode}.</p>}
+            {orders.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No further eligible orders for {countryLabel(manifest.countryCode, [])}.</p>}
             {orders.map((o) => (
               <label key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, padding: '8px 0', borderBottom: '1px solid var(--line-2)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggle(o.id)} />
