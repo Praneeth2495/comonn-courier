@@ -199,7 +199,10 @@ async function createManifest(req, res, next) {
           id: { in: orderIds },
           manifestId: null,
           status: { notIn: PAYABLE_STATUSES },
-          receiverAddress: { countryCode },
+          // Matches the real country set validated above (countryCodes),
+          // not the stored `countryCode` field — that's "EU" for a
+          // combined-Europe manifest, not a real ISO code to filter by.
+          receiverAddress: { countryCode: { in: countryCodes } },
         },
         data: { manifestId: created.id },
       });
