@@ -277,7 +277,7 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
             <h3>{mode === 'create' ? 'Add employee' : 'Employee details'}</h3>
             {status && (
