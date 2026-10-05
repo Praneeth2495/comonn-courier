@@ -4,6 +4,12 @@ const { prisma } = require('../config/db');
 const { generateManifestNumber } = require('../utils/invoiceNumber');
 const { generateManifestPdf, STORAGE_DIR } = require('../services/manifestPdf');
 const { PAYABLE_STATUSES, buildOrdersWhere } = require('./order.controller');
+const { EUROPE_COUNTRY_CODES } = require('../constants/regions');
+
+// Sentinel stored in Manifest.countryCode when a manifest combines several
+// European countries — a real ISO code never collides with this, and it's
+// a free-form String column (not an enum/FK), so no schema change needed.
+const EUROPE_SENTINEL = 'EU';
 
 const ORDER_INCLUDE = { senderAddress: true, receiverAddress: true, items: true };
 
