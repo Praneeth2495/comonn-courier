@@ -119,14 +119,14 @@ function BuildManifest() {
   }
 
   function loadEligibleOrders() {
-    if (!selectedCountry || selectedAirportCodes.length === 0) { setEligibleOrders([]); return; }
+    if (selectedCountries.length === 0 || selectedAirportCodes.length === 0) { setEligibleOrders([]); return; }
     setLoadingOrders(true);
-    client.get('/admin/manifests/eligible-orders', { params: { countryCode: selectedCountry, airportCode: selectedAirportCodes.join(',') } })
+    client.get('/admin/manifests/eligible-orders', { params: { countryCode: selectedCountries.join(','), airportCode: selectedAirportCodes.join(',') } })
       .then(({ data }) => { setEligibleOrders(data.orders); setSelectedOrderIds([]); setLoadingOrders(false); })
       .catch(() => setLoadingOrders(false));
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(loadEligibleOrders, [selectedCountry, selectedAirportCodes.join(',')]);
+  useEffect(loadEligibleOrders, [selectedCountries.join(','), selectedAirportCodes.join(',')]);
 
   // Origin (sender) state — only shown once real eligible orders exist, and
   // only the states actually present among them (not every pickup state in
