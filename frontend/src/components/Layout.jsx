@@ -5,11 +5,8 @@ import { useClickOutside } from '../utils/useClickOutside';
 import ChangePassword from './ChangePassword';
 import EditProfile from './EditProfile';
 import SavedAddresses from './SavedAddresses';
-// ?inline embeds these as base64 data URIs in the JS bundle rather than
-// separate file requests — the header/footer logo must never go blank on
-// a poor connection just because its own image request stalled.
-import logoFull from '../assets/logo-full.png?inline';
-import logoFooter from '../assets/logo-footer.png?inline';
+import logoFull from '../assets/logo-full.png';
+import logoFooter from '../assets/logo-footer.png';
 
 function AccountMenu({ name, onOpen, onLogout }) {
   const [open, setOpen] = useState(false);
