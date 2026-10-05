@@ -19,7 +19,7 @@ import PrintLabelPanel from '../components/PrintLabelPanel';
 import ManifestPanel from '../components/ManifestPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import { OrderDetailModal, OrderCommentsModal } from '../components/OrderDetailModal';
-import logoFooter from '../assets/logo-footer.png';
+import logoFooter from '../assets/logo-footer.png?inline';
 import { formatDateShort } from '../utils/dateFormat';
 
 export default function AdminDashboard() {
