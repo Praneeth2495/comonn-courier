@@ -158,7 +158,7 @@ export function SiteHeader({ onOpenAccount }) {
       <div className="row">
         <MobileNavMenu links={links} />
         <Link to="/" className="brand">
-          <img className="logo-img lg" src={logoFull} alt="Comonn" />
+          <img className="logo-img lg" src={logoFull} alt="Comonn" width="640" height="108" />
         </Link>
         <nav className="nav-links">
           {links.map(([to, label]) => (
