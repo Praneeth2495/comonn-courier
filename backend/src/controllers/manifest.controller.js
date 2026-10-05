@@ -19,27 +19,40 @@ function withQty(order) {
 }
 
 /**
- * GET /api/admin/manifests/eligible-orders?countryCode=&airportCode= —
+ * GET /api/admin/manifests/eligible-orders?countryCode=&airportCode() —
  * orders that can be added to a manifest: not already in a (different)
  * manifest, and confirmed (excludes PAYABLE_STATUSES, i.e. unpaid/
  * unconfirmed orders) — everything else, including pickup bookings, is
  * included per the "straight from order placement" requirement.
- * countryCode is always required (a manifest can only ever hold orders for
- * one destination country); airportCode narrows to one or more specific
- * airports within it (comma-separated) — omit it to see every airport in
- * that country at once, which is what makes combining several airports
- * into one manifest possible. Reuses buildOrdersWhere so STAFF still only
- * see orders in their assigned zones.
+ * countryCode is always required and may be comma-separated to combine
+ * several destination countries into one manifest — allowed only when
+ * every one of them is in EUROPE_COUNTRY_CODES (every other country still
+ * requires exactly one). The literal value "EU" is shorthand for "every
+ * European country" — used when adding more orders to a manifest that was
+ * already created as a combined-Europe one (see Manifest.countryCode).
+ * airportCode narrows to one or more specific airports within the
+ * selected countries (comma-separated) — omit it to see every airport at
+ * once, which is what makes combining several airports/countries into one
+ * manifest possible. Reuses buildOrdersWhere so STAFF still only see
+ * orders in their assigned zones.
  */
 async function listEligibleOrders(req, res, next) {
   try {
     const { countryCode, airportCode } = req.query;
     if (!countryCode) return res.status(400).json({ error: 'countryCode is required' });
 
+    const rawCodes = countryCode.split(',').map((c) => c.trim().toUpperCase()).filter(Boolean);
+    const countryCodes = rawCodes.length === 1 && rawCodes[0] === EUROPE_SENTINEL
+      ? EUROPE_COUNTRY_CODES
+      : [...new Set(rawCodes)];
+    if (countryCodes.length > 1 && countryCodes.some((c) => !EUROPE_COUNTRY_CODES.includes(c))) {
+      return res.status(400).json({ error: 'Multiple destination countries can only be combined into one manifest when every one of them is in Europe.' });
+    }
+
     const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
     where.manifestId = null;
     where.airportCode = { not: null };
-    where.receiverAddress = { countryCode: countryCode.toUpperCase() };
+    where.receiverAddress = { countryCode: countryCodes.length === 1 ? countryCodes[0] : { in: countryCodes } };
     if (airportCode) {
       const codes = airportCode.split(',').map((c) => c.trim()).filter(Boolean);
       if (codes.length) where.airportCode = { in: codes };
