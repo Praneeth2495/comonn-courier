@@ -196,7 +196,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="footer-top">
         <div className="footer-brand">
-          <img className="logo-img lg" src={logoFooter} alt="Comonn" />
+          <img className="logo-img lg" src={logoFooter} alt="Comonn" width="640" height="108" />
         </div>
         <div className="footer-col">
           <h4>Quick links</h4>
