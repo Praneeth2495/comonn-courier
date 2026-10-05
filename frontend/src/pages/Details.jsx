@@ -396,7 +396,10 @@ export default function Details() {
       {showNewBookingConfirm && (
         <div className="modal-overlay open" onClick={() => setShowNewBookingConfirm(false)}>
           <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ marginBottom: 8 }}>Details not added</h3>
+            <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+              <h3>Details not added</h3>
+              <button onClick={() => setShowNewBookingConfirm(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+            </div>
             <p className="lead" style={{ fontSize: 13.5, marginBottom: 22 }}>
               This booking's receiver/sender details aren't filled in yet. Continue filling them in, or cancel this booking to start a new one.
             </p>
