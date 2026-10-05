@@ -518,9 +518,18 @@ export default function Home() {
 
       <div className="section" style={{ background: '#fff', paddingTop: 48, paddingBottom: 48 }}>
         <div className="wrap" style={{ textAlign: 'center', marginBottom: 26 }}>
-          <h2 className="h-md">Countries we're servicing</h2>
+          <h2 className="h-md country-heading-desktop">Countries we're servicing</h2>
+          <button
+            type="button"
+            className="country-toggle-mobile"
+            onClick={() => setCountriesExpanded((v) => !v)}
+            aria-expanded={countriesExpanded}
+          >
+            <span>{COUNTRIES.length} countries we serve</span>
+            <span className="caret">{countriesExpanded ? '▲' : '▼'}</span>
+          </button>
         </div>
-        <div className="wrap country-row">
+        <div className={`wrap country-row ${countriesExpanded ? '' : 'country-row-collapsible'}`}>
           {COUNTRIES.map(({ name, code }) => (
             <div className="country-card" key={name}>
               <div className="flag-img"><CountryFlag code={code} width="100%" height="100%" /></div>
