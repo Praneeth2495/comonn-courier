@@ -23,7 +23,7 @@ export default function DriverDashboard() {
     <div className="app-shell">
       <div className="app-mobile-bar">
         <button className="app-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">☰</button>
-        <img className="logo-img" src={logoFooter} alt="Comonn" />
+        <img className="logo-img" src={logoFooter} alt="Comonn" width="640" height="108" />
       </div>
       {sidebarOpen && <div className="app-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
       <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
