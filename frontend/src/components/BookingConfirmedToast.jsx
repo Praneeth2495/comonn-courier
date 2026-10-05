@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getCountryName } from '../utils/countryNames';
-import logoIcon from '../assets/logo-icon.png';
+import logoIcon from '../assets/logo-icon.png?inline';
 
 const DISPLAY_MS = 5000;
 
