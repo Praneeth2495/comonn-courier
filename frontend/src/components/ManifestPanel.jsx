@@ -5,6 +5,17 @@ import { OrderDetailModal } from './OrderDetailModal';
 import { downloadBlob } from '../utils/downloadBlob';
 import { STATUS_PILL } from '../utils/orderStatus';
 import { formatDateShort, formatDateTime } from '../utils/dateFormat';
+import { EUROPE_COUNTRY_CODES } from '../utils/regions';
+
+const EUROPE_SENTINEL = 'EU';
+
+// Label for a country chip row or a manifest's own country badge — "EU" is
+// never a real ISO code, it's the sentinel stored when a manifest combines
+// several European countries (see manifest.controller.js).
+function countryLabel(countryCode, countries) {
+  if (countryCode === EUROPE_SENTINEL) return 'Europe (combined)';
+  return countries.find((c) => c.countryCode === countryCode)?.countryName || countryCode;
+}
 
 function todayIso() {
   const d = new Date();
