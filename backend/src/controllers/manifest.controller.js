@@ -19,7 +19,7 @@ function withQty(order) {
 }
 
 /**
- * GET /api/admin/manifests/eligible-orders?countryCode=&airportCode() —
+ * GET /api/admin/manifests/eligible-orders?countryCode=&airportCode= —
  * orders that can be added to a manifest: not already in a (different)
  * manifest, and confirmed (excludes PAYABLE_STATUSES, i.e. unpaid/
  * unconfirmed orders) — everything else, including pickup bookings, is
