@@ -1009,6 +1009,10 @@ model Manifest {
   // even when the orders span several airports within that country (see
   // regionId below), since it's what scopes "add more orders" to the right
   // pool. Derived server-side from the selected orders, not client input.
+  // The literal value "EU" is a sentinel (never a real ISO code) meaning
+  // this manifest combines several European countries — see
+  // EUROPE_COUNTRY_CODES in manifest.controller.js, the one case where
+  // orders for more than one destination country can share a manifest.
   countryCode    String
   // Only set when every order currently in the manifest resolves to the
   // exact same destination airport — a convenience link to that airport's
