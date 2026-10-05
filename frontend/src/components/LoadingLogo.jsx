@@ -1,9 +1,9 @@
-// ?inline forces Vite to embed this as a base64 data URI directly in the
-// JS bundle instead of a separate file request — this is the universal
-// "something is loading" indicator shown across the whole site, so it must
-// render the instant the page's JS has run, with no extra network
-// round-trip that could stall or fail on a poor connection.
-import logoIcon from '../assets/logo-icon.png?inline';
+// Embedded as a base64 data URI (see assets/logoIconData.js) rather than a
+// plain file import — this is the universal "something is loading"
+// indicator shown across the whole site, so it must render the instant
+// the page's JS has run, with no extra network round-trip that could
+// stall or fail on a poor connection.
+import logoIcon from '../assets/logoIconData';
 
 // Animated stand-in for the "Loading…" text — the actual brand mark
 // (logo-icon.png), instead of leaving the page blank or showing plain text.
