@@ -258,13 +258,16 @@ async function addOrdersToManifest(req, res, next) {
 
     // Same-country guard only — a manifest may already combine several
     // airports, so any further orders just need to match its country, not
-    // one specific airport.
+    // one specific airport. A combined-Europe manifest (countryCode "EU")
+    // accepts any European country here, not just the specific ones it
+    // happened to start with.
+    const allowedCountryCodes = manifest.countryCode === EUROPE_SENTINEL ? EUROPE_COUNTRY_CODES : [manifest.countryCode];
     const claimed = await prisma.order.updateMany({
       where: {
         id: { in: orderIds },
         manifestId: null,
         status: { notIn: PAYABLE_STATUSES },
-        receiverAddress: { countryCode: manifest.countryCode },
+        receiverAddress: { countryCode: { in: allowedCountryCodes } },
       },
       data: { manifestId: req.params.id },
     });
