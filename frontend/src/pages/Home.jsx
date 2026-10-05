@@ -128,6 +128,9 @@ export default function Home() {
   const [trackId, setTrackId] = useState('');
   const [weightPreset, setWeightPreset] = useState('');
   const [showDims, setShowDims] = useState(false);
+  // Only drives the mobile summary-bar toggle below (see .country-toggle-mobile) —
+  // desktop always shows the full grid regardless of this value.
+  const [countriesExpanded, setCountriesExpanded] = useState(false);
   const [lengthCm, setLengthCm] = useState('');
   const [widthCm, setWidthCm] = useState('');
   const [heightCm, setHeightCm] = useState('');
