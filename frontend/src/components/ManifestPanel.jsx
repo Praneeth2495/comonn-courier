@@ -462,7 +462,7 @@ function ManifestHistory() {
               <tr key={m.id}>
                 <td className="mono">{m.manifestNumber}</td>
                 <td>{m.hub?.name || '—'}</td>
-                <td>{m.region?.name || m.countryCode}</td>
+                <td>{m.region?.name || countryLabel(m.countryCode, [])}</td>
                 <td>{formatDateTime(m.createdAt)}</td>
                 <td>{m._count?.orders ?? m.orderCount}</td>
                 <td>{m.totalQty}</td>
