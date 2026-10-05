@@ -323,6 +323,14 @@ table.data-table tr:hover td{background:#FAFAF7;}
      keeps every row locked to the same columns, so flags always start at
      the same x position regardless of how many are on the last row. */
   .country-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));justify-items:center;gap:16px;}
+  .country-heading-desktop{display:none;}
+  .country-toggle-mobile{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--paper);border:1px solid var(--line);border-radius:999px;
+    padding:10px 20px;font-size:13px;font-weight:700;color:var(--navy);
+    cursor:pointer;
+  }
+  .country-row.country-row-collapsible{display:none;}
 }
 
 /* ============================================================
