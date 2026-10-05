@@ -138,7 +138,10 @@ function ApiKeyRevealModal({ merchant, apiKey, onClose }) {
   return (
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
-        <h3 style={{ marginBottom: 4 }}>✓ {merchant.name} created</h3>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <h3>✓ {merchant.name} created</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
         <p style={{ fontSize: 13, color: 'var(--danger)', marginBottom: 14 }}>
           This API key won't be shown again — copy it now and store it securely. You can always reissue a new one later.
         </p>
