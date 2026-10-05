@@ -6,7 +6,7 @@ import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
 import ClockInOutPanel from '../components/ClockInOutPanel';
 import LoadingLogo from '../components/LoadingLogo';
-import logoFooter from '../assets/logo-footer.png?inline';
+import logoFooter from '../assets/logo-footer.png';
 import { STATUS_LABEL, ACTIVE_STATUSES, formatAddress, isoDate, completionDate } from '../utils/driverJobs';
 
 export default function DriverDashboard() {
