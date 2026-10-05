@@ -241,6 +241,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .country-card .flag-img{width:76px;height:52px;border-radius:10px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow-card);}
 .country-card .flag-img svg{width:100%;height:100%;display:block;}
 .country-card span{font-size:11.5px;font-weight:700;letter-spacing:.05em;color:var(--navy);text-transform:uppercase;}
+.country-toggle-mobile{display:none;}
 
 /* what we ship */
 .ship-card{padding:28px;position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease;}
