@@ -50,7 +50,7 @@ function BuildManifest() {
   const [airports, setAirports] = useState([]);
   const [countries, setCountries] = useState([]);
   const [loadingAirports, setLoadingAirports] = useState(true);
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCountries, setSelectedCountries] = useState([]);
   const [selectedAirportCodes, setSelectedAirportCodes] = useState([]);
   const [eligibleOrders, setEligibleOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
