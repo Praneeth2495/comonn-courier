@@ -163,10 +163,15 @@ async function createManifest(req, res, next) {
     const orders = await prisma.order.findMany({ where: { id: { in: orderIds } }, include: { receiverAddress: true } });
     if (orders.length === 0) return res.status(400).json({ error: 'orderIds contains no known orders' });
     const countryCodes = [...new Set(orders.map((o) => o.receiverAddress.countryCode))];
+    let countryCode;
     if (countryCodes.length > 1) {
-      return res.status(400).json({ error: 'Selected orders must all be destined for the same country to share a manifest.' });
+      if (countryCodes.some((c) => !EUROPE_COUNTRY_CODES.includes(c))) {
+        return res.status(400).json({ error: 'Selected orders must all be destined for the same country to share a manifest (multiple countries are only allowed when every one of them is in Europe).' });
+      }
+      countryCode = EUROPE_SENTINEL;
+    } else {
+      countryCode = countryCodes[0];
     }
-    const countryCode = countryCodes[0];
     const airportCodes = [...new Set(orders.map((o) => o.airportCode).filter(Boolean))];
 
     let regionId = null;
