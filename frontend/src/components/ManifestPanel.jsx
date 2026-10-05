@@ -81,16 +81,36 @@ function BuildManifest() {
   const countryCodes = [...new Set(airports.map((a) => a.countryCode))].sort();
 
   useEffect(() => {
-    if (!selectedCountry && countryCodes.length > 0) pickCountry(countryCodes[0]);
+    if (selectedCountries.length === 0 && countryCodes.length > 0) pickCountry(countryCodes[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [airports]);
 
-  const airportsForCountry = airports.filter((a) => a.countryCode === selectedCountry);
+  const airportsForCountries = airports.filter((a) => selectedCountries.includes(a.countryCode));
 
+  function resetAirportsFor(countries) {
+    setSelectedAirportCodes(airports.filter((a) => countries.includes(a.countryCode)).map((a) => a.airportCode));
+  }
+
+  // Clicking a non-European country always resets to just that one country
+  // (the original, strict single-country behaviour). Clicking a European
+  // country toggles it into/out of the current selection — but only when
+  // every other currently-selected country is also European; clicking a
+  // European chip while a non-European one is active instead starts a
+  // fresh European selection, since mixing the two is never allowed.
   function pickCountry(code) {
-    setSelectedCountry(code);
-    setSelectedAirportCodes(airports.filter((a) => a.countryCode === code).map((a) => a.airportCode));
     setJustCreated(null);
+    const isEurope = EUROPE_COUNTRY_CODES.includes(code);
+    if (!isEurope) {
+      setSelectedCountries([code]);
+      resetAirportsFor([code]);
+      return;
+    }
+    const allCurrentAreEurope = selectedCountries.every((c) => EUROPE_COUNTRY_CODES.includes(c));
+    const next = allCurrentAreEurope
+      ? (selectedCountries.includes(code) ? selectedCountries.filter((c) => c !== code) : [...selectedCountries, code])
+      : [code];
+    setSelectedCountries(next);
+    resetAirportsFor(next);
   }
 
   function toggleAirport(code) {
