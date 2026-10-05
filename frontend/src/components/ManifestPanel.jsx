@@ -185,20 +185,23 @@ function BuildManifest() {
         <>
           <div className="chip-filter-row">
             {countryCodes.map((code) => (
-              <div key={code} className={`chip-filter ${selectedCountry === code ? 'active' : ''}`} onClick={() => pickCountry(code)}>
-                {countries.find((c) => c.countryCode === code)?.countryName || code}
+              <div key={code} className={`chip-filter ${selectedCountries.includes(code) ? 'active' : ''}`} onClick={() => pickCountry(code)}>
+                {countryLabel(code, countries)}
               </div>
             ))}
           </div>
+          <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: -6, marginBottom: 14 }}>
+            Multiple European countries can be selected together to share one manifest — every other country must be selected on its own.
+          </p>
 
           <div className="chip-filter-row">
-            {airportsForCountry.map((a) => (
+            {airportsForCountries.map((a) => (
               <div key={a.airportCode} className={`chip-filter ${selectedAirportCodes.includes(a.airportCode) ? 'active' : ''}`} onClick={() => toggleAirport(a.airportCode)}>
                 {a.name === a.airportCode ? a.airportCode : `${a.name} (${a.airportCode})`} · {a.count}
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: -6, marginBottom: 14 }}>Multiple airports can be selected together — orders for all of them can share one manifest as long as it's the same country.</p>
+          <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: -6, marginBottom: 14 }}>Multiple airports can be selected together — orders for all of them can share one manifest.</p>
 
           {originStates.length > 0 && (
             <>
