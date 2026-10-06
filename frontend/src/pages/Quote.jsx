@@ -9,6 +9,7 @@ import FlagCountrySelect from '../components/FlagCountrySelect';
 import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, isReadyForSuggestions } from '../utils/postcodeRules';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
 import { STANDARD_DIVISOR, maxDimsHint, volumetricWeightNote } from '../utils/volumetricWeight';
+import { estimatedDeliveryRange } from '../utils/businessDays';
 
 const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
 
