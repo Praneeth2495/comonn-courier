@@ -116,7 +116,7 @@ export default function Quote() {
   const [originPicked, setOriginPicked] = useState(quoteInput?.originSuburb ? { suburb: quoteInput.originSuburb, state: quoteInput.originState } : null);
   const [originFocused, setOriginFocused] = useState(false);
   const originDebounceRef = useRef(null);
-  const [items, setItems] = useState(() => hydrateItems(quoteInput));
+  const [items, setItems] = useState(() => hydrateItems(quoteInput, isStaffUser));
   const [quotes, setQuotes] = useState(selectedQuote ? [selectedQuote] : null);
   const [selected, setSelected] = useState(selectedQuote || null);
   const [loading, setLoading] = useState(false);
