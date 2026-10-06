@@ -4,7 +4,7 @@ const STEPS = [
   ['quote', 'Quote'],
   ['details', 'Details'],
   ['payment', 'Payment'],
-  ['labels', 'Print Labels'],
+  ['labels', 'Invoice & Labels'],
 ];
 
 // interactive=false disables click-to-navigate on completed steps entirely
