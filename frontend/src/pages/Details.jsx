@@ -63,7 +63,7 @@ export default function Details() {
   // should be treated as "this is the same booking, not a fresh one".
   // Otherwise a guest starting a second booking in the same tab would see
   // the previous customer's name/address auto-filled in these fields.
-  const isEditingExisting = Boolean(bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role)));
+  const isEditingExisting = Boolean(bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role)));
   const [sender, setSender] = useState(() => {
     if (isEditingExisting) return fromSavedAddress(bookingOrder.senderAddress);
     // Pre-fill from the pickup pincode entered on the Quote page's Origin
