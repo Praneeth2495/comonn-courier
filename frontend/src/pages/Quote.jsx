@@ -593,7 +593,7 @@ export default function Quote() {
                 <select className="select" value={it.weightPreset} onChange={(e) => updateItem(idx, 'weightPreset', e.target.value)}>
                   <option value="">Weight (kg)</option>
                   <option value="NOT_SURE">Not sure, book pickup</option>
-                  {WEIGHT_OPTIONS.map((w) => <option key={w}>{w}</option>)}
+                  {(isStaffUser ? STAFF_WEIGHT_OPTIONS : CUSTOMER_WEIGHT_OPTIONS).map((w) => <option key={w}>{w}</option>)}
                 </select>
                 <div className="qty-stepper">
                   <button type="button" onClick={() => updateItem(idx, 'quantity', Math.max(1, it.quantity - 1))}>–</button>
