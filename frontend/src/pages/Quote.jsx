@@ -10,8 +10,7 @@ import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, isReadyFor
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
 import { STANDARD_DIVISOR, maxDimsHint, volumetricWeightNote } from '../utils/volumetricWeight';
 import { estimatedDeliveryRange } from '../utils/businessDays';
-
-const WEIGHT_OPTIONS = Array.from({ length: 25 }, (_, i) => `${i + 1} kg`);
+import { WEIGHT_RANGE_PRESET, CUSTOMER_WEIGHT_OPTIONS, STAFF_WEIGHT_OPTIONS, resolveWeightPreset } from '../utils/weightOptions';
 
 function emptyItem() {
   return { itemType: 'Box', weightPreset: '', lengthCm: '', widthCm: '', heightCm: '', quantity: 1, showDims: false };
