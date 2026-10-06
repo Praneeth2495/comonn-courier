@@ -663,21 +663,15 @@ export default function Quote() {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="rate-left">
-                    <div className="rate-tier-icon">{isExpress ? '⚡' : '📦'}</div>
-                    <div>
-                      <div className="rate-name">{q.service.name}</div>
-                      <div className="rate-eta-pill">
-                        <span>🗓</span> Est. delivery: <b>{eta}</b>
-                      </div>
+                    <div className="rate-name">{q.service.name}</div>
+                    <div className="rate-eta-pill">
+                      Est. delivery <b>{eta}</b>
                     </div>
                   </div>
-                  <div className="rate-price">
-                    <div className="unit-price"><div className="amt">₹{q.pricing.unitPrice}</div><div className="per">/ kg</div></div>
-                    <div className="divider" />
-                    <div className="rate-total">
-                      <span className="amt2">₹{q.pricing.grandTotal.toFixed(2)}</span>
-                      <span className="unit-note">{q.weight.chargeableWeightKg} kg billed</span>
-                    </div>
+                  <div className="rate-price-chip">
+                    <div className="rate-price-unit">₹{q.pricing.unitPrice} <span>/ kg</span></div>
+                    <div className="rate-price-total">₹{q.pricing.grandTotal.toFixed(2)}</div>
+                    <div className="rate-price-note">{q.weight.chargeableWeightKg} kg billed</div>
                   </div>
                   <button type="button" className={isSelected ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'}>
                     {isSelected ? 'Selected' : 'Select'}
