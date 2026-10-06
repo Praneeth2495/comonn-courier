@@ -653,12 +653,22 @@ export default function Quote() {
             <h3 className="h-md" style={{ marginBottom: 16 }}>Choose a service</h3>
             {quotes.map((q) => {
               const isSelected = selected?.service.code === q.service.code;
+              const isExpress = q.service.code === 'EXPRESS';
+              const eta = estimatedDeliveryRange(q.service.transitDaysMin, q.service.transitDaysMax);
               return (
-                <div key={q.service.code} className={`rate-card ${isSelected ? 'selected' : ''}`} onClick={() => setSelected(q)} style={{ cursor: 'pointer' }}>
+                <div
+                  key={q.service.code}
+                  className={`rate-card ${isExpress ? 'rate-card-express' : 'rate-card-economy'} ${isSelected ? 'selected' : ''}`}
+                  onClick={() => setSelected(q)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="rate-left">
+                    <div className="rate-tier-icon">{isExpress ? '⚡' : '📦'}</div>
                     <div>
                       <div className="rate-name">{q.service.name}</div>
-                      <div className="rate-meta">{q.service.transitDays} business days</div>
+                      <div className="rate-eta-pill">
+                        <span>🗓</span> Est. delivery: <b>{eta}</b>
+                      </div>
                     </div>
                   </div>
                   <div className="rate-price">
