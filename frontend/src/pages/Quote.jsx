@@ -330,10 +330,14 @@ export default function Quote() {
   function buildItemsPayload() {
     const parsed = [];
     for (const it of items) {
-      if (!it.weightPreset || it.weightPreset === 'NOT_SURE') return null;
+      const resolved = resolveWeightPreset(it.weightPreset);
+      if (!resolved) return null;
       parsed.push({
         itemType: it.itemType,
-        actualWeightKg: Number(it.weightPreset.replace(' kg', '')),
+        actualWeightKg: resolved.actualWeightKg,
+        // Only set when true — staff correcting the real weight afterward
+        // (picking a discrete value) clears it back off, same as omitting.
+        weightUnconfirmed: resolved.weightUnconfirmed || undefined,
         // Dimensions are optional — if left blank, pricing assumes actual
         // weight is the chargeable weight (skips the volumetric calc).
         lengthCm: it.lengthCm ? Number(it.lengthCm) : undefined,
