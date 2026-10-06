@@ -11,8 +11,9 @@ import BackToTop from '../components/BackToTop';
 import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, isReadyForSuggestions } from '../utils/postcodeRules';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
 import { STANDARD_DIVISOR, maxDimsHint, volumetricWeightNote } from '../utils/volumetricWeight';
+import { CUSTOMER_WEIGHT_OPTIONS, resolveWeightPreset } from '../utils/weightOptions';
 
-const WEIGHT_OPTIONS = ['Not sure', ...Array.from({ length: 25 }, (_, i) => `${i + 1} kg`)];
+const WEIGHT_OPTIONS = ['Not sure', ...CUSTOMER_WEIGHT_OPTIONS];
 
 const COUNTRIES = [
   { name: 'India', code: 'IN' },
