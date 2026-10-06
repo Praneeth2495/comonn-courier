@@ -878,7 +878,8 @@ function OrdersPanel() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
           {orders.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--slate-light)' }}>No orders match this filter.</div>}
         </div>
       )}
