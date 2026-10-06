@@ -421,15 +421,20 @@ table.data-table tr:hover td{background:#FAFAF7;}
    ============================================================ */
 .rate-left{display:flex;align-items:center;gap:16px;}
 .rate-icon{width:48px;height:48px;border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:center;flex:none;}
-.rate-name{font-size:16px;font-weight:700;color:var(--navy);}
+.rate-tier-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none;font-size:20px;}
+.rate-card-economy .rate-tier-icon{background:#EAF0FF;}
+.rate-card-express .rate-tier-icon{background:#FFE9E2;}
+.rate-name{font-size:17px;font-weight:700;color:var(--navy);}
 .rate-meta{font-size:12.5px;color:var(--slate);margin-top:2px;}
+.rate-eta-pill{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;color:var(--slate);background:var(--paper);border-radius:999px;padding:4px 11px;}
+.rate-eta-pill b{color:var(--navy);font-weight:700;}
 .rate-price{display:flex;align-items:center;gap:18px;}
 .rate-price .unit-price{text-align:right;}
 .rate-price .amt{font-family:'IBM Plex Mono';font-size:19px;font-weight:600;color:var(--navy);}
 .rate-price .per{font-size:11px;color:var(--slate-light);}
 .rate-price .divider{width:1px;align-self:stretch;background:var(--line);}
 .rate-price .rate-total{text-align:right;font-size:12.5px;font-weight:700;color:var(--navy);white-space:nowrap;}
-.rate-price .rate-total .amt2{font-family:'IBM Plex Mono';font-size:16px;font-weight:700;color:var(--navy);display:block;}
+.rate-price .rate-total .amt2{font-family:'IBM Plex Mono';font-size:21px;font-weight:700;color:var(--navy);display:block;}
 .rate-price .rate-total .unit-note{font-weight:400;color:var(--slate-light);font-size:11px;}
 @media(max-width:860px){
   .rate-card{flex-wrap:wrap;}
