@@ -87,7 +87,7 @@ export default function Quote() {
   // editing) should carry forward to prefill Details.jsx. Otherwise a
   // guest starting a second booking in the same tab sees the previous
   // customer's name/address auto-filled, which looks like a data leak.
-  const carryOverOrder = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF'].includes(user?.role)) ? bookingOrder : null;
+  const carryOverOrder = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || isStaffUser) ? bookingOrder : null;
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || 'AU');
   // Ireland: quoteInput.destinationPostcode carries the matched routing key
