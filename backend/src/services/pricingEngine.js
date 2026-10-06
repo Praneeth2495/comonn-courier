@@ -372,7 +372,13 @@ async function generateQuote(input) {
   const transitDaysMax = bracket.transitDaysMax ?? service.transitDaysMax;
 
   return {
-    service: { code: service.code, name: service.name, transitDays: `${transitDaysMin}-${transitDaysMax}` },
+    service: {
+      code: service.code,
+      name: service.name,
+      transitDays: `${transitDaysMin}-${transitDaysMax}`,
+      transitDaysMin,
+      transitDaysMax,
+    },
     zone: { code: zone.code, name: zone.name },
     airportCode,
     items: pricedItems.map(({ actualWeightKgTotal, volumetricWeightKgTotal, ...rest }) => rest),
