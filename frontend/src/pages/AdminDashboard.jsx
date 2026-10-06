@@ -816,8 +816,15 @@ function OrdersPanel() {
             {tab === 'pickup' && <div></div>}
             <div>Order ID</div><div>From Address</div><div>To Address</div><div>{tab === 'pickup' || tab === 'bookings' ? 'Pickup Date' : 'Qty'}</div><div>Order Status</div><div>Comment</div>{tab === 'bookings' && <div></div>}{tab === 'pickup' && <div>Rider</div>}
           </div>
-          {displayOrders.map((o) => (
-            <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''} ${o.__overdue ? 'overdue' : tab === 'pickup' && o.status === 'PICKED_UP' ? 'picked-up' : ''}`} key={o.id}>
+          {displayOrders.map((o) => {
+            // Flags an order a customer booked with the collapsed "1-5 kg"
+            // weight estimate, still awaiting staff's post-pickup correction
+            // to the real weight — scoped to Bookings/Pickup only (see
+            // AdminDashboard.jsx task notes), takes priority over overdue/
+            // picked-up coloring since it's the most actionable flag.
+            const weightUnconfirmed = (tab === 'bookings' || tab === 'pickup') && o.items?.some((it) => it.weightUnconfirmed);
+            return (
+            <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''} ${weightUnconfirmed ? 'weight-unconfirmed' : o.__overdue ? 'overdue' : tab === 'pickup' && o.status === 'PICKED_UP' ? 'picked-up' : ''}`} key={o.id}>
               {tab === 'pickup' && (
                 <div>
                   <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggleSelect(o.id)} />
