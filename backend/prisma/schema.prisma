@@ -1051,6 +1051,13 @@ model OrderItem {
   quantity           Int      @default(1)
   volumetricWeightKg Decimal  @db.Decimal(10, 3) // per single unit
   chargeableWeightKg Decimal  @db.Decimal(10, 3) // max(actual, volumetric) * quantity, this line's total
+  // True when the customer picked the "1-5 kg" collapsed range option
+  // instead of an exact weight — actualWeightKg is set to the ceiling (5)
+  // for pricing, but staff must correct it to the real weight once the
+  // parcel is actually weighed at pickup (see AdminDashboard.jsx's red row
+  // highlight on the Bookings/Pickup tabs and Quote.jsx's discrete 1-25 kg
+  // dropdown, shown only to staff/admin, used to make that correction).
+  weightUnconfirmed  Boolean  @default(false)
   createdAt          DateTime @default(now())
 
   @@index([orderId])
