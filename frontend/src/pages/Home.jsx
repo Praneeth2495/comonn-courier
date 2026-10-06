@@ -297,9 +297,11 @@ export default function Home() {
       quoteInput.pricingPending = true;
       hasData = true;
     } else if (hasWeight) {
+      const resolved = resolveWeightPreset(weightPreset);
       quoteInput.items = [{
         itemType: 'Box',
-        actualWeightKg: Number(weightPreset.replace(' kg', '')),
+        actualWeightKg: resolved.actualWeightKg,
+        weightUnconfirmed: resolved.weightUnconfirmed || undefined,
         lengthCm: lengthCm ? Number(lengthCm) : undefined,
         widthCm: widthCm ? Number(widthCm) : undefined,
         heightCm: heightCm ? Number(heightCm) : undefined,
