@@ -664,6 +664,7 @@ export default function Quote() {
                 >
                   <div className="rate-left">
                     <div className="rate-name">{q.service.name}</div>
+                    <div className="rate-meta">{q.service.transitDays} business days</div>
                     <div className="rate-eta-pill">
                       Est. delivery <b>{eta}</b>
                     </div>
