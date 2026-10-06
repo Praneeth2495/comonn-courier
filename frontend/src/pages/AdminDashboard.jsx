@@ -400,8 +400,16 @@ function toQuoteInput(order, destinationCountryName) {
 function toSelectedQuote(order) {
   if (order.pricingPending) return null;
   const chargeableWeightKg = Number(order.chargeableWeightKg);
+  const transitDaysMin = order.service.transitDaysMin;
+  const transitDaysMax = order.service.transitDaysMax;
   return {
-    service: { code: order.service.code, name: order.service.name, transitDays: order.service.transitDays },
+    service: {
+      code: order.service.code,
+      name: order.service.name,
+      transitDays: `${transitDaysMin}-${transitDaysMax}`,
+      transitDaysMin,
+      transitDaysMax,
+    },
     zone: { code: order.zoneCode, name: order.zoneCode },
     pricing: {
       unitPrice: chargeableWeightKg > 0 ? Math.round((Number(order.baseFreight) / chargeableWeightKg) * 100) / 100 : 0,
