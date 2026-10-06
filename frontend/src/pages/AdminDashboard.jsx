@@ -386,6 +386,7 @@ function toQuoteInput(order, destinationCountryName) {
     items: order.items.map((it) => ({
       itemType: it.itemType,
       actualWeightKg: Number(it.actualWeightKg),
+      weightUnconfirmed: it.weightUnconfirmed,
       lengthCm: Number(it.lengthCm),
       widthCm: Number(it.widthCm),
       heightCm: Number(it.heightCm),
