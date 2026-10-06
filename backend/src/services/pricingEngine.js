@@ -263,12 +263,16 @@ async function applySurcharges({ serviceId, baseFreight }) {
  * Returns per-unit volumetric/chargeable plus this line's totals.
  */
 function priceItem(item, divisor) {
-  const { itemType = 'Box', actualWeightKg, lengthCm, widthCm, heightCm, quantity = 1 } = item;
+  const { itemType = 'Box', actualWeightKg, lengthCm, widthCm, heightCm, quantity = 1, weightUnconfirmed = false } = item;
   const volumetricWeightKg = calcVolumetricWeightKg({ lengthCm, widthCm, heightCm, divisor });
   const chargeableWeightKgPerUnit = calcChargeableWeightKg({ actualWeightKg, volumetricWeightKg });
   return {
     itemType,
     actualWeightKg: Number(actualWeightKg),
+    // Purely a passthrough for order creation (see order.controller.js) —
+    // doesn't affect any pricing math here, actualWeightKg already carries
+    // the ceiling the frontend resolved it to.
+    weightUnconfirmed: Boolean(weightUnconfirmed),
     lengthCm: lengthCm ? Number(lengthCm) : 0,
     widthCm: widthCm ? Number(widthCm) : 0,
     heightCm: heightCm ? Number(heightCm) : 0,
