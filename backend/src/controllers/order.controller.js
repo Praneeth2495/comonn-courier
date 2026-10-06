@@ -799,6 +799,7 @@ async function updateOrderDetails(req, res, next) {
       newItems = quote.items.map((it) => ({
         itemType: it.itemType,
         actualWeightKg: it.actualWeightKg,
+        weightUnconfirmed: it.weightUnconfirmed || false,
         lengthCm: it.lengthCm,
         widthCm: it.widthCm,
         heightCm: it.heightCm,
