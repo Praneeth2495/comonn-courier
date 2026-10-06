@@ -71,6 +71,10 @@ function hydrateItems(quoteInput, isStaffUser) {
 
 export default function Quote() {
   const { user } = useAuth();
+  // Staff/admin get the full discrete 1-25 kg weight dropdown (needed to
+  // correct an order after the parcel's actually weighed) — customers only
+  // ever see the collapsed "1-5 kg" range plus 6-25, see weightOptions.js.
+  const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
   const { quoteInput: contextQuoteInput, selectedQuote, order: bookingOrder, setBooking } = useBooking();
   // An emailed "Continue booking" link carries its own state via ?resume=
   // rather than BookingContext (a fresh page load has none yet) — it wins
