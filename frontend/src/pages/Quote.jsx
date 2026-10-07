@@ -34,12 +34,13 @@ function parseResumeParam() {
 
 // Rebuilds the item-row form state from a saved quoteInput so navigating
 // back from Details/Payment doesn't lose what was already entered.
-// isStaffUser matters only for an item still flagged weightUnconfirmed: a
-// customer re-visiting their own in-progress booking gets their "1-5 kg"
-// selection restored as-is, but staff opening an existing order via "Edit
-// order" get the dropdown left blank (forcing an explicit re-pick from the
-// full 1-25 list) rather than silently re-showing the unconfirmed estimate.
-function hydrateItems(quoteInput, isStaffUser) {
+// isCorrectingExistingOrder matters only for an item still flagged
+// weightUnconfirmed: anyone re-visiting their own in-progress booking
+// (customer, or staff just using the page themselves) gets their "1-5 kg"
+// selection restored as-is, but staff opening a real existing order via
+// "Edit order" get the dropdown left blank (forcing an explicit re-pick
+// from the full 1-25 list) rather than silently re-showing the estimate.
+function hydrateItems(quoteInput, isCorrectingExistingOrder) {
   if (!quoteInput?.items?.length) return [emptyItem()];
   if (quoteInput.pricingPending) {
     return quoteInput.items.map((it) => ({
@@ -55,7 +56,7 @@ function hydrateItems(quoteInput, isStaffUser) {
   return quoteInput.items.map((it) => ({
     itemType: it.itemType,
     weightPreset: it.weightUnconfirmed
-      ? (isStaffUser ? '' : WEIGHT_RANGE_PRESET)
+      ? (isCorrectingExistingOrder ? '' : WEIGHT_RANGE_PRESET)
       : `${it.actualWeightKg} kg`,
     lengthCm: it.lengthCm ? String(it.lengthCm) : '',
     widthCm: it.widthCm ? String(it.widthCm) : '',
