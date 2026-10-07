@@ -71,11 +71,18 @@ function hydrateItems(quoteInput, isStaffUser) {
 
 export default function Quote() {
   const { user } = useAuth();
-  // Staff/admin get the full discrete 1-25 kg weight dropdown (needed to
-  // correct an order after the parcel's actually weighed) — customers only
-  // ever see the collapsed "1-5 kg" range plus 6-25, see weightOptions.js.
   const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
   const { quoteInput: contextQuoteInput, selectedQuote, order: bookingOrder, setBooking } = useBooking();
+  // Staff/admin get the full discrete 1-25 kg weight dropdown ONLY while
+  // actually correcting a real, already-placed order (bookingOrder.id set —
+  // see AdminDashboard.jsx's "Edit order", the only place that passes a
+  // real order into booking context). A staff member just using the Quote
+  // page themselves — straight from Home's instant-booking teaser, or
+  // typing into this page directly — gets the exact same collapsed
+  // "1-5 kg" + 6-25 list a customer sees; otherwise a "1-5 kg" picked on
+  // Home would land here silently blanked out (see hydrateItems below),
+  // breaking both the dropdown and the auto-fetch-on-arrival effect.
+  const isCorrectingExistingOrder = isStaffUser && Boolean(bookingOrder?.id);
   // An emailed "Continue booking" link carries its own state via ?resume=
   // rather than BookingContext (a fresh page load has none yet) — it wins
   // over whatever's already in context.
