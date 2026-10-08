@@ -378,7 +378,7 @@ export default function Home() {
 
               <div className="route-line" />
 
-              <div className="field" style={{ marginBottom: 14, position: 'relative' }}>
+              <div className="field ib-destination-field" style={{ marginBottom: 14, position: 'relative' }}>
                 <label>Destination</label>
                 <div className="input-group" style={{ position: 'relative' }}>
                   <FlagCountrySelect
