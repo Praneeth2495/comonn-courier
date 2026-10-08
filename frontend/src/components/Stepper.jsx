@@ -18,7 +18,7 @@ export default function Stepper({ activeKey, interactive = true }) {
   const activeIdx = STEPS.findIndex((s) => s[0] === activeKey);
   return (
     <div className="stepper">
-      {STEPS.map(([key, label], i) => {
+      {STEPS.map(([key, label, shortLabel], i) => {
         const done = i < activeIdx;
         const clickable = done && interactive;
         const cls = done ? 'done' : i === activeIdx ? 'active' : '';
