@@ -321,6 +321,23 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .grid-2{grid-template-columns:1fr;}
   .item-row.equal{grid-template-columns:1fr;}
   .item-row.equal .qty-stepper{width:100%;}
+  /* Instant Booking teaser (Home hero) — same fields, tighter spacing.
+     Box/Weight pair up instead of each getting its own full-width row
+     (the single biggest height saving here); Qty stays full-width below
+     them since it's a different control shape. Nothing is removed, just
+     packed closer together — no field goes missing. */
+  .instant-booking-form .ib-body{padding:18px;}
+  .instant-booking-form .ib-head{margin-bottom:12px!important;}
+  .instant-booking-form .field{gap:4px;}
+  .instant-booking-form .field .hint,
+  .instant-booking-form .field p{margin-top:4px!important;font-size:11px!important;}
+  .instant-booking-form .ib-destination-field{margin-bottom:10px!important;}
+  .instant-booking-form .route-line{margin:10px 0 2px!important;}
+  .instant-booking-form .item-row.equal{grid-template-columns:1fr 1fr;gap:8px;}
+  .instant-booking-form .item-row.equal .qty-stepper{grid-column:1/-1;width:100%;}
+  .instant-booking-form .ib-add-row{margin-top:10px!important;}
+  .instant-booking-form .ib-submit{margin-top:12px!important;padding:11px!important;}
+  .instant-booking-form .ib-enquiries{margin-top:8px!important;}
   .banner-grid{grid-template-columns:1fr;padding:28px 16px;}
   .grid-3,.grid-5,.why-row,.values-grid,.stat-row,.steps-row{grid-template-columns:1fr!important;}
   /* Flexbox's justify-content:center re-centers each wrapped row on its own
