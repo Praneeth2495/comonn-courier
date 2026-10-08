@@ -31,7 +31,14 @@ export default function Stepper({ activeKey, interactive = true }) {
             tabIndex={clickable ? 0 : undefined}
           >
             <div className="num">{done ? '✓' : i + 1}</div>
-            <div className="label">{label}</div>
+            <div className="label">
+              {shortLabel ? (
+                <>
+                  <span className="step-label-full">{label}</span>
+                  <span className="step-label-short">{shortLabel}</span>
+                </>
+              ) : label}
+            </div>
             {i < STEPS.length - 1 && <div className="track" />}
           </div>
         );
