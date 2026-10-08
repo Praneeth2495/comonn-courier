@@ -157,7 +157,13 @@ export default function Quote() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setCameFromBack(false);
     } else if (resultsRef.current) {
-      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // 'start' (not 'center') — these cards can be taller than the
+      // viewport on mobile, and centering a block taller than the screen
+      // scrolls its top edge (the "Choose a service" heading) above the
+      // visible area while its bottom (Select/Continue) is still cut off
+      // below it. Aligning to the top at least guarantees the heading and
+      // as much of the first card as fits are visible without scrolling.
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quotes]);
