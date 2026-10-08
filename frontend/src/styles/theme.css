@@ -449,7 +449,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
      Select button) at well over 200px tall; this gets it to 2 shorter rows. */
   .quote-results h3{margin-bottom:10px;font-size:17px;}
   .quote-results .rate-card{padding:12px 14px 12px 16px;margin-bottom:8px;gap:6px 10px;}
-  .quote-results .rate-left{gap:2px;}
+  .quote-results .rate-left{gap:2px;flex:1 1 100%;}
   .quote-results .rate-name{font-size:14px;}
   .quote-results .rate-meta{display:none;}
   .quote-results .rate-eta-pill{margin-top:2px;font-size:10.5px;}
