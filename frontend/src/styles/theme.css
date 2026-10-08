@@ -321,6 +321,11 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .grid-2{grid-template-columns:1fr;}
   .item-row.equal{grid-template-columns:1fr;}
   .item-row.equal .qty-stepper{width:100%;}
+  /* Length/Width/Height stay side by side on mobile (unlike Box/Weight/Qty
+     above, which stack) — three short number inputs read fine in one row
+     even on a narrow phone, and splitting them onto 3 rows added height for
+     no real benefit. */
+  .item-row.equal.dims-row{grid-template-columns:1fr 1fr 1fr!important;gap:8px;}
   /* Instant Booking teaser (Home hero) — same fields, tighter spacing.
      Box+Qty pair up on one row, Weight gets its own row below (instead of
      each of the 3 fields getting a separate full-width row — the single
