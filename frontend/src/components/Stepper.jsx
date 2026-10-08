@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 
+// Optional 3rd element is a shorter label shown instead on narrow screens
+// (see .step-label-short/.step-label-full below) — only "Labels & Invoice"
+// needs one, it's the only label that doesn't fit comfortably on mobile.
 const STEPS = [
   ['quote', 'Quote'],
   ['details', 'Details'],
   ['payment', 'Payment'],
-  ['labels', 'Invoice & Labels'],
+  ['labels', 'Labels & Invoice', 'Labels'],
 ];
 
 // interactive=false disables click-to-navigate on completed steps entirely
