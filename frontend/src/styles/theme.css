@@ -127,6 +127,8 @@ input,select,textarea{font-family:inherit;}
   .stepper{padding:20px 12px 4px;}
   .step .label{font-size:11px;}
   .step .num{width:24px;height:24px;font-size:11px;}
+  .step-label-full{display:none;}
+  .step-label-short{display:inline;}
 }
 
 /* rate cards (quote comparison) */
