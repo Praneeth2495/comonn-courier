@@ -652,6 +652,15 @@ export default function Quote() {
                           </p>
                         );
                       })()}
+                      <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
+                        (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => {
+                          e.preventDefault();
+                          updateItem(idx, 'showDims', false);
+                          updateItem(idx, 'lengthCm', '');
+                          updateItem(idx, 'widthCm', '');
+                          updateItem(idx, 'heightCm', '');
+                        }}>Hide dimensions</a>)
+                      </p>
                     </>
                   ) : (
                     <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>
