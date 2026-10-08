@@ -349,8 +349,10 @@ export default function Details() {
                 <input className="input" type="number" min="0" required placeholder="₹5,000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} />
               </div>
             </div>
+          </div>
 
-            <div className="form-section-title inline"><div className="badge">1</div><h4>Receiver details</h4></div>
+          <div className="form-section-title"><div className="badge">1</div><h4>Receiver details</h4></div>
+          <div className="card" style={{ padding: 26 }}>
             <AddressFields
               value={receiver}
               onChange={updateReceiver}
