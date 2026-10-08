@@ -629,7 +629,7 @@ export default function Quote() {
                   )}
                   {it.showDims ? (
                     <>
-                      <div className="item-row equal" style={{ marginTop: 8 }}>
+                      <div className="item-row equal dims-row" style={{ marginTop: 8 }}>
                         <div>
                           <div className="lbl" style={{ marginBottom: 4 }}>Length (cm)</div>
                           <input className="input" type="number" min="1" value={it.lengthCm} onChange={(e) => updateItem(idx, 'lengthCm', e.target.value)} />
