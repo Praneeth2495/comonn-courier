@@ -750,7 +750,7 @@ export default function Payment() {
   return (
     <div>
       <div id="stepper-payment"><Stepper activeKey="payment" /></div>
-      <div className="section" style={{ paddingTop: 20 }}>
+      <div className="section payment-form-section" style={{ paddingTop: 20 }}>
         <div className="wrap" style={{ maxWidth: 1080 }}>
           <button
             type="button"
