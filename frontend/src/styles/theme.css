@@ -340,10 +340,10 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .instant-booking-form .field p{margin-top:4px!important;font-size:11px!important;}
   .instant-booking-form .ib-destination-field{margin-bottom:10px!important;}
   .instant-booking-form .route-line{margin:10px 0 2px!important;}
-  .instant-booking-form .item-row.equal{grid-template-columns:1fr 1fr;gap:8px;}
-  .instant-booking-form .item-row.equal > *:nth-child(1){order:1;}
-  .instant-booking-form .item-row.equal > .qty-stepper{order:2;width:100%;}
-  .instant-booking-form .item-row.equal > *:nth-child(2){order:3;grid-column:1/-1;}
+  .instant-booking-form .item-row.equal:not(.dims-row){grid-template-columns:1fr 1fr;gap:8px;}
+  .instant-booking-form .item-row.equal:not(.dims-row) > *:nth-child(1){order:1;}
+  .instant-booking-form .item-row.equal:not(.dims-row) > .qty-stepper{order:2;width:100%;}
+  .instant-booking-form .item-row.equal:not(.dims-row) > *:nth-child(2){order:3;grid-column:1/-1;}
   .instant-booking-form .ib-add-row{margin-top:10px!important;}
   .instant-booking-form .ib-submit{margin-top:12px!important;padding:11px!important;}
   .instant-booking-form .ib-enquiries{margin-top:8px!important;}
