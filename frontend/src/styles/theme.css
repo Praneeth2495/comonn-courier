@@ -443,7 +443,26 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .rate-price-chip{width:100%;flex-direction:row;align-items:center;justify-content:space-between;}
 }
 @media(max-width:640px){
-  .rate-price-chip{flex-direction:column;align-items:flex-start;gap:4px;}
+  /* Compact layout so "Choose a service" + both cards + the total/buttons
+     row have a real chance of fitting in one mobile screen after the
+     scroll-to-results — each card was 3 stacked rows (info / price chip /
+     Select button) at well over 200px tall; this gets it to 2 shorter rows. */
+  .quote-results h3{margin-bottom:10px;font-size:17px;}
+  .quote-results .rate-card{padding:12px 14px 12px 16px;margin-bottom:8px;gap:6px 10px;}
+  .quote-results .rate-left{gap:2px;}
+  .quote-results .rate-name{font-size:14px;}
+  .quote-results .rate-meta{display:none;}
+  .quote-results .rate-eta-pill{margin-top:2px;font-size:10.5px;}
+  .quote-results .rate-eta-pill b{font-size:11.5px;}
+  .quote-results .rate-price-chip{width:auto;flex:1;flex-direction:row;align-items:center;gap:8px;padding:5px 12px;}
+  .quote-results .rate-price-chip .rate-price-note{display:none;}
+  .quote-results .rate-price-total{font-size:17px;}
+  .quote-results .rate-price-unit{font-size:11.5px;}
+  .quote-results .btn-sm{padding:6px 11px;}
+  .quote-total-row{margin-top:10px!important;padding-top:10px!important;gap:10px!important;}
+  .quote-total-amt{font-size:19px!important;}
+  .quote-total-actions{margin-top:8px!important;gap:8px!important;}
+  .quote-total-actions .btn{padding:9px 16px!important;font-size:13px;}
 }
 
 /* ============================================================
