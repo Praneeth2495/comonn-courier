@@ -515,6 +515,12 @@ table.data-table tr:hover td{background:#FAFAF7;}
 }
 @media(max-width:640px){
   .pay-method-row{flex-direction:column;}
+  /* .section's own 32px side padding plus the nested .wrap's own 32px side
+     padding were stacking to 64px total inset on each edge — on a narrow
+     screen that's most of the width gone before the cards even start.
+     Collapse .section's share here so only .wrap's padding remains. */
+  .payment-form-section{padding-left:0;padding-right:0;}
+  .payment-form-section .wrap{padding-left:16px;padding-right:16px;}
 }
 
 /* ============================================================
