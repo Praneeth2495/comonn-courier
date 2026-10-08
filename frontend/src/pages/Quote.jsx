@@ -703,19 +703,19 @@ export default function Quote() {
               );
             })}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 18, paddingTop: 18, borderTop: '1px dashed var(--line)', flexWrap: 'wrap', gap: 16 }}>
+            <div className="quote-total-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 18, paddingTop: 18, borderTop: '1px dashed var(--line)', flexWrap: 'wrap', gap: 16 }}>
               <span style={{ fontSize: 13, color: 'var(--slate)', paddingTop: 4 }}>
                 {selected ? 'Total for this shipment' : 'Select a service to see the total'}
               </span>
               <div style={{ textAlign: 'right' }}>
                 {selected && (
                   <>
-                    <div className="mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--navy)' }}>₹{selected.pricing.grandTotal.toFixed(2)}</div>
+                    <div className="mono quote-total-amt" style={{ fontSize: 24, fontWeight: 700, color: 'var(--navy)' }}>₹{selected.pricing.grandTotal.toFixed(2)}</div>
                     <div style={{ fontSize: 12, color: 'var(--slate-light)' }}>{selected.weight.chargeableWeightKg.toFixed(2)} kg billed</div>
                   </>
                 )}
 
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 14, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                <div className="quote-total-actions" style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 14, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                   <button type="button" className="btn btn-outline" onClick={openEmailModal}>
                     ✉️ Email quote
                   </button>
