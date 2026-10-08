@@ -335,10 +335,10 @@ export default function Home() {
             <WorldOpsMap />
           </div>
 
-          <form className="card" style={{ overflow: 'hidden' }} onSubmit={goToBook}>
+          <form className="card instant-booking-form" style={{ overflow: 'hidden' }} onSubmit={goToBook}>
             <div className="airmail-edge" />
-            <div style={{ padding: 26 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <div className="ib-body" style={{ padding: 26 }}>
+              <div className="ib-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
                 <h3 style={{ fontSize: 17 }}>Instant Booking</h3>
                 <span className="pill pill-cobalt">Get a quote in 5 clicks</span>
               </div>
