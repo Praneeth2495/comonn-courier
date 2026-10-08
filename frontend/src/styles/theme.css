@@ -117,6 +117,7 @@ input,select,textarea{font-family:inherit;}
 .step.active .num{background:var(--coral);border-color:var(--coral);color:#fff;}
 .step .label{font-size:13px;font-weight:600;color:var(--slate-light);}
 .step.active .label,.step.done .label{color:var(--navy);}
+.step-label-short{display:none;}
 .step .track{flex:1;height:2px;background:var(--line);margin:0 4px;}
 .step.done .track{background:var(--success);}
 .step.clickable{cursor:pointer;}
