@@ -465,6 +465,15 @@ export default function Home() {
                             </p>
                           );
                         })()}
+                        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
+                          (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => {
+                            e.preventDefault();
+                            setShowDims(false);
+                            setLengthCm('');
+                            setWidthCm('');
+                            setHeightCm('');
+                          }}>Hide dimensions</a>)
+                        </p>
                       </>
                     ) : (
                       <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 4 }}>
