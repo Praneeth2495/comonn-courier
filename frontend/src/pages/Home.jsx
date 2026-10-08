@@ -475,14 +475,14 @@ export default function Home() {
                 )}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+              <div className="ib-add-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
                 <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={goToBook}>+ Add another item</a>
               </div>
 
               {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
-              <button className="btn btn-primary block" style={{ marginTop: 18, padding: 13 }}>{weightPreset === 'Not sure' ? 'Book pickup →' : 'Get Instant Quote'}</button>
-              <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--slate-light)', marginTop: 12 }}>📞 Enquiries: +91 91080 38783 (24/7)</p>
+              <button className="btn btn-primary block ib-submit" style={{ marginTop: 18, padding: 13 }}>{weightPreset === 'Not sure' ? 'Book pickup →' : 'Get Instant Quote'}</button>
+              <p className="ib-enquiries" style={{ textAlign: 'center', fontSize: 12, color: 'var(--slate-light)', marginTop: 12 }}>📞 Enquiries: +91 91080 38783 (24/7)</p>
             </div>
           </form>
         </div>
