@@ -503,9 +503,10 @@ export default function Quote() {
     <div>
       <div id="stepper-quote"><Stepper activeKey="quote" /></div>
       <div className="section" style={{ paddingTop: 20, maxWidth: 820, margin: '0 auto' }}>
-        <form className="card" style={{ padding: 28, marginBottom: 28, overflow: 'hidden' }} onSubmit={submitQuote}>
-          <div className="airmail-edge" style={{ borderRadius: '18px 18px 0 0', margin: '-28px -28px 22px', width: 'calc(100% + 56px)' }} />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+        <form className="card instant-booking-form" style={{ marginBottom: 28, overflow: 'hidden' }} onSubmit={submitQuote}>
+          <div className="airmail-edge" style={{ borderRadius: '18px 18px 0 0' }} />
+          <div className="ib-body" style={{ padding: 28 }}>
+          <div className="ib-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <h3 style={{ fontSize: 17 }}>Instant Booking</h3>
             <span className="pill pill-cobalt">Get a quote in 5 clicks</span>
           </div>
