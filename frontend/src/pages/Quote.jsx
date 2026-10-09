@@ -684,6 +684,7 @@ export default function Quote() {
           <button className="btn btn-primary block" style={{ marginTop: 20 }} disabled={loading}>
             {isPickupOnly ? 'Book pickup →' : loading ? 'Calculating…' : 'Get instant quote'}
           </button>
+          </div>
         </form>
 
         {quotes && originPostcode && destinationCountryCode && (
