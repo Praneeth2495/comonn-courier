@@ -517,8 +517,27 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .form-section-title h4{font-size:16px;color:var(--navy);}
 
 @media(max-width:640px){
-  .addr-grid{grid-template-columns:1fr;flex-direction:column;}
-  .summary-card,.card[style*="padding:26px"]{padding:20px!important;}
+  .addr-grid{grid-template-columns:1fr;flex-direction:column;gap:10px;margin:6px 0;}
+  .addr-grid .addr-block{padding:12px 14px;}
+  .summary-card,.card[style*="padding:26px"]{padding:18px!important;}
+  .summary-top{margin-bottom:12px;}
+  .item-line{padding-top:10px;gap:6px;}
+  .item-line .tag-group{gap:10px;}
+  .form-section-title{margin:22px 0 12px;}
+  .form-section-title.inline{margin-top:18px;padding-top:16px;}
+  /* Details page (Receiver/Sender) — same fields, tighter spacing. Field
+     pairs (Name/Phone, Address Line 1/2, City/Region, Pin/Country) stay
+     stacked (not forced 2-up like the weight/qty rows elsewhere) since
+     real names/emails/addresses are unpredictable lengths and need full
+     width to stay legible — nothing here is removed, just packed closer. */
+  .details-form .grid-2{gap:8px;}
+  .details-form .field{gap:3px;}
+  .details-form .field label{font-size:12px;}
+  .details-form .field p{margin-top:3px!important;font-size:10.5px!important;}
+  .details-form .lbl{font-size:10px;margin-bottom:4px;}
+  .details-form .addr-block p{font-size:12.5px;}
+  .details-submit-row{margin-top:18px!important;gap:10px!important;}
+  .details-submit-row .btn{padding:11px!important;}
 }
 
 /* ============================================================
