@@ -297,7 +297,7 @@ export default function Details() {
           </div>
         )}
 
-        <form onSubmit={submit}>
+        <form className="details-form" onSubmit={submit}>
           <div className="card summary-card">
             <div className="summary-top"><h3>Booking summary</h3></div>
             <div className="addr-grid">
