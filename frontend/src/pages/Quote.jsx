@@ -674,14 +674,14 @@ export default function Quote() {
           ))}
 
           {!isPickupOnly && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18 }}>
+            <div className="ib-add-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18 }}>
               <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={(e) => { e.preventDefault(); addItem(); }}>+ Add another item</a>
             </div>
           )}
 
           {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
-          <button className="btn btn-primary block" style={{ marginTop: 20 }} disabled={loading}>
+          <button className="btn btn-primary block ib-submit" style={{ marginTop: 20 }} disabled={loading}>
             {isPickupOnly ? 'Book pickup →' : loading ? 'Calculating…' : 'Get instant quote'}
           </button>
           </div>
