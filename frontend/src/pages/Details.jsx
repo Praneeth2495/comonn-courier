@@ -382,7 +382,7 @@ export default function Details() {
 
           {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
 
-          <div style={{ display: 'flex', gap: 14, marginTop: 26 }}>
+          <div className="details-submit-row" style={{ display: 'flex', gap: 14, marginTop: 26 }}>
             <button type="button" className="btn btn-outline" style={{ flex: 1, padding: 13 }} disabled={loading} onClick={handleNewBookingClick}>
               {loading ? 'Saving…' : 'New booking'}
             </button>
