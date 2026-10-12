@@ -6,6 +6,7 @@ import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
 import LoadingLogo from '../components/LoadingLogo';
 import FlagCountrySelect from '../components/FlagCountrySelect';
+import BackToTop from '../components/BackToTop';
 import { getPostcodeRule, sanitizePostcode, getDestinationFieldLabel, isReadyForSuggestions } from '../utils/postcodeRules';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
 import { STANDARD_DIVISOR, maxDimsHint, volumetricWeightNote } from '../utils/volumetricWeight';
