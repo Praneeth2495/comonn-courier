@@ -690,6 +690,12 @@ export default function Quote() {
 
         {quotes && originPostcode && destinationCountryCode && (
           <div ref={resultsRef} className="quote-results">
+            {/* Rendered inside this block (not unconditionally at the top of
+                the page) so resultsRef.current is already set by the time
+                BackToTop's own mount effect runs — a ref that's still null
+                on first mount never gets picked up later, since the effect
+                has nothing in its dependency array to re-run on. */}
+            <BackToTop targetRef={resultsRef} />
             <h3 className="h-md" style={{ marginBottom: 16 }}>Choose a service</h3>
             {quotes.map((q) => {
               const isSelected = selected?.service.code === q.service.code;
