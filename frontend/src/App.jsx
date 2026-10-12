@@ -95,6 +95,7 @@ export default function App() {
       <BookingProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <Canonical />
           <CaptureReferral />
           <Analytics />
           <Routes>
