@@ -57,6 +57,27 @@ function ScrollToTop() {
   return null;
 }
 
+// This is a single-page app — every route is served from the same
+// index.html, which has no way to declare a per-route canonical URL on its
+// own. Without this, search engines have no explicit signal for which URL
+// is the "real" one for a given page's content, which can contribute to a
+// search engine showing a less relevant page (e.g. /storage) in place of
+// the homepage for a branded search. Always points at the www host, since
+// that's what comonn.in itself 308-redirects to and what sitemap.xml uses.
+function Canonical() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', `https://www.comonn.in${pathname}`);
+  }, [pathname]);
+  return null;
+}
+
 // Catches a shared referral link's ?ref=CODE on whatever page it lands on
 // (not just Home) — a friend might share a link straight to /quote, for
 // instance — and stashes it for the rest of the session (see utils/referral.js).
