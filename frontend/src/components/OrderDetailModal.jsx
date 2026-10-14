@@ -115,7 +115,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           <div>
             <h3 style={{ fontSize: 17, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               Order <span className="mono">{order.orderNumber}</span>
-              <span className={`status-badge ${STATUS_PILL[order.status] || 'pill-navy'}`}>{order.status.replace(/_/g, ' ')}</span>
+              <span className={`status-badge ${STATUS_PILL[order.status] || 'pill-navy'}`}>{statusLabel(order.status)}</span>
             </h3>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Everything the customer entered at booking</p>
           </div>
