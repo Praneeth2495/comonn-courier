@@ -382,6 +382,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
         hubId,
         toAddress: region.airportAddress,
         manifestDate,
+        departureDate,
       });
       onCreated(data.manifest);
     } catch (err) {
