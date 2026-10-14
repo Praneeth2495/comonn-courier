@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import client from '../api/client';
-import { STATUS_PILL } from '../utils/orderStatus';
+import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
 
 const TRACK_STEPS = [
   ['1', 'Enter your Order ID', "Find it in your booking confirmation email or SMS — it's the same number on your label."],
