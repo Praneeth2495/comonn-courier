@@ -135,9 +135,15 @@ function BuildManifest() {
   // defaults to every state selected whenever the eligible-orders pool
   // changes. A handful of addresses have no state on file at all; those
   // group under one "Unspecified" chip rather than silently vanishing from
-  // the list.
+  // the list. Sender is always India here, so normalizeRegionValue('IN', …)
+  // collapses old orders that stored the raw code ("AP") together with
+  // newer ones that store the expanded name ("Andhra Pradesh") — without
+  // this they'd show up as two separate chips for the same real state.
   const UNSPECIFIED_STATE = '__unspecified__';
-  const originStates = [...new Set(eligibleOrders.map((o) => o.senderAddress?.state || UNSPECIFIED_STATE))].sort((a, b) => {
+  function originState(o) {
+    return normalizeRegionValue('IN', o.senderAddress?.state) || UNSPECIFIED_STATE;
+  }
+  const originStates = [...new Set(eligibleOrders.map(originState))].sort((a, b) => {
     if (a === UNSPECIFIED_STATE) return 1;
     if (b === UNSPECIFIED_STATE) return -1;
     return a.localeCompare(b);
@@ -152,7 +158,7 @@ function BuildManifest() {
     setSelectedOriginStates((prev) => (prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state]));
   }
 
-  const visibleOrders = eligibleOrders.filter((o) => selectedOriginStates.includes(o.senderAddress?.state || UNSPECIFIED_STATE));
+  const visibleOrders = eligibleOrders.filter((o) => selectedOriginStates.includes(originState(o)));
 
   function toggleOrder(id) {
     setSelectedOrderIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
