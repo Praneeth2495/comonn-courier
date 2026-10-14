@@ -314,7 +314,7 @@ function Stat({ label, value }) {
   );
 }
 
-const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
+const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
 const STATUS_PILL = {
   UNFINISHED: 'pill-warn',
@@ -323,12 +323,12 @@ const STATUS_PILL = {
   PAID: 'pill-cobalt',
   LABEL_GENERATED: 'pill-cobalt',
   PICKED_UP: 'pill-cobalt',
+  ORIGIN_CUSTOMS_CLEARED: 'pill-cobalt',
   IN_TRANSIT: 'pill-cobalt',
   CLEARED_DESTINATION_CUSTOMS: 'pill-cobalt',
   OUT_FOR_DELIVERY: 'pill-cobalt',
   DELIVERED: 'pill-success',
   CANCELLED: 'pill-danger',
-  EXCEPTION: 'pill-danger',
 };
 
 // Third element is the status filter; fourth is the filter mode when there's
