@@ -342,7 +342,7 @@ const STATUS_PILL = {
 const ORDER_TABS = [
   ['bookings', 'Bookings', null, 'all'],
   ['pickup', 'Pickup orders', ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
-  ['delivery', 'Delivery orders', ['IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY']],
+  ['delivery', 'Delivery orders', ['ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY']],
   ['unconfirmed', 'Unconfirmed orders', ['UNFINISHED']],
   ['manifest', 'Manifest'],
 ];
