@@ -828,9 +828,11 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @media(max-width:640px){
   .input,.select,.input-group input,.input-group .flag,.track-inline input,.track-box input,.search-box input{font-size:16px;}
   /* At the bumped 16px above, a 2-letter code ("AU", "NZ"...) renders
-     noticeably wider than at the desktop 13px — widen the box too, or the
-     flag+code content crowds right up against the chevron with no gap. */
-  .input-group .flag{width:96px;}
+     noticeably wider than at the desktop 13px — widen the box slightly so
+     the flag+code content doesn't crowd the chevron, but only just enough:
+     a wider box than this just eats into the pincode input's own room
+     right next to it. */
+  .input-group .flag{width:84px;}
 }
 
 /* Live "Booking confirmed" popup (Home.jsx) — see backend bookingFeed.js */
