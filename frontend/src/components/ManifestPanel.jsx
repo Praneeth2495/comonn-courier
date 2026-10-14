@@ -292,7 +292,11 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [regions, setRegions] = useState([]);
   const [hubId, setHubId] = useState('');
   const [regionSelection, setRegionSelection] = useState('');
-  const manifestDate = todayIso();
+  const [manifestDate, setManifestDate] = useState(todayIso());
+  // Defaults to the same day as manifestDate (the common case — cargo
+  // usually flies out the day it's manifested) but is its own editable
+  // field, since that's not always true.
+  const [departureDate, setDepartureDate] = useState(todayIso());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
