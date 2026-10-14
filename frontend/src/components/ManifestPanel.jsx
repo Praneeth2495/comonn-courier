@@ -555,7 +555,11 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
         {loading || !manifest ? <LoadingLogo size={40} /> : (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-              <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>{manifest.orders.length} orders · {manifest.totalQty} qty · {Number(manifest.totalWeightKg).toFixed(2)} kg</span>
+              <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>
+                {manifest.orders.length} orders · {manifest.totalQty} qty · {Number(manifest.totalWeightKg).toFixed(2)} kg
+                {' · '}Manifest {formatDateShort(manifest.manifestDate)}
+                {manifest.departureDate && <> · Departs {formatDateShort(manifest.departureDate)}</>}
+              </span>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="btn btn-outline btn-sm" onClick={() => downloadBlob(`/admin/manifests/${manifest.id}/download`, `${manifest.manifestNumber}.pdf`)}>Download sheet</button>
                 <button className="btn btn-primary btn-sm" onClick={() => setShowAddOrders(true)}>+ Add orders</button>
