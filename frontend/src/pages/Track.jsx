@@ -9,8 +9,15 @@ const TRACK_STEPS = [
   ['3', 'Know your ETA', "We'll show the expected delivery window at a glance, right up to the door."],
 ];
 
-const SHIP_STAGES = ['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
-const STAGE_LABELS = { PICKED_UP: 'Picked up', IN_TRANSIT: 'At hub', CLEARED_DESTINATION_CUSTOMS: 'Cleared customs', OUT_FOR_DELIVERY: 'Out for delivery', DELIVERED: 'Delivered' };
+const SHIP_STAGES = ['PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const STAGE_LABELS = {
+  PICKED_UP: 'Picked up',
+  ORIGIN_CUSTOMS_CLEARED: 'Origin customs cleared',
+  IN_TRANSIT: 'At hub',
+  CLEARED_DESTINATION_CUSTOMS: 'Destination customs cleared',
+  OUT_FOR_DELIVERY: 'Out for delivery',
+  DELIVERED: 'Delivered',
+};
 
 export default function Track() {
   const [searchParams] = useSearchParams();
