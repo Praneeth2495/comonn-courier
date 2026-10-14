@@ -7,11 +7,12 @@ export const STATUS_LABEL = {
   PAID: 'Paid',
   LABEL_GENERATED: 'Label Generated',
   PICKED_UP: 'Picked Up',
+  ORIGIN_CUSTOMS_CLEARED: 'Origin Customs Cleared',
   IN_TRANSIT: 'In Transit',
-  CLEARED_DESTINATION_CUSTOMS: 'Cleared Destination Customs',
+  CLEARED_DESTINATION_CUSTOMS: 'Destination Customs Cleared',
   OUT_FOR_DELIVERY: 'Out For Delivery',
   DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
+  CANCELLED: 'Cancelled By Customer',
 };
 
 // Jobs still awaiting physical pickup — a job in any other status has
