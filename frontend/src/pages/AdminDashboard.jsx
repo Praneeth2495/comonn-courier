@@ -21,6 +21,7 @@ import LoadingLogo from '../components/LoadingLogo';
 import { OrderDetailModal, OrderCommentsModal } from '../components/OrderDetailModal';
 import logoFooter from '../assets/logo-footer.png';
 import { formatDateShort } from '../utils/dateFormat';
+import { statusLabel } from '../utils/orderStatus';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('overview');
