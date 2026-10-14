@@ -5,7 +5,7 @@ import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
 import LoadingLogo from '../components/LoadingLogo';
 import { OrderDetailModal } from '../components/OrderDetailModal';
-import { STATUS_PILL } from '../utils/orderStatus';
+import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
 
 const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
 const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
