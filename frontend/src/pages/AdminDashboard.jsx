@@ -877,12 +877,21 @@ function OrdersPanel() {
                 </div>
               )}
               {tab === 'pickup' && (
-                <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {o.assignedDriver ? (
                     <span className="pill pill-cobalt" style={{ fontSize: 11 }}>{o.assignedDriver.fullName}{o.assignedDriver.driverRegion ? ` (${o.assignedDriver.driverRegion})` : ''}</span>
                   ) : (
                     <span style={{ color: 'var(--slate-light)', fontSize: 12 }}>Unassigned</span>
                   )}
+                  <button
+                    className="row-edit-btn"
+                    title="Edit order"
+                    aria-label="Edit order"
+                    disabled={editingId === o.id}
+                    onClick={() => editOrder(o.id)}
+                  >
+                    {editingId === o.id ? '…' : '✏️'}
+                  </button>
                 </div>
               )}
             </div>
