@@ -1024,6 +1024,11 @@ model Manifest {
   region         ManifestRegion? @relation(fields: [regionId], references: [id])
   toAddress      String // snapshot of the airport address used, editable independent of the region's saved default
   manifestDate   DateTime
+  // When the shipment actually flies out — separate from manifestDate (the
+  // day the manifest itself was prepared/filed), since cargo doesn't always
+  // depart the same day it's manifested. Nullable: existing manifests
+  // created before this field existed have no value here.
+  departureDate  DateTime?
   orderCount     Int             @default(0)
   totalQty       Int             @default(0)
   totalWeightKg  Decimal         @default(0) @db.Decimal(10, 3)
