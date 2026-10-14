@@ -4,7 +4,7 @@ import LoadingLogo from './LoadingLogo';
 import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
 
-const LABEL_ELIGIBLE_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const LABEL_ELIGIBLE_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
 const WHATSAPP_TEMPLATE_LABEL = {
   order_confirmed: 'Order confirmed',
