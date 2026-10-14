@@ -213,7 +213,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           {canManageTracking && (
             <form onSubmit={addTrackingUpdate} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', borderTop: '1px solid var(--line-2)', paddingTop: 12 }}>
               <select className="select" style={{ maxWidth: 150 }} value={updateStatus} onChange={(e) => setUpdateStatus(e.target.value)}>
-                {TRACKING_UPDATE_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                {TRACKING_UPDATE_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
               </select>
               <input className="input" style={{ maxWidth: 150 }} placeholder="Location (optional)" value={updateLocation} onChange={(e) => setUpdateLocation(e.target.value)} />
               <input className="input" style={{ flex: 1, minWidth: 150 }} placeholder="Note (optional)" value={updateNote} onChange={(e) => setUpdateNote(e.target.value)} />
