@@ -4,7 +4,7 @@ import LoadingLogo from './LoadingLogo';
 import { OrderDetailModal } from './OrderDetailModal';
 import { downloadBlob } from '../utils/downloadBlob';
 import { STATUS_PILL } from '../utils/orderStatus';
-import { formatDateTime } from '../utils/dateFormat';
+import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 import { EUROPE_COUNTRY_CODES } from '../utils/regions';
 import { normalizeRegionValue } from '../utils/regionNames';
 
