@@ -119,7 +119,7 @@ export default function UserDashboard() {
                   Order ID: <span className="mono">{o.orderNumber}</span> · {o.service.name}
                 </p>
               </div>
-              <span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span>
+              <span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{statusLabel(o.status)}</span>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {['UNFINISHED', 'PENDING_PAYMENT'].includes(o.status) && (
