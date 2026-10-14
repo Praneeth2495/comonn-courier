@@ -191,6 +191,7 @@ async function createManifest(req, res, next) {
           regionId,
           toAddress: toAddress.trim(),
           manifestDate: new Date(manifestDate),
+          departureDate: departureDate ? new Date(departureDate) : null,
           createdById: req.user.id,
         },
       });
