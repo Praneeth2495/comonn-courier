@@ -851,7 +851,7 @@ function OrdersPanel() {
                   onChange={(e) => updateStatus(o.id, e.target.value)}
                 >
                   {!ORDER_STATUSES.includes(o.status) && <option value={o.status}>{o.status}</option>}
-                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
                 </select>
               </div>
               <div><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>View</button></div>
