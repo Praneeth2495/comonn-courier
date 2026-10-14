@@ -52,7 +52,7 @@ export default function Track() {
   }
 
   const stageIndex = result ? SHIP_STAGES.indexOf(result.status) : -1;
-  const isFinal = result && (result.status === 'DELIVERED' || result.status === 'CANCELLED' || result.status === 'EXCEPTION');
+  const isFinal = result && (result.status === 'DELIVERED' || result.status === 'CANCELLED');
   const progressPct = stageIndex >= 0 ? ((stageIndex + 1) / SHIP_STAGES.length) * 100 : 0;
   const nextStage = !isFinal && stageIndex < SHIP_STAGES.length - 1 ? SHIP_STAGES[stageIndex + 1] : null;
 
