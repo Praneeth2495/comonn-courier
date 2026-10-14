@@ -94,7 +94,7 @@ export default function Track() {
                   Order ID: <span className="mono">{result.orderNumber}</span>
                 </p>
               </div>
-              <span className={`pill ${STATUS_PILL[result.status] || 'pill-navy'}`}>{result.status.replace(/_/g, ' ')}</span>
+              <span className={`pill ${STATUS_PILL[result.status] || 'pill-navy'}`}>{statusLabel(result.status)}</span>
             </div>
             <div className="progress-bar"><div className="fill" style={{ width: `${progressPct}%` }} /></div>
             <div className="progress-labels">
