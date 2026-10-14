@@ -196,7 +196,7 @@ function Overview() {
                       <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
                       <td>{o.service.name}</td>
                       <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
-                      <td>{o.status.replace(/_/g, ' ')}</td>
+                      <td>{statusLabel(o.status)}</td>
                     </tr>
                   ))}
                 </tbody>
