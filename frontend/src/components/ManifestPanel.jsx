@@ -436,9 +436,15 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
             </div>
           )}
 
-          <div className="field">
-            <label>Manifest date</label>
-            <input className="input" disabled value={formatDateShort(new Date())} />
+          <div className="grid-2">
+            <div className="field">
+              <label>Manifest date</label>
+              <input className="input" type="date" required value={manifestDate} onChange={(e) => setManifestDate(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Departure date</label>
+              <input className="input" type="date" required value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
+            </div>
           </div>
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
