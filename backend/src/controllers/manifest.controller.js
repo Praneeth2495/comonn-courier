@@ -145,7 +145,7 @@ async function recomputeAndRegenerate(manifestId) {
 }
 
 /**
- * POST /api/admin/manifests — { orderIds, hubId, toAddress, manifestDate }.
+ * POST /api/admin/manifests — { orderIds, hubId, toAddress, manifestDate, departureDate }.
  * airportCode is deliberately not client input — the destination country
  * (and whichever specific airport(s), if that turns out to be exactly one)
  * are derived server-side from the selected orders themselves, since a
