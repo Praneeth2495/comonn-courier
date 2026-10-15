@@ -1466,6 +1466,7 @@ function UsersPanel() {
   const [staffRegions, setStaffRegions] = useState({}); // userId -> [{id,state,region},...]
   const [editingStaffRegions, setEditingStaffRegions] = useState(null); // { id, fullName }
   const [editingPageAccess, setEditingPageAccess] = useState(null); // { id, fullName, allowedPages }
+  const [editingOrderTabAccess, setEditingOrderTabAccess] = useState(null); // { id, fullName, allowedOrderTabs }
 
   function load() {
     client.get('/admin/users').then(({ data }) => setUsers(data.users));
