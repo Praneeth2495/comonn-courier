@@ -763,7 +763,7 @@ function OrdersPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Orders</h1>
 
       <div className="dash-tabs">
-        {ORDER_TABS.map(([key, label]) => (
+        {visibleOrderTabs.map(([key, label]) => (
           <button key={key} className={`dash-tab ${tab === key ? 'active' : ''}`} onClick={() => { setTab(key); setPage(1); }}>
             {label}
           </button>
