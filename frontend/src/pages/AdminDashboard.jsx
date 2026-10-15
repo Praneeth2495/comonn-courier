@@ -685,6 +685,14 @@ function OrdersPanel() {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     let allPickup = orders
+      // Once a pickup is completed, keep it visible here only through the
+      // rest of that calendar day (IST) — past that it's just clutter for
+      // a tab whose job is "what still needs collecting today". The order
+      // itself isn't touched; it simply stops appearing in this list once
+      // the day it was picked up on has ended. Orders with no pickedUpAt
+      // (picked up before this filter existed) are left visible rather
+      // than guessed at.
+      .filter((o) => o.status !== 'PICKED_UP' || !o.pickedUpAt || isSameIstDay(o.pickedUpAt, now))
       .map((o) => {
         const parsed = parsePickupDateStr(o.pickupDate, now);
         const overdue = !!parsed && parsed < todayStart && o.status !== 'PICKED_UP';
