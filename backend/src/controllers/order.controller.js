@@ -518,12 +518,18 @@ async function updateOrderStatus(req, res, next) {
     if (!existing) return res.status(404).json({ error: 'Order not found' });
 
     const isManualPaidMark = status === 'PAID' && existing.status !== 'PAID';
+    // Covers staff setting PICKED_UP from this dropdown instead of the
+    // driver app's own "picked up" button (driver.controller.js) — either
+    // path needs pickedUpAt set once, so the Pickup tab's end-of-day
+    // auto-removal (AdminDashboard.jsx) has a real timestamp to key off.
+    const isManualPickupMark = status === 'PICKED_UP' && !existing.pickedUpAt;
 
     const order = await prisma.order.update({
       where: { id: req.params.id },
       data: {
         status,
         ...(isManualPaidMark ? { manualPaymentMarkedAt: new Date() } : {}),
+        ...(isManualPickupMark ? { pickedUpAt: new Date() } : {}),
         trackingEvents: { create: { status, location, note } },
       },
     });
