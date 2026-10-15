@@ -357,7 +357,7 @@ export default function BatchScanPanel() {
             <select className="select" value={chosenStatus} onChange={(e) => setChosenStatus(e.target.value)}>
               <option value="">Select status…</option>
               {chosenStatus && !ORDER_STATUSES.includes(chosenStatus) && <option value={chosenStatus}>{chosenStatus} (from scanned location)</option>}
-              {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+              {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
             </select>
           </div>
           {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
