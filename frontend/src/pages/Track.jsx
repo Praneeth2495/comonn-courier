@@ -115,7 +115,7 @@ export default function Track() {
               <div className="tl-item" key={i}>
                 <div className="tl-dot">✓</div>
                 <div className="tl-body">
-                  <b>{ev.status.replace(/_/g, ' ')}</b>
+                  <b>{statusLabel(ev.status)}</b>
                   <span>
                     {new Date(ev.occurredAt).toLocaleString()} {ev.location ? `· ${ev.location}` : ''}
                   </span>
