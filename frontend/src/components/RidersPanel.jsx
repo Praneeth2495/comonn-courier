@@ -152,7 +152,7 @@ function JobCard({ job }) {
         <div>
           <h3 style={{ fontSize: 16 }}>Order <span className="mono">{job.orderNumber}</span></h3>
           <span
-            className={`pill ${job.status === 'CANCELLED' ? 'pill-danger' : ['PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(job.status) ? 'pill-success' : 'pill-cobalt'}`}
+            className={`pill ${job.status === 'CANCELLED' ? 'pill-danger' : ['PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(job.status) ? 'pill-success' : 'pill-cobalt'}`}
             style={{ marginTop: 6, display: 'inline-block' }}
           >
             {STATUS_LABEL[job.status] || job.status}
