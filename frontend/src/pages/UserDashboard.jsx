@@ -7,8 +7,8 @@ import LoadingLogo from '../components/LoadingLogo';
 import { OrderDetailModal } from '../components/OrderDetailModal';
 import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
 
-const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED', 'EXCEPTION'];
-const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const HISTORY_STATUSES = ['DELIVERED', 'CANCELLED'];
+const PAID_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
 const ACCT_TABS = [['active', 'Active orders'], ['history', 'Order history']];
 
