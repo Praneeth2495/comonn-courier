@@ -454,8 +454,39 @@ function IndiaFlagChip() {
   );
 }
 
+// Mirrors backend/src/constants/pages.js's ORDER_TAB_KEYS — kept in sync
+// manually, same reason as PAGE_KEYS/PAGE_LABELS above.
+const ORDER_TAB_PERM_LABELS = {
+  bookings: 'Bookings',
+  pickup: 'Pickup orders',
+  delivery: 'Delivery orders',
+  unconfirmed: 'Unconfirmed orders',
+  manifest: 'Manifest',
+};
+const ORDER_TAB_PERM_KEYS = Object.keys(ORDER_TAB_PERM_LABELS);
+
 function OrdersPanel() {
-  const [tab, setTab] = useState('pickup');
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+  // Empty allowedOrderTabs = no restriction (every tab visible) — see the
+  // schema comment on User.allowedOrderTabs for why the default is "open"
+  // rather than "blank slate" like allowedPages.
+  const allowedOrderTabs = user?.allowedOrderTabs || [];
+  const visibleOrderTabs = ORDER_TABS.filter(
+    ([key]) => isAdmin || allowedOrderTabs.length === 0 || allowedOrderTabs.includes(key)
+  );
+  const [tab, setTabState] = useState(visibleOrderTabs[0]?.[0] || 'pickup');
+  // If the signed-in account's tab access narrows (or the saved tab simply
+  // isn't visible to them) after this component already picked a default,
+  // fall back to the first tab they can actually see instead of rendering
+  // a blank panel for a tab they have no access to.
+  useEffect(() => {
+    if (!visibleOrderTabs.some(([key]) => key === tab) && visibleOrderTabs[0]) {
+      setTabState(visibleOrderTabs[0][0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowedOrderTabs.join(','), isAdmin]);
+  function setTab(key) { setTabState(key); }
   // Pickup tab only: origin (sender) state/region.
   const [pickupStates, setPickupStates] = useState([]);
   const [pickupRegionsByState, setPickupRegionsByState] = useState({});
