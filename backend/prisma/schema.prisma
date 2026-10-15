@@ -75,6 +75,13 @@ model User {
   // role-management control, so it stays ADMIN-only in code.
   allowedPages             String[] @default([])
 
+  // Which Orders-page sub-tabs (bookings/pickup/delivery/unconfirmed/
+  // manifest — keys from ORDER_TAB_KEYS in pages.js) this account can see.
+  // Empty means no restriction (every existing STAFF/ACCOUNTS account's
+  // current behavior) — admin opts a user INTO a narrower set rather than
+  // everyone starting blank. Meaningless for ADMIN/DRIVER, same as above.
+  allowedOrderTabs         String[] @default([])
+
   addresses               Address[]
   orders                  Order[]
   auditLogs               AuditLog[]
