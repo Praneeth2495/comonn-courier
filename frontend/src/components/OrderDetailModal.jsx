@@ -197,7 +197,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: canManageTracking ? 14 : 0 }}>
               {trackingEvents.map((ev, i) => (
                 <div key={ev.id || i} style={{ fontSize: 12.5, borderLeft: '2px solid var(--line-2)', paddingLeft: 10 }}>
-                  <b>{ev.status.replace(/_/g, ' ')}</b>
+                  <b>{statusLabel(ev.status)}</b>
                   <span style={{ color: 'var(--slate-light)', marginLeft: 6 }}>
                     {new Date(ev.occurredAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
                     {ev.location ? ` · ${ev.location}` : ''}
