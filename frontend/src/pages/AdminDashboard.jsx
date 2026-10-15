@@ -1790,6 +1790,46 @@ function PageAccessModal({ staff, currentAllowedPages, onSave, onClose }) {
   );
 }
 
+function OrderTabAccessModal({ staff, currentAllowedOrderTabs, onSave, onClose }) {
+  const [selected, setSelected] = useState(currentAllowedOrderTabs);
+  const [saving, setSaving] = useState(false);
+
+  function toggle(tabKey) {
+    setSelected((prev) => (prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]));
+  }
+
+  async function save() {
+    setSaving(true);
+    await onSave(selected);
+    setSaving(false);
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <h3 style={{ fontSize: 17 }}>Order tabs for {staff.fullName}</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
+          Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Orders page.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
+          {ORDER_TAB_PERM_KEYS.map((key) => (
+            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
+              <input type="checkbox" checked={selected.includes(key)} onChange={() => toggle(key)} />
+              {ORDER_TAB_PERM_LABELS[key]}
+            </label>
+          ))}
+        </div>
+        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
+          {saving ? 'Saving…' : 'Save order tab access'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function StaffZoneModal({ staff, zones, currentZoneIds, onSave, onClose }) {
   const [selected, setSelected] = useState(currentZoneIds);
   const [saving, setSaving] = useState(false);
