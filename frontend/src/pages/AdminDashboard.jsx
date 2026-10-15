@@ -436,6 +436,13 @@ function parsePickupDateStr(str, referenceDate) {
   return parsed;
 }
 
+// Courier operates in IST — comparing in UTC would roll a pickup made
+// between midnight and 5:30am IST into the wrong calendar day.
+function isSameIstDay(a, b) {
+  const fmt = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  return fmt(a) === fmt(b);
+}
+
 function IndiaFlagChip() {
   return (
     <svg viewBox="0 0 60 40">
