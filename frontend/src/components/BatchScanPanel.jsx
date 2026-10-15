@@ -374,7 +374,7 @@ export default function BatchScanPanel() {
         <div className="card" style={{ padding: 24, maxWidth: 480, marginBottom: 24 }}>
           <h4 style={{ marginBottom: 8, color: 'var(--success)' }}>✓ Done</h4>
           <p style={{ fontSize: 13.5, marginBottom: 10 }}>
-            {result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{chosenStatus.replace(/_/g, ' ')}</b>.
+            {result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{statusLabel(chosenStatus)}</b>.
           </p>
           {locationNotes.length > 0 && (
             <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 10 }}>
