@@ -626,6 +626,7 @@ async function setUserRole(req, res, next) {
         driverRegion: driverRegion === undefined ? undefined : (driverRegion.trim() || null),
         canViewOverviewBreakdown,
         allowedPages: allowedPages !== undefined ? allowedPages : seededAllowedPages,
+        allowedOrderTabs,
       },
     });
 
