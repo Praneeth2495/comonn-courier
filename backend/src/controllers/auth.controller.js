@@ -77,7 +77,7 @@ async function login(req, res, next) {
     const token = signUserToken(user);
     res.json({
       token,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, allowedPages: user.allowedPages },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, allowedPages: user.allowedPages, allowedOrderTabs: user.allowedOrderTabs },
     });
   } catch (err) {
     next(err);
@@ -226,7 +226,7 @@ async function setPassword(req, res, next) {
     const jwtToken = signUserToken(user);
     res.json({
       token: jwtToken,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, allowedPages: user.allowedPages },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, allowedPages: user.allowedPages, allowedOrderTabs: user.allowedOrderTabs },
     });
   } catch (err) {
     next(err);
