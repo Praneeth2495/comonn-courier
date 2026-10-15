@@ -596,9 +596,12 @@ async function getDriverDashboard(req, res, next) {
 
 async function setUserRole(req, res, next) {
   try {
-    const { role, isActive, driverRegion, canViewOverviewBreakdown, allowedPages } = req.body;
+    const { role, isActive, driverRegion, canViewOverviewBreakdown, allowedPages, allowedOrderTabs } = req.body;
     if (allowedPages !== undefined && (!Array.isArray(allowedPages) || allowedPages.some((p) => !PAGE_KEYS.includes(p)))) {
       return res.status(400).json({ error: 'allowedPages must be an array of valid page keys' });
+    }
+    if (allowedOrderTabs !== undefined && (!Array.isArray(allowedOrderTabs) || allowedOrderTabs.some((t) => !ORDER_TAB_KEYS.includes(t)))) {
+      return res.status(400).json({ error: 'allowedOrderTabs must be an array of valid order tab keys' });
     }
 
     let seededAllowedPages;
