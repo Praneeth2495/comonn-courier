@@ -409,7 +409,7 @@ export default function BatchScanPanel() {
                         onChange={(e) => changeBatchStatus(b.id, e.target.value)}
                       >
                         {!ORDER_STATUSES.includes(b.status) && <option value={b.status}>{b.status}</option>}
-                        {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+                        {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
                       </select>
                       <button
                         type="button"
