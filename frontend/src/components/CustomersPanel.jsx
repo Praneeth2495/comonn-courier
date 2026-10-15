@@ -162,7 +162,7 @@ function CustomerDetailModal({ customerId, onClose, onWalletChanged }) {
                     <tr key={o.id}>
                       <td className="mono">{o.orderNumber}</td>
                       <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
-                      <td><span className="pill pill-navy">{o.status.replace(/_/g, ' ')}</span></td>
+                      <td><span className="pill pill-navy">{statusLabel(o.status)}</span></td>
                       <td>₹{Number(o.grandTotal).toFixed(2)}</td>
                       <td>{Number(o.walletAmountUsed) > 0 ? `₹${Number(o.walletAmountUsed).toFixed(2)}` : '—'}</td>
                       <td>{fmtDate(o.createdAt)}</td>
