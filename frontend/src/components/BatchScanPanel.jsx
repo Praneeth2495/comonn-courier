@@ -446,7 +446,7 @@ export default function BatchScanPanel() {
               <div>
                 <h3 style={{ fontSize: 17 }}>{viewingBatch.name}</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
-                  {viewingBatch.items.length} label{viewingBatch.items.length === 1 ? '' : 's'} scanned · status applied: {viewingBatch.status.replace(/_/g, ' ')}
+                  {viewingBatch.items.length} label{viewingBatch.items.length === 1 ? '' : 's'} scanned · status applied: {statusLabel(viewingBatch.status)}
                 </p>
               </div>
               <button onClick={() => setViewingBatch(null)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
