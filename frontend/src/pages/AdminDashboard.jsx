@@ -1654,10 +1654,24 @@ function UsersPanel() {
                     <span style={{ color: 'var(--slate-light)' }}>—</span>
                   )}
                 </td>
+                <td>
+                  {u.role === 'STAFF' || u.role === 'ACCOUNTS' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(u.allowedOrderTabs || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>All tabs</span>
+                      ) : (
+                        (u.allowedOrderTabs || []).map((key) => <span key={key} className="pill pill-cobalt" style={{ fontSize: 11 }}>{ORDER_TAB_PERM_LABELS[key] || key}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingOrderTabAccess({ id: u.id, fullName: u.fullName, allowedOrderTabs: u.allowedOrderTabs || [] })}>Edit</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {internalUsers.length === 0 && (
-              <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>{q.trim() ? 'No accounts match your search.' : 'No accounts yet.'}</td></tr>
+              <tr><td colSpan={11} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>{q.trim() ? 'No accounts match your search.' : 'No accounts yet.'}</td></tr>
             )}
           </tbody>
         </table>
