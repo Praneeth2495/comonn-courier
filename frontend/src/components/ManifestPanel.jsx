@@ -259,7 +259,7 @@ function BuildManifest() {
                           <td className="mono">{o.airportCode}</td>
                           <td>{o.qty}</td>
                           <td>{Number(o.chargeableWeightKg).toFixed(2)} kg</td>
-                          <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{o.status.replace(/_/g, ' ')}</span></td>
+                          <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{statusLabel(o.status)}</span></td>
                         </tr>
                       ))}
                       {visibleOrders.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders match these filters right now.</td></tr>}
