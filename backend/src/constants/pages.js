@@ -50,4 +50,13 @@ const DEFAULT_ALLOWED_PAGES_BY_ROLE = {
   ACCOUNTS: ['orders', 'accounts', 'inventory', 'onboarding', 'storage'],
 };
 
-module.exports = { PAGE_KEYS, PAGE_LABELS, DEFAULT_ALLOWED_PAGES_BY_ROLE };
+// Sub-tabs inside the (always-visible) Orders page — separate from
+// PAGE_KEYS above, which only ever gates whole pages. An empty
+// User.allowedOrderTabs means "no restriction, show every tab" (the
+// pre-existing behavior for every STAFF/ACCOUNTS account), not "show
+// none" — unlike allowedPages, there was never a blank-slate day-one
+// default to seed here, so admin opts a user INTO a restriction by
+// picking specific tabs rather than opting them out of a default set.
+const ORDER_TAB_KEYS = ['bookings', 'pickup', 'delivery', 'unconfirmed', 'manifest'];
+
+module.exports = { PAGE_KEYS, PAGE_LABELS, DEFAULT_ALLOWED_PAGES_BY_ROLE, ORDER_TAB_KEYS };
