@@ -3,12 +3,13 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from './LoadingLogo';
 import { formatDateShort } from '../utils/dateFormat';
+import { statusLabel } from '../utils/orderStatus';
 
 // Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
 // the (mostly public) app bundle when only staff/admin/driver ever open it.
 const BarcodeCameraScanner = lazy(() => import('./BarcodeCameraScanner'));
 
-const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'EXCEPTION'];
+const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
 export default function BatchScanPanel() {
   const { user } = useAuth();
