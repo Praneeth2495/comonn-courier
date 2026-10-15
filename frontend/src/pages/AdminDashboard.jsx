@@ -1737,6 +1737,15 @@ function UsersPanel() {
           onClose={() => setEditingPageAccess(null)}
         />
       )}
+
+      {editingOrderTabAccess && (
+        <OrderTabAccessModal
+          staff={editingOrderTabAccess}
+          currentAllowedOrderTabs={editingOrderTabAccess.allowedOrderTabs}
+          onSave={(allowedOrderTabs) => saveOrderTabAccess(editingOrderTabAccess.id, allowedOrderTabs)}
+          onClose={() => setEditingOrderTabAccess(null)}
+        />
+      )}
     </div>
   );
 }
