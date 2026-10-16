@@ -332,6 +332,22 @@ export default function Home() {
 
   return (
     <div>
+      <div className={`modal-overlay ${showComingSoon ? 'open' : ''}`} onClick={() => setShowComingSoon(false)}>
+        {showComingSoon && (
+          <div className="modal-box" style={{ maxWidth: 420, textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setShowComingSoon(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+            </div>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🚧</div>
+            <h3 style={{ marginBottom: 8 }}>Coming soon</h3>
+            <p style={{ fontSize: 13.5, color: 'var(--slate)', marginBottom: 20 }}>
+              We're putting the finishing touches on Comonn Courier. Check back shortly!
+            </p>
+            <button className="btn btn-primary block" onClick={() => setShowComingSoon(false)}>Got it</button>
+          </div>
+        )}
+      </div>
+
       <BookingConfirmedToast />
       <BackToTop targetRef={hiwSectionRef} />
       <div className="hero">
