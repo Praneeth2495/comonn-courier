@@ -162,6 +162,12 @@ export default function Home() {
     client.get('/quote/countries').then(({ data }) => setCountries(data.countries)).catch(() => {});
   }, []);
 
+  // Logged-out visitors see a "coming soon" notice on Home; logged-in users
+  // (customer or admin/staff) get the page exactly as it works today.
+  useEffect(() => {
+    if (!authLoading && !user) setShowComingSoon(true);
+  }, [authLoading, user]);
+
   // Same India-only postcode suggestion dataset used on the Details page —
   // offered here too so the pickup pincode carries forward to the Book
   // page (and from there, pre-fills the sender's address) instead of
