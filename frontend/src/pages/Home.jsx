@@ -124,8 +124,10 @@ function FaqItem({ question, answer }) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { setBooking } = useBooking();
   const hiwSectionRef = useRef(null);
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const [qty, setQty] = useState(1);
   const [trackId, setTrackId] = useState('');
   const [weightPreset, setWeightPreset] = useState('');
