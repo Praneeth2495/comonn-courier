@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
+import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
 import LoadingLogo from '../components/LoadingLogo';
 import CountryFlag from '../components/CountryFlag';
