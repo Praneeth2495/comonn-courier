@@ -76,6 +76,36 @@ export default function Details() {
     if (quoteInput?.originPostcode) base.postcode = quoteInput.originPostcode;
     if (quoteInput?.originSuburb) base.city = quoteInput.originSuburb;
     if (quoteInput?.originState) base.state = normalizeRegionValue('IN', quoteInput.originState);
+
+    // Same destination as a booking already saved this session ("+ Add
+    // another item" / "New booking") almost always means the same sender is
+    // shipping again — carry over just their contact details (name, phone,
+    // email, address, instructions) so they don't have to retype them.
+    // Postcode/city/state/country stay driven by this booking's own quoted
+    // origin above (not the matched booking's) since that's what pricing
+    // was actually calculated against.
+    const norm = (s) => (s || '').trim().toLowerCase();
+    const destEircode = quoteInput?.destinationEircode || quoteInput?.destinationPostcode;
+    const matchedBooking = savedBookings?.find((b) => {
+      const r = b.receiverAddress;
+      if (!r || !quoteInput?.destinationCountryCode || r.countryCode !== quoteInput.destinationCountryCode) return false;
+      return quoteInput.destinationCountryCode === 'IE'
+        ? norm(r.eircode) === norm(destEircode)
+        : norm(r.postcode) === norm(quoteInput?.destinationPostcode);
+    });
+    if (matchedBooking?.senderAddress) {
+      const matchedSender = fromSavedAddress(matchedBooking.senderAddress);
+      return {
+        ...base,
+        contactName: matchedSender.contactName,
+        dialCode: matchedSender.dialCode,
+        phoneNumber: matchedSender.phoneNumber,
+        email: matchedSender.email,
+        instructions: matchedSender.instructions,
+        line1: matchedSender.line1,
+        line2: matchedSender.line2,
+      };
+    }
     return base;
   });
   const [receiver, setReceiver] = useState(() => {
