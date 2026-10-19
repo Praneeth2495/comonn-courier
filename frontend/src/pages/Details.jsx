@@ -88,8 +88,8 @@ export default function Details() {
     const destEircode = quoteInput?.destinationEircode || quoteInput?.destinationPostcode;
     const matchedBooking = savedBookings?.find((b) => {
       const r = b.receiverAddress;
-      if (!r || !quoteInput?.destinationCountryCode || r.countryCode !== quoteInput.destinationCountryCode) return false;
-      return quoteInput.destinationCountryCode === 'IE'
+      if (!r) return false;
+      return quoteInput?.destinationCountryCode === 'IE'
         ? norm(r.eircode) === norm(destEircode)
         : norm(r.postcode) === norm(quoteInput?.destinationPostcode);
     });
