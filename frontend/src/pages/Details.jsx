@@ -77,7 +77,7 @@ export default function Details() {
     if (quoteInput?.originSuburb) base.city = quoteInput.originSuburb;
     if (quoteInput?.originState) base.state = normalizeRegionValue('IN', quoteInput.originState);
 
-    // Same destination as a booking already saved this session ("+ Add
+    // Same pickup pincode as a booking already saved this session ("+ Add
     // another item" / "New booking") almost always means the same sender is
     // shipping again — carry over just their contact details (name, phone,
     // email, address, instructions) so they don't have to retype them.
@@ -85,14 +85,9 @@ export default function Details() {
     // origin above (not the matched booking's) since that's what pricing
     // was actually calculated against.
     const norm = (s) => (s || '').trim().toLowerCase();
-    const destEircode = quoteInput?.destinationEircode || quoteInput?.destinationPostcode;
-    const matchedBooking = savedBookings?.find((b) => {
-      const r = b.receiverAddress;
-      if (!r) return false;
-      return quoteInput?.destinationCountryCode === 'IE'
-        ? norm(r.eircode) === norm(destEircode)
-        : norm(r.postcode) === norm(quoteInput?.destinationPostcode);
-    });
+    const matchedBooking = quoteInput?.originPostcode
+      ? savedBookings?.find((b) => norm(b.senderAddress?.postcode) === norm(quoteInput.originPostcode))
+      : null;
     if (matchedBooking?.senderAddress) {
       const matchedSender = fromSavedAddress(matchedBooking.senderAddress);
       return {
