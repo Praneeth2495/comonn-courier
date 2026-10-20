@@ -185,6 +185,9 @@ export default function Payment() {
   // customer viewing via that link (not staff themselves), skip straight
   // to order summary + payment options.
   const isPreppedForCustomer = Boolean(bookingOrder?.otpVerifiedAt && bookingOrder?.dgAcknowledged) && !['ADMIN', 'STAFF'].includes(user?.role);
+  // Staff booking on a customer's behalf (walk-in/phone order) can mark the
+  // parcel as dropped off in-store instead of picking a future pickup date.
+  const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
 
   async function syncAddons(overrides) {
     const payload = {
