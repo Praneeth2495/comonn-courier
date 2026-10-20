@@ -833,6 +833,7 @@ export default function Payment() {
                 <label>Pickup collection date</label>
                 <select className="select" style={{ maxWidth: 320 }} value={pickupDate} onChange={(e) => changePickupDate(e.target.value)}>
                   {pickupDates.map((d) => <option key={d}>{d}</option>)}
+                  {isStaffUser && <option value="In store">In store</option>}
                 </select>
               </div>
               <div className="field" style={{ marginTop: 18 }}>
