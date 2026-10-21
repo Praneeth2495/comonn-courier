@@ -297,29 +297,29 @@ function AddressFields({ label, value, onChange }) {
     <div style={{ border: '1px solid var(--line-2)', borderRadius: 10, padding: 14, marginBottom: 14 }}>
       <h4 style={{ fontSize: 13.5, marginBottom: 10 }}>{label} address</h4>
       <div className="field">
-        <label>Business name (optional)</label>
-        <input className="input" value={value.businessName} onChange={(e) => set('businessName', e.target.value)} />
+        <label>Business name</label>
+        <input className="input" placeholder="Optional" value={value.businessName} onChange={(e) => set('businessName', e.target.value)} />
       </div>
       <div className="field">
         <label>Street</label>
         <input className="input" required value={value.street} onChange={(e) => set('street', e.target.value)} />
       </div>
       <div className="field">
-        <label>Sub-urb (optional)</label>
-        <input className="input" value={value.suburb} onChange={(e) => set('suburb', e.target.value)} />
+        <label>Sub-urb</label>
+        <input className="input" placeholder="Optional" value={value.suburb} onChange={(e) => set('suburb', e.target.value)} />
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
         <div className="field" style={{ flex: 1 }}>
-          <label>City (optional)</label>
-          <input className="input" value={value.city} onChange={(e) => set('city', e.target.value)} />
+          <label>City</label>
+          <input className="input" placeholder="Optional" value={value.city} onChange={(e) => set('city', e.target.value)} />
         </div>
         <div className="field" style={{ flex: 1 }}>
           <label>State</label>
           <input className="input" required value={value.state} onChange={(e) => set('state', e.target.value)} />
         </div>
         <div className="field" style={{ flex: 1 }}>
-          <label>Pin (optional)</label>
-          <input className="input" value={value.pin} onChange={(e) => set('pin', e.target.value)} />
+          <label>Pin</label>
+          <input className="input" placeholder="Optional" value={value.pin} onChange={(e) => set('pin', e.target.value)} />
         </div>
       </div>
       <div className="field">
