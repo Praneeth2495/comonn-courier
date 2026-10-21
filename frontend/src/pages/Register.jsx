@@ -73,8 +73,8 @@ export default function Register() {
             <input className="input" placeholder="Full name" required value={form.fullName} onChange={(e) => update('fullName', e.target.value)} />
           </div>
           <div className="field">
-            <label>Business Name <span style={{ fontWeight: 400, color: 'var(--slate-light)' }}>(optional)</span></label>
-            <input className="input" placeholder="Business name" value={form.company} onChange={(e) => update('company', e.target.value)} />
+            <label>Business Name</label>
+            <input className="input" placeholder="Optional" value={form.company} onChange={(e) => update('company', e.target.value)} />
           </div>
         </div>
 
