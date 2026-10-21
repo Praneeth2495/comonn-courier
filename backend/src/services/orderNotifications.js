@@ -6,8 +6,10 @@ const { broadcastBookingConfirmed } = require('./bookingFeed');
 // always sends, regardless of the customer's WhatsApp opt-in choice (see
 // Order.whatsappOptIn, set on the Payment page). Deliberately narrow set
 // of follow-up statuses (just these two, not every tracking transition) —
-// only sends if they opted in. All templates must be pre-approved in
-// Meta's WhatsApp Manager before use.
+// only sends if they opted in. All templates are pre-approved WhatsApp
+// utility templates registered in the Gupshup console (apps.gupshup.io >
+// WhatsApp > COMONN app > Templates), carried over from Meta's pre-approved
+// template library rather than custom-submitted ones.
 const CONFIRMATION_STATUSES = new Set(['PAID', 'PICKUP_CONFIRMED']);
 const CONFIRMATION_TEMPLATE = 'order_confirmed';
 
@@ -16,10 +18,32 @@ const UPDATE_TEMPLATES = {
   OUT_FOR_DELIVERY: 'order_out_for_delivery',
 };
 
-// All three approved templates (order_confirmed, order_picked_up,
-// order_out_for_delivery) take exactly 2 body params — name and order
-// number — see their approved bodies in WhatsApp Manager. None use a
-// dynamic URL; the "Track Order" button on each is a static Quick Reply.
+// Each template has a different body/button shape, so params aren't
+// interchangeable — see each template's "Parameters" preview in the Gupshup
+// console for the exact wording:
+//  - order_confirmed: "Hi {1}, your order {2} has been successfully placed
+//    with {3} and is being processed." + a dynamic "View order" button URL
+//    (tracking link suffix as a 4th, trailing param).
+//  - order_picked_up: "Hi {1}, your order {2} has been shipped and is on
+//    the way." No button.
+//  - order_out_for_delivery: "Your order {1} is out for delivery! It should
+//    arrive by {2}." + a dynamic "Track order" button URL (tracking link
+//    suffix as a 3rd, trailing param). No name placeholder — we don't yet
+//    track a real delivery ETA, so {2} gets a generic string rather than a
+//    fabricated date.
+function buildParams(templateName, { contactName, trackingNumber }) {
+  const name = contactName || 'there';
+  switch (templateName) {
+    case CONFIRMATION_TEMPLATE:
+      return [name, trackingNumber, 'Comonn', trackingNumber];
+    case UPDATE_TEMPLATES.OUT_FOR_DELIVERY:
+      return [trackingNumber, 'within 24 hours', trackingNumber];
+    case UPDATE_TEMPLATES.PICKED_UP:
+    default:
+      return [name, trackingNumber];
+  }
+}
+
 // Every attempt (success or failure) is logged to WhatsappMessage so staff
 // can see it on the order detail modal — the webhook (whatsapp.controller.js)
 // later updates `status` on the success rows as delivered/read/failed come in.
@@ -31,7 +55,7 @@ async function notifyRecipient(orderId, templateName, contactName, phone, tracki
     const result = await sendTemplateMessage({
       to,
       templateName,
-      params: [contactName || 'there', trackingNumber],
+      params: buildParams(templateName, { contactName, trackingNumber }),
     });
     await prisma.whatsappMessage.create({
       data: {
