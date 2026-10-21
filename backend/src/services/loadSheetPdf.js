@@ -5,6 +5,19 @@ const { getCountryName } = require('../utils/countryNames');
 const { sanitizePdfText } = require('../utils/pdfText');
 
 const LOGO_PATH = path.join(__dirname, '../assets/logo-full.png');
+const LOGO_ICON_PATH = path.join(__dirname, '../assets/logo-icon.png');
+
+// Same faint centered watermark as consignmentPdf.js/invoiceService.js/
+// labelService.js — the checkmark icon, not the full wordmark.
+function drawWatermark(doc) {
+  if (!fs.existsSync(LOGO_ICON_PATH)) return;
+  const usableHeight = doc.page.height - doc.page.margins.top - doc.page.margins.bottom;
+  const size = Math.min(260, usableHeight * 0.85);
+  const x = (doc.page.width - size) / 2;
+  const y = doc.page.margins.top + (usableHeight - size) / 2;
+  doc.opacity(0.06).image(LOGO_ICON_PATH, x, y, { width: size, height: size });
+  doc.opacity(1);
+}
 
 function formatAddress(a) {
   if (!a) return '—';
