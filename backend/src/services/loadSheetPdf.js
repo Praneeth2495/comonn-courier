@@ -99,6 +99,8 @@ function generateLoadSheet(batch, res) {
   res.setHeader('Content-Disposition', `inline; filename="load-sheet-${batch.orderId || batch.referenceNumber}.pdf"`);
   doc.pipe(res);
 
+  drawWatermark(doc);
+
   const left = doc.page.margins.left;
   const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
   let y = doc.page.margins.top;
