@@ -30,6 +30,72 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
 }
 
+// Compact ruled items table for one copy's half-page — header row shaded,
+// body rows auto-growing to fit wrapped text. Instructions (a single
+// batch-level note, not per-item) is only printed on the first row to avoid
+// repeating identical text down the column. Returns the y position just
+// below the table so the caller knows how much vertical space it used.
+function drawItemsTable(doc, items, instructions, x, y, width) {
+  const columns = [
+    { key: 'item', header: 'Item', width: width * 0.28 },
+    { key: 'qty', header: 'Qty', width: width * 0.1, align: 'center' },
+    { key: 'dims', header: 'Dimensions', width: width * 0.2, align: 'center' },
+    { key: 'weight', header: 'Weight', width: width * 0.14, align: 'center' },
+    { key: 'instructions', header: 'Instructions', width: width * 0.28 },
+  ];
+  const rows = (items || []).map((it, i) => {
+    const dims = it.lengthCm && it.widthCm && it.heightCm ? `${it.lengthCm}x${it.widthCm}x${it.heightCm} cm` : '—';
+    return {
+      item: sanitizePdfText(it.itemType),
+      qty: String(it.quantity),
+      dims,
+      weight: `${it.actualWeightKg} kg`,
+      instructions: i === 0 ? (sanitizePdfText(instructions) || '—') : '',
+    };
+  });
+  if (rows.length === 0) return y;
+
+  const rowPadding = 3;
+  const totalWidth = columns.reduce((sum, c) => sum + c.width, 0);
+
+  function drawRow(cells, isHeader) {
+    const rowTop = y;
+    doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica').fontSize(7.5);
+    let cx = x;
+    let maxBottom = rowTop + rowPadding;
+    for (const col of columns) {
+      doc.text(String(cells[col.key] ?? ''), cx + 3, rowTop + rowPadding, { width: col.width - 6, align: col.align || 'left' });
+      maxBottom = Math.max(maxBottom, doc.y);
+      cx += col.width;
+    }
+    const rowHeight = maxBottom - rowTop + rowPadding;
+    if (isHeader) {
+      doc.rect(x, rowTop, totalWidth, rowHeight).fill('#F0F0F0');
+      doc.fillColor('black').font('Helvetica-Bold').fontSize(7.5);
+      cx = x;
+      for (const col of columns) {
+        doc.text(String(cells[col.key] ?? ''), cx + 3, rowTop + rowPadding, { width: col.width - 6, align: col.align || 'left' });
+        cx += col.width;
+      }
+    }
+    cx = x;
+    doc.strokeColor('#CCCCCC');
+    for (let i = 0; i <= columns.length; i++) {
+      doc.moveTo(cx, rowTop).lineTo(cx, rowTop + rowHeight).stroke();
+      if (i < columns.length) cx += columns[i].width;
+    }
+    doc.moveTo(x, rowTop + rowHeight).lineTo(x + totalWidth, rowTop + rowHeight).stroke();
+    doc.strokeColor('black');
+    y = rowTop + rowHeight;
+  }
+
+  doc.moveTo(x, y).lineTo(x + totalWidth, y).stroke('#CCCCCC');
+  const headerCells = Object.fromEntries(columns.map((c) => [c.key, c.header]));
+  drawRow(headerCells, true);
+  for (const row of rows) drawRow(row, false);
+  return y;
+}
+
 function drawSignatureBlock(doc, role, x, y, width) {
   doc.font('Helvetica-Bold').fontSize(8.5).text(`${role} name`, x, y);
   doc.moveTo(x, y + 15).lineTo(x + width, y + 15).stroke();
