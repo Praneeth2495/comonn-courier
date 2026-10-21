@@ -160,12 +160,12 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
             <input className="input" type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div className="field">
-            <label>Email (optional)</label>
-            <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <label>Email</label>
+            <input className="input" type="email" placeholder="Optional" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="field">
-            <label>Mobile (optional)</label>
-            <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <label>Mobile</label>
+            <input className="input" placeholder="Optional" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <div className="field" style={{ flex: 1 }}>
