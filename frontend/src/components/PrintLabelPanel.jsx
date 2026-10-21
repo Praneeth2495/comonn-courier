@@ -495,3 +495,89 @@ function CreateLabelModal({ onClose, onCreated }) {
     </div>
   );
 }
+
+function addressSummaryLine(addr) {
+  if (!addr) return '—';
+  return [addr.businessName, addr.street, addr.suburb, addr.city, addr.state, addr.pin, addr.countryCode].filter(Boolean).join(', ');
+}
+
+// The history view's "Edit" action — reopens a batch's already-saved
+// details read-only, with checkboxes only for whichever of Label/
+// Consignment/Load sheet it's still missing, so staff can add the piece(s)
+// they skipped the first time without re-entering anything. See the
+// backend's generateForExistingBatch: already-generated pieces are a
+// no-op even if re-checked, so this never duplicates/re-barcodes labels.
+function EditGenerateModal({ batch, onClose, onGenerated }) {
+  const hasLabels = batch.labels.length > 0;
+  const [wantLabel, setWantLabel] = useState(!hasLabels);
+  const [wantConsignment, setWantConsignment] = useState(!batch.consignmentGenerated);
+  const [wantLoadSheet, setWantLoadSheet] = useState(!batch.loadSheetGenerated);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!wantLabel && !wantConsignment && !wantLoadSheet) {
+      setError('Select at least one piece to generate.');
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      const { data } = await client.patch(`/labels/manual/${batch.id}/generate`, {
+        generateLabel: wantLabel, generateConsignment: wantConsignment, generateLoadSheet: wantLoadSheet,
+      });
+      onGenerated(data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not generate.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <h3>Edit — generate remaining documents</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>Order ID <span className="mono">{batch.orderId || batch.referenceNumber}</span> — details below are read-only.</p>
+
+        <div style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div><b>From:</b> {addressSummaryLine(batch.fromAddress)}</div>
+          <div><b>To:</b> {addressSummaryLine(batch.toAddress)}</div>
+          <div><b>Service:</b> {batch.service || '—'}</div>
+          <div><b>Items:</b> {(batch.items || []).map((it, i) => `${it.itemType} x${it.quantity} (${it.actualWeightKg} kg)`).join(', ')}</div>
+          {batch.instructions && <div><b>Instructions:</b> {batch.instructions}</div>}
+        </div>
+
+        <form onSubmit={submit} className="form-stack">
+          <div className="field">
+            <label>Generate</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
+                <input type="checkbox" checked={hasLabels || wantLabel} disabled={hasLabels} onChange={(e) => setWantLabel(e.target.checked)} />
+                Label {hasLabels && <span style={{ color: 'var(--success)', fontSize: 12 }}>(already generated)</span>}
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
+                <input type="checkbox" checked={batch.consignmentGenerated || wantConsignment} disabled={batch.consignmentGenerated} onChange={(e) => setWantConsignment(e.target.checked)} />
+                Consignment {batch.consignmentGenerated && <span style={{ color: 'var(--success)', fontSize: 12 }}>(already generated)</span>}
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
+                <input type="checkbox" checked={batch.loadSheetGenerated || wantLoadSheet} disabled={batch.loadSheetGenerated} onChange={(e) => setWantLoadSheet(e.target.checked)} />
+                Load sheet {batch.loadSheetGenerated && <span style={{ color: 'var(--success)', fontSize: 12 }}>(already generated)</span>}
+              </label>
+            </div>
+          </div>
+
+          {error && <div className="error-text">{error}</div>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? 'Generating…' : 'Generate'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
