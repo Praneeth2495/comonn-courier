@@ -347,6 +347,9 @@ function CreateLabelModal({ onClose, onCreated }) {
   const [toAddress, setToAddress] = useState(emptyAddress());
   const [items, setItems] = useState([emptyItem()]);
   const [instructions, setInstructions] = useState('');
+  const [wantLabel, setWantLabel] = useState(true);
+  const [wantConsignment, setWantConsignment] = useState(true);
+  const [wantLoadSheet, setWantLoadSheet] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
