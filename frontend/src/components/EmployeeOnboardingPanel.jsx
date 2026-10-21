@@ -171,8 +171,8 @@ function InviteEmployeeModal({ onClose, onSaved }) {
               <option value="DRIVER">Rider</option>
             </select>
           </div>
-          <div className="field"><label>Designation (optional)</label><input className="input" value={form.designation} onChange={(e) => update('designation', e.target.value)} /></div>
-          <div className="field"><label>Department (optional)</label><input className="input" value={form.department} onChange={(e) => update('department', e.target.value)} /></div>
+          <div className="field"><label>Designation</label><input className="input" placeholder="Optional" value={form.designation} onChange={(e) => update('designation', e.target.value)} /></div>
+          <div className="field"><label>Department</label><input className="input" placeholder="Optional" value={form.department} onChange={(e) => update('department', e.target.value)} /></div>
 
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
