@@ -108,7 +108,7 @@ function generateLoadSheet(batch, res) {
   let leftY = y;
   leftY = drawDetailRow(doc, 'Order ID', sanitizePdfText(batch.orderId || batch.referenceNumber), left, leftY, labelWidth, valueWidth) + 8;
   leftY = drawDetailRow(doc, 'Reference', sanitizePdfText(batch.refNumber), left, leftY, labelWidth, valueWidth) + 8;
-  leftY = drawDetailRow(doc, 'Service', sanitizePdfText(batch.service?.name || batch.serviceName), left, leftY, labelWidth, valueWidth) + 8;
+  leftY = drawDetailRow(doc, 'Service', sanitizePdfText(batch.service), left, leftY, labelWidth, valueWidth) + 8;
   leftY = drawDetailRow(doc, 'Date', fmtDate(batch.createdAt), left, leftY, labelWidth, valueWidth) + 8;
 
   const rightX = left + halfWidth + 20;
