@@ -14,11 +14,16 @@ router.get('/invoice/download/:orderId', optionalAuth, downloadInvoice);
 // as the rest of that panel (see PAGE_KEYS 'printlabel').
 router.post('/manual', requireAuth, requireRole('ADMIN', 'STAFF'), requirePage('printlabel'), createManualLabels);
 router.get('/manual/history', requireAuth, requireRole('ADMIN', 'STAFF'), requirePage('printlabel'), listManualLabelBatches);
+// The "Edit" action in the history view — generates whichever of
+// Label/Consignment/Load sheet staff skipped the first time, reusing the
+// batch's already-saved details.
+router.patch('/manual/:batchId/generate', requireAuth, requireRole('ADMIN', 'STAFF'), requirePage('printlabel'), generateForExistingBatch);
 // optionalAuth, not requireAuth — this is opened via a plain <a href target="_blank">
 // link (same as /download/:labelId above), which can't carry an Authorization
 // header at all; the batchId itself (an unguessable UUID) is the only gate,
 // same trust model the individual-label download routes already use.
 router.get('/manual/:batchId/master', optionalAuth, downloadMasterLabel);
 router.get('/manual/:batchId/consignment', optionalAuth, downloadConsignmentSheet);
+router.get('/manual/:batchId/load-sheet', optionalAuth, downloadLoadSheet);
 
 module.exports = router;
