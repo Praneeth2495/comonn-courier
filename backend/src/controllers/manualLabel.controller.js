@@ -3,6 +3,7 @@ const path = require('path');
 const { prisma } = require('../config/db');
 const { generateLabelPdf, generateMasterLabelPdf, STORAGE_DIR } = require('../services/labelService');
 const { generateConsignmentSheet } = require('../services/consignmentPdf');
+const { generateLoadSheet } = require('../services/loadSheetPdf');
 const { nextMonthlySequence, getIstDateParts } = require('../utils/orderNumber');
 const { COUNTRY_NAMES } = require('../utils/countryNames');
 
@@ -109,22 +110,88 @@ function buildPackages(items) {
   return packages;
 }
 
+// Generates the individual sticker labels (+ combined master, if more than
+// one) for a batch and persists them — shared by createManualLabels (fresh
+// batch) and generateForExistingBatch (staff adding the Label piece later
+// via Edit, after only generating the Consignment/Load sheet at first).
+// Never called when the batch already has labels — see the `hasLabels`
+// guard at each call site — so this never duplicates or re-barcodes a
+// batch that was already printed.
+async function generateLabelsForBatch(batch) {
+  const items = batch.items;
+  const fakeOrder = {
+    orderNumber: batch.referenceNumber,
+    trackingNumber: batch.referenceNumber,
+    service: { name: batch.service },
+    zoneCode: 'MANUAL',
+    contentsDescription: null,
+    receiverAddress: toLabelShape(batch.toAddress, batch.instructions),
+    senderAddress: toLabelShape(batch.fromAddress),
+  };
+
+  const packages = buildPackages(items);
+  const totalQuantity = packages.length;
+
+  const pages = [];
+  const labels = [];
+  for (let i = 0; i < packages.length; i++) {
+    const packageIndex = i + 1;
+    const barcodeValue = totalQuantity > 1 ? `${batch.referenceNumber}-${packageIndex}` : batch.referenceNumber;
+    const pageArgs = {
+      packageIndex, totalPackages: totalQuantity, item: packages[i], barcodeValue,
+      hideShipmentTracking: true, hideBarcodeText: true,
+      numberLabel: batch.orderId, referenceLabel: batch.refNumber,
+    };
+    pages.push(pageArgs);
+    const { fileName, filePath } = await generateLabelPdf(fakeOrder, pageArgs);
+    const pdfData = fs.readFileSync(filePath);
+    const label = await prisma.label.create({
+      data: { orderId: null, batchId: batch.id, packageIndex, itemType: packages[i].itemType, fileUrl: fileName, barcodeValue, pdfData },
+    });
+    labels.push(label);
+  }
+
+  let updatedBatch = batch;
+  if (totalQuantity > 1) {
+    const masterFileName = `${batch.referenceNumber}-master.pdf`;
+    const { filePath: masterFilePath } = await generateMasterLabelPdf(fakeOrder, pages, masterFileName);
+    const masterPdfData = fs.readFileSync(masterFilePath);
+    updatedBatch = await prisma.manualLabelBatch.update({
+      where: { id: batch.id },
+      data: { masterFileUrl: masterFileName, masterPdfData },
+    });
+  }
+
+  return { batch: updatedBatch, labels };
+}
+
 /**
  * POST /api/labels/manual — the Print Label page's Manual Label tab.
- * Generates one independently-barcoded label per unit across every item in
- * `items` for an ad-hoc shipment that has no real Order behind it (e.g. an
- * internal transfer) — same PDF layout/barcode format as an order's own
- * labels, just not linked to one. More than one label total also gets one
- * combined "master label" PDF (all pages in one file) alongside the
- * individual ones.
+ * Staff pick which document(s) to generate for this shipment via two
+ * checkboxes — Label and Consignment (and, now, Load sheet) — any
+ * combination, at least one required. Label generates one independently-
+ * barcoded sticker per unit across every item in `items` (same PDF layout/
+ * barcode format as an order's own labels, just not linked to a real
+ * Order), plus a combined master label if more than one. Consignment/Load
+ * sheet aren't pre-rendered here — see generateConsignmentSheet/
+ * generateLoadSheet, which render fresh from the batch row on every
+ * download — this just flags them as "generated" so their links show up
+ * in the history view. Whatever wasn't checked here can be added later
+ * without re-entering anything, via the Edit action (generateForExistingBatch).
  */
 async function createManualLabels(req, res, next) {
   try {
-    const { orderId, refNumber, service, fromAddress, toAddress, items: rawItems, instructions } = req.body;
+    const {
+      orderId, refNumber, service, fromAddress, toAddress, items: rawItems, instructions,
+      generateLabel: wantLabel = true, generateConsignment: wantConsignment = true, generateLoadSheet: wantLoadSheet = true,
+    } = req.body;
 
     if (!orderId?.trim()) return res.status(400).json({ error: 'Order ID is required' });
     if (!MANUAL_LABEL_SERVICES.includes(service)) {
       return res.status(400).json({ error: 'Service must be Express or Economy' });
+    }
+    if (!wantLabel && !wantConsignment && !wantLoadSheet) {
+      return res.status(400).json({ error: 'Select at least one of Label, Consignment or Load sheet to generate' });
     }
     const fromError = validateAddress(fromAddress, 'From');
     if (fromError) return res.status(400).json({ error: fromError });
@@ -138,66 +205,80 @@ async function createManualLabels(req, res, next) {
     const trimmedInstructions = instructions?.trim() || null;
     const trimmedOrderId = orderId?.trim() || null;
     const trimmedRefNumber = refNumber?.trim() || null;
-    const fakeOrder = {
-      orderNumber: referenceNumber,
-      trackingNumber: referenceNumber,
-      service: { name: service },
-      zoneCode: 'MANUAL',
-      contentsDescription: null,
-      receiverAddress: toLabelShape(toAddress, trimmedInstructions),
-      senderAddress: toLabelShape(fromAddress),
-    };
 
-    const packages = buildPackages(items);
-    const totalQuantity = packages.length;
+    const totalQuantity = buildPackages(items).length;
 
-    const batch = await prisma.manualLabelBatch.create({
+    let batch = await prisma.manualLabelBatch.create({
       data: {
         referenceNumber,
         orderId: trimmedOrderId,
         refNumber: trimmedRefNumber,
+        service,
         fromAddress: trimAddressFields(fromAddress),
         toAddress: trimAddressFields(toAddress),
         quantity: totalQuantity,
         items,
         instructions: trimmedInstructions,
+        consignmentGenerated: Boolean(wantConsignment),
+        loadSheetGenerated: Boolean(wantLoadSheet),
         createdById: req.user.id,
       },
     });
 
-    const pages = [];
-    const labels = [];
-    for (let i = 0; i < packages.length; i++) {
-      const packageIndex = i + 1;
-      const barcodeValue = totalQuantity > 1 ? `${referenceNumber}-${packageIndex}` : referenceNumber;
-      const pageArgs = {
-        packageIndex, totalPackages: totalQuantity, item: packages[i], barcodeValue,
-        hideShipmentTracking: true, hideBarcodeText: true,
-        numberLabel: trimmedOrderId, referenceLabel: trimmedRefNumber,
-      };
-      pages.push(pageArgs);
-      const { fileName, filePath } = await generateLabelPdf(fakeOrder, pageArgs);
-      const pdfData = fs.readFileSync(filePath);
-      const label = await prisma.label.create({
-        data: { orderId: null, batchId: batch.id, packageIndex, itemType: packages[i].itemType, fileUrl: fileName, barcodeValue, pdfData },
-      });
-      labels.push(label);
-    }
-
-    let updatedBatch = batch;
-    if (totalQuantity > 1) {
-      const masterFileName = `${referenceNumber}-master.pdf`;
-      const { filePath: masterFilePath } = await generateMasterLabelPdf(fakeOrder, pages, masterFileName);
-      const masterPdfData = fs.readFileSync(masterFilePath);
-      updatedBatch = await prisma.manualLabelBatch.update({
-        where: { id: batch.id },
-        data: { masterFileUrl: masterFileName, masterPdfData },
-      });
+    let labels = [];
+    if (wantLabel) {
+      const result = await generateLabelsForBatch(batch);
+      batch = result.batch;
+      labels = result.labels;
     }
 
     res.status(201).json({
-      batch: toBatchResponse({ ...updatedBatch, createdBy: { fullName: req.user.fullName } }),
+      batch: toBatchResponse({ ...batch, createdBy: { fullName: req.user.fullName } }),
       labels: labels.map(({ pdfData, ...rest }) => rest),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PATCH /api/labels/manual/:batchId/generate — the history view's "Edit"
+ * action, for adding whichever document(s) staff skipped the first time
+ * around. Re-uses the batch's already-saved details rather than asking for
+ * them again; idempotent per piece — only generates what's actually
+ * missing (an already-generated Label/Consignment/Load sheet checked again
+ * is a silent no-op, never re-barcoded/duplicated).
+ */
+async function generateForExistingBatch(req, res, next) {
+  try {
+    const batch = await prisma.manualLabelBatch.findUnique({
+      where: { id: req.params.batchId },
+      include: { labels: { select: { id: true } }, createdBy: { select: { fullName: true } } },
+    });
+    if (!batch) return res.status(404).json({ error: 'Batch not found' });
+
+    const { generateLabel: wantLabel, generateConsignment: wantConsignment, generateLoadSheet: wantLoadSheet } = req.body;
+    const hasLabels = batch.labels.length > 0;
+
+    let updated = batch;
+    let labels = [];
+    if (wantLabel && !hasLabels) {
+      const result = await generateLabelsForBatch(batch);
+      updated = { ...updated, ...result.batch };
+      labels = result.labels;
+    }
+    if (wantConsignment && !batch.consignmentGenerated) {
+      updated = await prisma.manualLabelBatch.update({ where: { id: batch.id }, data: { consignmentGenerated: true } });
+    }
+    if (wantLoadSheet && !batch.loadSheetGenerated) {
+      updated = await prisma.manualLabelBatch.update({ where: { id: batch.id }, data: { loadSheetGenerated: true } });
+    }
+
+    const freshLabels = labels.length ? labels : await prisma.label.findMany({ where: { batchId: batch.id }, orderBy: { packageIndex: 'asc' } });
+
+    res.json({
+      batch: toBatchResponse({ ...updated, createdBy: batch.createdBy }),
+      labels: freshLabels.map(({ pdfData, ...rest }) => rest),
     });
   } catch (err) {
     next(err);
@@ -255,4 +336,22 @@ async function downloadConsignmentSheet(req, res, next) {
   }
 }
 
-module.exports = { createManualLabels, listManualLabelBatches, downloadMasterLabel, downloadConsignmentSheet };
+/** GET /api/labels/manual/:batchId/load-sheet — landscape details/items table for a batch, regenerated fresh each time */
+async function downloadLoadSheet(req, res, next) {
+  try {
+    const batch = await prisma.manualLabelBatch.findUnique({ where: { id: req.params.batchId } });
+    if (!batch) return res.status(404).json({ error: 'Batch not found' });
+    generateLoadSheet(batch, res);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  createManualLabels,
+  generateForExistingBatch,
+  listManualLabelBatches,
+  downloadMasterLabel,
+  downloadConsignmentSheet,
+  downloadLoadSheet,
+};
