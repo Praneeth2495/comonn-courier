@@ -161,22 +161,36 @@ function ManualLabelTab() {
                   <td>{b.createdBy?.fullName || '—'}</td>
                   <td>{fmtDate(b.createdAt)}</td>
                   <td>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        type="button"
-                        className="btn btn-outline btn-sm"
-                        onClick={() => setViewing({ referenceNumber: b.orderId || b.referenceNumber, batchId: b.id, hasMaster: b.hasMaster, labels: b.labels })}
-                      >
-                        Labels
-                      </button>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {b.labels.length > 0 && (
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => setViewing(toViewingState(b, b.labels))}
+                        >
+                          Labels
+                        </button>
+                      )}
                       {b.hasMaster && (
                         <a className="btn btn-outline btn-sm" href={`${API_BASE}/labels/manual/${b.id}/master?inline=1`} target="_blank" rel="noreferrer">
                           Master
                         </a>
                       )}
-                      <a className="btn btn-outline btn-sm" href={`${API_BASE}/labels/manual/${b.id}/consignment?inline=1`} target="_blank" rel="noreferrer">
-                        Consignment sheet
-                      </a>
+                      {b.consignmentGenerated && (
+                        <a className="btn btn-outline btn-sm" href={`${API_BASE}/labels/manual/${b.id}/consignment?inline=1`} target="_blank" rel="noreferrer">
+                          Consignment sheet
+                        </a>
+                      )}
+                      {b.loadSheetGenerated && (
+                        <a className="btn btn-outline btn-sm" href={`${API_BASE}/labels/manual/${b.id}/load-sheet?inline=1`} target="_blank" rel="noreferrer">
+                          Load sheet
+                        </a>
+                      )}
+                      {(b.labels.length === 0 || !b.consignmentGenerated || !b.loadSheetGenerated) && (
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => setEditing(b)}>
+                          Edit
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
