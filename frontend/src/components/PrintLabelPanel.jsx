@@ -367,11 +367,16 @@ function CreateLabelModal({ onClose, onCreated }) {
 
   async function submit(e) {
     e.preventDefault();
+    if (!wantLabel && !wantConsignment && !wantLoadSheet) {
+      setError('Select at least one of Label, Consignment or Load sheet to generate.');
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
       const { data } = await client.post('/labels/manual', {
         orderId, refNumber, service, fromAddress, toAddress, items, instructions,
+        generateLabel: wantLabel, generateConsignment: wantConsignment, generateLoadSheet: wantLoadSheet,
       });
       onCreated(data);
     } catch (err) {
