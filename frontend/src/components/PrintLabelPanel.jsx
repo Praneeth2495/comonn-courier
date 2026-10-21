@@ -113,10 +113,26 @@ function addressSummary(addr) {
   return [addr.city, addr.suburb, addr.countryCode].filter(Boolean).join(', ') || '—';
 }
 
+// A batch's result modal (just created, or just edited) needs these same
+// five fields regardless of which action produced it — centralized so
+// CreateLabelModal's and EditGenerateModal's "done" handlers build an
+// identical shape for `viewing`.
+function toViewingState(batch, labels) {
+  return {
+    referenceNumber: batch.orderId || batch.referenceNumber,
+    batchId: batch.id,
+    hasMaster: batch.hasMaster,
+    consignmentGenerated: batch.consignmentGenerated,
+    loadSheetGenerated: batch.loadSheetGenerated,
+    labels,
+  };
+}
+
 function ManualLabelTab() {
   const [batches, setBatches] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [viewing, setViewing] = useState(null); // { referenceNumber, batchId, hasMaster, labels }
+  const [editing, setEditing] = useState(null); // the batch row being edited
+  const [viewing, setViewing] = useState(null); // { referenceNumber, batchId, hasMaster, consignmentGenerated, loadSheetGenerated, labels }
 
   function load() {
     client.get('/labels/manual/history').then(({ data }) => setBatches(data.batches)).catch(() => setBatches([]));
