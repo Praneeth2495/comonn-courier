@@ -1247,6 +1247,10 @@ model ManualLabelBatch {
   // manualLabel.controller.js) but wasn't persisted on the batch itself
   // until the consignment sheet needed to show it too.
   refNumber       String?
+  // Was only ever used transiently to print on the label PDF, never
+  // persisted on the batch itself — needed now so the consignment/load
+  // sheet (rendered later, from this row alone) can also show it.
+  service         String?
   fromAddress     Json
   toAddress       Json
   // Total labels across every item (sum of each item's own quantity) —
