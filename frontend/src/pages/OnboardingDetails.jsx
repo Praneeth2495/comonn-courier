@@ -113,7 +113,7 @@ export default function OnboardingDetails() {
             <h4>Address</h4>
             <div className="grid-2">
               <div className="field" style={{ gridColumn: '1 / -1' }}><label>Address line 1</label><input className="input" value={form.addressLine1} onChange={(e) => update('addressLine1', e.target.value)} /></div>
-              <div className="field" style={{ gridColumn: '1 / -1' }}><label>Address line 2 (optional)</label><input className="input" value={form.addressLine2} onChange={(e) => update('addressLine2', e.target.value)} /></div>
+              <div className="field" style={{ gridColumn: '1 / -1' }}><label>Address line 2</label><input className="input" placeholder="Optional" value={form.addressLine2} onChange={(e) => update('addressLine2', e.target.value)} /></div>
               <div className="field"><label>City</label><input className="input" value={form.city} onChange={(e) => update('city', e.target.value)} /></div>
               <div className="field"><label>State</label><input className="input" value={form.state} onChange={(e) => update('state', e.target.value)} /></div>
               <div className="field"><label>Pincode</label><input className="input" value={form.postcode} onChange={(e) => update('postcode', e.target.value)} /></div>
