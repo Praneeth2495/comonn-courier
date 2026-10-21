@@ -112,8 +112,8 @@ function CreateMerchantModal({ onClose, onCreated }) {
             <input className="input" type="email" required value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="ops@acme.com" />
           </div>
           <div className="field">
-            <label>Contact phone (optional)</label>
-            <input className="input" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+            <label>Contact phone</label>
+            <input className="input" placeholder="Optional" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
           </div>
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
