@@ -1264,11 +1264,13 @@ model ManualLabelBatch {
   instructions    String?
   masterFileUrl   String?
   masterPdfData   Bytes?
-  // Whether staff have generated the consignment sheet for this batch yet
-  // (checked at creation, or added later via the Edit flow) — the sheet
-  // itself is always rendered fresh from the fields above rather than
-  // stored, so this flag is purely what gates showing its link in the UI.
+  // Whether staff have generated the consignment sheet / load sheet for
+  // this batch yet (checked at creation, or added later via the Edit flow)
+  // — both documents are always rendered fresh from the fields on this row
+  // rather than stored, so these flags are purely what gates showing their
+  // link in the UI.
   consignmentGenerated Boolean @default(false)
+  loadSheetGenerated   Boolean @default(false)
   createdById     String
   createdBy       User     @relation(fields: [createdById], references: [id])
   createdAt       DateTime @default(now())
