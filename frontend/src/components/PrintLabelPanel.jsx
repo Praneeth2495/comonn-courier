@@ -403,8 +403,8 @@ function CreateLabelModal({ onClose, onCreated }) {
               <input className="input" required value={orderId} onChange={(e) => setOrderId(e.target.value)} />
             </div>
             <div className="field" style={{ flex: 1 }}>
-              <label>Reference number (optional)</label>
-              <input className="input" value={refNumber} onChange={(e) => setRefNumber(e.target.value)} />
+              <label>Reference number</label>
+              <input className="input" placeholder="Optional" value={refNumber} onChange={(e) => setRefNumber(e.target.value)} />
             </div>
           </div>
           <div className="field">
