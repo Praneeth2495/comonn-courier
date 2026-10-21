@@ -44,8 +44,8 @@ export default function EditProfile() {
         <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
       </div>
       <div className="field" style={{ marginBottom: 16 }}>
-        <label>Company (optional)</label>
-        <input className="input" value={company} onChange={(e) => setCompany(e.target.value)} />
+        <label>Company</label>
+        <input className="input" placeholder="Optional" value={company} onChange={(e) => setCompany(e.target.value)} />
       </div>
 
       {error && <div className="error-text" style={{ marginBottom: 12 }}>{error}</div>}
