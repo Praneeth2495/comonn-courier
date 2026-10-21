@@ -434,10 +434,25 @@ function CreateLabelModal({ onClose, onCreated }) {
                 </div>
                 <div className="field" style={{ flex: 1 }}>
                   <label>Item type</label>
-                  <select className="input" value={it.itemType} onChange={(e) => updateItem(idx, 'itemType', e.target.value)}>
+                  <select
+                    className="input"
+                    value={['Box', 'Pallet'].includes(it.itemType) ? it.itemType : 'Custom'}
+                    onChange={(e) => updateItem(idx, 'itemType', e.target.value === 'Custom' ? '' : e.target.value)}
+                  >
                     <option value="Box">Box</option>
                     <option value="Pallet">Pallet</option>
+                    <option value="Custom">Custom…</option>
                   </select>
+                  {!['Box', 'Pallet'].includes(it.itemType) && (
+                    <input
+                      className="input"
+                      style={{ marginTop: 6 }}
+                      placeholder="Enter item type"
+                      required
+                      value={it.itemType}
+                      onChange={(e) => updateItem(idx, 'itemType', e.target.value)}
+                    />
+                  )}
                 </div>
               </div>
 
