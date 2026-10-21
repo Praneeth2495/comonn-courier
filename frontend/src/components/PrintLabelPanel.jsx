@@ -481,8 +481,8 @@ function CreateLabelModal({ onClose, onCreated }) {
           </div>
 
           <div className="field">
-            <label>Instructions (optional)</label>
-            <textarea className="input" rows={2} style={{ resize: 'vertical' }} value={instructions} onChange={(e) => setInstructions(e.target.value)} />
+            <label>Instructions</label>
+            <textarea className="input" rows={2} style={{ resize: 'vertical' }} placeholder="Optional" value={instructions} onChange={(e) => setInstructions(e.target.value)} />
           </div>
 
           <div className="field">
