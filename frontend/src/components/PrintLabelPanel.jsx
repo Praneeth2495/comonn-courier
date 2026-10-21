@@ -209,7 +209,19 @@ function ManualLabelTab() {
           onCreated={(result) => {
             setShowCreate(false);
             load();
-            setViewing({ referenceNumber: result.batch.orderId || result.batch.referenceNumber, batchId: result.batch.id, hasMaster: result.batch.hasMaster, labels: result.labels });
+            setViewing(toViewingState(result.batch, result.labels));
+          }}
+        />
+      )}
+
+      {editing && (
+        <EditGenerateModal
+          batch={editing}
+          onClose={() => setEditing(null)}
+          onGenerated={(result) => {
+            setEditing(null);
+            load();
+            setViewing(toViewingState(result.batch, result.labels));
           }}
         />
       )}
