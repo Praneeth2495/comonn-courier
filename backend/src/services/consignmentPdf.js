@@ -143,13 +143,7 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
   doc.font('Helvetica').fontSize(8).text(formatAddress(batch.toAddress), left + colWidth + 20, colTop + 11, { width: colWidth });
   y = Math.max(doc.y, colTop + 50) + 8;
 
-  const itemsSummary = (batch.items || [])
-    .map((it) => {
-      const dimsPart = it.lengthCm && it.widthCm && it.heightCm ? `, ${it.lengthCm}x${it.widthCm}x${it.heightCm} cm` : '';
-      return `${sanitizePdfText(it.itemType)} x${it.quantity} (${it.actualWeightKg} kg${dimsPart})`;
-    })
-    .join('  |  ');
-  doc.font('Helvetica').fontSize(8).text(`Items: ${itemsSummary}`, left, y, { width });
+  drawItemsTable(doc, batch.items, batch.instructions, left, y, width);
 
   // Footer: each half is signed by whoever's actually present for that leg
   // of the handover — sender+driver at pickup, driver+receiver at delivery
