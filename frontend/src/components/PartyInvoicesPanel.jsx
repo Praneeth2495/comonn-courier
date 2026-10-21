@@ -138,8 +138,8 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
             <input className="input" required value={partyName} onChange={(e) => setPartyName(e.target.value)} />
           </div>
           <div className="field">
-            <label>Business name (optional)</label>
-            <input className="input" value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
+            <label>Business name</label>
+            <input className="input" placeholder="Optional" value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
           </div>
           <div className="field">
             <label>Description</label>
