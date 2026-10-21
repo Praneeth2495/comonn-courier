@@ -1380,10 +1380,10 @@ function RatesPanel() {
           </div>
           <div className="field"><label>From kg</label><input className="input" type="number" step="0.01" required value={form.weightFromKg} onChange={(e) => setForm({ ...form, weightFromKg: e.target.value })} /></div>
           <div className="field"><label>To kg</label><input className="input" type="number" step="0.01" required value={form.weightToKg} onChange={(e) => setForm({ ...form, weightToKg: e.target.value })} /></div>
-          <div className="field"><label>Base price (optional)</label><input className="input" type="number" step="0.01" placeholder="0" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} /></div>
+          <div className="field"><label>Base price</label><input className="input" type="number" step="0.01" placeholder="Optional, defaults to 0" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} /></div>
           <div className="field"><label>₹/kg overage</label><input className="input" type="number" step="0.01" required value={form.perKgOverage} onChange={(e) => setForm({ ...form, perKgOverage: e.target.value })} /></div>
-          <div className="field"><label>Delivery days from (optional)</label><input className="input" type="number" step="1" min="0" placeholder="Service default" value={form.transitDaysMin} onChange={(e) => setForm({ ...form, transitDaysMin: e.target.value })} /></div>
-          <div className="field"><label>Delivery days to (optional)</label><input className="input" type="number" step="1" min="0" placeholder="Service default" value={form.transitDaysMax} onChange={(e) => setForm({ ...form, transitDaysMax: e.target.value })} /></div>
+          <div className="field"><label>Delivery days from</label><input className="input" type="number" step="1" min="0" placeholder="Optional, service default" value={form.transitDaysMin} onChange={(e) => setForm({ ...form, transitDaysMin: e.target.value })} /></div>
+          <div className="field"><label>Delivery days to</label><input className="input" type="number" step="1" min="0" placeholder="Optional, service default" value={form.transitDaysMax} onChange={(e) => setForm({ ...form, transitDaysMax: e.target.value })} /></div>
           <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
             <button className="btn btn-primary btn-sm">{form.id ? 'Update bracket' : 'Add bracket'}</button>
             {form.id && <button type="button" className="btn btn-outline btn-sm" onClick={cancelEdit}>Cancel</button>}
