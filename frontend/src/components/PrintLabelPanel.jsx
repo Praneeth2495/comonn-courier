@@ -458,7 +458,7 @@ function CreateLabelModal({ onClose, onCreated }) {
 
               <div style={{ display: 'flex', gap: 10 }}>
                 <div className="field" style={{ flex: 1 }}>
-                  <label>Weight (kg)</label>
+                  <label>Weight (kg) <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                   <input className="input" type="number" min="0.01" step="0.01" required value={it.actualWeightKg} onChange={(e) => updateItem(idx, 'actualWeightKg', e.target.value)} />
                 </div>
                 <div className="field" style={{ flex: 1 }}>
