@@ -128,8 +128,8 @@ function generateLoadSheet(batch, res) {
 
   const rightX = left + halfWidth + 20;
   let rightY = y;
-  rightY = drawDetailRow(doc, 'From', formatAddress(batch.fromAddress), rightX, rightY, labelWidth, valueWidth) + 8;
-  rightY = drawDetailRow(doc, 'To', formatAddress(batch.toAddress), rightX, rightY, labelWidth, valueWidth) + 8;
+  rightY = drawDetailRow(doc, 'Sender', formatAddress(batch.fromAddress), rightX, rightY, labelWidth, valueWidth) + 8;
+  rightY = drawDetailRow(doc, 'Receiver', formatAddress(batch.toAddress), rightX, rightY, labelWidth, valueWidth) + 8;
   rightY = drawDetailRow(doc, 'Instructions', sanitizePdfText(batch.instructions), rightX, rightY, labelWidth, valueWidth) + 8;
 
   y = Math.max(leftY, rightY) + 12;
