@@ -214,6 +214,7 @@ async function createManualLabels(req, res, next) {
         orderId: trimmedOrderId,
         refNumber: trimmedRefNumber,
         service,
+        truckType: truckType?.trim() || null,
         fromAddress: trimAddressFields(fromAddress),
         toAddress: trimAddressFields(toAddress),
         quantity: totalQuantity,
