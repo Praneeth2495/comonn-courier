@@ -156,7 +156,7 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
             </div>
           </div>
           <div className="field">
-            <label>Due date</label>
+            <label>Due date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div className="field">
