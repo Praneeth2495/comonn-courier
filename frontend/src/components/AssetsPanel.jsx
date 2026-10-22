@@ -165,23 +165,23 @@ function AssetFormModal({ title, asset, onClose, onSaved }) {
         </div>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>Asset name</label>
+            <label>Asset name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="field">
-            <label>Value (₹)</label>
+            <label>Value (₹) <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="number" min="0.01" step="0.01" required value={value} onChange={(e) => setValue(e.target.value)} />
           </div>
           <div className="field">
-            <label>Quantity</label>
+            <label>Quantity <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="number" min="1" step="1" required value={quantity} onChange={(e) => setQuantity(e.target.value)} />
           </div>
           <div className="field">
-            <label>Date</label>
+            <label>Date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="date" required value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} />
           </div>
           <div className="field">
-            <label>Staff name</label>
+            <label>Staff name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" required value={staffName} onChange={(e) => setStaffName(e.target.value)} />
           </div>
           <div className="field">
