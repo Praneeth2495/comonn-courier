@@ -344,6 +344,7 @@ function CreateLabelModal({ onClose, onCreated }) {
   const [refNumber, setRefNumber] = useState('');
   const [service, setService] = useState('');
   const [truckType, setTruckType] = useState('');
+  const [truckCustom, setTruckCustom] = useState(false);
   const [fromAddress, setFromAddress] = useState(emptyAddress());
   const [toAddress, setToAddress] = useState(emptyAddress());
   const [items, setItems] = useState([emptyItem()]);
