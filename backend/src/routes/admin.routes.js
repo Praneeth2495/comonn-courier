@@ -9,6 +9,7 @@ router.use(requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'));
 router.get('/dashboard', admin.dashboardStats);
 router.get('/dashboard/staff', admin.staffOverview);
 router.get('/dashboard/regions', admin.regionOverview);
+router.get('/dashboard/kpis', admin.dashboardKpis);
 
 // Used by the Orders page's pickup-assignment picker (ADMIN bypasses
 // requirePage; a STAFF/ACCOUNTS user without 'orders' toggled never sees
