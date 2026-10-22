@@ -65,6 +65,7 @@ export default function AdminDashboard() {
 
   function selectTab(key) {
     setTab(key);
+    setSearchParams({ tab: key }, { replace: true });
     setSidebarOpen(false);
   }
 
