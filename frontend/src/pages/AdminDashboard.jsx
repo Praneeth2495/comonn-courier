@@ -1192,7 +1192,7 @@ function InventoryPanel() {
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Add an item</h4>
         <form onSubmit={addItem} style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, alignItems: 'end' }}>
           <div className="field">
-            <label>Name</label>
+            <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" placeholder="e.g. Heavy-duty cardboard" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="field">
