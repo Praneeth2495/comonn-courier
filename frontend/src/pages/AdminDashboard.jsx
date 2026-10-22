@@ -152,12 +152,12 @@ function Overview() {
       if (subTab !== 'summary') return;
       if (!silent) { setData(null); setKpis(null); }
       client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
-      client.get('/admin/dashboard/kpis', { params: { from: fromDate, to: toDate } }).then(({ data }) => setKpis(data));
+      client.get('/admin/dashboard/kpis', { params: { from: fromDate, to: toDate, dayWiseRange } }).then(({ data }) => setKpis(data));
     }
     load();
     const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
-  }, [fromDate, toDate, subTab]);
+  }, [fromDate, toDate, subTab, dayWiseRange]);
 
   return (
     <div>
