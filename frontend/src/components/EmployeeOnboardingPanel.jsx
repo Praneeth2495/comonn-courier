@@ -294,7 +294,7 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
               <div className="grid-2">
                 <div className="field"><label>Full name</label><input className="input" required value={form.fullName} onChange={(e) => update('fullName', e.target.value)} /></div>
                 <div className="field">
-                  <label>Email {mode === 'edit' && <span style={{ fontWeight: 400, color: 'var(--slate-light)' }}>(fixed after creation)</span>}</label>
+                  <label>Email <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span> {mode === 'edit' && <span style={{ fontWeight: 400, color: 'var(--slate-light)' }}>(fixed after creation)</span>}</label>
                   <input className="input" type="email" required disabled={mode === 'edit'} value={form.email} onChange={(e) => update('email', e.target.value)} />
                 </div>
                 <div className="field"><label>Mobile</label><input className="input" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></div>
