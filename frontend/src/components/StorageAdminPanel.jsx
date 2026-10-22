@@ -426,11 +426,11 @@ function NewBookingModal({ onClose, onCreated }) {
             ) : (
               <form onSubmit={useNewCustomer} className="form-stack">
                 <div className="field">
-                  <label>Full name</label>
+                  <label>Full name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                   <input className="input" required value={newCustomer.fullName} onChange={(e) => setNewCustomer({ ...newCustomer, fullName: e.target.value })} />
                 </div>
                 <div className="field">
-                  <label>Email</label>
+                  <label>Email <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                   <input className="input" type="email" required value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} />
                 </div>
                 <div className="field">
