@@ -142,7 +142,7 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
             <input className="input" placeholder="Optional" value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
           </div>
           <div className="field">
-            <label>Description</label>
+            <label>Description <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <textarea className="input" required rows={2} style={{ resize: 'vertical' }} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
