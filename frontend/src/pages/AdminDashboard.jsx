@@ -1361,7 +1361,7 @@ function RatesPanel() {
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>{form.id ? 'Edit rate bracket' : 'Add a rate bracket'}</h4>
         <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 10, alignItems: 'end' }}>
           <div className="field">
-            <label>Service</label>
+            <label>Service <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="select" required value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })}>
               <option value="">—</option>
               {services
