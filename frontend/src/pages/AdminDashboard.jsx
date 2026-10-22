@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
