@@ -97,9 +97,9 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   const rightColumnBottom = headerTop + logoHeight + qrGap + qrSize;
   doc.y = Math.max(doc.y, rightColumnBottom + 3);
 
-  // Receiver / Sender — "To" is the delivery address and is what matters
-  // most on the package, so it's rendered first and noticeably
-  // larger/bolder than "From".
+  // Receiver / Sender — the receiver's address is what matters most on the
+  // package, so it's rendered first and noticeably larger/bolder than the
+  // sender's.
   doc.font('Helvetica-Bold').fontSize(12).text('RECEIVER');
   doc.font('Helvetica-Bold').fontSize(12).text(formatAddress(order.receiverAddress));
   if (order.receiverAddress.instructions) {
