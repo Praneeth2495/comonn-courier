@@ -16,7 +16,14 @@ export default function UserDashboard() {
   const { user } = useAuth();
   const { setBooking } = useBooking();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('active');
+  // Read the starting tab from the URL (?tab=history) so a page refresh
+  // lands back on whichever tab was open, not always "Active orders".
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTabState] = useState(searchParams.get('tab') || 'active');
+  function setTab(key) {
+    setTabState(key);
+    setSearchParams({ tab: key }, { replace: true });
+  }
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState('');
