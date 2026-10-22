@@ -222,7 +222,20 @@ function activityWindows() {
 const WEEKDAY_FORMATTER = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', weekday: 'long' });
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-async function dayOfWeekBreakdown(where) {
+// Trailing window for the "Orders by day of week" tile, selectable from
+// the frontend dropdown — independent of the Overview page's own date
+// range (mixing an admin-chosen historical range into "which weekday is
+// busiest lately" would be confusing rather than useful, same reasoning
+// as the Staff/Rider/Accounts fixed windows below).
+const DAY_WISE_RANGE_DAYS = { week: 6, '4weeks': 27, '3months': 89 };
+function dayWiseWindow(rangeKey) {
+  const days = DAY_WISE_RANGE_DAYS[rangeKey] ?? DAY_WISE_RANGE_DAYS['4weeks'];
+  const todayIso = isoDateIst(new Date());
+  return windowRange(isoDateIst(daysAgo(days)), todayIso);
+}
+
+async function dayOfWeekBreakdown(scopeWhere, rangeKey) {
+  const where = { ...scopeWhere, status: { not: 'UNFINISHED' }, createdAt: dayWiseWindow(rangeKey) };
   const orders = await prisma.order.findMany({ where, select: { createdAt: true } });
   const counts = Object.fromEntries(WEEKDAYS.map((d) => [d, 0]));
   for (const o of orders) counts[WEEKDAY_FORMATTER.format(o.createdAt)]++;
