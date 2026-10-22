@@ -127,11 +127,11 @@ function CreateCustomsClientModal({ onClose, onCreated }) {
             </select>
           </div>
           <div className="field">
-            <label>City</label>
+            <label>City <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" required value={city} onChange={(e) => setCity(e.target.value)} />
           </div>
           <div className="field">
-            <label>Address</label>
+            <label>Address <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <textarea className="input" required rows={2} style={{ resize: 'vertical' }} value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
           {error && <div className="error-text">{error}</div>}
