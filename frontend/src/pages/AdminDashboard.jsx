@@ -181,36 +181,43 @@ function Overview() {
           <>
             <div className="stat-grid">
               <Stat label="Total orders" value={data.totals.totalOrders} />
-              <Stat label="Pending payment" value={data.totals.pendingPayment} />
-              <Stat label="Paid" value={data.totals.paid} />
-              <Stat label="In transit" value={data.totals.inTransit} />
               <Stat label="Delivered" value={data.totals.delivered} />
             </div>
 
-            <h3 className="h-md" style={{ margin: '24px 0 12px' }}>Recent orders</h3>
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead><tr><th>Order</th><th>Service</th><th>Destination</th><th>Status</th></tr></thead>
-                <tbody>
-                  {data.recentOrders.map((o) => (
-                    <tr key={o.id}>
-                      <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
-                      <td>{o.service.name}</td>
-                      <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
-                      <td>{statusLabel(o.status)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {!kpis ? <LoadingLogo /> : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 24 }}>
+                <DayOfWeekKpi rows={kpis.dayOfWeek} />
+                <AirportWeightKpi rows={kpis.airports} />
+                <ActivityKpi
+                  title="Staff"
+                  emptyLabel="No staff accounts yet."
+                  rows={kpis.staffActivity.map((r) => ({ id: r.staff.id, name: r.staff.fullName, sub: r.staff.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
+                />
+                <ActivityKpi
+                  title="Riders"
+                  emptyLabel="No rider accounts yet."
+                  columnLabel="Orders picked up"
+                  rows={kpis.riderActivity.map((r) => ({ id: r.rider.id, name: r.rider.fullName, sub: r.rider.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
+                />
+                <ActivityKpi
+                  title="Accounts"
+                  emptyLabel="No accounts role yet."
+                  columnLabel="Payments reconciled"
+                  rows={kpis.accountsActivity.rows.map((r) => ({ id: r.accountsUser.id, name: r.accountsUser.fullName, sub: r.accountsUser.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
+                  footer={
+                    <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>
+                      Overdue party invoices right now: <b>{kpis.accountsActivity.overdueInvoices.payable}</b> payable, <b>{kpis.accountsActivity.overdueInvoices.receivable}</b> receivable
+                    </p>
+                  }
+                />
+              </div>
+            )}
           </>
         )
       )}
 
       {subTab === 'staff' && canSeeBreakdown && <StaffOverviewTable fromDate={fromDate} toDate={toDate} />}
       {subTab === 'region' && canSeeBreakdown && <RegionOverviewTable fromDate={fromDate} toDate={toDate} />}
-
-      {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
     </div>
   );
 }
