@@ -11,11 +11,15 @@ import { STATUS_LABEL, ACTIVE_STATUSES, formatAddress, isoDate, completionDate }
 
 export default function DriverDashboard() {
   const { user, logout } = useAuth();
-  const [tab, setTab] = useState('jobs');
+  // Read the starting tab from the URL (?tab=...) so a page refresh lands
+  // back on whichever tab was open, not always "Jobs".
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get('tab') || 'jobs');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   function selectTab(key) {
     setTab(key);
+    setSearchParams({ tab: key }, { replace: true });
     setSidebarOpen(false);
   }
 
