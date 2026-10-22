@@ -102,6 +102,15 @@ async function requireOverviewBreakdownAccess(req, res) {
   return false;
 }
 
+// Same rule as requireOverviewBreakdownAccess but a plain boolean, no
+// response side-effect — for the KPI bundle, where lacking this permission
+// just means the Region tile is omitted, not the whole request rejected.
+async function hasOverviewBreakdownAccess(req) {
+  if (req.user.role === 'ADMIN') return true;
+  const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { canViewOverviewBreakdown: true } });
+  return Boolean(user?.canViewOverviewBreakdown);
+}
+
 /**
  * GET /api/admin/dashboard/staff — one row per STAFF account, each scoped
  * to that staff member's own assigned pickup region(s) (same rule
