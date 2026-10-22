@@ -403,7 +403,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected{codes.length ? `, routing via ${codes.join(', ')}` : ''}.</p>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>From Airport</label>
+            <label>From Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="select" required value={hubId} onChange={(e) => pickHub(e.target.value)}>
               <option value="">Choose origin airport…</option>
               {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
