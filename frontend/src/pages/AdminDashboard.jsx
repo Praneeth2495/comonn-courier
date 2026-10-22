@@ -196,13 +196,13 @@ function Overview() {
                 <ActivityKpi
                   title="Riders"
                   emptyLabel="No rider accounts yet."
-                  columnLabel="Orders picked up"
+                  description="Orders picked up"
                   rows={kpis.riderActivity.map((r) => ({ id: r.rider.id, name: r.rider.fullName, sub: r.rider.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
                 />
                 <ActivityKpi
                   title="Accounts"
                   emptyLabel="No accounts role yet."
-                  columnLabel="Payments reconciled"
+                  description="Payments reconciled (marked paid + balance top-ups)"
                   rows={kpis.accountsActivity.rows.map((r) => ({ id: r.accountsUser.id, name: r.accountsUser.fullName, sub: r.accountsUser.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
                   footer={
                     <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>
@@ -319,6 +319,88 @@ function Stat({ label, value }) {
     <div className="stat-card">
       <div className="label">{label}</div>
       <div className="value">{value}</div>
+    </div>
+  );
+}
+
+function DayOfWeekKpi({ rows }) {
+  const max = Math.max(1, ...rows.map((r) => r.count));
+  return (
+    <div className="card" style={{ padding: 20 }}>
+      <h4 style={{ fontSize: 14, marginBottom: 14 }}>Orders by day of week</h4>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {rows.map((r) => (
+          <div key={r.day} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 90, fontSize: 12.5, color: 'var(--slate)', flex: 'none' }}>{r.day}</div>
+            <div style={{ flex: 1, background: 'var(--paper)', borderRadius: 6, overflow: 'hidden', height: 18 }}>
+              <div style={{ width: `${(r.count / max) * 100}%`, background: 'var(--cobalt)', height: '100%', borderRadius: 6, minWidth: r.count > 0 ? 4 : 0 }} />
+            </div>
+            <div style={{ width: 28, fontSize: 12.5, fontWeight: 700, textAlign: 'right', flex: 'none' }}>{r.count}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AirportWeightKpi({ rows }) {
+  return (
+    <div className="card" style={{ padding: 20 }}>
+      <h4 style={{ fontSize: 14, marginBottom: 4 }}>Airport weight — manifest readiness</h4>
+      <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>
+        Chargeable weight of orders not yet in a manifest, by destination airport (airports under 1kg hidden). Green = 500kg+, good to manifest.
+      </p>
+      {rows.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No unmanifested weight at any airport right now.</p>
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>Airport</th><th>Country</th><th>Orders</th><th>Weight</th></tr></thead>
+            <tbody>
+              {rows.map((a) => (
+                <tr key={a.airportCode} style={a.readyForManifest ? { background: 'var(--success-bg)' } : undefined}>
+                  <td>{a.name} <span className="mono" style={{ color: 'var(--slate-light)', fontSize: 11 }}>({a.airportCode})</span></td>
+                  <td>{a.countryCode}</td>
+                  <td>{a.orderCount}</td>
+                  <td style={a.readyForManifest ? { color: 'var(--success)', fontWeight: 700 } : undefined}>{a.totalWeightKg} kg</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ActivityKpi({ title, description, emptyLabel, rows, footer }) {
+  return (
+    <div className="card" style={{ padding: 20 }}>
+      <h4 style={{ fontSize: 14, marginBottom: description ? 4 : 14 }}>{title}</h4>
+      {description && <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>{description}</p>}
+      {rows.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{emptyLabel}</p>
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>{title.replace(/s$/, '')}</th><th>Today</th><th>Last 7 days</th><th>Current month</th></tr></thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    {r.name}
+                    <div style={{ fontSize: 11, color: 'var(--slate-light)' }}>{r.sub}</div>
+                  </td>
+                  <td>{r.today}</td>
+                  <td>{r.last7Days}</td>
+                  <td>{r.currentMonth}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {footer}
     </div>
   );
 }
