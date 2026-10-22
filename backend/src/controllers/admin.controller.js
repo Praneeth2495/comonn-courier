@@ -146,33 +146,35 @@ async function staffOverview(req, res, next) {
  * relevant set, not every region in the postcode database — most of which
  * no staff covers).
  */
+async function computeRegionBreakdown(from, to) {
+  const assignments = await prisma.staffRegionAssignment.findMany({
+    select: { state: true, region: true },
+  });
+  const seen = new Set();
+  const distinctRegions = [];
+  for (const a of assignments) {
+    const key = `${a.state}|${a.region || ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    distinctRegions.push({ state: a.state, region: a.region });
+  }
+  distinctRegions.sort((a, b) => a.state.localeCompare(b.state) || (a.region || '').localeCompare(b.region || ''));
+
+  return Promise.all(
+    distinctRegions.map(async (r) => {
+      const [originFilter] = await resolveOriginFilters([r]);
+      const where = buildDashboardWhere(from, to, { senderAddress: originFilter });
+      const totals = await computeOrderTotals(where);
+      return { region: r, totals };
+    })
+  );
+}
+
 async function regionOverview(req, res, next) {
   try {
     if (!(await requireOverviewBreakdownAccess(req, res))) return;
     const { from, to } = req.query;
-
-    const assignments = await prisma.staffRegionAssignment.findMany({
-      select: { state: true, region: true },
-    });
-    const seen = new Set();
-    const distinctRegions = [];
-    for (const a of assignments) {
-      const key = `${a.state}|${a.region || ''}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      distinctRegions.push({ state: a.state, region: a.region });
-    }
-    distinctRegions.sort((a, b) => a.state.localeCompare(b.state) || (a.region || '').localeCompare(b.region || ''));
-
-    const rows = await Promise.all(
-      distinctRegions.map(async (r) => {
-        const [originFilter] = await resolveOriginFilters([r]);
-        const where = buildDashboardWhere(from, to, { senderAddress: originFilter });
-        const totals = await computeOrderTotals(where);
-        return { region: r, totals };
-      })
-    );
-
+    const rows = await computeRegionBreakdown(from, to);
     res.json({ rows });
   } catch (err) {
     next(err);
