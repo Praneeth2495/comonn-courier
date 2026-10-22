@@ -108,7 +108,7 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
     doc.font('Helvetica').fontSize(8).text(order.receiverAddress.instructions, { width: 256 });
   }
   doc.moveDown(0.3);
-  doc.font('Helvetica-Bold').fontSize(8).fillColor('#6B7280').text('FROM');
+  doc.font('Helvetica-Bold').fontSize(8).fillColor('#6B7280').text('SENDER');
   doc.font('Helvetica').fontSize(8).fillColor('#6B7280').text(formatAddress(order.senderAddress));
   doc.fillColor('black');
   doc.moveDown(0.35);
