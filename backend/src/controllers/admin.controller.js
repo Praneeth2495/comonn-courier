@@ -179,6 +179,209 @@ async function regionOverview(req, res, next) {
   }
 }
 
+// ---------------- Overview KPI widgets ----------------
+// Day boundaries follow the same loose convention buildDashboardWhere
+// already uses for the Overview date-range picker (a calendar-date string
+// mapped onto UTC midnight, not a precisely-converted IST instant) — kept
+// consistent rather than introducing a second, more exact scheme just for
+// these three windows. The date *label* itself (which calendar day is
+// "today") is resolved correctly via getIstDateParts, same as order
+// numbering — only the exact midnight instant has the ~5.5h looseness.
+function isoDateIst(date) {
+  const { year, month, day } = getIstDateParts(date);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+function daysAgo(n) {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - n);
+  return d;
+}
+function windowRange(fromIso, toIso) {
+  return { gte: new Date(`${fromIso}T00:00:00.000Z`), lte: new Date(`${toIso}T23:59:59.999Z`) };
+}
+function activityWindows() {
+  const todayIso = isoDateIst(new Date());
+  return {
+    today: windowRange(todayIso, todayIso),
+    last7Days: windowRange(isoDateIst(daysAgo(6)), todayIso),
+    currentMonth: windowRange(`${todayIso.slice(0, 7)}-01`, todayIso),
+  };
+}
+
+const WEEKDAY_FORMATTER = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', weekday: 'long' });
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+async function dayOfWeekBreakdown(where) {
+  const orders = await prisma.order.findMany({ where, select: { createdAt: true } });
+  const counts = Object.fromEntries(WEEKDAYS.map((d) => [d, 0]));
+  for (const o of orders) counts[WEEKDAY_FORMATTER.format(o.createdAt)]++;
+  return WEEKDAYS.map((day) => ({ day, count: counts[day] }));
+}
+
+// Airports currently holding manifest-eligible weight (not yet bagged into
+// a manifest, not unpaid/unconfirmed) — same eligibility rule
+// manifest.controller.js's listEligibleOrders/listAvailableAirports use,
+// just grouped with a weight sum instead of a plain count. Only airports
+// with at least 1kg show up at all (an airport with a single stray
+// document-weight order isn't operationally interesting here); 500kg+ is
+// flagged as ready to manifest — an operational rule of thumb, not a hard
+// system limit.
+const MANIFEST_READY_KG = 500;
+async function airportWeightBreakdown(req) {
+  const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
+  where.manifestId = null;
+  where.airportCode = { not: null };
+
+  const orders = await prisma.order.findMany({
+    where,
+    select: { airportCode: true, chargeableWeightKg: true, receiverAddress: { select: { countryCode: true } } },
+  });
+
+  const byAirport = new Map(); // airportCode -> { countryCode, totalWeightKg, orderCount }
+  for (const o of orders) {
+    const key = o.airportCode;
+    const entry = byAirport.get(key) || { countryCode: o.receiverAddress.countryCode, totalWeightKg: 0, orderCount: 0 };
+    entry.totalWeightKg += Number(o.chargeableWeightKg);
+    entry.orderCount += 1;
+    byAirport.set(key, entry);
+  }
+
+  const codes = [...byAirport.keys()];
+  const regions = codes.length ? await prisma.manifestRegion.findMany({ where: { code: { in: codes } } }) : [];
+  const nameByCode = new Map(regions.map((r) => [r.code, r.name]));
+
+  return [...byAirport.entries()]
+    .map(([airportCode, v]) => ({
+      airportCode,
+      name: nameByCode.get(airportCode) || airportCode,
+      countryCode: v.countryCode,
+      orderCount: v.orderCount,
+      totalWeightKg: Math.round(v.totalWeightKg * 1000) / 1000,
+      readyForManifest: v.totalWeightKg >= MANIFEST_READY_KG,
+    }))
+    .filter((a) => a.totalWeightKg >= 1)
+    .sort((a, b) => b.totalWeightKg - a.totalWeightKg);
+}
+
+// One row per STAFF account — same region-scoped order ownership
+// staffOverview uses, just counted across three fixed rolling windows
+// instead of one admin-chosen date range.
+async function staffActivityBreakdown() {
+  const windows = activityWindows();
+  const staff = await prisma.user.findMany({ where: { role: 'STAFF' }, select: { id: true, fullName: true, email: true }, orderBy: { fullName: 'asc' } });
+
+  return Promise.all(
+    staff.map(async (s) => {
+      const assignments = await prisma.staffRegionAssignment.findMany({ where: { userId: s.id }, select: { state: true, region: true } });
+      const senderAddress = { OR: assignments.length ? await resolveOriginFilters(assignments) : [] };
+      const [today, last7Days, currentMonth] = await Promise.all([
+        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress, createdAt: windows.today } }),
+        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress, createdAt: windows.last7Days } }),
+        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress, createdAt: windows.currentMonth } }),
+      ]);
+      return { staff: s, today, last7Days, currentMonth };
+    })
+  );
+}
+
+// One row per DRIVER (rider) account — orders they personally picked up
+// (Order.assignedDriverId + pickedUpAt), the one rider action the data
+// model actually attributes to a specific person today. "Scanned" isn't
+// tracked per-user anywhere yet (batch-scan status updates don't record
+// who performed them) so it's deliberately left out rather than guessed at.
+async function riderActivityBreakdown() {
+  const windows = activityWindows();
+  const riders = await prisma.user.findMany({ where: { role: 'DRIVER' }, select: { id: true, fullName: true, email: true }, orderBy: { fullName: 'asc' } });
+
+  return Promise.all(
+    riders.map(async (r) => {
+      const base = { assignedDriverId: r.id };
+      const [today, last7Days, currentMonth] = await Promise.all([
+        prisma.order.count({ where: { ...base, pickedUpAt: windows.today } }),
+        prisma.order.count({ where: { ...base, pickedUpAt: windows.last7Days } }),
+        prisma.order.count({ where: { ...base, pickedUpAt: windows.currentMonth } }),
+      ]);
+      return { rider: r, today, last7Days, currentMonth };
+    })
+  );
+}
+
+// One row per ACCOUNTS account. Neither a manual "marked paid" nor a
+// manual balance top-up has its own actor column — both are attributed via
+// the OrderComment auto-logged alongside the action (updateOrderStatus and
+// markBalancePaymentManual, order.controller.js/payment.controller.js),
+// which does record authorId. Matched on that comment's exact body text
+// rather than introducing a new column, since the text is already a
+// reliable, unique-enough marker for each action. Overdue party invoices
+// are a team-wide total, not attributed to one accounts person — nothing
+// in the data model ties an invoice to who's responsible for chasing it.
+async function accountsActivityBreakdown() {
+  const windows = activityWindows();
+  const accountsUsers = await prisma.user.findMany({ where: { role: 'ACCOUNTS' }, select: { id: true, fullName: true, email: true }, orderBy: { fullName: 'asc' } });
+
+  const rows = await Promise.all(
+    accountsUsers.map(async (u) => {
+      const paidMarkedWhere = (createdAt) => ({ authorId: u.id, body: 'Order status updated to Paid.', createdAt });
+      const topUpWhere = (createdAt) => ({ authorId: u.id, body: { startsWith: 'Additional payment of' }, createdAt });
+      const [paidToday, paid7, paidMonth, topUpToday, topUp7, topUpMonth] = await Promise.all([
+        prisma.orderComment.count({ where: paidMarkedWhere(windows.today) }),
+        prisma.orderComment.count({ where: paidMarkedWhere(windows.last7Days) }),
+        prisma.orderComment.count({ where: paidMarkedWhere(windows.currentMonth) }),
+        prisma.orderComment.count({ where: topUpWhere(windows.today) }),
+        prisma.orderComment.count({ where: topUpWhere(windows.last7Days) }),
+        prisma.orderComment.count({ where: topUpWhere(windows.currentMonth) }),
+      ]);
+      return {
+        accountsUser: u,
+        today: paidToday + topUpToday,
+        last7Days: paid7 + topUp7,
+        currentMonth: paidMonth + topUpMonth,
+      };
+    })
+  );
+
+  const overdueWhere = { status: 'UNPAID', dueDate: { lt: new Date() } };
+  const [overduePayable, overdueReceivable] = await Promise.all([
+    prisma.partyInvoice.count({ where: { ...overdueWhere, direction: 'PAYABLE' } }),
+    prisma.partyInvoice.count({ where: { ...overdueWhere, direction: 'RECEIVABLE' } }),
+  ]);
+
+  return { rows, overdueInvoices: { payable: overduePayable, receivable: overdueReceivable } };
+}
+
+/**
+ * GET /api/admin/dashboard/kpis — the five KPI widgets below the Overview
+ * summary's stat cards. dayOfWeek respects the same from/to range as the
+ * stat cards; airports is always a live snapshot (manifest-readiness is a
+ * "right now" question, not historical); staff/riders/accounts use their
+ * own fixed today/7-day/month windows regardless of the page's date range,
+ * per explicit request — mixing an admin-chosen historical range into "how
+ * is staff doing lately" would be confusing rather than useful.
+ */
+async function dashboardKpis(req, res, next) {
+  try {
+    const { from, to } = req.query;
+    const scopeWhere = {};
+    if (req.user.role === 'STAFF') {
+      const assignments = await prisma.staffRegionAssignment.findMany({ where: { userId: req.user.id }, select: { state: true, region: true } });
+      scopeWhere.senderAddress = { OR: await resolveOriginFilters(assignments) };
+    }
+    const dayWhere = buildDashboardWhere(from, to, scopeWhere);
+
+    const [dayOfWeek, airports, staffActivity, riderActivity, accountsActivity] = await Promise.all([
+      dayOfWeekBreakdown(dayWhere),
+      airportWeightBreakdown(req),
+      staffActivityBreakdown(),
+      riderActivityBreakdown(),
+      accountsActivityBreakdown(),
+    ]);
+
+    res.json({ dayOfWeek, airports, staffActivity, riderActivity, accountsActivity });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /**
  * GET /api/admin/pickup-origins — distinct origin (pickup) states and, per
  * state, the distinct regions assigned to postcodes within it. Powers the
