@@ -1377,16 +1377,16 @@ function RatesPanel() {
             </select>
           </div>
           <div className="field">
-            <label>To zone</label>
+            <label>To zone <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="select" required value={form.zoneId} onChange={(e) => setForm({ ...form, zoneId: e.target.value })}>
               <option value="">—</option>
               {zones.map((z) => <option key={z.id} value={z.id}>{z.code}</option>)}
             </select>
           </div>
-          <div className="field"><label>From kg</label><input className="input" type="number" step="0.01" required value={form.weightFromKg} onChange={(e) => setForm({ ...form, weightFromKg: e.target.value })} /></div>
-          <div className="field"><label>To kg</label><input className="input" type="number" step="0.01" required value={form.weightToKg} onChange={(e) => setForm({ ...form, weightToKg: e.target.value })} /></div>
+          <div className="field"><label>From kg <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label><input className="input" type="number" step="0.01" required value={form.weightFromKg} onChange={(e) => setForm({ ...form, weightFromKg: e.target.value })} /></div>
+          <div className="field"><label>To kg <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label><input className="input" type="number" step="0.01" required value={form.weightToKg} onChange={(e) => setForm({ ...form, weightToKg: e.target.value })} /></div>
           <div className="field"><label>Base price</label><input className="input" type="number" step="0.01" placeholder="Optional, defaults to 0" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} /></div>
-          <div className="field"><label>₹/kg overage</label><input className="input" type="number" step="0.01" required value={form.perKgOverage} onChange={(e) => setForm({ ...form, perKgOverage: e.target.value })} /></div>
+          <div className="field"><label>₹/kg overage <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label><input className="input" type="number" step="0.01" required value={form.perKgOverage} onChange={(e) => setForm({ ...form, perKgOverage: e.target.value })} /></div>
           <div className="field"><label>Delivery days from</label><input className="input" type="number" step="1" min="0" placeholder="Optional, service default" value={form.transitDaysMin} onChange={(e) => setForm({ ...form, transitDaysMin: e.target.value })} /></div>
           <div className="field"><label>Delivery days to</label><input className="input" type="number" step="1" min="0" placeholder="Optional, service default" value={form.transitDaysMax} onChange={(e) => setForm({ ...form, transitDaysMax: e.target.value })} /></div>
           <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
