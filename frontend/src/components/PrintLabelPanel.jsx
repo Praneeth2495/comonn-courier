@@ -301,7 +301,7 @@ function AddressFields({ label, value, onChange }) {
         <input className="input" placeholder="Optional" value={value.businessName} onChange={(e) => set('businessName', e.target.value)} />
       </div>
       <div className="field">
-        <label>Street</label>
+        <label>Street <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
         <input className="input" required value={value.street} onChange={(e) => set('street', e.target.value)} />
       </div>
       <div className="field">
