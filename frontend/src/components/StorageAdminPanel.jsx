@@ -624,7 +624,7 @@ function EditBookingDatesModal({ booking, onClose, onSaved }) {
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{booking.customer.fullName} — {booking.boxSize.name}, Box {booking.box?.number ?? '—'}</p>
         <form onSubmit={save} className="form-stack">
           <div className="field">
-            <label>End date</label>
+            <label>End date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="date" required value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
           {error && <div className="error-text">{error}</div>}
