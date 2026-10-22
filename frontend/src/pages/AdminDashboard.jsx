@@ -407,10 +407,10 @@ function RegionBreakdownKpi({ rows }) {
 
 const DAY_WISE_RANGE_OPTIONS = [['week', 'Last week'], ['4weeks', 'Last 4 weeks'], ['3months', 'Last 3 months']];
 
-function KpiTile({ icon, title, headline, subLabel, onClick }) {
+function KpiTile({ icon, title, headline, subLabel, accentBg, accent, onClick }) {
   return (
     <button type="button" className="kpi-tile" onClick={onClick}>
-      <div className="icon">{icon}</div>
+      <div className="icon-circle" style={{ background: accentBg, color: accent }}>{icon}</div>
       <div className="headline">{headline}</div>
       <div className="title">{title}</div>
       {subLabel && <div className="sub">{subLabel}</div>}
