@@ -374,33 +374,37 @@ async function accountsActivityBreakdown() {
 }
 
 /**
- * GET /api/admin/dashboard/kpis — the five KPI widgets below the Overview
- * summary's stat cards. dayOfWeek respects the same from/to range as the
- * stat cards; airports is always a live snapshot (manifest-readiness is a
- * "right now" question, not historical); staff/riders/accounts use their
- * own fixed today/7-day/month windows regardless of the page's date range,
- * per explicit request — mixing an admin-chosen historical range into "how
- * is staff doing lately" would be confusing rather than useful.
+ * GET /api/admin/dashboard/kpis?dayWiseRange=week|4weeks|3months — the six
+ * KPI tiles below the Overview summary's stat cards. dayOfWeek uses its own
+ * selectable trailing window (dayWiseRange, independent of the page's
+ * from/to range — see dayWiseWindow); airports is always a live snapshot
+ * (manifest-readiness is a "right now" question, not historical);
+ * staff/riders/accounts use their own fixed today/7-day/month windows
+ * regardless of the page's date range, per explicit request. regions is
+ * only included for viewers with Overview-breakdown access (same gate as
+ * the dedicated Region overview tab) — omitted entirely otherwise, same as
+ * that tab being hidden from them.
  */
 async function dashboardKpis(req, res, next) {
   try {
-    const { from, to } = req.query;
+    const { from, to, dayWiseRange } = req.query;
     const scopeWhere = {};
     if (req.user.role === 'STAFF') {
       const assignments = await prisma.staffRegionAssignment.findMany({ where: { userId: req.user.id }, select: { state: true, region: true } });
       scopeWhere.senderAddress = { OR: await resolveOriginFilters(assignments) };
     }
-    const dayWhere = buildDashboardWhere(from, to, scopeWhere);
 
-    const [dayOfWeek, airports, staffActivity, riderActivity, accountsActivity] = await Promise.all([
-      dayOfWeekBreakdown(dayWhere),
+    const [dayOfWeek, airports, staffActivity, riderActivity, accountsActivity, canSeeRegions] = await Promise.all([
+      dayOfWeekBreakdown(scopeWhere, dayWiseRange),
       airportWeightBreakdown(req),
       staffActivityBreakdown(),
       riderActivityBreakdown(),
       accountsActivityBreakdown(),
+      hasOverviewBreakdownAccess(req),
     ]);
+    const regions = canSeeRegions ? await computeRegionBreakdown(from, to) : null;
 
-    res.json({ dayOfWeek, airports, staffActivity, riderActivity, accountsActivity });
+    res.json({ dayOfWeek, airports, staffActivity, riderActivity, accountsActivity, regions });
   } catch (err) {
     next(err);
   }
