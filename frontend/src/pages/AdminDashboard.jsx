@@ -139,7 +139,7 @@ function Overview() {
   // date inputs below.
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
   const [toDate, setToDate] = useState(isoDate(now));
-  const [detailOrder, setDetailOrder] = useState(null);
+  const [kpis, setKpis] = useState(null);
   // ADMIN always sees the breakdown tabs; a STAFF viewer only does if
   // individually granted access (Users panel) — see requireOverviewBreakdownAccess
   // in admin.controller.js, which enforces the same rule server-side.
