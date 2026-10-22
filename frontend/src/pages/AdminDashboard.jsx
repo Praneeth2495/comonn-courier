@@ -140,6 +140,8 @@ function Overview() {
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
   const [toDate, setToDate] = useState(isoDate(now));
   const [kpis, setKpis] = useState(null);
+  const [dayWiseRange, setDayWiseRange] = useState('4weeks');
+  const [expandedKpi, setExpandedKpi] = useState(null);
   // ADMIN always sees the breakdown tabs; a STAFF viewer only does if
   // individually granted access (Users panel) — see requireOverviewBreakdownAccess
   // in admin.controller.js, which enforces the same rule server-side.
