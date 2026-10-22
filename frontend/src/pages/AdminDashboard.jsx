@@ -447,7 +447,7 @@ function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpa
     <>
       <div className="kpi-tile-grid">
         {tiles.map((t) => (
-          <KpiTile key={t.key} icon={t.icon} title={t.title} headline={t.headline} subLabel={t.subLabel} onClick={() => setExpandedKpi(t.key)} />
+          <KpiTile key={t.key} icon={t.icon} title={t.title} headline={t.headline} subLabel={t.subLabel} accentBg={t.accentBg} accent={t.accent} onClick={() => setExpandedKpi(t.key)} />
         ))}
       </div>
 
