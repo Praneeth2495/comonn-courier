@@ -102,7 +102,7 @@ function CreateCustomsClientModal({ onClose, onCreated }) {
         </div>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>Name</label>
+            <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="field">
