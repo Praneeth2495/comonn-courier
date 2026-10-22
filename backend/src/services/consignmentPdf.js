@@ -137,9 +137,9 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
 
   const colWidth = (width - 20) / 2;
   const colTop = y;
-  doc.font('Helvetica-Bold').fontSize(8.5).text('FROM (Sender)', left, colTop);
+  doc.font('Helvetica-Bold').fontSize(8.5).text('SENDER', left, colTop);
   doc.font('Helvetica').fontSize(8).text(formatAddress(batch.fromAddress), left, colTop + 11, { width: colWidth });
-  doc.font('Helvetica-Bold').fontSize(8.5).text('TO (Receiver)', left + colWidth + 20, colTop);
+  doc.font('Helvetica-Bold').fontSize(8.5).text('RECEIVER', left + colWidth + 20, colTop);
   doc.font('Helvetica').fontSize(8).text(formatAddress(batch.toAddress), left + colWidth + 20, colTop + 11, { width: colWidth });
   y = Math.max(doc.y, colTop + 50) + 8;
 
