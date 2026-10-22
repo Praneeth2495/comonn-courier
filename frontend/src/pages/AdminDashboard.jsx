@@ -187,32 +187,7 @@ function Overview() {
             </div>
 
             {!kpis ? <LoadingLogo /> : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 24 }}>
-                <DayOfWeekKpi rows={kpis.dayOfWeek} />
-                <AirportWeightKpi rows={kpis.airports} />
-                <ActivityKpi
-                  title="Staff"
-                  emptyLabel="No staff accounts yet."
-                  rows={kpis.staffActivity.map((r) => ({ id: r.staff.id, name: r.staff.fullName, sub: r.staff.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
-                />
-                <ActivityKpi
-                  title="Riders"
-                  emptyLabel="No rider accounts yet."
-                  description="Orders picked up"
-                  rows={kpis.riderActivity.map((r) => ({ id: r.rider.id, name: r.rider.fullName, sub: r.rider.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
-                />
-                <ActivityKpi
-                  title="Accounts"
-                  emptyLabel="No accounts role yet."
-                  description="Payments reconciled (marked paid + balance top-ups)"
-                  rows={kpis.accountsActivity.rows.map((r) => ({ id: r.accountsUser.id, name: r.accountsUser.fullName, sub: r.accountsUser.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
-                  footer={
-                    <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>
-                      Overdue party invoices right now: <b>{kpis.accountsActivity.overdueInvoices.payable}</b> payable, <b>{kpis.accountsActivity.overdueInvoices.receivable}</b> receivable
-                    </p>
-                  }
-                />
-              </div>
+              <KpiTileGrid kpis={kpis} dayWiseRange={dayWiseRange} setDayWiseRange={setDayWiseRange} expandedKpi={expandedKpi} setExpandedKpi={setExpandedKpi} />
             )}
           </>
         )
