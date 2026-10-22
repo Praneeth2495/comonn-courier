@@ -182,7 +182,7 @@ async function generateLabelsForBatch(batch) {
 async function createManualLabels(req, res, next) {
   try {
     const {
-      orderId, refNumber, service, fromAddress, toAddress, items: rawItems, instructions,
+      orderId, refNumber, service, truckType, fromAddress, toAddress, items: rawItems, instructions,
       generateLabel: wantLabel = true, generateConsignment: wantConsignment = true, generateLoadSheet: wantLoadSheet = true,
     } = req.body;
 
