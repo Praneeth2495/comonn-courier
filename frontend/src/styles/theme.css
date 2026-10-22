@@ -172,21 +172,22 @@ input,select,textarea{font-family:inherit;}
    breakpoints as .app-sidebar's own mobile collapse (900px) for
    consistency, plus one more step at 480px for small phones. */
 .kpi-tile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:24px;}
-.kpi-tile{background:#fff;border:1px solid var(--line-2);border-radius:14px;padding:18px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;height:100%;}
-.kpi-tile .icon{font-size:22px;}
+.kpi-tile{background:#fff;border:1px solid var(--line-2);border-radius:14px;padding:18px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;height:100%;transition:transform .12s ease,box-shadow .12s ease;}
+.kpi-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-card);}
+.kpi-tile .icon-circle{width:40px;height:40px;border-radius:11px;font-size:19px;margin-bottom:2px;}
 .kpi-tile .headline{font-family:'Space Grotesk';font-size:22px;font-weight:700;color:var(--navy);}
 .kpi-tile .title{font-size:12.5px;color:var(--slate);font-weight:600;}
 .kpi-tile .sub{font-size:11.5px;color:var(--slate-light);}
 @media(max-width:900px){
   .kpi-tile-grid{grid-template-columns:repeat(3,1fr);gap:10px;}
   .kpi-tile{padding:14px;gap:4px;}
-  .kpi-tile .icon{font-size:19px;}
+  .kpi-tile .icon-circle{width:34px;height:34px;border-radius:10px;font-size:16px;}
   .kpi-tile .headline{font-size:19px;}
 }
 @media(max-width:480px){
   .kpi-tile-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
   .kpi-tile{padding:12px;border-radius:12px;}
-  .kpi-tile .icon{font-size:17px;}
+  .kpi-tile .icon-circle{width:30px;height:30px;border-radius:9px;font-size:14px;}
   .kpi-tile .headline{font-size:17px;}
   .kpi-tile .title{font-size:11.5px;}
   .kpi-tile .sub{font-size:10.5px;}
