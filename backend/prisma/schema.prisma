@@ -1251,6 +1251,9 @@ model ManualLabelBatch {
   // persisted on the batch itself — needed now so the consignment/load
   // sheet (rendered later, from this row alone) can also show it.
   service         String?
+  // Optional — FTL, LCL, or any staff-entered custom value. Purely
+  // informational (not used in pricing or routing).
+  truckType       String?
   fromAddress     Json
   toAddress       Json
   // Total labels across every item (sum of each item's own quantity) —
