@@ -148,18 +148,14 @@ function Overview() {
   useEffect(() => {
     function load(silent) {
       if (subTab !== 'summary') return;
-      if (!silent) setData(null);
+      if (!silent) { setData(null); setKpis(null); }
       client.get('/admin/dashboard', { params: { from: fromDate, to: toDate } }).then(({ data }) => setData(data));
+      client.get('/admin/dashboard/kpis', { params: { from: fromDate, to: toDate } }).then(({ data }) => setKpis(data));
     }
     load();
     const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
   }, [fromDate, toDate, subTab]);
-
-  async function openDetail(id) {
-    const { data } = await client.get(`/orders/${id}`);
-    setDetailOrder(data.order);
-  }
 
   return (
     <div>
