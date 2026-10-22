@@ -420,16 +420,19 @@ function CreateLabelModal({ onClose, onCreated }) {
             <label>Truck</label>
             <select
               className="input"
-              value={['', 'FTL', 'LCL'].includes(truckType) ? truckType : 'Custom'}
-              onChange={(e) => setTruckType(e.target.value === 'Custom' ? '' : e.target.value)}
+              value={truckCustom ? 'Custom' : truckType}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === 'Custom') { setTruckCustom(true); setTruckType(''); }
+                else { setTruckCustom(false); setTruckType(v); }
+              }}
             >
               <option value="">Optional</option>
               <option value="FTL">FTL</option>
               <option value="LCL">LCL</option>
               <option value="Custom">Custom…</option>
             </select>
-            {!['', 'FTL', 'LCL'].includes(truckType) || (truckType === '' && false) ? null : null}
-            {(truckType === '' ? false : !['FTL', 'LCL'].includes(truckType)) && (
+            {truckCustom && (
               <input
                 className="input"
                 style={{ marginTop: 6 }}
