@@ -409,19 +409,11 @@ const DAY_WISE_RANGE_OPTIONS = [['week', 'Last week'], ['4weeks', 'Last 4 weeks'
 
 function KpiTile({ icon, title, headline, subLabel, onClick }) {
   return (
-    <button
-      type="button"
-      className="card"
-      onClick={onClick}
-      style={{
-        padding: 18, textAlign: 'left', cursor: 'pointer', border: '1px solid var(--line-2)',
-        display: 'flex', flexDirection: 'column', gap: 6, height: '100%',
-      }}
-    >
-      <div style={{ fontSize: 22 }}>{icon}</div>
-      <div style={{ fontSize: 22, fontWeight: 700 }}>{headline}</div>
-      <div style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>{title}</div>
-      {subLabel && <div style={{ fontSize: 11.5, color: 'var(--slate-light)' }}>{subLabel}</div>}
+    <button type="button" className="kpi-tile" onClick={onClick}>
+      <div className="icon">{icon}</div>
+      <div className="headline">{headline}</div>
+      <div className="title">{title}</div>
+      {subLabel && <div className="sub">{subLabel}</div>}
     </button>
   );
 }
