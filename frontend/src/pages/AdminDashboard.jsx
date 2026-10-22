@@ -24,7 +24,11 @@ import { formatDateShort } from '../utils/dateFormat';
 import { statusLabel } from '../utils/orderStatus';
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState('overview');
+  // Read the starting tab from the URL (?tab=orders) rather than always
+  // defaulting to Overview — so a page refresh (or a shared/bookmarked
+  // link) lands back on whichever section was open, not the first one.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get('tab') || 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
