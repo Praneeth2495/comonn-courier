@@ -489,11 +489,11 @@ export default function BatchScanPanel() {
             <form onSubmit={addLocation} style={{ marginBottom: 16 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, alignItems: 'end' }}>
                 <div className="field">
-                  <label>Name</label>
+                  <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                   <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
                 </div>
                 <div className="field">
-                  <label>Label</label>
+                  <label>Label <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                   <input className="input" placeholder="e.g. Sorted at Hub A" required value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
                 </div>
                 <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
