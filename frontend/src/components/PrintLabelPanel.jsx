@@ -591,6 +591,7 @@ function EditGenerateModal({ batch, onClose, onGenerated }) {
           <div><b>From:</b> {addressSummaryLine(batch.fromAddress)}</div>
           <div><b>To:</b> {addressSummaryLine(batch.toAddress)}</div>
           <div><b>Service:</b> {batch.service || '—'}</div>
+          {batch.truckType && <div><b>Truck:</b> {batch.truckType}</div>}
           <div><b>Items:</b> {(batch.items || []).map((it, i) => `${it.itemType} x${it.quantity} (${it.actualWeightKg} kg)`).join(', ')}</div>
           {batch.instructions && <div><b>Instructions:</b> {batch.instructions}</div>}
         </div>
