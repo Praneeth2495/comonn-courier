@@ -382,6 +382,141 @@ function ActivityKpi({ title, description, emptyLabel, rows, footer }) {
   );
 }
 
+function RegionBreakdownKpi({ rows }) {
+  return (
+    <div>
+      {rows.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No regions assigned to any staff yet.</p>
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>Region</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i}>
+                  <td>{r.region.region ? `${r.region.state} · ${r.region.region}` : `${r.region.state} (all)`}</td>
+                  <td>{r.totals.totalOrders}</td>
+                  <td>{r.totals.pendingPayment}</td>
+                  <td>{r.totals.paid}</td>
+                  <td>{r.totals.inTransit}</td>
+                  <td>{r.totals.delivered}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const DAY_WISE_RANGE_OPTIONS = [['week', 'Last week'], ['4weeks', 'Last 4 weeks'], ['3months', 'Last 3 months']];
+
+function KpiTile({ icon, title, headline, subLabel, onClick }) {
+  return (
+    <button
+      type="button"
+      className="card"
+      onClick={onClick}
+      style={{
+        padding: 18, textAlign: 'left', cursor: 'pointer', border: '1px solid var(--line-2)',
+        display: 'flex', flexDirection: 'column', gap: 6, height: '100%',
+      }}
+    >
+      <div style={{ fontSize: 22 }}>{icon}</div>
+      <div style={{ fontSize: 22, fontWeight: 700 }}>{headline}</div>
+      <div style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>{title}</div>
+      {subLabel && <div style={{ fontSize: 11.5, color: 'var(--slate-light)' }}>{subLabel}</div>}
+    </button>
+  );
+}
+
+// Six compact tiles (icon + one headline number each) in a grid that fits
+// a screen without scrolling, regardless of how many staff/riders/accounts
+// rows exist behind each one — the full chart/table only renders once a
+// tile is clicked, in a modal, rather than always inline (which is what
+// made the previous one-column stacked layout require scrolling to see
+// everything).
+function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpandedKpi }) {
+  const dayWiseTotal = kpis.dayOfWeek.reduce((sum, d) => sum + d.count, 0);
+  const airportsReady = kpis.airports.filter((a) => a.readyForManifest).length;
+  const staffToday = kpis.staffActivity.reduce((sum, r) => sum + r.today, 0);
+  const ridersToday = kpis.riderActivity.reduce((sum, r) => sum + r.today, 0);
+  const accountsToday = kpis.accountsActivity.rows.reduce((sum, r) => sum + r.today, 0);
+  const overdueTotal = kpis.accountsActivity.overdueInvoices.payable + kpis.accountsActivity.overdueInvoices.receivable;
+
+  const tiles = [
+    { key: 'dayOfWeek', icon: '📅', title: 'Orders by day of week', headline: dayWiseTotal, subLabel: DAY_WISE_RANGE_OPTIONS.find(([k]) => k === dayWiseRange)?.[1] },
+    { key: 'airports', icon: '✈️', title: 'Airport weight', headline: `${airportsReady}/${kpis.airports.length}`, subLabel: 'ready to manifest' },
+    { key: 'staff', icon: '🧑‍💼', title: 'Staff', headline: staffToday, subLabel: 'orders today' },
+    { key: 'riders', icon: '🏍️', title: 'Riders', headline: ridersToday, subLabel: 'picked up today' },
+    { key: 'accounts', icon: '💰', title: 'Accounts', headline: accountsToday, subLabel: `reconciled today · ${overdueTotal} overdue` },
+    ...(kpis.regions ? [{ key: 'regions', icon: '🗺️', title: 'Regions', headline: kpis.regions.length, subLabel: 'regions covered' }] : []),
+  ];
+
+  const titleByKey = Object.fromEntries(tiles.map((t) => [t.key, t.title]));
+
+  return (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginTop: 24 }}>
+        {tiles.map((t) => (
+          <KpiTile key={t.key} icon={t.icon} title={t.title} headline={t.headline} subLabel={t.subLabel} onClick={() => setExpandedKpi(t.key)} />
+        ))}
+      </div>
+
+      {expandedKpi && (
+        <div className="modal-overlay open" onClick={() => setExpandedKpi(null)}>
+          <div className="modal-box" style={{ maxWidth: 720, maxHeight: '86vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <h3>{titleByKey[expandedKpi]}</h3>
+              <button onClick={() => setExpandedKpi(null)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+            </div>
+
+            {expandedKpi === 'dayOfWeek' && (
+              <>
+                <div className="field" style={{ maxWidth: 220, marginBottom: 16 }}>
+                  <label>Range</label>
+                  <select className="input" value={dayWiseRange} onChange={(e) => setDayWiseRange(e.target.value)}>
+                    {DAY_WISE_RANGE_OPTIONS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+                  </select>
+                </div>
+                <DayOfWeekKpiBody rows={kpis.dayOfWeek} />
+              </>
+            )}
+            {expandedKpi === 'airports' && <AirportWeightKpiBody rows={kpis.airports} />}
+            {expandedKpi === 'staff' && (
+              <ActivityKpiBody
+                emptyLabel="No staff accounts yet."
+                rows={kpis.staffActivity.map((r) => ({ id: r.staff.id, name: r.staff.fullName, sub: r.staff.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
+              />
+            )}
+            {expandedKpi === 'riders' && (
+              <ActivityKpiBody
+                emptyLabel="No rider accounts yet."
+                description="Orders picked up"
+                rows={kpis.riderActivity.map((r) => ({ id: r.rider.id, name: r.rider.fullName, sub: r.rider.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
+              />
+            )}
+            {expandedKpi === 'accounts' && (
+              <ActivityKpiBody
+                emptyLabel="No accounts role yet."
+                description="Payments reconciled (marked paid + balance top-ups)"
+                rows={kpis.accountsActivity.rows.map((r) => ({ id: r.accountsUser.id, name: r.accountsUser.fullName, sub: r.accountsUser.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
+                footer={
+                  <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>
+                    Overdue party invoices right now: <b>{kpis.accountsActivity.overdueInvoices.payable}</b> payable, <b>{kpis.accountsActivity.overdueInvoices.receivable}</b> receivable
+                  </p>
+                }
+              />
+            )}
+            {expandedKpi === 'regions' && kpis.regions && <RegionBreakdownKpi rows={kpis.regions} />}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
 const STATUS_PILL = {
