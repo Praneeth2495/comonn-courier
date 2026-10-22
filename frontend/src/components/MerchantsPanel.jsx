@@ -104,11 +104,11 @@ function CreateMerchantModal({ onClose, onCreated }) {
         </div>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>Name</label>
+            <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme Shopify Store" />
           </div>
           <div className="field">
-            <label>Contact email</label>
+            <label>Contact email <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="email" required value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="ops@acme.com" />
           </div>
           <div className="field">
