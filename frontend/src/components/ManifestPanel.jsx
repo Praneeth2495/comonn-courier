@@ -419,7 +419,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
           )}
 
           <div className="field">
-            <label>To Airport</label>
+            <label>To Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="select" required value={regionSelection} onChange={(e) => pickRegion(e.target.value)}>
               <option value="">Choose destination airport…</option>
               {regions.map((r) => <option key={r.id} value={r.id}>{r.code} — {r.name}</option>)}
