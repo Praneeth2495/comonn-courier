@@ -314,7 +314,7 @@ function AddressFields({ label, value, onChange }) {
           <input className="input" placeholder="Optional" value={value.city} onChange={(e) => set('city', e.target.value)} />
         </div>
         <div className="field" style={{ flex: 1 }}>
-          <label>State</label>
+          <label>State <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <input className="input" required value={value.state} onChange={(e) => set('state', e.target.value)} />
         </div>
         <div className="field" style={{ flex: 1 }}>
