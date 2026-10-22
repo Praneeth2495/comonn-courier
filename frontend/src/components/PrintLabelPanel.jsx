@@ -376,7 +376,7 @@ function CreateLabelModal({ onClose, onCreated }) {
     setError('');
     try {
       const { data } = await client.post('/labels/manual', {
-        orderId, refNumber, service, fromAddress, toAddress, items, instructions,
+        orderId, refNumber, service, truckType: truckType || undefined, fromAddress, toAddress, items, instructions,
         generateLabel: wantLabel, generateConsignment: wantConsignment, generateLoadSheet: wantLoadSheet,
       });
       onCreated(data);
