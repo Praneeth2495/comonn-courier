@@ -147,7 +147,7 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <div className="field" style={{ flex: 1 }}>
-              <label>Amount (₹)</label>
+              <label>Amount (₹) <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
               <input className="input" type="number" min="0" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <div className="field" style={{ flex: 1 }}>
