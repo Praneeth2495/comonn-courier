@@ -300,30 +300,26 @@ function Stat({ label, value }) {
   );
 }
 
-function DayOfWeekKpi({ rows }) {
+function DayOfWeekKpiBody({ rows }) {
   const max = Math.max(1, ...rows.map((r) => r.count));
   return (
-    <div className="card" style={{ padding: 20 }}>
-      <h4 style={{ fontSize: 14, marginBottom: 14 }}>Orders by day of week</h4>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {rows.map((r) => (
-          <div key={r.day} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 90, fontSize: 12.5, color: 'var(--slate)', flex: 'none' }}>{r.day}</div>
-            <div style={{ flex: 1, background: 'var(--paper)', borderRadius: 6, overflow: 'hidden', height: 18 }}>
-              <div style={{ width: `${(r.count / max) * 100}%`, background: 'var(--cobalt)', height: '100%', borderRadius: 6, minWidth: r.count > 0 ? 4 : 0 }} />
-            </div>
-            <div style={{ width: 28, fontSize: 12.5, fontWeight: 700, textAlign: 'right', flex: 'none' }}>{r.count}</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {rows.map((r) => (
+        <div key={r.day} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 90, fontSize: 12.5, color: 'var(--slate)', flex: 'none' }}>{r.day}</div>
+          <div style={{ flex: 1, background: 'var(--paper)', borderRadius: 6, overflow: 'hidden', height: 18 }}>
+            <div style={{ width: `${(r.count / max) * 100}%`, background: 'var(--cobalt)', height: '100%', borderRadius: 6, minWidth: r.count > 0 ? 4 : 0 }} />
           </div>
-        ))}
-      </div>
+          <div style={{ width: 28, fontSize: 12.5, fontWeight: 700, textAlign: 'right', flex: 'none' }}>{r.count}</div>
+        </div>
+      ))}
     </div>
   );
 }
 
-function AirportWeightKpi({ rows }) {
+function AirportWeightKpiBody({ rows }) {
   return (
-    <div className="card" style={{ padding: 20 }}>
-      <h4 style={{ fontSize: 14, marginBottom: 4 }}>Airport weight — manifest readiness</h4>
+    <div>
       <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>
         Chargeable weight of orders not yet in a manifest, by destination airport (airports under 1kg hidden). Green = 500kg+, good to manifest.
       </p>
@@ -350,17 +346,16 @@ function AirportWeightKpi({ rows }) {
   );
 }
 
-function ActivityKpi({ title, description, emptyLabel, rows, footer }) {
+function ActivityKpiBody({ description, emptyLabel, rows, footer }) {
   return (
-    <div className="card" style={{ padding: 20 }}>
-      <h4 style={{ fontSize: 14, marginBottom: description ? 4 : 14 }}>{title}</h4>
+    <div>
       {description && <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>{description}</p>}
       {rows.length === 0 ? (
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{emptyLabel}</p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
-            <thead><tr><th>{title.replace(/s$/, '')}</th><th>Today</th><th>Last 7 days</th><th>Current month</th></tr></thead>
+            <thead><tr><th>Name</th><th>Today</th><th>Last 7 days</th><th>Current month</th></tr></thead>
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
