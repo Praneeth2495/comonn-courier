@@ -110,7 +110,7 @@ function CreateCustomsClientModal({ onClose, onCreated }) {
             <input className="input" placeholder="Optional" value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
           </div>
           <div className="field">
-            <label>Mobile</label>
+            <label>Mobile <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" required value={mobile} onChange={(e) => setMobile(e.target.value)} />
           </div>
           <div className="field">
