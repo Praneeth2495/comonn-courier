@@ -445,7 +445,7 @@ function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpa
 
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginTop: 24 }}>
+      <div className="kpi-tile-grid">
         {tiles.map((t) => (
           <KpiTile key={t.key} icon={t.icon} title={t.title} headline={t.headline} subLabel={t.subLabel} onClick={() => setExpandedKpi(t.key)} />
         ))}
