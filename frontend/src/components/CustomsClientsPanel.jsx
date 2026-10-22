@@ -118,7 +118,7 @@ function CreateCustomsClientModal({ onClose, onCreated }) {
             <input className="input" type="email" placeholder="Optional" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="field">
-            <label>Country</label>
+            <label>Country <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="input" required value={countryCode} onChange={(e) => setCountryCode(e.target.value)}>
               <option value="" disabled>Select country</option>
               {Object.entries(COUNTRY_NAMES).map(([code, name]) => (
