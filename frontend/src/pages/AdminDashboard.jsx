@@ -433,12 +433,12 @@ function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpa
   const overdueTotal = kpis.accountsActivity.overdueInvoices.payable + kpis.accountsActivity.overdueInvoices.receivable;
 
   const tiles = [
-    { key: 'dayOfWeek', icon: '📅', title: 'Orders by day of week', headline: dayWiseTotal, subLabel: DAY_WISE_RANGE_OPTIONS.find(([k]) => k === dayWiseRange)?.[1] },
-    { key: 'airports', icon: '✈️', title: 'Airport weight', headline: `${airportsReady}/${kpis.airports.length}`, subLabel: 'ready to manifest' },
-    { key: 'staff', icon: '🧑‍💼', title: 'Staff', headline: staffToday, subLabel: 'orders today' },
-    { key: 'riders', icon: '🏍️', title: 'Riders', headline: ridersToday, subLabel: 'picked up today' },
-    { key: 'accounts', icon: '💰', title: 'Accounts', headline: accountsToday, subLabel: `reconciled today · ${overdueTotal} overdue` },
-    ...(kpis.regions ? [{ key: 'regions', icon: '🗺️', title: 'Regions', headline: kpis.regions.length, subLabel: 'regions covered' }] : []),
+    { key: 'dayOfWeek', icon: '📅', title: 'Orders by day of week', headline: dayWiseTotal, subLabel: DAY_WISE_RANGE_OPTIONS.find(([k]) => k === dayWiseRange)?.[1], accentBg: '#EAF0FF', accent: 'var(--cobalt)' },
+    { key: 'airports', icon: '✈️', title: 'Airport weight', headline: `${airportsReady}/${kpis.airports.length}`, subLabel: 'ready to manifest', accentBg: '#FFEDE7', accent: 'var(--coral)' },
+    { key: 'staff', icon: '🧑‍💼', title: 'Staff', headline: staffToday, subLabel: 'orders today', accentBg: 'var(--success-bg)', accent: 'var(--success)' },
+    { key: 'riders', icon: '🏍️', title: 'Riders', headline: ridersToday, subLabel: 'picked up today', accentBg: 'var(--warn-bg)', accent: 'var(--warn)' },
+    { key: 'accounts', icon: '💰', title: 'Accounts', headline: accountsToday, subLabel: `reconciled today · ${overdueTotal} overdue`, accentBg: 'var(--danger-bg)', accent: 'var(--danger)' },
+    ...(kpis.regions ? [{ key: 'regions', icon: '🗺️', title: 'Regions', headline: kpis.regions.length, subLabel: 'regions covered', accentBg: '#ECEEF6', accent: 'var(--navy)' }] : []),
   ];
 
   const titleByKey = Object.fromEntries(tiles.map((t) => [t.key, t.title]));
