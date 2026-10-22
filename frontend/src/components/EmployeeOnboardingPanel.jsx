@@ -161,8 +161,8 @@ function InviteEmployeeModal({ onClose, onSaved }) {
           Enter the basics — we'll email them a link to fill in their own address, ID proof, and bank details. Nothing is finalized until you approve what they submit.
         </p>
         <form onSubmit={submit} className="form-stack">
-          <div className="field"><label>Full name</label><input className="input" required value={form.fullName} onChange={(e) => update('fullName', e.target.value)} /></div>
-          <div className="field"><label>Email</label><input className="input" type="email" required value={form.email} onChange={(e) => update('email', e.target.value)} /></div>
+          <div className="field"><label>Full name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label><input className="input" required value={form.fullName} onChange={(e) => update('fullName', e.target.value)} /></div>
+          <div className="field"><label>Email <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label><input className="input" type="email" required value={form.email} onChange={(e) => update('email', e.target.value)} /></div>
           <div className="field"><label>Mobile</label><input className="input" placeholder="Optional" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></div>
           <div className="field">
             <label>Role</label>
