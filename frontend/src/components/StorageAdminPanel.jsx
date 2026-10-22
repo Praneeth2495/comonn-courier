@@ -160,14 +160,14 @@ function SizesAndBoxes() {
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Add a box</h4>
         <form onSubmit={addBox} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, alignItems: 'end' }}>
           <div className="field">
-            <label>Size</label>
+            <label>Size <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="select" required value={boxForm.boxSizeId} onChange={(e) => setBoxForm({ ...boxForm, boxSizeId: e.target.value })}>
               <option value="">Choose a size…</option>
               {sizes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
           <div className="field">
-            <label>Box number</label>
+            <label>Box number <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="number" min="1" required value={boxForm.number} onChange={(e) => setBoxForm({ ...boxForm, number: e.target.value })} />
           </div>
           <button className="btn btn-primary btn-sm" disabled={addingBox}>{addingBox ? 'Adding…' : 'Add box'}</button>
