@@ -323,7 +323,7 @@ function AddressFields({ label, value, onChange }) {
         </div>
       </div>
       <div className="field">
-        <label>Country</label>
+        <label>Country <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
         <select className="input" required value={value.countryCode} onChange={(e) => set('countryCode', e.target.value)}>
           <option value="" disabled>Select country</option>
           {Object.entries(COUNTRY_NAMES).map(([code, name]) => (
