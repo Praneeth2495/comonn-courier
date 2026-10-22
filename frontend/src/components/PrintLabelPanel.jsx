@@ -429,11 +429,11 @@ function CreateLabelModal({ onClose, onCreated }) {
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <div className="field" style={{ flex: 1 }}>
-                  <label>Quantity</label>
+                  <label>Quantity <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                   <input className="input" type="number" min="1" max="100" step="1" required value={it.quantity} onChange={(e) => updateItem(idx, 'quantity', e.target.value)} />
                 </div>
                 <div className="field" style={{ flex: 1 }}>
-                  <label>Item type</label>
+                  <label>Item type <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                   <select
                     className="input"
                     value={['Box', 'Pallet'].includes(it.itemType) ? it.itemType : 'Custom'}
