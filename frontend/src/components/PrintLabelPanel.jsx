@@ -399,7 +399,7 @@ function CreateLabelModal({ onClose, onCreated }) {
         <form onSubmit={submit} className="form-stack">
           <div style={{ display: 'flex', gap: 10 }}>
             <div className="field" style={{ flex: 1 }}>
-              <label>Order ID</label>
+              <label>Order ID <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
               <input className="input" required value={orderId} onChange={(e) => setOrderId(e.target.value)} />
             </div>
             <div className="field" style={{ flex: 1 }}>
