@@ -880,6 +880,7 @@ module.exports = {
   dashboardStats,
   staffOverview,
   regionOverview,
+  dashboardKpis,
   listPickupOrigins,
   listZones,
   createZone,
