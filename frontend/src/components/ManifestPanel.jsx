@@ -438,11 +438,11 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
           <div className="grid-2">
             <div className="field">
-              <label>Manifest date</label>
+              <label>Manifest date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
               <input className="input" type="date" required value={manifestDate} onChange={(e) => setManifestDate(e.target.value)} />
             </div>
             <div className="field">
-              <label>Departure date</label>
+              <label>Departure date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
               <input className="input" type="date" required value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
             </div>
           </div>
