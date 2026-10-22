@@ -408,7 +408,7 @@ function CreateLabelModal({ onClose, onCreated }) {
             </div>
           </div>
           <div className="field">
-            <label>Service</label>
+            <label>Service <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="input" required value={service} onChange={(e) => setService(e.target.value)}>
               <option value="" disabled>Select service</option>
               <option value="Express">Express</option>
