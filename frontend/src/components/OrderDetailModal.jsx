@@ -191,21 +191,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           <div className="oda-route">
             <div className="oda-route-block"><div className="lbl">Origin</div><p>{order.senderAddress?.city}, {order.senderAddress?.countryCode}</p></div>
             <div className="oda-route-arrow">→</div>
-            <div className="oda-route-block">
-              <div className="lbl">{canViewPaymentRefs ? 'Payment reference' : 'Destination'}</div>
-              {canViewPaymentRefs ? (
-                (order.payment || order.balancePayments?.length > 0) ? (
-                  <>
-                    {order.payment && <PaymentRefInline payment={order.payment} />}
-                    {order.balancePayments?.map((bp) => <PaymentRefInline key={bp.id} payment={bp} />)}
-                  </>
-                ) : (
-                  <p style={{ color: 'var(--slate-light)', fontSize: 12 }}>No payment yet</p>
-                )
-              ) : (
-                <p>{order.receiverAddress?.city}, {order.receiverAddress?.countryCode}</p>
-              )}
-            </div>
+            <div className="oda-route-block"><div className="lbl">Destination</div><p>{order.receiverAddress?.city}, {order.receiverAddress?.countryCode}</p></div>
           </div>
         </div>
 
