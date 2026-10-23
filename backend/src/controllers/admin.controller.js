@@ -229,8 +229,15 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 // as the Staff/Rider/Accounts fixed windows below).
 const DAY_WISE_RANGE_DAYS = { week: 6, '4weeks': 27, '3months': 89 };
 function dayWiseWindow(rangeKey) {
-  const days = DAY_WISE_RANGE_DAYS[rangeKey] ?? DAY_WISE_RANGE_DAYS['4weeks'];
   const todayIso = isoDateIst(new Date());
+  // Monday-start, same as the chart's own WEEKDAYS ordering — "currentWeek"
+  // is this calendar week to date, not a rolling trailing-7-days window
+  // (that's what "week" already means).
+  if (rangeKey === 'currentWeek') {
+    const daysSinceMonday = WEEKDAYS.indexOf(WEEKDAY_FORMATTER.format(new Date()));
+    return windowRange(isoDateIst(daysAgo(daysSinceMonday)), todayIso);
+  }
+  const days = DAY_WISE_RANGE_DAYS[rangeKey] ?? DAY_WISE_RANGE_DAYS['4weeks'];
   return windowRange(isoDateIst(daysAgo(days)), todayIso);
 }
 
