@@ -126,10 +126,11 @@ async function notifyOrderStatusChange(orderId, status) {
 
     const trackingNumber = order.trackingNumber || order.orderNumber;
 
-    await Promise.all([
-      notifyRecipient(orderId, templateName, order.senderAddress?.contactName, order.senderAddress?.phone, trackingNumber),
-      notifyRecipient(orderId, templateName, order.receiverAddress?.contactName, order.receiverAddress?.phone, trackingNumber),
-    ]);
+    const recipients = [notifyRecipient(orderId, templateName, order.senderAddress?.contactName, order.senderAddress?.phone, trackingNumber)];
+    if (!isConfirmation) {
+      recipients.push(notifyRecipient(orderId, templateName, order.receiverAddress?.contactName, order.receiverAddress?.phone, trackingNumber));
+    }
+    await Promise.all(recipients);
   } catch (err) {
     // Genuinely fire-and-forget — callers never await this, so a failure
     // here (e.g. a DB hiccup looking up the order) must never surface as
