@@ -77,7 +77,16 @@ export default function Payment() {
   // the customer picks a different tier, rather than auto-applying it.
   const [appliedWarrantyCoverage, setAppliedWarrantyCoverage] = useState(10000);
   const [selectedAddons, setSelectedAddons] = useState([]);
+  const [addonPricing, setAddonPricing] = useState({});
   const [pickupDate, setPickupDate] = useState(pickupDates[0]);
+
+  useEffect(() => {
+    client.get('/quote/addon-pricing').then(({ data }) => {
+      const map = {};
+      for (const a of data.addons) map[a.code] = a;
+      setAddonPricing(map);
+    }).catch(() => {});
+  }, []);
 
   const [otpEmail, setOtpEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
