@@ -25,6 +25,42 @@ function paidAndDue(o) {
   return { amountPaid, due };
 }
 
+const PAYMENT_STATUS_LABEL = {
+  REQUIRES_PAYMENT: 'Awaiting payment', PROCESSING: 'Processing', SUCCEEDED: 'Succeeded',
+  FAILED: 'Failed', REFUNDED: 'Refunded', CASH_PENDING: 'Cash pending',
+};
+
+// One row of a payment/top-up's Razorpay reference — a straight copy-paste
+// or one-click jump into Razorpay's own dashboard for accounts to cross-
+// check that a payment actually cleared, rather than searching Razorpay by
+// amount/name/date. Manual entries (cash, phone/UPI logged by staff) never
+// have a real Razorpay payment id, so those just say so instead of linking.
+function PaymentRefRow({ label, payment }) {
+  const hasRazorpayRef = payment.provider === 'razorpay' && payment.providerPaymentId;
+  return (
+    <div className="detail-row" style={{ gridColumn: '1/-1' }}>
+      <span className="k">{label}</span>
+      <span className="v">
+        {hasRazorpayRef ? (
+          <>
+            <span className="mono" style={{ fontSize: 12 }}>{payment.providerPaymentId}</span>
+            {' · '}
+            <span style={{ color: payment.status === 'SUCCEEDED' ? 'var(--success)' : 'var(--slate)' }}>{PAYMENT_STATUS_LABEL[payment.status] || payment.status}</span>
+            {' · '}
+            <a href={`https://dashboard.razorpay.com/app/payments/${payment.providerPaymentId}`} target="_blank" rel="noreferrer" style={{ color: 'var(--cobalt)', fontWeight: 600 }}>
+              View in Razorpay ↗
+            </a>
+          </>
+        ) : (
+          <span style={{ color: 'var(--slate-light)' }}>
+            {payment.method || (payment.provider === 'manual' ? 'Manual' : payment.provider)} — no Razorpay reference ({PAYMENT_STATUS_LABEL[payment.status] || payment.status})
+          </span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 /**
  * Shared order-detail view — used by the admin/staff Overview, Orders and
  * Accounts tabs, and by the customer dashboard's "View details" (same
@@ -37,10 +73,12 @@ function paidAndDue(o) {
  * customers — they still see the read-only carrier line and timeline
  * below it, same as the public /track page. `canViewPricing` hides the
  * Total/paid/due figures and the Add-ons pricing breakdown; `canViewTracking`
- * hides the whole Tracking section — both off for the customer dashboard's
- * modal, which is meant as a quick shipment-details lookup (customers get
- * pricing at checkout/on their invoice, and tracking via the dedicated
- * Track order button/page instead of duplicating it here).
+ * hides the whole Tracking section; `canViewPaymentRefs` hides the Razorpay
+ * payment/order id cross-check section — all off for the customer
+ * dashboard's modal, which is meant as a quick shipment-details lookup
+ * (customers get pricing at checkout/on their invoice, tracking via the
+ * dedicated Track order button/page, and have no reason to see internal
+ * payment-gateway reconciliation ids).
  */
 export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true, canViewWhatsapp = true, canViewPricing = true, canViewTracking = true, canViewPaymentRefs = true }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
