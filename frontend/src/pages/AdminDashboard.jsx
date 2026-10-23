@@ -148,7 +148,6 @@ function Overview() {
   // individually granted access (Users panel) — see requireOverviewBreakdownAccess
   // in admin.controller.js, which enforces the same rule server-side.
   const canSeeBreakdown = user?.role === 'ADMIN' || user?.canViewOverviewBreakdown;
-  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
     function load(silent) {
