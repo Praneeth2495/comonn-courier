@@ -761,6 +761,36 @@ async function upsertSurcharge(req, res, next) {
   }
 }
 
+// ---------------- Add-on fees ----------------
+/** GET /api/admin/addon-pricing — the 3 flat add-on fees, for the Overview page's editable "Service fees" card. */
+async function listAddonPricing(req, res, next) {
+  try {
+    const addons = await prisma.addonPricing.findMany({ orderBy: { code: 'asc' } });
+    res.json({ addons });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/admin/addon-pricing — ADMIN only. Only `unitPrice` is
+ * editable here (label/perBox are structural, not a "fee") — never
+ * retroactive, since each OrderAddon snapshots its own unitPrice/label at
+ * selection time (see updateAddons, order.controller.js).
+ */
+async function updateAddonPricing(req, res, next) {
+  try {
+    const { code, unitPrice } = req.body;
+    if (!code) return res.status(400).json({ error: 'code is required' });
+    const price = Number(unitPrice);
+    if (!Number.isFinite(price) || price < 0) return res.status(400).json({ error: 'unitPrice must be a non-negative number' });
+    const addon = await prisma.addonPricing.update({ where: { code }, data: { unitPrice: price } });
+    res.json({ addon });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ---------------- Users ----------------
 async function listUsers(req, res, next) {
   try {
