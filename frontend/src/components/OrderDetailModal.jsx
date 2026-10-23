@@ -80,7 +80,7 @@ function PaymentRefRow({ label, payment }) {
  * dedicated Track order button/page, and have no reason to see internal
  * payment-gateway reconciliation ids).
  */
-export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true, canViewWhatsapp = true, canViewPricing = true, canViewTracking = true, canViewPaymentRefs = true }) {
+export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true, canViewWhatsapp = true, canViewPricing = true, canViewTracking = true, canViewPaymentRefs = false }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
   const [labels, setLabels] = useState(order.labels || []);
   const [generating, setGenerating] = useState(false);
