@@ -234,8 +234,9 @@ function AddonFeesCard() {
   }
 
   return (
-    <div className="card" style={{ padding: 20, marginTop: 16 }}>
-      <h4 style={{ marginBottom: 4, color: 'var(--navy)' }}>Service fees</h4>
+    <div>
+      <h1 className="h-lg" style={{ marginBottom: 16 }}>Service Fees</h1>
+      <div className="card" style={{ padding: 20 }}>
       <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>
         Flat add-on fees charged at checkout. Changes apply to new bookings only.
       </p>
