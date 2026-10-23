@@ -405,7 +405,7 @@ function RegionBreakdownKpi({ rows }) {
   );
 }
 
-const DAY_WISE_RANGE_OPTIONS = [['week', 'Last week'], ['4weeks', 'Last 4 weeks'], ['3months', 'Last 3 months']];
+const DAY_WISE_RANGE_OPTIONS = [['currentWeek', 'Current week'], ['week', 'Last week'], ['4weeks', 'Last 4 weeks'], ['3months', 'Last 3 months']];
 
 function KpiTile({ icon, title, headline, subLabel, accentBg, accent, onClick }) {
   return (
