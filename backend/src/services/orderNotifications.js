@@ -83,12 +83,18 @@ async function notifyRecipient(orderId, templateName, contactName, phone, tracki
 }
 
 /**
- * Fire-and-forget WhatsApp status notification to both sender and
- * receiver — never throws, mirrors sendReceiverBookingNotification's
- * resilience pattern (label.controller.js) exactly, so a WhatsApp failure
- * (unapproved template, bad number, API outage) can never block or fail
- * the order-status update itself. Takes just the order id so every call
- * site can use it identically regardless of what's already loaded.
+ * Fire-and-forget WhatsApp status notification — never throws, mirrors
+ * sendReceiverBookingNotification's resilience pattern (label.controller.js)
+ * exactly, so a WhatsApp failure (unapproved template, bad number, API
+ * outage) can never block or fail the order-status update itself. Takes
+ * just the order id so every call site can use it identically regardless
+ * of what's already loaded.
+ *
+ * Confirmation (PAID/PICKUP_CONFIRMED) goes to the sender only — nothing
+ * has actually happened on the receiver's end yet at booking time, so
+ * notifying them here would be premature. The receiver's first message is
+ * order_picked_up, once the parcel has actually moved; from there on,
+ * update statuses go to both sender and receiver.
  */
 async function notifyOrderStatusChange(orderId, status) {
   try {
