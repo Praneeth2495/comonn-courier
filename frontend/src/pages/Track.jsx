@@ -12,9 +12,9 @@ const TRACK_STEPS = [
 const SHIP_STAGES = ['PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 const STAGE_LABELS = {
   PICKED_UP: 'Picked up',
-  ORIGIN_CUSTOMS_CLEARED: 'Origin customs cleared',
+  ORIGIN_CUSTOMS_CLEARED: 'Origin customs',
   IN_TRANSIT: 'At hub',
-  CLEARED_DESTINATION_CUSTOMS: 'Destination customs cleared',
+  CLEARED_DESTINATION_CUSTOMS: 'Destination customs',
   OUT_FOR_DELIVERY: 'Out for delivery',
   DELIVERED: 'Delivered',
 };
