@@ -30,33 +30,34 @@ const PAYMENT_STATUS_LABEL = {
   FAILED: 'Failed', REFUNDED: 'Refunded', CASH_PENDING: 'Cash pending',
 };
 
-// Compact single-payment Razorpay reference — a straight copy-paste or
-// one-click jump into Razorpay's own dashboard for accounts to cross-check
-// that a payment actually cleared, rather than searching Razorpay by
+// One row of a payment/top-up's Razorpay reference — a straight copy-paste
+// or one-click jump into Razorpay's own dashboard for accounts to cross-
+// check that a payment actually cleared, rather than searching Razorpay by
 // amount/name/date. Manual entries (cash, phone/UPI logged by staff) never
 // have a real Razorpay payment id, so those just say so instead of linking.
-// Rendered inline in place of the Destination address — see
-// `canViewPaymentRefs` below.
-function PaymentRefInline({ payment }) {
+function PaymentRefRow({ label, payment }) {
   const hasRazorpayRef = payment.provider === 'razorpay' && payment.providerPaymentId;
   return (
-    <p style={{ fontSize: 11.5, lineHeight: 1.5 }}>
-      {hasRazorpayRef ? (
-        <>
-          <span className="mono">{payment.providerPaymentId}</span>
-          {' · '}
-          <span style={{ color: payment.status === 'SUCCEEDED' ? 'var(--success)' : 'var(--slate)' }}>{PAYMENT_STATUS_LABEL[payment.status] || payment.status}</span>
-          {' · '}
-          <a href={`https://dashboard.razorpay.com/app/payments/${payment.providerPaymentId}`} target="_blank" rel="noreferrer" style={{ color: 'var(--cobalt)', fontWeight: 600 }}>
-            View in Razorpay ↗
-          </a>
-        </>
-      ) : (
-        <span style={{ color: 'var(--slate-light)' }}>
-          {payment.method || (payment.provider === 'manual' ? 'Manual' : payment.provider)} — no Razorpay reference ({PAYMENT_STATUS_LABEL[payment.status] || payment.status})
-        </span>
-      )}
-    </p>
+    <div className="detail-row" style={{ gridColumn: '1/-1' }}>
+      <span className="k">{label}</span>
+      <span className="v">
+        {hasRazorpayRef ? (
+          <>
+            <span className="mono" style={{ fontSize: 12 }}>{payment.providerPaymentId}</span>
+            {' · '}
+            <span style={{ color: payment.status === 'SUCCEEDED' ? 'var(--success)' : 'var(--slate)' }}>{PAYMENT_STATUS_LABEL[payment.status] || payment.status}</span>
+            {' · '}
+            <a href={`https://dashboard.razorpay.com/app/payments/${payment.providerPaymentId}`} target="_blank" rel="noreferrer" style={{ color: 'var(--cobalt)', fontWeight: 600 }}>
+              View in Razorpay ↗
+            </a>
+          </>
+        ) : (
+          <span style={{ color: 'var(--slate-light)' }}>
+            {payment.method || (payment.provider === 'manual' ? 'Manual' : payment.provider)} — no Razorpay reference ({PAYMENT_STATUS_LABEL[payment.status] || payment.status})
+          </span>
+        )}
+      </span>
+    </div>
   );
 }
 
