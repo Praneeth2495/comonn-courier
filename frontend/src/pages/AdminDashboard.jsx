@@ -202,6 +202,78 @@ function Overview() {
   );
 }
 
+function AddonFeesCard() {
+  const [addons, setAddons] = useState(null);
+  const [editingCode, setEditingCode] = useState(null);
+  const [editPrice, setEditPrice] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    client.get('/admin/addon-pricing').then(({ data }) => setAddons(data.addons));
+  }, []);
+
+  function startEdit(addon) {
+    setEditingCode(addon.code);
+    setEditPrice(String(addon.unitPrice));
+    setError('');
+  }
+
+  async function save(code) {
+    const price = Number(editPrice);
+    if (!Number.isFinite(price) || price < 0) { setError('Enter a valid price.'); return; }
+    setSaving(true);
+    try {
+      const { data } = await client.post('/admin/addon-pricing', { code, unitPrice: price });
+      setAddons((prev) => prev.map((a) => (a.code === code ? data.addon : a)));
+      setEditingCode(null);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="card" style={{ padding: 20, marginTop: 16 }}>
+      <h4 style={{ marginBottom: 4, color: 'var(--navy)' }}>Service fees</h4>
+      <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>
+        Flat add-on fees charged at checkout. Changes apply to new bookings only.
+      </p>
+      {!addons ? <LoadingLogo /> : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>Add-on</th><th>Price</th><th></th></tr></thead>
+            <tbody>
+              {addons.map((a) => (
+                <tr key={a.code}>
+                  <td>{a.label}</td>
+                  <td>
+                    {editingCode === a.code ? (
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <span style={{ color: 'var(--slate-light)' }}>₹</span>
+                        <input className="input" type="number" min="0" step="0.01" style={{ width: 100, padding: '6px 8px' }} value={editPrice} onChange={(e) => setEditPrice(e.target.value)} autoFocus />
+                        <button className="btn btn-primary btn-sm" disabled={saving} onClick={() => save(a.code)}>{saving ? 'Saving…' : 'Save'}</button>
+                        <button className="btn btn-outline btn-sm" onClick={() => { setEditingCode(null); setError(''); }}>Cancel</button>
+                      </div>
+                    ) : (
+                      <span style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--ink)' }} onClick={() => startEdit(a)} title="Click to update price">
+                        ₹{Number(a.unitPrice).toFixed(2)}{a.perBox ? ' / box' : ' / order'}
+                      </span>
+                    )}
+                  </td>
+                  <td></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {error && <div className="error-text" style={{ marginTop: 10 }}>{error}</div>}
+    </div>
+  );
+}
+
 function StaffOverviewTable({ fromDate, toDate }) {
   const [rows, setRows] = useState(null);
 
