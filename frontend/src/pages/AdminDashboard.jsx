@@ -191,8 +191,6 @@ function Overview() {
             {!kpis ? <LoadingLogo /> : (
               <KpiTileGrid kpis={kpis} dayWiseRange={dayWiseRange} setDayWiseRange={setDayWiseRange} expandedKpi={expandedKpi} setExpandedKpi={setExpandedKpi} />
             )}
-
-            {isAdmin && <AddonFeesCard />}
           </>
         )
       )}
