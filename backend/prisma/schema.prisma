@@ -1091,6 +1091,20 @@ model OrderAddon {
   @@index([orderId])
 }
 
+// Admin-editable fee for one of the three flat add-ons offered on the
+// Payment page (cardboard/packing/wrapping) — the live source of truth
+// updateAddons (order.controller.js) prices a new selection against.
+// Deliberately not retroactive: each OrderAddon row snapshots its own
+// unitPrice/label at selection time, so editing a fee here only ever
+// affects add-ons chosen after the change, never past orders.
+model AddonPricing {
+  code      String   @id // "CARDBOARD" | "PACKING" | "WRAPPING"
+  label     String
+  unitPrice Decimal  @db.Decimal(10, 2)
+  perBox    Boolean // true: priced per box (× total item quantity); false: flat per order
+  updatedAt DateTime @updatedAt
+}
+
 model PromoCode {
   id             String    @id @default(uuid())
   code           String    @unique
