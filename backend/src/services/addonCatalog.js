@@ -10,12 +10,11 @@ const WARRANTY_TIERS = [
   { coverage: 150000, price: 1500 },
 ];
 
-// Live, admin-editable fees (apps.gupshup... no — AdminDashboard.jsx's
-// Overview page > Service fees) for the three flat add-ons — see
-// AddonPricing in schema.prisma. Shaped back into the same
-// { CODE: { label, unitPrice, perBox } } map updateAddons already expects,
-// so that caller didn't need to change beyond awaiting this instead of
-// reading a static constant.
+// Live, admin-editable fees (Overview page > Service fees) for the three
+// flat add-ons — see AddonPricing in schema.prisma. Shaped back into the
+// same { CODE: { label, unitPrice, perBox } } map updateAddons already
+// expects, so that caller didn't need to change beyond awaiting this
+// instead of reading a static constant.
 async function getFlatAddons() {
   const rows = await prisma.addonPricing.findMany();
   const map = {};
