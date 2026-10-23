@@ -1299,7 +1299,7 @@ function AccountsPanel() {
             </div>
           )}
 
-          {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+          {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} canViewPaymentRefs />}
           {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
         </>
       )}
