@@ -77,10 +77,9 @@ function PaymentRefRow({ label, payment }) {
  * modal, which is meant as a quick shipment-details lookup (customers get
  * pricing at checkout/on their invoice, and tracking via the dedicated
  * Track order button/page instead of duplicating it here).
- * `canViewPaymentRefs` swaps the Route section's Destination address for
- * the Razorpay payment/order id cross-check instead — opt-IN (default
- * off), only ever turned on for the Accounts tab, since nowhere else needs
- * internal payment-gateway reconciliation ids (or should lose the address).
+ * `canViewPaymentRefs` shows the Razorpay payment/order id cross-check
+ * section — opt-IN (default off), only ever turned on for the Accounts
+ * tab, since nowhere else needs internal payment-gateway reconciliation ids.
  */
 export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true, canViewWhatsapp = true, canViewPricing = true, canViewTracking = true, canViewPaymentRefs = false }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
