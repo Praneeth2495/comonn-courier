@@ -882,8 +882,9 @@ async function updateAddons(req, res, next) {
       if (!tier) return res.status(400).json({ error: 'Unknown warranty tier' });
       rows.push({ orderId: order.id, code: 'WARRANTY', label: warrantyLabel(tier.coverage), quantity: 1, unitPrice: tier.price, amount: tier.price });
     }
+    const flatAddons = addons.length ? await getFlatAddons() : null;
     for (const code of addons) {
-      const def = FLAT_ADDONS[code];
+      const def = flatAddons[code];
       if (!def) return res.status(400).json({ error: `Unknown addon "${code}"` });
       const quantity = def.perBox ? totalBoxQty : 1;
       rows.push({ orderId: order.id, code, label: def.label, quantity, unitPrice: def.unitPrice, amount: round2(def.unitPrice * quantity) });
