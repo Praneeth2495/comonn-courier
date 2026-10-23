@@ -965,4 +965,6 @@ module.exports = {
   listDrivers,
   getDriverDashboard,
   setUserRole,
+  listAddonPricing,
+  updateAddonPricing,
 };
