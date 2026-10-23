@@ -73,12 +73,13 @@ function PaymentRefRow({ label, payment }) {
  * customers — they still see the read-only carrier line and timeline
  * below it, same as the public /track page. `canViewPricing` hides the
  * Total/paid/due figures and the Add-ons pricing breakdown; `canViewTracking`
- * hides the whole Tracking section; `canViewPaymentRefs` hides the Razorpay
- * payment/order id cross-check section — all off for the customer
- * dashboard's modal, which is meant as a quick shipment-details lookup
- * (customers get pricing at checkout/on their invoice, tracking via the
- * dedicated Track order button/page, and have no reason to see internal
- * payment-gateway reconciliation ids).
+ * hides the whole Tracking section — both off for the customer dashboard's
+ * modal, which is meant as a quick shipment-details lookup (customers get
+ * pricing at checkout/on their invoice, and tracking via the dedicated
+ * Track order button/page instead of duplicating it here).
+ * `canViewPaymentRefs` shows the Razorpay payment/order id cross-check
+ * section — opt-IN (default off), only ever turned on for the Accounts
+ * tab, since nowhere else needs internal payment-gateway reconciliation ids.
  */
 export function OrderDetailModal({ order, onClose, canManageLabels = true, canViewComments = true, canManageTracking = true, canViewWhatsapp = true, canViewPricing = true, canViewTracking = true, canViewPaymentRefs = false }) {
   const itemsSummary = order.items?.map((it) => `${it.itemType} · ${it.actualWeightKg} kg · Qty ${String(it.quantity).padStart(2, '0')}`).join(', ');
