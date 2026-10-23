@@ -1349,16 +1349,16 @@ function AccountsPanel() {
           {loading ? <LoadingLogo /> : (
             <div className="table-wrap">
               <div className="t-row t-head accounts-row">
-                <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>To Address</div><div>Paid / To pay</div><div>Comment</div>
+                <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>Paid / To pay</div><div>Payment reference</div><div>Comment</div>
               </div>
               {orders.map((o) => {
                 const { amountPaid, due } = paidAndDue(o);
+                const hasRazorpayRef = o.payment?.provider === 'razorpay' && o.payment?.providerPaymentId;
                 return (
                   <div className={`t-row accounts-row${o.manualPaymentMarkedAt ? ' manual-paid' : ''}`} key={o.id}>
                     <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
                     <div className="mono">{o.invoiceNumber || '—'}</div>
                     <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
-                    <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
                     <div>
                       <div style={{ color: 'var(--success)', fontWeight: 700, fontSize: 13 }}>Paid ₹{amountPaid.toFixed(2)}</div>
                       {due > 0 ? (
@@ -1366,6 +1366,16 @@ function AccountsPanel() {
                       ) : due < 0 ? (
                         <div style={{ color: 'var(--slate)', fontSize: 12 }}>Credit ₹{Math.abs(due).toFixed(2)}</div>
                       ) : null}
+                    </div>
+                    <div>
+                      {hasRazorpayRef ? (
+                        <>
+                          <div className="mono" style={{ fontSize: 11 }}>{o.payment.providerPaymentId}</div>
+                          <a href={`https://dashboard.razorpay.com/app/payments/${o.payment.providerPaymentId}`} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: 'var(--cobalt)', fontWeight: 600 }}>View in Razorpay ↗</a>
+                        </>
+                      ) : (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>{o.payment ? 'No Razorpay reference' : '—'}</span>
+                      )}
                     </div>
                     <div><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>View</button></div>
                   </div>
