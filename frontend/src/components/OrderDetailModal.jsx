@@ -305,17 +305,6 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         )}
 
-        {canViewPaymentRefs && (order.payment || order.balancePayments?.length > 0) && (
-          <div className="detail-section">
-            <div className="oda-section-head"><span className="icon">🧾</span><h4>Payment reference</h4></div>
-            <div className="detail-grid">
-              {order.payment && <PaymentRefRow label="Original payment" payment={order.payment} />}
-              {order.balancePayments?.map((bp, i) => (
-                <PaymentRefRow key={bp.id} label={`Balance top-up${order.balancePayments.length > 1 ? ` ${i + 1}` : ''}`} payment={bp} />
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="detail-section">
           <div className="oda-section-head"><span className="icon">📥</span><h4>Receiver details</h4></div>
