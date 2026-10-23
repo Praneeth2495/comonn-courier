@@ -11,6 +11,11 @@ router.get('/dashboard/staff', admin.staffOverview);
 router.get('/dashboard/regions', admin.regionOverview);
 router.get('/dashboard/kpis', admin.dashboardKpis);
 
+// Overview page's "Service fees" card — ADMIN only, same pattern as rate
+// cards/surcharges (viewable broadly, editable only by ADMIN).
+router.get('/addon-pricing', admin.listAddonPricing);
+router.post('/addon-pricing', requireRole('ADMIN'), admin.updateAddonPricing);
+
 // Used by the Orders page's pickup-assignment picker (ADMIN bypasses
 // requirePage; a STAFF/ACCOUNTS user without 'orders' toggled never sees
 // the Orders tab to call this from, but the route enforces it either way).
