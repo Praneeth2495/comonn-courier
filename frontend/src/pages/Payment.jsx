@@ -826,7 +826,7 @@ export default function Payment() {
                   </div>
                 </div>
                 <div className="addon-row">
-                  <div className="txt"><h4>Wrapping service</h4><p>₹100 per box × Qty {totalBoxQty}</p></div>
+                  <div className="txt"><h4>Wrapping service</h4><p>₹{Number(addonPricing.WRAPPING?.unitPrice ?? 100).toFixed(2)} per box × Qty {totalBoxQty}</p></div>
                   <div className="right">
                     <span className="price-tag">₹{Number(addonAmount('WRAPPING') || 0).toFixed(2)}</span>
                     <button type="button" className="btn btn-outline btn-sm" onClick={() => toggleAddon('WRAPPING')}>
