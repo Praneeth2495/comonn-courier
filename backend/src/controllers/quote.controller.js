@@ -187,6 +187,20 @@ async function listCountries(req, res, next) {
   }
 }
 
+/**
+ * GET /api/quote/addon-pricing — public, for the Payment page's flat
+ * add-on cards (Cardboard/Packing/Wrapping) to show the live, admin-set
+ * price instead of a hardcoded number.
+ */
+async function listAddonPricing(req, res, next) {
+  try {
+    const rows = await prisma.addonPricing.findMany({ orderBy: { code: 'asc' } });
+    res.json({ addons: rows.map((r) => ({ code: r.code, label: r.label, unitPrice: Number(r.unitPrice), perBox: r.perBox })) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** GET /api/quote/services */
 async function listServices(req, res, next) {
   try {
