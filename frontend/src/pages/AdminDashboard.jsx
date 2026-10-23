@@ -270,6 +270,7 @@ function AddonFeesCard() {
         </div>
       )}
       {error && <div className="error-text" style={{ marginTop: 10 }}>{error}</div>}
+      </div>
     </div>
   );
 }
