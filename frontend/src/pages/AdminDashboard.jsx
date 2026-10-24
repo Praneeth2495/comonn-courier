@@ -256,7 +256,7 @@ function AddonFeesCard() {
                     {editingCode === a.code ? (
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                         <span style={{ color: 'var(--slate-light)' }}>₹</span>
-                        <input className="input" type="number" min="0" step="0.01" style={{ width: 100, padding: '6px 8px' }} value={editPrice} disabled={Number(editPrice) === 0} onChange={(e) => setEditPrice(e.target.value)} autoFocus />
+                        <input className="input" type="number" min="0" step="0.01" style={{ width: 100, padding: '6px 8px' }} value={editPrice} onChange={(e) => setEditPrice(e.target.value)} autoFocus />
                         <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>
                           <input type="checkbox" checked={Number(editPrice) === 0} onChange={toggleFree} />
                           Free
