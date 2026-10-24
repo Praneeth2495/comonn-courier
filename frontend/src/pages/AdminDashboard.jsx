@@ -265,12 +265,16 @@ function AddonFeesCard() {
                         <button className="btn btn-outline btn-sm" onClick={() => { setEditingCode(null); setError(''); }}>Cancel</button>
                       </div>
                     ) : (
-                      <span style={{ cursor: 'pointer', fontWeight: 700, color: Number(a.unitPrice) === 0 ? 'var(--success)' : 'var(--ink)' }} onClick={() => startEdit(a)} title="Click to update price">
+                      <span style={{ fontWeight: 700, color: Number(a.unitPrice) === 0 ? 'var(--success)' : 'var(--ink)' }}>
                         {Number(a.unitPrice) === 0 ? 'Free' : `₹${Number(a.unitPrice).toFixed(2)}${a.perBox ? ' / box' : ' / order'}`}
                       </span>
                     )}
                   </td>
-                  <td></td>
+                  <td>
+                    {editingCode !== a.code && (
+                      <button className="btn btn-outline btn-sm" onClick={() => startEdit(a)}>Edit</button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
