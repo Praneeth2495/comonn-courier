@@ -259,7 +259,13 @@ async function dayOfWeekBreakdown(scopeWhere, rangeKey) {
 // system limit.
 const MANIFEST_READY_KG = 500;
 async function airportWeightBreakdown(req) {
-  const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
+  // Deliberately ignores the Overview page's from/to date range — this is a
+  // live snapshot of everything currently sitting unmanifested, not a
+  // booked-within-window figure (an order from last month that's still
+  // unmanifested is exactly the kind of thing this KPI exists to surface).
+  // Mirrors manifest.controller.js's listEligibleOrders/listAvailableAirports,
+  // which are never date-scoped either.
+  const where = await buildOrdersWhere({ ...req, query: { ...req.query, from: undefined, to: undefined, notStatus: PAYABLE_STATUSES.join(',') } });
   where.manifestId = null;
   where.airportCode = { not: null };
 
