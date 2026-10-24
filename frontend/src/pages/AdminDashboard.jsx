@@ -254,15 +254,19 @@ function AddonFeesCard() {
                   <td>{a.label}</td>
                   <td>
                     {editingCode === a.code ? (
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                         <span style={{ color: 'var(--slate-light)' }}>₹</span>
-                        <input className="input" type="number" min="0" step="0.01" style={{ width: 100, padding: '6px 8px' }} value={editPrice} onChange={(e) => setEditPrice(e.target.value)} autoFocus />
+                        <input className="input" type="number" min="0" step="0.01" style={{ width: 100, padding: '6px 8px' }} value={editPrice} disabled={Number(editPrice) === 0} onChange={(e) => setEditPrice(e.target.value)} autoFocus />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>
+                          <input type="checkbox" checked={Number(editPrice) === 0} onChange={toggleFree} />
+                          Free
+                        </label>
                         <button className="btn btn-primary btn-sm" disabled={saving} onClick={() => save(a.code)}>{saving ? 'Saving…' : 'Save'}</button>
                         <button className="btn btn-outline btn-sm" onClick={() => { setEditingCode(null); setError(''); }}>Cancel</button>
                       </div>
                     ) : (
-                      <span style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--ink)' }} onClick={() => startEdit(a)} title="Click to update price">
-                        ₹{Number(a.unitPrice).toFixed(2)}{a.perBox ? ' / box' : ' / order'}
+                      <span style={{ cursor: 'pointer', fontWeight: 700, color: Number(a.unitPrice) === 0 ? 'var(--success)' : 'var(--ink)' }} onClick={() => startEdit(a)} title="Click to update price">
+                        {Number(a.unitPrice) === 0 ? 'Free' : `₹${Number(a.unitPrice).toFixed(2)}${a.perBox ? ' / box' : ' / order'}`}
                       </span>
                     )}
                   </td>
