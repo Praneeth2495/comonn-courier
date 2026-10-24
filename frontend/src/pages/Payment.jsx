@@ -844,6 +844,11 @@ export default function Payment() {
                   {pickupDates.map((d) => <option key={d}>{d}</option>)}
                   {isStaffUser && <option value="In store">In store</option>}
                 </select>
+                {pickupDates.indexOf(pickupDate) > 0 && (
+                  <p style={{ fontSize: 12.5, color: 'var(--warn, #D9534F)', marginTop: 8 }}>
+                    Your estimated delivery window was calculated for next-day pickup — since you've picked a later date, actual delivery will shift back by the same number of days.
+                  </p>
+                )}
               </div>
               <div className="field" style={{ marginTop: 18 }}>
                 <label>Email verification</label>
