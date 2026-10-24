@@ -354,9 +354,6 @@ export default function Home() {
         <div className="hero-row">
           <div className="hero-copy">
             <h1>Committed to deliver, <span className="hl">on time</span>, every time.</h1>
-            <p className="lead">
-              Book an international shipment in under two minutes.
-            </p>
             <WorldOpsMap />
           </div>
 
