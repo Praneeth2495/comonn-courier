@@ -218,6 +218,10 @@ function AddonFeesCard() {
     setError('');
   }
 
+  function toggleFree(e) {
+    setEditPrice(e.target.checked ? '0' : '');
+  }
+
   async function save(code) {
     const price = Number(editPrice);
     if (!Number.isFinite(price) || price < 0) { setError('Enter a valid price.'); return; }
