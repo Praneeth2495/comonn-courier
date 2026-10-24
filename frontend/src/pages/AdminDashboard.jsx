@@ -175,9 +175,9 @@ function Overview() {
 
       <div className="card date-toolbar" style={{ marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
-        <input className="input" type="date" value={fromDate} max={toDate} onChange={(e) => setFromDate(e.target.value)} />
+        <input className="input" type="date" value={fromDate} max={toDate} onChange={(e) => setFromDate(e.target.value > toDate ? toDate : e.target.value)} />
         <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>to</span>
-        <input className="input" type="date" value={toDate} min={fromDate} onChange={(e) => setToDate(e.target.value)} />
+        <input className="input" type="date" value={toDate} min={fromDate} onChange={(e) => setToDate(e.target.value < fromDate ? fromDate : e.target.value)} />
       </div>
 
       {subTab === 'summary' && (
