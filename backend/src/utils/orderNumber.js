@@ -8,9 +8,9 @@ const { nextMonthlySequence, nextYearlySequence, getIstDateParts } = require('./
  * unique for the whole year (not just within one month) is what actually
  * matters here.
  */
-async function generateOrderNumber() {
+async function generateOrderNumber(client) {
   const { year, month, day } = getIstDateParts(new Date());
-  const seq = await nextYearlySequence('order', year);
+  const seq = await nextYearlySequence('order', year, client);
   return `${day}${month}${seq}`;
 }
 
