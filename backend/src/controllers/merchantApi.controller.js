@@ -165,7 +165,13 @@ async function createShipment(req, res, next) {
     });
     notifyOrderStatusChange(order.id, 'PAID');
 
-    res.status(201).json({ order });
+    res.status(201).json({
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      trackingNumber: order.trackingNumber,
+      grandTotal: order.grandTotal,
+      currency: order.currency,
+    });
   } catch (err) {
     next(err);
   }
