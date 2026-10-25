@@ -1788,6 +1788,9 @@ function UsersPanel() {
   const [editingStaffRegions, setEditingStaffRegions] = useState(null); // { id, fullName }
   const [editingPageAccess, setEditingPageAccess] = useState(null); // { id, fullName, allowedPages }
   const [editingOrderTabAccess, setEditingOrderTabAccess] = useState(null); // { id, fullName, allowedOrderTabs }
+  const [editingAccountsTabAccess, setEditingAccountsTabAccess] = useState(null); // { id, fullName, allowedAccountsTabs }
+  const [editingOverviewTabAccess, setEditingOverviewTabAccess] = useState(null); // { id, fullName, allowedOverviewTabs }
+  const [editingPrintLabelTabAccess, setEditingPrintLabelTabAccess] = useState(null); // { id, fullName, allowedPrintLabelTabs }
 
   function load() {
     client.get('/admin/users').then(({ data }) => setUsers(data.users));
