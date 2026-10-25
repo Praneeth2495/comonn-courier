@@ -89,26 +89,27 @@ async function dashboardStats(req, res, next) {
   }
 }
 
-// Both breakdown tabs are ADMIN-only by default; a STAFF member can only
-// reach them if individually granted canViewOverviewBreakdown (Users
-// panel) — checked fresh from the DB rather than trusting the JWT payload,
-// since the flag needs to take effect immediately, without waiting for the
-// staff member to log out and back in.
-async function requireOverviewBreakdownAccess(req, res) {
+// Both breakdown tabs are ADMIN-only by default; a STAFF/ACCOUNTS member
+// can only reach one if individually granted that specific tab key
+// ('staff' or 'region') via allowedOverviewTabs (Users panel) — checked
+// fresh from the DB rather than trusting the JWT payload, since the grant
+// needs to take effect immediately, without waiting for the user to log
+// out and back in.
+async function requireOverviewTabAccess(req, res, tabKey) {
   if (req.user.role === 'ADMIN') return true;
-  const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { canViewOverviewBreakdown: true } });
-  if (user?.canViewOverviewBreakdown) return true;
+  const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { allowedOverviewTabs: true } });
+  if (user?.allowedOverviewTabs?.includes(tabKey)) return true;
   res.status(403).json({ error: 'You do not have access to this view.' });
   return false;
 }
 
-// Same rule as requireOverviewBreakdownAccess but a plain boolean, no
-// response side-effect — for the KPI bundle, where lacking this permission
-// just means the Region tile is omitted, not the whole request rejected.
-async function hasOverviewBreakdownAccess(req) {
+// Same rule as requireOverviewTabAccess but a plain boolean, no response
+// side-effect — for the KPI bundle, where lacking this permission just
+// means the Region tile is omitted, not the whole request rejected.
+async function hasOverviewTabAccess(req, tabKey) {
   if (req.user.role === 'ADMIN') return true;
-  const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { canViewOverviewBreakdown: true } });
-  return Boolean(user?.canViewOverviewBreakdown);
+  const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { allowedOverviewTabs: true } });
+  return Boolean(user?.allowedOverviewTabs?.includes(tabKey));
 }
 
 /**
