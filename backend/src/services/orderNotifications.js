@@ -13,6 +13,13 @@ const { broadcastBookingConfirmed } = require('./bookingFeed');
 const CONFIRMATION_STATUSES = new Set(['PAID', 'PICKUP_CONFIRMED']);
 const CONFIRMATION_TEMPLATE = 'order_confirmed';
 
+// Admin's own WhatsApp number (not a customer's) — gets a ping on every
+// order placed by anyone, staff or customer, same PAID/PICKUP_CONFIRMED
+// moment as the customer's own confirmation. Unconditional (no opt-in
+// check) since this is an internal ops alert, not a customer preference.
+const ADMIN_WHATSAPP_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER;
+const ADMIN_ALERT_TEMPLATE = 'admin_new_order';
+
 const UPDATE_TEMPLATES = {
   PICKED_UP: 'order_picked_up',
   OUT_FOR_DELIVERY: 'order_out_for_delivery',
