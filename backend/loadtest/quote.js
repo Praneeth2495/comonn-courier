@@ -24,6 +24,7 @@ const payload = JSON.stringify({
 export default function () {
   const res = http.post(`${BASE_URL}/api/quote`, payload, {
     headers: { 'Content-Type': 'application/json' },
+    timeout: '10s',
   });
   check(res, {
     'status is 200': (r) => r.status === 200,
