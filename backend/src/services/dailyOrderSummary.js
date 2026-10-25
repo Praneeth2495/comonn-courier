@@ -60,7 +60,7 @@ async function sendDailySummaryWhatsApp() {
   try {
     await sendTemplateMessage({
       to,
-      templateName: 'daily_order_summary',
+      templateName: 'admin_daily_summary',
       params: [iso, String(totalToday), String(collectedToday), String(overdueToday)],
     });
   } catch (err) {
