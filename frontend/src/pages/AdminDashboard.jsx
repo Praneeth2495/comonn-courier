@@ -751,6 +751,7 @@ const ORDER_TAB_PERM_KEYS = Object.keys(ORDER_TAB_PERM_LABELS);
 // NOT include the Accounts page's "Assets" tab — that stays gated by the
 // separate `assets` entry in allowedPages (hasAssetsAccess, below).
 const ACCOUNTS_TAB_PERM_LABELS = {
+  overview: 'Overview',
   bookings: 'Bookings',
   receivable: 'Receivable',
   payable: 'Payable',
