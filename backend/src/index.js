@@ -1,4 +1,11 @@
 require('dotenv').config();
+const Sentry = require('@sentry/node');
+// Lightweight error-only monitoring — no performance tracing
+// (tracesSampleRate unset) to stay within the free tier. No-ops entirely
+// if SENTRY_DSN isn't set (e.g. local dev without a .env entry for it).
+if (process.env.SENTRY_DSN) {
+  Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV || 'production' });
+}
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
