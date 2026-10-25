@@ -887,3 +887,53 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @keyframes back-to-top-in{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 @media(prefers-reduced-motion: reduce){.back-to-top{animation:none;}}
 @media(max-width:640px){.back-to-top{bottom:16px;right:16px;width:42px;height:42px;}}
+
+/* ---------------- Accounts → Overview (P&L) ---------------- */
+.acct-ov-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.range-pills{display:flex;background:#fff;border:1px solid var(--line);border-radius:11px;padding:3px;}
+.range-pill{appearance:none;border:none;background:none;cursor:pointer;padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--slate);font-family:inherit;}
+.range-pill:hover{color:var(--ink);}
+.range-pill.active{background:var(--navy);color:#fff;}
+.acct-ov-window{font-size:12px;color:var(--slate-light);}
+
+.acct-kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;}
+@media(max-width:980px){.acct-kpi-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:620px){.acct-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.acct-kpi{background:#fff;border:1px solid var(--line-2);border-radius:14px;padding:14px 15px;display:flex;flex-direction:column;gap:6px;}
+.acct-kpi-top{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.acct-kpi-label{font-size:11px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.03em;}
+.acct-kpi-value{font-family:'Space Grotesk';font-size:19px;font-weight:700;color:var(--navy);}
+.acct-kpi-delta{font-size:11.5px;font-weight:600;}
+.acct-kpi-delta.up{color:var(--success);}
+.acct-kpi-delta.down{color:var(--danger);}
+
+.badge-chip{font-size:9.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 6px;border-radius:5px;cursor:default;}
+.badge-live{background:var(--success-bg);color:var(--success);}
+.badge-approx{background:var(--warn-bg);color:var(--warn);}
+
+.panel-head-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--slate);}
+.chart-legend span{display:flex;align-items:center;gap:6px;}
+.chart-legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+.chart-legend i.ln{width:14px;height:2px;border-radius:1px;}
+.acct-tip{position:fixed;z-index:50;background:var(--navy);color:#fff;font-size:12px;padding:9px 11px;border-radius:9px;pointer-events:none;box-shadow:0 14px 34px -12px rgba(0,0,0,.4);line-height:1.6;}
+.acct-tip b{display:inline;}
+
+.two-col-panels{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;margin-top:16px;}
+@media(max-width:860px){.two-col-panels{grid-template-columns:1fr;}}
+
+.chbar-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.chbar-row:last-child{margin-bottom:0;}
+.chbar-nm{width:150px;flex:none;font-size:13px;font-weight:600;color:var(--ink);}
+.chbar-track{flex:1;height:10px;background:var(--line-2);border-radius:6px;overflow:hidden;}
+.chbar-fill{height:100%;border-radius:6px;}
+.chbar-pct{width:120px;flex:none;text-align:right;font-size:12.5px;color:var(--slate);}
+
+.ar-ap-card{border:1px solid var(--line-2);border-radius:14px;padding:16px 18px;}
+.ar-ap-card h4{font-size:13px;color:var(--slate);font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+.ar-ap-amt{font-family:'Space Grotesk';font-size:22px;font-weight:700;color:var(--navy);margin:2px 0 10px;}
+.ar-ap-line{display:flex;justify-content:space-between;font-size:12.5px;color:var(--slate);padding:5px 0;border-top:1px solid var(--line-2);}
+.ar-ap-line:first-of-type{border-top:none;padding-top:0;}
+.flag-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;margin-top:8px;}
+.flag-chip.danger{background:var(--danger-bg);color:var(--danger);}
+.flag-chip.warn{background:var(--warn-bg);color:var(--warn);}
