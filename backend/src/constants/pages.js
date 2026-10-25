@@ -59,4 +59,43 @@ const DEFAULT_ALLOWED_PAGES_BY_ROLE = {
 // picking specific tabs rather than opting them out of a default set.
 const ORDER_TAB_KEYS = ['bookings', 'pickup', 'delivery', 'unconfirmed', 'manifest'];
 
-module.exports = { PAGE_KEYS, PAGE_LABELS, DEFAULT_ALLOWED_PAGES_BY_ROLE, ORDER_TAB_KEYS };
+// Sub-tabs inside the Accounts page — same "empty = no restriction" rule
+// as ORDER_TAB_KEYS. Does NOT include the Accounts page's "Assets" tab,
+// which keeps using the separate `assets` entry in PAGE_KEYS above.
+const ACCOUNTS_TAB_KEYS = ['bookings', 'receivable', 'payable'];
+const ACCOUNTS_TAB_LABELS = {
+  bookings: 'Bookings',
+  receivable: 'Receivable',
+  payable: 'Payable',
+};
+
+// Sub-tabs inside the (always-visible) Overview page. Unlike
+// ORDER_TAB_KEYS/ACCOUNTS_TAB_KEYS, empty means CLOSED — neither tab
+// visible, just the always-visible Summary — since this replaces the old
+// canViewOverviewBreakdown boolean, which was also closed-by-default.
+const OVERVIEW_TAB_KEYS = ['staff', 'region'];
+const OVERVIEW_TAB_LABELS = {
+  staff: 'Staff overview',
+  region: 'Region overview',
+};
+
+// Sub-tabs inside the Print Label page — same "empty = no restriction"
+// rule as ORDER_TAB_KEYS.
+const PRINTLABEL_TAB_KEYS = ['scan', 'manual'];
+const PRINTLABEL_TAB_LABELS = {
+  scan: 'Scan & Print',
+  manual: 'Manual Label',
+};
+
+module.exports = {
+  PAGE_KEYS,
+  PAGE_LABELS,
+  DEFAULT_ALLOWED_PAGES_BY_ROLE,
+  ORDER_TAB_KEYS,
+  ACCOUNTS_TAB_KEYS,
+  ACCOUNTS_TAB_LABELS,
+  OVERVIEW_TAB_KEYS,
+  OVERVIEW_TAB_LABELS,
+  PRINTLABEL_TAB_KEYS,
+  PRINTLABEL_TAB_LABELS,
+};
