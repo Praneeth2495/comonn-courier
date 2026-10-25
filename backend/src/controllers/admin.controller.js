@@ -873,20 +873,22 @@ async function getDriverDashboard(req, res, next) {
 async function setUserRole(req, res, next) {
   try {
     const { role, isActive, driverRegion, allowedPages, allowedOrderTabs, allowedAccountsTabs, allowedOverviewTabs, allowedPrintLabelTabs } = req.body;
-    if (allowedPages !== undefined && (!Array.isArray(allowedPages) || allowedPages.some((p) => !PAGE_KEYS.includes(p)))) {
-      return res.status(400).json({ error: 'allowedPages must be an array of valid page keys' });
-    }
-    if (allowedOrderTabs !== undefined && (!Array.isArray(allowedOrderTabs) || allowedOrderTabs.some((t) => !ORDER_TAB_KEYS.includes(t)))) {
-      return res.status(400).json({ error: 'allowedOrderTabs must be an array of valid order tab keys' });
-    }
-    if (allowedAccountsTabs !== undefined && (!Array.isArray(allowedAccountsTabs) || allowedAccountsTabs.some((t) => !ACCOUNTS_TAB_KEYS.includes(t)))) {
-      return res.status(400).json({ error: 'allowedAccountsTabs must be an array of valid accounts tab keys' });
-    }
-    if (allowedOverviewTabs !== undefined && (!Array.isArray(allowedOverviewTabs) || allowedOverviewTabs.some((t) => !OVERVIEW_TAB_KEYS.includes(t)))) {
-      return res.status(400).json({ error: 'allowedOverviewTabs must be an array of valid overview tab keys' });
-    }
-    if (allowedPrintLabelTabs !== undefined && (!Array.isArray(allowedPrintLabelTabs) || allowedPrintLabelTabs.some((t) => !PRINTLABEL_TAB_KEYS.includes(t)))) {
-      return res.status(400).json({ error: 'allowedPrintLabelTabs must be an array of valid print label tab keys' });
+
+    // Each of these grants a different page/sub-tab set (see
+    // constants/pages.js) but validates identically: undefined is allowed
+    // (field left untouched), otherwise it must be an array drawn only
+    // from that field's own valid key list.
+    const TAB_FIELD_VALIDATIONS = [
+      ['allowedPages', allowedPages, PAGE_KEYS, 'page keys'],
+      ['allowedOrderTabs', allowedOrderTabs, ORDER_TAB_KEYS, 'order tab keys'],
+      ['allowedAccountsTabs', allowedAccountsTabs, ACCOUNTS_TAB_KEYS, 'accounts tab keys'],
+      ['allowedOverviewTabs', allowedOverviewTabs, OVERVIEW_TAB_KEYS, 'overview tab keys'],
+      ['allowedPrintLabelTabs', allowedPrintLabelTabs, PRINTLABEL_TAB_KEYS, 'print label tab keys'],
+    ];
+    for (const [field, value, validKeys, description] of TAB_FIELD_VALIDATIONS) {
+      if (value !== undefined && (!Array.isArray(value) || value.some((k) => !validKeys.includes(k)))) {
+        return res.status(400).json({ error: `${field} must be an array of valid ${description}` });
+      }
     }
 
     let seededAllowedPages;
