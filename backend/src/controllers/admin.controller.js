@@ -909,9 +909,11 @@ async function setUserRole(req, res, next) {
         role,
         isActive,
         driverRegion: driverRegion === undefined ? undefined : (driverRegion.trim() || null),
-        canViewOverviewBreakdown,
         allowedPages: allowedPages !== undefined ? allowedPages : seededAllowedPages,
         allowedOrderTabs,
+        allowedAccountsTabs,
+        allowedOverviewTabs,
+        allowedPrintLabelTabs,
       },
     });
 
