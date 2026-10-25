@@ -1287,7 +1287,7 @@ function AccountsPanel() {
   // "open by default" convention as allowedOrderTabs.
   const allowedAccountsTabs = user?.allowedAccountsTabs || [];
   const canSeeAccountsTab = (key) => isAdmin || allowedAccountsTabs.length === 0 || allowedAccountsTabs.includes(key);
-  const [subTab, setSubTab] = useState(() => (canSeeAccountsTab('bookings') ? 'bookings' : ACCOUNTS_TAB_PERM_KEYS.find(canSeeAccountsTab) || 'bookings'));
+  const [subTab, setSubTab] = useState(() => (canSeeAccountsTab('overview') ? 'overview' : ACCOUNTS_TAB_PERM_KEYS.find(canSeeAccountsTab) || 'overview'));
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
