@@ -109,43 +109,43 @@ async function createShipment(req, res, next) {
       const senderAddress = await tx.address.create({ data: { ...sender } });
       const receiverAddress = await tx.address.create({ data: { ...receiver } });
       return tx.order.create({
-      data: {
-        orderNumber,
-        invoiceNumber,
-        merchantId: req.merchant.id,
-        serviceId: quote.service.id,
-        senderAddressId: senderAddress.id,
-        receiverAddressId: receiverAddress.id,
-        actualWeightKg: quote.weight.actualWeightKg,
-        volumetricWeightKg: quote.weight.volumetricWeightKg,
-        chargeableWeightKg: quote.weight.chargeableWeightKg,
-        declaredValue,
-        contentsDescription,
-        dgAcknowledged: true,
-        items: {
-          create: quote.items.map((it) => ({
-            itemType: it.itemType,
-            actualWeightKg: it.actualWeightKg,
-            lengthCm: it.lengthCm,
-            widthCm: it.widthCm,
-            heightCm: it.heightCm,
-            quantity: it.quantity,
-            volumetricWeightKg: it.volumetricWeightKg,
-            chargeableWeightKg: it.chargeableWeightKg,
-          })),
+        data: {
+          orderNumber,
+          invoiceNumber,
+          merchantId: req.merchant.id,
+          serviceId: quote.service.id,
+          senderAddressId: senderAddress.id,
+          receiverAddressId: receiverAddress.id,
+          actualWeightKg: quote.weight.actualWeightKg,
+          volumetricWeightKg: quote.weight.volumetricWeightKg,
+          chargeableWeightKg: quote.weight.chargeableWeightKg,
+          declaredValue,
+          contentsDescription,
+          dgAcknowledged: true,
+          items: {
+            create: quote.items.map((it) => ({
+              itemType: it.itemType,
+              actualWeightKg: it.actualWeightKg,
+              lengthCm: it.lengthCm,
+              widthCm: it.widthCm,
+              heightCm: it.heightCm,
+              quantity: it.quantity,
+              volumetricWeightKg: it.volumetricWeightKg,
+              chargeableWeightKg: it.chargeableWeightKg,
+            })),
+          },
+          zoneCode: quote.zone.code,
+          airportCode: quote.airportCode,
+          baseFreight: quote.pricing.baseFreight,
+          surchargesTotal: quote.pricing.surchargesTotal,
+          taxRate: quote.pricing.taxRate,
+          taxTotal: quote.pricing.taxTotal,
+          grandTotal: quote.pricing.grandTotal,
+          currency: quote.pricing.currency,
+          pricingBreakdown: quote,
+          status: 'PAID',
+          trackingNumber: orderNumber,
         },
-        zoneCode: quote.zone.code,
-        airportCode: quote.airportCode,
-        baseFreight: quote.pricing.baseFreight,
-        surchargesTotal: quote.pricing.surchargesTotal,
-        taxRate: quote.pricing.taxRate,
-        taxTotal: quote.pricing.taxTotal,
-        grandTotal: quote.pricing.grandTotal,
-        currency: quote.pricing.currency,
-        pricingBreakdown: quote,
-        status: 'PAID',
-        trackingNumber: orderNumber,
-      },
       });
     });
 
@@ -165,49 +165,10 @@ async function createShipment(req, res, next) {
     });
     notifyOrderStatusChange(order.id, 'PAID');
 
-    res.status(201).json({
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      trackingNumber: order.trackingNumber,
-      grandTotal: order.grandTotal,
-      currency: order.currency,
-    });
+    res.status(201).json({ order });
   } catch (err) {
     next(err);
   }
 }
 
-/** GET /api/v1/shipments/:trackingNumber — scoped to the calling merchant. */
-async function getShipment(req, res, next) {
-  try {
-    const order = await prisma.order.findFirst({
-      where: {
-        merchantId: req.merchant.id,
-        OR: [{ trackingNumber: req.params.trackingNumber }, { orderNumber: req.params.trackingNumber }],
-      },
-      include: {
-        service: true,
-        receiverAddress: { select: { city: true, state: true, countryCode: true } },
-        trackingEvents: { orderBy: { occurredAt: 'asc' } },
-        labels: true,
-        invoice: true,
-      },
-    });
-    if (!order) return res.status(404).json({ error: 'No shipment found for that tracking/order number' });
-
-    res.json({
-      orderNumber: order.orderNumber,
-      trackingNumber: order.trackingNumber,
-      status: order.status,
-      service: order.service.name,
-      destination: order.receiverAddress,
-      events: order.trackingEvents,
-      labels: order.labels.map((l) => ({ id: l.id, packageIndex: l.packageIndex, downloadUrl: `/labels/download/${l.id}` })),
-      invoice: order.invoice ? { downloadUrl: `/labels/invoice/download/${order.id}` } : null,
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
-module.exports = { createQuote, createShipment, getShipment };
+module.exports = { createQuote, createShipment };
