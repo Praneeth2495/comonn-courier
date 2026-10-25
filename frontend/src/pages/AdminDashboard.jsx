@@ -1280,7 +1280,12 @@ function monthEnd(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
 
 function AccountsPanel() {
   const { user } = useAuth();
-  const hasAssetsAccess = user?.role === 'ADMIN' || !!user?.allowedPages?.includes('assets');
+  const isAdmin = user?.role === 'ADMIN';
+  const hasAssetsAccess = isAdmin || !!user?.allowedPages?.includes('assets');
+  // Empty allowedAccountsTabs = no restriction (every tab visible) — same
+  // "open by default" convention as allowedOrderTabs.
+  const allowedAccountsTabs = user?.allowedAccountsTabs || [];
+  const canSeeAccountsTab = (key) => isAdmin || allowedAccountsTabs.length === 0 || allowedAccountsTabs.includes(key);
   const [subTab, setSubTab] = useState('bookings');
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
