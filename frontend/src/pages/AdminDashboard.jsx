@@ -1354,7 +1354,7 @@ function AccountsPanel() {
         )}
       </div>
 
-      {subTab === 'bookings' && (
+      {subTab === 'bookings' && canSeeAccountsTab('bookings') && (
         <>
           <div className="card date-toolbar" style={{ marginBottom: 16, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Showing bookings from</span>
