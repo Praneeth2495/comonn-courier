@@ -76,6 +76,28 @@ model User {
   // everyone starting blank. Meaningless for ADMIN/DRIVER, same as above.
   allowedOrderTabs         String[] @default([])
 
+  // Same per-tab pattern as allowedOrderTabs, for the Accounts page's
+  // bookings/receivable/payable sub-tabs (keys from ACCOUNTS_TAB_KEYS in
+  // pages.js). Empty = no restriction, same "opt into narrower" default as
+  // allowedOrderTabs. The Accounts page's "Assets" sub-tab is NOT covered
+  // here — it keeps using the existing separate `assets` entry in
+  // allowedPages/PAGE_KEYS, unchanged.
+  allowedAccountsTabs      String[] @default([])
+
+  // Same per-tab pattern, for the Overview page's "Staff overview"/"Region
+  // overview" sub-tabs (keys from OVERVIEW_TAB_KEYS in pages.js). Unlike
+  // allowedOrderTabs/allowedAccountsTabs, this is CLOSED by default (empty
+  // = neither tab, just the always-visible Summary) — it replaces the old
+  // canViewOverviewBreakdown boolean, which was also closed-by-default, so
+  // an empty array here must keep meaning "no breakdown access" rather
+  // than "no restriction".
+  allowedOverviewTabs      String[] @default([])
+
+  // Same per-tab pattern as allowedOrderTabs, for the Print Label page's
+  // "Scan & Print"/"Manual Label" sub-tabs (keys from PRINTLABEL_TAB_KEYS
+  // in pages.js). Empty = no restriction.
+  allowedPrintLabelTabs    String[] @default([])
+
   addresses               Address[]
   orders                  Order[]
   auditLogs               AuditLog[]
