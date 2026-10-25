@@ -425,6 +425,190 @@ async function dashboardKpis(req, res, next) {
   }
 }
 
+// ---------------- Accounts → Overview (P&L) ----------------
+// Each range is a trailing window (ending today, IST) rather than a
+// calendar period — same convention dayWiseWindow/activityWindows already
+// use elsewhere in this file. The "previous" comparison window is the
+// same number of days immediately before it, so a delta is always like-for-like
+// (e.g. this 7-day week vs the 7 days before it), not skewed by different
+// window lengths.
+const ACCOUNTS_RANGES = {
+  day: { days: 1, granularity: 'hour' },
+  week: { days: 7, granularity: 'day' },
+  month: { days: 30, granularity: 'day' },
+  quarter: { days: 90, granularity: 'isoweek' },
+  sixmo: { days: 182, granularity: 'month' },
+  year: { days: 365, granularity: 'month' },
+};
+const IST_HOUR_FORMATTER = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: 'numeric', hour12: false });
+const IST_DAY_LABEL_FORMATTER = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' });
+const IST_MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', month: 'short' });
+
+// Buckets a single order's createdAt into the chart series for the chosen
+// granularity. `key` sorts/groups; `label` is what the chart axis shows.
+function accountsBucketFor(date, granularity) {
+  if (granularity === 'hour') {
+    const h = Number(IST_HOUR_FORMATTER.format(date));
+    const label = `${h % 12 === 0 ? 12 : h % 12}${h < 12 ? 'am' : 'pm'}`;
+    return { key: String(h).padStart(2, '0'), label };
+  }
+  if (granularity === 'isoweek') {
+    const iso = isoDateIst(date);
+    const monday = new Date(`${iso}T00:00:00.000Z`);
+    const dow = monday.getUTCDay() || 7; // Mon=1..Sun=7
+    monday.setUTCDate(monday.getUTCDate() - (dow - 1));
+    const weekKey = monday.toISOString().slice(0, 10);
+    return { key: weekKey, label: IST_DAY_LABEL_FORMATTER.format(monday) };
+  }
+  if (granularity === 'month') {
+    const { year, month } = getIstDateParts(date);
+    return { key: `${year}-${String(month).padStart(2, '0')}`, label: IST_MONTH_LABEL_FORMATTER.format(date) };
+  }
+  // day
+  const iso = isoDateIst(date);
+  return { key: iso, label: IST_DAY_LABEL_FORMATTER.format(date) };
+}
+
+// Revenue is read straight off Order (grandTotal/discountTotal/taxTotal are
+// a pricing-time snapshot — never recomputed off live rate cards, same rule
+// the rest of the schema follows). Gross = pre-discount, pre-tax
+// (baseFreight+surcharges+addons); Net = post-discount, pre-tax — tax is
+// money collected on the government's behalf, never the business's own
+// revenue. Cost currently only exists as the lump PartyInvoice(PAYABLE)
+// ledger — not linked to individual orders or categorized yet, so
+// Operating Cost/Profit/Margin below are real totals but not yet
+// splittable by shipment or cost category (see the Phase 2 note surfaced
+// to the frontend via costBreakdownAvailable: false).
+function splitOrderRevenue(o) {
+  const net = Number(o.grandTotal) - Number(o.taxTotal);
+  const gross = net + Number(o.discountTotal);
+  return { gross, net, discount: Number(o.discountTotal) };
+}
+
+/**
+ * GET /api/admin/accounts/overview?range=day|week|month|quarter|sixmo|year
+ * Powers the Accounts page's Overview tab — gross/net revenue, operating
+ * cost, and profit for the selected window, bucketed for the trend chart,
+ * plus a revenue-by-channel split and a point-in-time AR/AP snapshot.
+ */
+async function accountsOverview(req, res, next) {
+  try {
+    const rangeKey = ACCOUNTS_RANGES[req.query.range] ? req.query.range : 'month';
+    const cfg = ACCOUNTS_RANGES[rangeKey];
+
+    const todayIso = isoDateIst(new Date());
+    const fromIso = isoDateIst(daysAgo(cfg.days - 1));
+    const window = windowRange(fromIso, todayIso);
+    const prevFromIso = isoDateIst(daysAgo(cfg.days * 2 - 1));
+    const prevToIso = isoDateIst(daysAgo(cfg.days));
+    const prevWindow = windowRange(prevFromIso, prevToIso);
+
+    // Same "did money actually move" exclusion the Overview summary card
+    // uses — DRAFT/UNFINISHED/PENDING_PAYMENT/PICKUP_CONFIRMED/CANCELLED
+    // never count as revenue, regardless of how far along the shipment is.
+    const revenueWhere = { status: { notIn: UNPAID_STATUSES } };
+
+    const [orders, prevOrders, costAgg, prevCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
+      prisma.order.findMany({
+        where: { ...revenueWhere, createdAt: window },
+        select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true },
+      }),
+      prisma.order.findMany({
+        where: { ...revenueWhere, createdAt: prevWindow },
+        select: { grandTotal: true, discountTotal: true, taxTotal: true },
+      }),
+      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: window }, _sum: { totalAmount: true } }),
+      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow }, _sum: { totalAmount: true } }),
+      prisma.partyInvoice.aggregate({ where: { direction: 'RECEIVABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
+      prisma.partyInvoice.count({ where: { direction: 'RECEIVABLE', status: 'UNPAID', dueDate: { lt: new Date() } } }),
+      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
+      prisma.partyInvoice.count({ where: { direction: 'PAYABLE', status: 'UNPAID', dueDate: { lt: new Date() } } }),
+      prisma.merchantInvoice.aggregate({ where: { status: 'UNPAID' }, _sum: { totalAmount: true } }),
+    ]);
+
+    const buckets = new Map();
+    const totals = { gross: 0, discount: 0, net: 0, retailGross: 0, merchantGross: 0 };
+    for (const o of orders) {
+      const { gross, net, discount } = splitOrderRevenue(o);
+      totals.gross += gross;
+      totals.discount += discount;
+      totals.net += net;
+      if (o.merchantId) totals.merchantGross += gross; else totals.retailGross += gross;
+
+      const { key, label } = accountsBucketFor(o.createdAt, cfg.granularity);
+      if (!buckets.has(key)) buckets.set(key, { key, label, gross: 0, discount: 0, net: 0 });
+      const b = buckets.get(key);
+      b.gross += gross; b.discount += discount; b.net += net;
+    }
+    const series = [...buckets.values()]
+      .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+      .map((b) => ({ label: b.label, gross: round2(b.gross), discount: round2(b.discount), net: round2(b.net) }));
+
+    const prevTotals = prevOrders.reduce((acc, o) => {
+      const { gross, net } = splitOrderRevenue(o);
+      acc.gross += gross; acc.net += net;
+      return acc;
+    }, { gross: 0, net: 0 });
+
+    const costTotal = Number(costAgg._sum.totalAmount || 0);
+    const prevCostTotal = Number(prevCostAgg._sum.totalAmount || 0);
+    const profit = totals.net - costTotal;
+    const prevProfit = prevTotals.net - prevCostTotal;
+    const margin = totals.net > 0 ? profit / totals.net : 0;
+    const prevMargin = prevTotals.net > 0 ? prevProfit / prevTotals.net : 0;
+
+    const pctDelta = (curr, prev) => {
+      if (prev === 0) return curr === 0 ? 0 : 100;
+      return ((curr - prev) / Math.abs(prev)) * 100;
+    };
+
+    res.json({
+      range: rangeKey,
+      window: { from: fromIso, to: todayIso },
+      series,
+      totals: {
+        gross: round2(totals.gross),
+        discount: round2(totals.discount),
+        net: round2(totals.net),
+        cost: round2(costTotal),
+        profit: round2(profit),
+        margin: Number(margin.toFixed(4)),
+      },
+      deltas: {
+        gross: pctDelta(totals.gross, prevTotals.gross),
+        net: pctDelta(totals.net, prevTotals.net),
+        cost: pctDelta(costTotal, prevCostTotal),
+        profit: pctDelta(profit, prevProfit),
+        marginPp: (margin - prevMargin) * 100,
+      },
+      channel: {
+        retail: round2(totals.retailGross),
+        merchant: round2(totals.merchantGross),
+      },
+      outstanding: {
+        receivable: {
+          total: round2(Number(receivablePartyAgg._sum.totalAmount || 0) + Number(merchantUnpaidAgg._sum.totalAmount || 0)),
+          partyInvoices: round2(Number(receivablePartyAgg._sum.totalAmount || 0)),
+          merchantInvoices: round2(Number(merchantUnpaidAgg._sum.totalAmount || 0)),
+          overdueCount: receivableOverdueCount,
+        },
+        payable: {
+          total: round2(Number(payableAgg._sum.totalAmount || 0)),
+          overdueCount: payableOverdueCount,
+        },
+      },
+      // Cost is a real total (PartyInvoice PAYABLE), but not yet linked to
+      // individual orders or tagged by category — see the schema note on
+      // PartyInvoice. The frontend uses this to label Cost/Profit/Margin
+      // "Approximate" and skip the cost-by-category breakdown entirely
+      // rather than show a number that doesn't exist yet.
+      costBreakdownAvailable: false,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /**
  * GET /api/admin/pickup-origins — distinct origin (pickup) states and, per
  * state, the distinct regions assigned to postcodes within it. Powers the
