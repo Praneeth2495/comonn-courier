@@ -137,12 +137,17 @@ export default function Details() {
   // the destination autocomplete picked on the Book page.
   const receiverLocked = true;
   // City still comes from that same autocomplete pick — locking it makes
-  // sense normally, but two cases have no real suburb to lock to: countries
-  // with zero postcode-suggestion data at all (destinationSuburb was never
-  // set), and UAE specifically, where the "postcode" field is really an
-  // Emirate picker, so its "suburb" is just the Emirate name repeated, not
-  // the customer's actual area — city must stay editable in both cases.
-  const receiverCityLocked = isEditingExisting || (Boolean(quoteInput?.destinationSuburb) && quoteInput?.destinationCountryCode !== 'AE');
+  // sense normally, but three cases have no real suburb to lock to:
+  // countries with zero postcode-suggestion data at all (destinationSuburb
+  // was never set), UAE, where the "postcode" field is really an Emirate
+  // picker, so its "suburb" is just the Emirate name repeated, and NZ,
+  // whose postcode-suggestion coverage is known-incomplete (~1,738 of
+  // 3,000+ real combinations) — the auto-filled suburb may not match the
+  // customer's actual one. City must stay editable (and required — see
+  // AddressFields below) in all three cases, so the customer confirms or
+  // corrects it themselves rather than silently trusting a guess.
+  const UNRELIABLE_SUBURB_COUNTRIES = ['AE', 'NZ'];
+  const receiverCityLocked = isEditingExisting || (Boolean(quoteInput?.destinationSuburb) && !UNRELIABLE_SUBURB_COUNTRIES.includes(quoteInput?.destinationCountryCode));
   // Same idea for Ireland's full Eircode — lock it once we actually have one
   // (from the quote step, or already saved on an existing order), but leave
   // it editable if there's nothing to lock to yet (e.g. an older IE order
