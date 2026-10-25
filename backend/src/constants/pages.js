@@ -62,8 +62,9 @@ const ORDER_TAB_KEYS = ['bookings', 'pickup', 'delivery', 'unconfirmed', 'manife
 // Sub-tabs inside the Accounts page — same "empty = no restriction" rule
 // as ORDER_TAB_KEYS. Does NOT include the Accounts page's "Assets" tab,
 // which keeps using the separate `assets` entry in PAGE_KEYS above.
-const ACCOUNTS_TAB_KEYS = ['bookings', 'receivable', 'payable'];
+const ACCOUNTS_TAB_KEYS = ['overview', 'bookings', 'receivable', 'payable'];
 const ACCOUNTS_TAB_LABELS = {
+  overview: 'Overview',
   bookings: 'Bookings',
   receivable: 'Receivable',
   payable: 'Payable',
