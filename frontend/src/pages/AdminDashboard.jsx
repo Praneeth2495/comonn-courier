@@ -2138,12 +2138,16 @@ function UsersPanel() {
   );
 }
 
-function PageAccessModal({ staff, currentAllowedPages, onSave, onClose }) {
-  const [selected, setSelected] = useState(currentAllowedPages);
+// Shared by every "page/tab access" editor in the Users panel (Page
+// access, Order tabs, Accounts tabs, Overview tabs, Print Label tabs) —
+// same checkbox-list-+-save shape throughout, differing only in which
+// keys/labels are offered and the title/description/button text.
+function AccessEditorModal({ title, description, optionKeys, optionLabels, currentSelected, saveLabel, onSave, onClose }) {
+  const [selected, setSelected] = useState(currentSelected);
   const [saving, setSaving] = useState(false);
 
-  function toggle(pageKey) {
-    setSelected((prev) => (prev.includes(pageKey) ? prev.filter((k) => k !== pageKey) : [...prev, pageKey]));
+  function toggle(key) {
+    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   }
 
   async function save() {
@@ -2156,182 +2160,20 @@ function PageAccessModal({ staff, currentAllowedPages, onSave, onClose }) {
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h3 style={{ fontSize: 17 }}>Page access for {staff.fullName}</h3>
+          <h3 style={{ fontSize: 17 }}>{title}</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
         </div>
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
-          Overview, Orders (view), Inventory and Profile are always visible. Check any extra pages this account should also see and use.
-        </p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>{description}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
-          {PAGE_KEYS.map((key) => (
+          {optionKeys.map((key) => (
             <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
               <input type="checkbox" checked={selected.includes(key)} onChange={() => toggle(key)} />
-              {PAGE_LABELS[key]}
+              {optionLabels[key]}
             </label>
           ))}
         </div>
         <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
-          {saving ? 'Saving…' : 'Save page access'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function OrderTabAccessModal({ staff, currentAllowedOrderTabs, onSave, onClose }) {
-  const [selected, setSelected] = useState(currentAllowedOrderTabs);
-  const [saving, setSaving] = useState(false);
-
-  function toggle(tabKey) {
-    setSelected((prev) => (prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]));
-  }
-
-  async function save() {
-    setSaving(true);
-    await onSave(selected);
-    setSaving(false);
-  }
-
-  return (
-    <div className="modal-overlay open" onClick={onClose}>
-      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h3 style={{ fontSize: 17 }}>Order tabs for {staff.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
-        </div>
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
-          Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Orders page.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
-          {ORDER_TAB_PERM_KEYS.map((key) => (
-            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
-              <input type="checkbox" checked={selected.includes(key)} onChange={() => toggle(key)} />
-              {ORDER_TAB_PERM_LABELS[key]}
-            </label>
-          ))}
-        </div>
-        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
-          {saving ? 'Saving…' : 'Save order tab access'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function AccountsTabAccessModal({ staff, currentAllowedAccountsTabs, onSave, onClose }) {
-  const [selected, setSelected] = useState(currentAllowedAccountsTabs);
-  const [saving, setSaving] = useState(false);
-
-  function toggle(tabKey) {
-    setSelected((prev) => (prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]));
-  }
-
-  async function save() {
-    setSaving(true);
-    await onSave(selected);
-    setSaving(false);
-  }
-
-  return (
-    <div className="modal-overlay open" onClick={onClose}>
-      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h3 style={{ fontSize: 17 }}>Accounts tabs for {staff.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
-        </div>
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
-          Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Accounts page. The Assets tab is controlled separately, under Page access.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
-          {ACCOUNTS_TAB_PERM_KEYS.map((key) => (
-            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
-              <input type="checkbox" checked={selected.includes(key)} onChange={() => toggle(key)} />
-              {ACCOUNTS_TAB_PERM_LABELS[key]}
-            </label>
-          ))}
-        </div>
-        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
-          {saving ? 'Saving…' : 'Save accounts tab access'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function OverviewTabAccessModal({ staff, currentAllowedOverviewTabs, onSave, onClose }) {
-  const [selected, setSelected] = useState(currentAllowedOverviewTabs);
-  const [saving, setSaving] = useState(false);
-
-  function toggle(tabKey) {
-    setSelected((prev) => (prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]));
-  }
-
-  async function save() {
-    setSaving(true);
-    await onSave(selected);
-    setSaving(false);
-  }
-
-  return (
-    <div className="modal-overlay open" onClick={onClose}>
-      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h3 style={{ fontSize: 17 }}>Overview tabs for {staff.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
-        </div>
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
-          Summary is always visible. Leave nothing checked to keep this account to Summary only — check specific tabs to additionally grant Staff overview and/or Region overview, which show every region/staff member, not just the ones this account is assigned.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
-          {OVERVIEW_TAB_PERM_KEYS.map((key) => (
-            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
-              <input type="checkbox" checked={selected.includes(key)} onChange={() => toggle(key)} />
-              {OVERVIEW_TAB_PERM_LABELS[key]}
-            </label>
-          ))}
-        </div>
-        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
-          {saving ? 'Saving…' : 'Save overview tab access'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function PrintLabelTabAccessModal({ staff, currentAllowedPrintLabelTabs, onSave, onClose }) {
-  const [selected, setSelected] = useState(currentAllowedPrintLabelTabs);
-  const [saving, setSaving] = useState(false);
-
-  function toggle(tabKey) {
-    setSelected((prev) => (prev.includes(tabKey) ? prev.filter((k) => k !== tabKey) : [...prev, tabKey]));
-  }
-
-  async function save() {
-    setSaving(true);
-    await onSave(selected);
-    setSaving(false);
-  }
-
-  return (
-    <div className="modal-overlay open" onClick={onClose}>
-      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <h3 style={{ fontSize: 17 }}>Print Label tabs for {staff.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
-        </div>
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
-          Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Print Label page.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
-          {PRINTLABEL_TAB_PERM_KEYS.map((key) => (
-            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer' }}>
-              <input type="checkbox" checked={selected.includes(key)} onChange={() => toggle(key)} />
-              {PRINTLABEL_TAB_PERM_LABELS[key]}
-            </label>
-          ))}
-        </div>
-        <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
-          {saving ? 'Saving…' : 'Save print label tab access'}
+          {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
     </div>
