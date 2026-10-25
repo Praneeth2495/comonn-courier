@@ -10,11 +10,12 @@ export function scenarioFor(vus) {
     executor: 'ramping-vus',
     startVUs: 0,
     stages: [
-      { duration: '30s', target: vus },
-      { duration: '2m', target: vus },
-      { duration: '15s', target: 0 },
+      { duration: '20s', target: vus },
+      { duration: '45s', target: vus },
+      { duration: '10s', target: 0 },
     ],
-    gracefulRampDown: '10s',
+    gracefulRampDown: '5s',
+    gracefulStop: '10s',
   };
 }
 
