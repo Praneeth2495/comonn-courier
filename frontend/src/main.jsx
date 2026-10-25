@@ -15,6 +15,8 @@ initNativeApp();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <Sentry.ErrorBoundary fallback={<div style={{ padding: 40, textAlign: 'center' }}>Something went wrong. Please refresh the page.</div>}>
+      <App />
+    </Sentry.ErrorBoundary>
   </React.StrictMode>
 );
