@@ -104,6 +104,14 @@ app.use('/api/admin/manifests', manifestRoutes);
 // /api/labels/:orderId/download for access-controlled downloads)
 app.use('/labels', express.static(path.join(__dirname, '../storage/labels')));
 
+// Reports any error thrown/forwarded by a route handler to Sentry before
+// it reaches our own errorHandler below (which still sends the response —
+// this only observes, doesn't change behavior). No-ops if Sentry wasn't
+// initialized (no SENTRY_DSN).
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
 app.use(notFound);
 app.use(errorHandler);
 
