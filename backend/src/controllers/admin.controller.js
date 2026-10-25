@@ -802,7 +802,7 @@ async function updateAddonPricing(req, res, next) {
 async function listUsers(req, res, next) {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, email: true, fullName: true, phone: true, role: true, isActive: true, driverRegion: true, canViewOverviewBreakdown: true, allowedPages: true, allowedOrderTabs: true, createdAt: true },
+      select: { id: true, email: true, fullName: true, phone: true, role: true, isActive: true, driverRegion: true, allowedPages: true, allowedOrderTabs: true, allowedAccountsTabs: true, allowedOverviewTabs: true, allowedPrintLabelTabs: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
     });
     res.json({ users });
