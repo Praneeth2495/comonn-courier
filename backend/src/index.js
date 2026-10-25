@@ -52,6 +52,12 @@ const { startDailyOrderSummaryJob } = require('./services/dailyOrderSummary');
 
 const app = express();
 
+// Railway puts exactly one reverse proxy in front of the app — trusting
+// that single hop (not `true`, which would trust the whole chain) is what
+// lets express-rate-limit read X-Forwarded-For safely without becoming
+// spoofable by a client-supplied header.
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_ORIGIN?.split(',') || '*', credentials: true }));
 app.use(morgan('dev'));
