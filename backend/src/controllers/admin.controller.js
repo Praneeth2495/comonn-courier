@@ -182,7 +182,7 @@ async function computeRegionBreakdown(from, to) {
 
 async function regionOverview(req, res, next) {
   try {
-    if (!(await requireOverviewBreakdownAccess(req, res))) return;
+    if (!(await requireOverviewTabAccess(req, res, 'region'))) return;
     const { from, to } = req.query;
     const rows = await computeRegionBreakdown(from, to);
     res.json({ rows });
