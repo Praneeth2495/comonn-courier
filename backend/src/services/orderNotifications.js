@@ -18,7 +18,7 @@ const CONFIRMATION_TEMPLATE = 'order_confirmed';
 // moment as the customer's own confirmation. Unconditional (no opt-in
 // check) since this is an internal ops alert, not a customer preference.
 const ADMIN_WHATSAPP_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER;
-const ADMIN_ALERT_TEMPLATE = 'admin_new_order';
+const ADMIN_ALERT_TEMPLATE = 'admin_order_alert';
 
 const UPDATE_TEMPLATES = {
   PICKED_UP: 'order_picked_up',
