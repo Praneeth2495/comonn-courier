@@ -324,22 +324,22 @@ async function generateQuote(input) {
     throw err;
   }
 
-  const service = await prisma.service.findUnique({ where: { code: serviceCode } });
+  // All four lookups are independent of each other (none's input depends on
+  // another's result) — resolving them concurrently instead of sequentially
+  // saves three DB round-trips off every quote request (and every booking,
+  // which calls generateQuote server-side to re-price authoritatively).
+  const [service, zone, airportCode, fromZoneId] = await Promise.all([
+    prisma.service.findUnique({ where: { code: serviceCode } }),
+    resolveZoneForDestination(destinationCountryCode, destinationPostcode),
+    resolveAirportForDestination(destinationCountryCode, destinationPostcode),
+    resolveFromZoneForPostcode(originCountryCode, originPostcode),
+  ]);
   if (!service || !service.isActive) {
     const err = new Error(`Unknown or inactive service "${serviceCode}"`);
     err.status = 422;
     err.code = 'SERVICE_NOT_FOUND';
     throw err;
   }
-
-  // These three lookups are independent of each other (none's input depends
-  // on another's result) — resolving them concurrently instead of
-  // sequentially saves two DB round-trips off every quote request.
-  const [zone, airportCode, fromZoneId] = await Promise.all([
-    resolveZoneForDestination(destinationCountryCode, destinationPostcode),
-    resolveAirportForDestination(destinationCountryCode, destinationPostcode),
-    resolveFromZoneForPostcode(originCountryCode, originPostcode),
-  ]);
 
   const pricedItems = items.map((it) => priceItem(it, service.volumetricDivisor));
 
