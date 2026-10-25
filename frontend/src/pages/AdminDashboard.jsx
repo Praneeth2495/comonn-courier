@@ -1829,12 +1829,19 @@ function UsersPanel() {
     setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
   }
 
-  // Grants a STAFF account access to the Overview page's "Staff overview" /
-  // "Region overview" tabs — off by default, since those show every
-  // region/staff member, not just the ones this staff member is assigned.
-  async function setOverviewAccess(id, canViewOverviewBreakdown) {
-    const { data } = await client.patch(`/admin/users/${id}`, { canViewOverviewBreakdown });
-    setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
+  async function saveOverviewTabAccess(userId, allowedOverviewTabs) {
+    const { data } = await client.patch(`/admin/users/${userId}`, { allowedOverviewTabs });
+    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
+  }
+
+  async function saveAccountsTabAccess(userId, allowedAccountsTabs) {
+    const { data } = await client.patch(`/admin/users/${userId}`, { allowedAccountsTabs });
+    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
+  }
+
+  async function savePrintLabelTabAccess(userId, allowedPrintLabelTabs) {
+    const { data } = await client.patch(`/admin/users/${userId}`, { allowedPrintLabelTabs });
+    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
   }
 
   async function savePageAccess(userId, allowedPages) {
