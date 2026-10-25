@@ -1279,6 +1279,206 @@ function isoDate(d) {
 function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
 function monthEnd(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
 
+// ---------------- Accounts → Overview (P&L) ----------------
+const ACCOUNTS_RANGE_OPTIONS = [
+  ['day', 'Today'],
+  ['week', 'Week'],
+  ['month', 'Month'],
+  ['quarter', '3 Months'],
+  ['sixmo', '6 Months'],
+  ['year', 'Year'],
+];
+
+function fmtINR(n) { return '₹' + Math.round(n || 0).toLocaleString('en-IN'); }
+function fmtShort(n) {
+  const v = Number(n) || 0;
+  const a = Math.abs(v);
+  if (a >= 1e7) return '₹' + (v / 1e7).toFixed(2) + 'Cr';
+  if (a >= 1e5) return '₹' + (v / 1e5).toFixed(2) + 'L';
+  return fmtINR(v);
+}
+
+function AcctKpiTile({ label, display, delta, deltaIsPoints, badge, info }) {
+  const up = delta >= 0;
+  return (
+    <div className="acct-kpi">
+      <div className="acct-kpi-top">
+        <span className="acct-kpi-label">{label}</span>
+        <span className={`badge-chip ${badge === 'live' ? 'badge-live' : 'badge-approx'}`} title={info || ''}>{badge === 'live' ? 'Live' : 'Approx'}</span>
+      </div>
+      <div className="acct-kpi-value num">{display}</div>
+      <div className={`acct-kpi-delta ${up ? 'up' : 'down'}`}>
+        {up ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}{deltaIsPoints ? 'pp' : '%'} vs previous
+      </div>
+    </div>
+  );
+}
+
+function AccountsOverviewPanel() {
+  const [range, setRange] = useState('month');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [hover, setHover] = useState(null); // { x, y, label, gross, cost, net, profit }
+
+  useEffect(() => {
+    setLoading(true);
+    let cancelled = false;
+    client.get('/admin/accounts/overview', { params: { range } }).then(({ data }) => {
+      if (!cancelled) setData(data);
+    }).finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [range]);
+
+  if (!data) {
+    return <div className="card" style={{ padding: 24, color: 'var(--slate)' }}>{loading ? 'Loading…' : 'Could not load the accounts overview.'}</div>;
+  }
+
+  const { totals, deltas, series, channel, outstanding } = data;
+  const channelTotal = channel.retail + channel.merchant || 1;
+
+  const kpis = [
+    { label: 'Gross Revenue', display: fmtShort(totals.gross), delta: deltas.gross, badge: 'live' },
+    { label: 'Discounts', display: '−' + fmtShort(totals.discount), delta: deltas.gross, badge: 'live', info: 'Sum of promo-code discounts applied in this window.' },
+    { label: 'Net Revenue', display: fmtShort(totals.net), delta: deltas.net, badge: 'live', info: 'Gross revenue minus discounts and tax collected.' },
+    { label: 'Operating Cost', display: fmtShort(totals.cost), delta: deltas.cost, badge: 'approx', info: 'Vendor bills recorded in this window — not yet matched order-by-order.' },
+    { label: 'Net Profit', display: fmtShort(totals.profit), delta: deltas.profit, badge: 'approx', info: 'Net revenue minus operating cost for the same window.' },
+    { label: 'Profit Margin', display: `${(totals.margin * 100).toFixed(1)}%`, delta: deltas.marginPp, deltaIsPoints: true, badge: 'approx', info: 'Net profit ÷ net revenue.' },
+  ];
+
+  // ---- chart geometry ----
+  const W = 880, H = 260, padL = 50, padB = 28, padT = 10, padR = 8;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxVal = Math.max(1, ...series.map((b) => Math.max(b.net, b.cost))) * 1.12;
+  const n = Math.max(series.length, 1);
+  const groupW = plotW / n;
+  const barW = Math.min(16, groupW * 0.32);
+  const yFor = (v) => padT + plotH - (v / maxVal) * plotH;
+  const gridVals = [0, 0.25, 0.5, 0.75, 1].map((f) => f * maxVal);
+  const profitPts = series.map((b, i) => [padL + i * groupW + groupW / 2, yFor(b.profit)]);
+  const linePath = profitPts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+
+  return (
+    <div>
+      <div className="acct-ov-head">
+        <div className="range-pills">
+          {ACCOUNTS_RANGE_OPTIONS.map(([key, label]) => (
+            <button key={key} className={`range-pill ${range === key ? 'active' : ''}`} onClick={() => setRange(key)}>{label}</button>
+          ))}
+        </div>
+        <div className="acct-ov-window">{data.window.from} → {data.window.to}</div>
+      </div>
+
+      <div className="acct-kpi-grid">
+        {kpis.map((k) => <AcctKpiTile key={k.label} {...k} />)}
+      </div>
+
+      <div className="card" style={{ padding: '20px 22px', marginBottom: 16, position: 'relative' }}>
+        <div className="panel-head-row">
+          <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Revenue, cost &amp; profit</h3>
+          <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Hover a bar for the exact split</span>
+        </div>
+        {series.length === 0 ? (
+          <p style={{ color: 'var(--slate)', fontSize: 13 }}>No bookings in this window yet.</p>
+        ) : (
+          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+            {gridVals.map((v, i) => (
+              <g key={i}>
+                <line x1={padL} x2={W - padR} y1={yFor(v)} y2={yFor(v)} stroke="var(--line)" strokeWidth={1} />
+                <text x={padL - 8} y={yFor(v) + 3} textAnchor="end" fontSize={10} fill="var(--slate-light)">{v >= 1e5 ? (v / 1e5).toFixed(1) + 'L' : Math.round(v)}</text>
+              </g>
+            ))}
+            <line x1={padL} x2={W - padR} y1={padT + plotH} y2={padT + plotH} stroke="var(--line-2)" strokeWidth={1.4} />
+            {series.map((b, i) => {
+              const gx = padL + i * groupW + groupW / 2;
+              const netH = (b.net / maxVal) * plotH, costH = (b.cost / maxVal) * plotH;
+              return (
+                <g key={i}>
+                  <rect x={gx - barW - 2} y={padT + plotH - netH} width={barW} height={Math.max(netH, 1)} rx={3} fill="var(--cobalt)"
+                    onMouseEnter={(e) => setHover({ x: e.clientX, y: e.clientY, label: b.label, net: b.net, cost: b.cost, profit: b.profit })}
+                    onMouseMove={(e) => setHover((h) => h && ({ ...h, x: e.clientX, y: e.clientY }))}
+                    onMouseLeave={() => setHover(null)} style={{ cursor: 'pointer' }} />
+                  <rect x={gx + 2} y={padT + plotH - costH} width={barW} height={Math.max(costH, 1)} rx={3} fill="var(--coral)"
+                    onMouseEnter={(e) => setHover({ x: e.clientX, y: e.clientY, label: b.label, net: b.net, cost: b.cost, profit: b.profit })}
+                    onMouseMove={(e) => setHover((h) => h && ({ ...h, x: e.clientX, y: e.clientY }))}
+                    onMouseLeave={() => setHover(null)} style={{ cursor: 'pointer' }} />
+                  <text x={gx} y={H - 8} textAnchor="middle" fontSize={10.5} fill="var(--slate-light)">{b.label}</text>
+                </g>
+              );
+            })}
+            <path d={linePath} fill="none" stroke="var(--navy)" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+            {profitPts.length > 0 && [profitPts[0], profitPts[profitPts.length - 1]].map((p, i) => (
+              <circle key={i} cx={p[0]} cy={p[1]} r={4} fill="var(--navy)" stroke="var(--card)" strokeWidth={2} />
+            ))}
+          </svg>
+        )}
+        <div className="chart-legend">
+          <span><i style={{ background: 'var(--cobalt)' }} />Revenue (net of discount)</span>
+          <span><i style={{ background: 'var(--coral)' }} />Operating cost</span>
+          <span><i className="ln" style={{ background: 'var(--navy)' }} />Profit</span>
+        </div>
+        {hover && (
+          <div className="acct-tip" style={{ left: hover.x + 14, top: hover.y }}>
+            <b>{hover.label}</b>
+            Revenue: <b className="num">{fmtINR(hover.net)}</b><br />
+            Cost: <b className="num">{fmtINR(hover.cost)}</b><br />
+            Profit: <b className="num">{fmtINR(hover.profit)}</b>
+          </div>
+        )}
+      </div>
+
+      <div className="two-col-panels">
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div className="panel-head-row">
+            <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Where revenue comes from</h3>
+            <span className="badge-chip badge-live">Live</span>
+          </div>
+          {[['Retail (D2C checkout)', channel.retail, 'var(--cobalt)'], ['Merchant / B2B API', channel.merchant, 'var(--coral)']].map(([nm, v, c]) => (
+            <div className="chbar-row" key={nm}>
+              <div className="chbar-nm">{nm}</div>
+              <div className="chbar-track"><div className="chbar-fill" style={{ width: `${(v / channelTotal) * 100}%`, background: c }} /></div>
+              <div className="chbar-pct num">{fmtShort(v)} · {((v / channelTotal) * 100).toFixed(0)}%</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div className="panel-head-row">
+            <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Where the cost goes</h3>
+            <span className="badge-chip badge-approx" title="Vendor bills aren't tagged by category yet">Phase 2</span>
+          </div>
+          <p style={{ fontSize: 12.5, color: 'var(--slate)', lineHeight: 1.6 }}>
+            Operating cost is a real total (vendor &amp; party bills recorded this window), but bills aren't categorized yet —
+            so there's no breakdown by courier/salary/fuel/etc. to show here. Tag vendor bills with a category on the Payable tab
+            to unlock this.
+          </p>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
+        <div className="panel-head-row">
+          <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Outstanding — as of today</h3>
+          <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Balances, not period totals — doesn't change with the filter above</span>
+        </div>
+        <div className="two-col-panels">
+          <div className="ar-ap-card">
+            <h4>Receivable</h4>
+            <div className="ar-ap-amt num">{fmtINR(outstanding.receivable.total)}</div>
+            <div className="ar-ap-line"><span>Merchant invoices unpaid</span><span className="num">{fmtINR(outstanding.receivable.merchantInvoices)}</span></div>
+            <div className="ar-ap-line"><span>Other party receivables</span><span className="num">{fmtINR(outstanding.receivable.partyInvoices)}</span></div>
+            {outstanding.receivable.overdueCount > 0 && <div className="flag-chip danger">⚠ {outstanding.receivable.overdueCount} invoice{outstanding.receivable.overdueCount > 1 ? 's' : ''} overdue</div>}
+          </div>
+          <div className="ar-ap-card">
+            <h4>Payable</h4>
+            <div className="ar-ap-amt num">{fmtINR(outstanding.payable.total)}</div>
+            <div className="ar-ap-line"><span>Vendor / courier bills unpaid</span><span className="num">{fmtINR(outstanding.payable.total)}</span></div>
+            {outstanding.payable.overdueCount > 0 && <div className="flag-chip warn">⏱ {outstanding.payable.overdueCount} bill{outstanding.payable.overdueCount > 1 ? 's' : ''} overdue</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AccountsPanel() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
