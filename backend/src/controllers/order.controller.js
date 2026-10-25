@@ -135,12 +135,13 @@ async function createOrder(req, res, next) {
         originCountryCode: sender.countryCode,
         originPostcode: sender.postcode,
       });
-      const service = await prisma.service.findUnique({ where: { code: serviceCode } });
+      // generateQuote already looked this service up internally (and
+      // returns its id) — no need to query it again here.
       orderData = {
         orderNumber,
         invoiceNumber,
         userId: ownerUserId,
-        serviceId: service.id,
+        serviceId: quote.service.id,
         senderAddressId: senderAddress.id,
         receiverAddressId: receiverAddress.id,
         actualWeightKg: quote.weight.actualWeightKg,
