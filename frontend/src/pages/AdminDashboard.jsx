@@ -2105,6 +2105,33 @@ function UsersPanel() {
           onClose={() => setEditingOrderTabAccess(null)}
         />
       )}
+
+      {editingAccountsTabAccess && (
+        <AccountsTabAccessModal
+          staff={editingAccountsTabAccess}
+          currentAllowedAccountsTabs={editingAccountsTabAccess.allowedAccountsTabs}
+          onSave={(allowedAccountsTabs) => saveAccountsTabAccess(editingAccountsTabAccess.id, allowedAccountsTabs)}
+          onClose={() => setEditingAccountsTabAccess(null)}
+        />
+      )}
+
+      {editingOverviewTabAccess && (
+        <OverviewTabAccessModal
+          staff={editingOverviewTabAccess}
+          currentAllowedOverviewTabs={editingOverviewTabAccess.allowedOverviewTabs}
+          onSave={(allowedOverviewTabs) => saveOverviewTabAccess(editingOverviewTabAccess.id, allowedOverviewTabs)}
+          onClose={() => setEditingOverviewTabAccess(null)}
+        />
+      )}
+
+      {editingPrintLabelTabAccess && (
+        <PrintLabelTabAccessModal
+          staff={editingPrintLabelTabAccess}
+          currentAllowedPrintLabelTabs={editingPrintLabelTabAccess.allowedPrintLabelTabs}
+          onSave={(allowedPrintLabelTabs) => savePrintLabelTabAccess(editingPrintLabelTabAccess.id, allowedPrintLabelTabs)}
+          onClose={() => setEditingPrintLabelTabAccess(null)}
+        />
+      )}
     </div>
   );
 }
