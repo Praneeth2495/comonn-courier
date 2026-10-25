@@ -9,20 +9,12 @@ const TEMPLATE_IDS = {
   order_confirmed: '66ba59dd-9108-4923-96ba-5733be5af2ac',
   order_picked_up: 'efad0fb4-d569-4577-be01-95a1efb7e749',
   order_out_for_delivery: '5217a858-1e44-4035-886b-6ddf9c2f91d9',
-  // Awaiting Gupshup template approval — submit these in the Gupshup
-  // console (apps.gupshup.io > WhatsApp > COMONN app > Templates), then
-  // paste the real template id in here once approved. Until then, sends
-  // using these keys fail gracefully (logged to WhatsappMessage as
-  // "failed", never throws past the fire-and-forget callers) — see
-  // adminOrderAlert.js / dailyOrderSummary.js.
-  //
-  // Suggested template text:
-  //   admin_new_order: "New order {{1}} placed — ₹{{2}}, {{3}} to {{4}}."
-  //     params: [orderNumber, grandTotal, originCity, destinationCity]
-  //   daily_order_summary: "Daily summary for {{1}}:\nTotal orders: {{2}}\nCollected today: {{3}}\nOverdue: {{4}}"
-  //     params: [dateLabel, totalToday, collectedToday, overdueToday]
-  admin_new_order: '',
-  daily_order_summary: '',
+  // Submitted via Gupshup's template API 2026-10-25, status PENDING at
+  // submission time — if either send starts failing with a template-not-
+  // approved error, check apps.gupshup.io > WhatsApp > COMONN app >
+  // Templates for the current approval state.
+  admin_order_alert: 'ec82e6c0-3c0f-472d-af02-4fdff67be196',
+  admin_daily_summary: '49032cef-7087-44dc-a220-64ac5959811a',
 };
 
 // params must already be in the template's flat left-to-right order — body
