@@ -4,8 +4,8 @@ const { nextYearlySequence } = require('./sequenceCounter');
  * Generates IN<seq> e.g. IN1, IN2, IN3... The sequence only resets when the
  * calendar year changes — unlike order numbers, it does not reset monthly.
  */
-async function generateInvoiceNumber() {
-  const seq = await nextYearlySequence('invoice', new Date().getFullYear());
+async function generateInvoiceNumber(client) {
+  const seq = await nextYearlySequence('invoice', new Date().getFullYear(), client);
   return `IN${seq}`;
 }
 
