@@ -1999,6 +1999,34 @@ function UsersPanel() {
                     <span style={{ color: 'var(--slate-light)' }}>—</span>
                   )}
                 </td>
+                <td>
+                  {u.role === 'STAFF' || u.role === 'ACCOUNTS' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(u.allowedAccountsTabs || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>All tabs</span>
+                      ) : (
+                        (u.allowedAccountsTabs || []).map((key) => <span key={key} className="pill pill-cobalt" style={{ fontSize: 11 }}>{ACCOUNTS_TAB_PERM_LABELS[key] || key}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingAccountsTabAccess({ id: u.id, fullName: u.fullName, allowedAccountsTabs: u.allowedAccountsTabs || [] })}>Edit</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
+                <td>
+                  {u.role === 'STAFF' || u.role === 'ACCOUNTS' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(u.allowedPrintLabelTabs || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>All tabs</span>
+                      ) : (
+                        (u.allowedPrintLabelTabs || []).map((key) => <span key={key} className="pill pill-cobalt" style={{ fontSize: 11 }}>{PRINTLABEL_TAB_PERM_LABELS[key] || key}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingPrintLabelTabAccess({ id: u.id, fullName: u.fullName, allowedPrintLabelTabs: u.allowedPrintLabelTabs || [] })}>Edit</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {internalUsers.length === 0 && (
