@@ -82,6 +82,8 @@ async function main() {
         currency: rc.currency,
         transitDaysMin: rc.transitDaysMin,
         transitDaysMax: rc.transitDaysMax,
+        effectiveFrom: rc.effectiveFrom,
+        effectiveTo: rc.effectiveTo,
       },
     });
     rcCount += 1;
