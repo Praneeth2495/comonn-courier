@@ -54,7 +54,10 @@ function buildParams(templateName, { contactName, trackingNumber }) {
 // Every attempt (success or failure) is logged to WhatsappMessage so staff
 // can see it on the order detail modal — the webhook (whatsapp.controller.js)
 // later updates `status` on the success rows as delivered/read/failed come in.
-async function notifyRecipient(orderId, templateName, contactName, phone, trackingNumber) {
+// `customParams`, when given, is sent as-is instead of going through
+// buildParams — for templates (like the admin alert) whose params don't
+// fit the {contactName, trackingNumber} shape every customer template uses.
+async function notifyRecipient(orderId, templateName, contactName, phone, trackingNumber, customParams) {
   if (!phone) return;
   const to = phone.replace(/\D/g, '');
   if (!to) return;
@@ -62,7 +65,7 @@ async function notifyRecipient(orderId, templateName, contactName, phone, tracki
     const result = await sendTemplateMessage({
       to,
       templateName,
-      params: buildParams(templateName, { contactName, trackingNumber }),
+      params: customParams || buildParams(templateName, { contactName, trackingNumber }),
     });
     await prisma.whatsappMessage.create({
       data: {
