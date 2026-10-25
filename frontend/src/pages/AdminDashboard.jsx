@@ -1346,9 +1346,9 @@ function AccountsPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Accounts</h1>
 
       <div className="dash-tabs" style={{ marginBottom: 16 }}>
-        <button className={`dash-tab ${subTab === 'bookings' ? 'active' : ''}`} onClick={() => setSubTab('bookings')}>Bookings</button>
-        <button className={`dash-tab ${subTab === 'receivable' ? 'active' : ''}`} onClick={() => setSubTab('receivable')}>Receivable</button>
-        <button className={`dash-tab ${subTab === 'payable' ? 'active' : ''}`} onClick={() => setSubTab('payable')}>Payable</button>
+        {canSeeAccountsTab('bookings') && <button className={`dash-tab ${subTab === 'bookings' ? 'active' : ''}`} onClick={() => setSubTab('bookings')}>Bookings</button>}
+        {canSeeAccountsTab('receivable') && <button className={`dash-tab ${subTab === 'receivable' ? 'active' : ''}`} onClick={() => setSubTab('receivable')}>Receivable</button>}
+        {canSeeAccountsTab('payable') && <button className={`dash-tab ${subTab === 'payable' ? 'active' : ''}`} onClick={() => setSubTab('payable')}>Payable</button>}
         {hasAssetsAccess && (
           <button className={`dash-tab ${subTab === 'assets' ? 'active' : ''}`} onClick={() => setSubTab('assets')}>Assets</button>
         )}
