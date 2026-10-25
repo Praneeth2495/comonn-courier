@@ -27,6 +27,10 @@ const SUGGESTION_LABEL_HIDES_STATE = ['SE', 'NL', 'IE'];
 // suburb="Dubai"), which would otherwise display as "Dubai, Dubai". Skip
 // the suburb segment whenever it's identical to the postcode.
 export function formatPostcodeSuggestion(postcode, suburb, state, countryCode) {
+  if (SUGGESTION_LABEL_HIDES_SUBURB.includes(countryCode)) {
+    const regionName = normalizeRegionValue(countryCode, state);
+    return regionName ? `${postcode}, ${regionName}` : postcode;
+  }
   const suffix = SUGGESTION_LABEL_HIDES_STATE.includes(countryCode) ? '' : suburbStateSuffix(suburb, state);
   if (suburb === postcode) return `${postcode}${suffix}`;
   return `${postcode}, ${suburb}${suffix}`;
