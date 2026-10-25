@@ -17,19 +17,23 @@ const BarcodeCameraScanner = lazy(() => import('./BarcodeCameraScanner'));
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export default function PrintLabelPanel() {
-  const [subTab, setSubTab] = useState('scan');
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+  const allowedPrintLabelTabs = user?.allowedPrintLabelTabs || [];
+  const canSeeTab = (key) => isAdmin || allowedPrintLabelTabs.length === 0 || allowedPrintLabelTabs.includes(key);
+  const [subTab, setSubTab] = useState(() => (canSeeTab('scan') ? 'scan' : PRINTLABEL_TAB_KEYS.find(canSeeTab) || 'scan'));
 
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Print Label</h1>
 
       <div className="dash-tabs" style={{ marginBottom: 16 }}>
-        <button className={`dash-tab ${subTab === 'scan' ? 'active' : ''}`} onClick={() => setSubTab('scan')}>Scan &amp; Print</button>
-        <button className={`dash-tab ${subTab === 'manual' ? 'active' : ''}`} onClick={() => setSubTab('manual')}>Manual Label</button>
+        {canSeeTab('scan') && <button className={`dash-tab ${subTab === 'scan' ? 'active' : ''}`} onClick={() => setSubTab('scan')}>Scan &amp; Print</button>}
+        {canSeeTab('manual') && <button className={`dash-tab ${subTab === 'manual' ? 'active' : ''}`} onClick={() => setSubTab('manual')}>Manual Label</button>}
       </div>
 
-      {subTab === 'scan' && <ScanAndPrintTab />}
-      {subTab === 'manual' && <ManualLabelTab />}
+      {subTab === 'scan' && canSeeTab('scan') && <ScanAndPrintTab />}
+      {subTab === 'manual' && canSeeTab('manual') && <ManualLabelTab />}
     </div>
   );
 }
