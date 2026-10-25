@@ -68,8 +68,12 @@ app.post('/api/whatsapp/webhook', express.raw({ type: 'application/json' }), han
 
 app.use(express.json({ limit: '2mb' }));
 
-// Basic rate limiting on the public quote endpoint to prevent scraping/abuse
-const quoteLimiter = rateLimit({ windowMs: 60 * 1000, max: 60 });
+// Basic rate limiting on the public quote endpoint to prevent scraping/abuse.
+// Max is env-overridable (defaults to 60, unchanged from before) so a
+// load-testing environment can raise it to observe the backend/DB's real
+// capacity instead of this intentional per-IP guard rail — never meant to
+// be raised in production.
+const quoteLimiter = rateLimit({ windowMs: 60 * 1000, max: Number(process.env.QUOTE_RATE_LIMIT_MAX) || 60 });
 app.use('/api/quote', quoteLimiter);
 
 app.get('/health', (req, res) => res.json({ ok: true, service: 'comonn-backend', commit: process.env.RAILWAY_GIT_COMMIT_SHA || null }));
