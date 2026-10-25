@@ -17,7 +17,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get(`${BASE_URL}/api/quote/countries`);
+  const res = http.get(`${BASE_URL}/api/quote/countries`, { timeout: '10s' });
   check(res, {
     'status is 200': (r) => r.status === 200,
     'has countries': (r) => {
