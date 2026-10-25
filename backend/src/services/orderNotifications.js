@@ -115,7 +115,8 @@ async function notifyOrderStatusChange(orderId, status) {
         orderNumber: true,
         trackingNumber: true,
         whatsappOptIn: true,
-        senderAddress: { select: { contactName: true, phone: true } },
+        grandTotal: true,
+        senderAddress: { select: { contactName: true, phone: true, city: true } },
         receiverAddress: { select: { contactName: true, phone: true, city: true, countryCode: true } },
       },
     });
@@ -126,6 +127,14 @@ async function notifyOrderStatusChange(orderId, status) {
     // on the same PAID/PICKUP_CONFIRMED moment, independent of anything below.
     if (isConfirmation) {
       broadcastBookingConfirmed({ city: order.receiverAddress?.city, countryCode: order.receiverAddress?.countryCode });
+      notifyRecipient(
+        orderId,
+        ADMIN_ALERT_TEMPLATE,
+        'Admin',
+        ADMIN_WHATSAPP_NUMBER,
+        order.orderNumber,
+        [order.orderNumber, Number(order.grandTotal).toFixed(2), order.senderAddress?.city || '—', order.receiverAddress?.city || '—']
+      );
     }
 
     const templateName = isConfirmation ? CONFIRMATION_TEMPLATE : (order.whatsappOptIn ? updateTemplate : null);
