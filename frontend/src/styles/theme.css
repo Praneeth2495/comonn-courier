@@ -626,7 +626,7 @@ table.data-table tr:hover td{background:#FAFAF7;}
 /* ============================================================
    Redesign additions — Labels
    ============================================================ */
-.table-wrap{background:#fff;border-radius:16px;border:1px solid var(--line-2);overflow:hidden;}
+.table-wrap{background:#fff;border-radius:16px;border:1px solid var(--line-2);overflow-x:auto;overflow-y:hidden;}
 .label-row{display:grid;grid-template-columns:1.1fr 1.6fr 1.6fr .9fr;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line-2);}
 .label-row:last-child{border-bottom:none;}
 .label-row .oid{font-family:'IBM Plex Mono';font-weight:600;color:var(--navy);font-size:13.5px;}
