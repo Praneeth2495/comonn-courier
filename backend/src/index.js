@@ -121,6 +121,7 @@ startAccountSetupFollowupJob();
 startMerchantInvoiceGenerationJob();
 startPartyInvoiceRecurrenceJob();
 startBoxBookingExpiryJob();
+startDailyOrderSummaryJob();
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
