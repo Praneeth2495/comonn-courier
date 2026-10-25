@@ -25,11 +25,16 @@ function getIstDateParts(date) {
 /**
  * Atomically advances the named monthly counter and returns the new value.
  * Uses upsert+increment (not count()-then-+1) so concurrent requests never
- * read the same value and collide on the unique constraint.
+ * read the same value and collide on the unique constraint. Accepts an
+ * optional transaction client (`tx` from prisma.$transaction) so a caller
+ * can make the increment atomic with other writes — e.g. order creation,
+ * where a number must never be consumed for an order that fails to save.
+ * Defaults to the plain shared client for every existing non-transactional
+ * caller, unchanged.
  */
-async function nextMonthlySequence(kind, year, month) {
+async function nextMonthlySequence(kind, year, month, client = prisma) {
   const key = `${kind}-${year}-${pad2(month)}`;
-  const counter = await prisma.sequenceCounter.upsert({
+  const counter = await client.sequenceCounter.upsert({
     where: { key },
     update: { value: { increment: 1 } },
     create: { key, value: 1 },
@@ -41,9 +46,9 @@ async function nextMonthlySequence(kind, year, month) {
  * Same idea as nextMonthlySequence but scoped to the whole year — the
  * counter only resets on 1 January, not at the start of every month.
  */
-async function nextYearlySequence(kind, year) {
+async function nextYearlySequence(kind, year, client = prisma) {
   const key = `${kind}-${year}`;
-  const counter = await prisma.sequenceCounter.upsert({
+  const counter = await client.sequenceCounter.upsert({
     where: { key },
     update: { value: { increment: 1 } },
     create: { key, value: 1 },
