@@ -508,7 +508,7 @@ async function accountsOverview(req, res, next) {
     // never count as revenue, regardless of how far along the shipment is.
     const revenueWhere = { status: { notIn: UNPAID_STATUSES } };
 
-    const [orders, prevOrders, costAgg, prevCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
+    const [orders, prevOrders, costRows, prevCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: window },
         select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true },
@@ -517,7 +517,10 @@ async function accountsOverview(req, res, next) {
         where: { ...revenueWhere, createdAt: prevWindow },
         select: { grandTotal: true, discountTotal: true, taxTotal: true },
       }),
-      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: window }, _sum: { totalAmount: true } }),
+      // Fetched as rows (not an aggregate) so the same createdAt can be
+      // bucketed into the trend chart alongside revenue — see the
+      // cost-by-bucket merge below.
+      prisma.partyInvoice.findMany({ where: { direction: 'PAYABLE', createdAt: window }, select: { createdAt: true, totalAmount: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'RECEIVABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.count({ where: { direction: 'RECEIVABLE', status: 'UNPAID', dueDate: { lt: new Date() } } }),
@@ -527,6 +530,11 @@ async function accountsOverview(req, res, next) {
     ]);
 
     const buckets = new Map();
+    const getBucket = (key, label) => {
+      if (!buckets.has(key)) buckets.set(key, { key, label, gross: 0, discount: 0, net: 0, cost: 0 });
+      return buckets.get(key);
+    };
+
     const totals = { gross: 0, discount: 0, net: 0, retailGross: 0, merchantGross: 0 };
     for (const o of orders) {
       const { gross, net, discount } = splitOrderRevenue(o);
@@ -536,13 +544,21 @@ async function accountsOverview(req, res, next) {
       if (o.merchantId) totals.merchantGross += gross; else totals.retailGross += gross;
 
       const { key, label } = accountsBucketFor(o.createdAt, cfg.granularity);
-      if (!buckets.has(key)) buckets.set(key, { key, label, gross: 0, discount: 0, net: 0 });
-      const b = buckets.get(key);
+      const b = getBucket(key, label);
       b.gross += gross; b.discount += discount; b.net += net;
     }
+
+    let costTotal = 0;
+    for (const row of costRows) {
+      const amount = Number(row.totalAmount);
+      costTotal += amount;
+      const { key, label } = accountsBucketFor(row.createdAt, cfg.granularity);
+      getBucket(key, label).cost += amount;
+    }
+
     const series = [...buckets.values()]
       .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
-      .map((b) => ({ label: b.label, gross: round2(b.gross), discount: round2(b.discount), net: round2(b.net) }));
+      .map((b) => ({ label: b.label, gross: round2(b.gross), discount: round2(b.discount), net: round2(b.net), cost: round2(b.cost), profit: round2(b.net - b.cost) }));
 
     const prevTotals = prevOrders.reduce((acc, o) => {
       const { gross, net } = splitOrderRevenue(o);
@@ -550,7 +566,6 @@ async function accountsOverview(req, res, next) {
       return acc;
     }, { gross: 0, net: 0 });
 
-    const costTotal = Number(costAgg._sum.totalAmount || 0);
     const prevCostTotal = Number(prevCostAgg._sum.totalAmount || 0);
     const profit = totals.net - costTotal;
     const prevProfit = prevTotals.net - prevCostTotal;
