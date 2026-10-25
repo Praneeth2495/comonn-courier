@@ -23,7 +23,7 @@ const ORDER_NUMBERS = [
 
 export default function () {
   const orderNumber = ORDER_NUMBERS[Math.floor(Math.random() * ORDER_NUMBERS.length)];
-  const res = http.get(`${BASE_URL}/api/track/${orderNumber}`);
+  const res = http.get(`${BASE_URL}/api/track/${orderNumber}`, { timeout: '10s' });
   check(res, {
     'status is 200': (r) => r.status === 200,
     'has orderNumber': (r) => {
