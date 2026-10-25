@@ -161,9 +161,26 @@ async function createOrder(req, res, next) {
       };
     }
 
-    const order = await prisma.order.create({
-      data: orderData,
-      include: { service: true, senderAddress: true, receiverAddress: true, items: true },
+    // Everything that writes is atomic: sequence numbers, both addresses,
+    // and the order itself either all land together or none do. A failure
+    // anywhere in here — including a mid-transaction crash — rolls back the
+    // sequence increments too, so a failed order never burns an order/
+    // invoice number it didn't end up using.
+    const order = await prisma.$transaction(async (tx) => {
+      const orderNumber = await generateOrderNumber(tx);
+      const invoiceNumber = await generateInvoiceNumber(tx);
+      const senderAddress = await tx.address.create({ data: { userId: ownerUserId, ...sender } });
+      const receiverAddress = await tx.address.create({ data: { userId: ownerUserId, ...receiver } });
+      return tx.order.create({
+        data: {
+          ...orderDataWithoutNumbers,
+          orderNumber,
+          invoiceNumber,
+          senderAddressId: senderAddress.id,
+          receiverAddressId: receiverAddress.id,
+        },
+        include: { service: true, senderAddress: true, receiverAddress: true, items: true },
+      });
     });
 
     res.status(201).json({ order });
