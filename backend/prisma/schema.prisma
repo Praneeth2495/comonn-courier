@@ -6,8 +6,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Used by `prisma migrate`/`db push` only — schema changes must go
+  // straight to Postgres, never through PgBouncer's transaction-mode
+  // pooling (which doesn't support the session-level features migrations
+  // need). DATABASE_URL (the app's own runtime connection) can point at
+  // PgBouncer; DIRECT_URL always points at the real Postgres instance.
+  // Falls back to DATABASE_URL itself when unset, so this is a no-op
+  // wherever DIRECT_URL was never configured (e.g. production, today).
+  directUrl = env("DIRECT_URL")
 }
 
 // Atomic per-month sequence counters for human-friendly order/tracking
