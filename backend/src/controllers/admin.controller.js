@@ -121,7 +121,7 @@ async function hasOverviewTabAccess(req, tabKey) {
  */
 async function staffOverview(req, res, next) {
   try {
-    if (!(await requireOverviewBreakdownAccess(req, res))) return;
+    if (!(await requireOverviewTabAccess(req, res, 'staff'))) return;
     const { from, to } = req.query;
 
     const staff = await prisma.user.findMany({
