@@ -1,8 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import client from '../api/client';
+import { useAuth } from '../api/AuthContext';
 import { COUNTRY_NAMES } from '../utils/countryNames';
 import LoadingLogo from './LoadingLogo';
 import { formatDateTime as fmtDate } from '../utils/dateFormat';
+
+// Mirrors backend/src/constants/pages.js's PRINTLABEL_TAB_KEYS. Empty
+// allowedPrintLabelTabs = no restriction (every tab visible), same "open
+// by default" convention as allowedOrderTabs/allowedAccountsTabs.
+const PRINTLABEL_TAB_KEYS = ['scan', 'manual'];
 
 // Lazy-loaded: pulls in @zxing — no reason to ship that to every visitor of
 // the (mostly public) app bundle when only staff/admin ever open it.
