@@ -200,8 +200,8 @@ function Overview() {
         )
       )}
 
-      {subTab === 'staff' && canSeeBreakdown && <StaffOverviewTable fromDate={fromDate} toDate={toDate} />}
-      {subTab === 'region' && canSeeBreakdown && <RegionOverviewTable fromDate={fromDate} toDate={toDate} />}
+      {subTab === 'staff' && canSeeStaffTab && <StaffOverviewTable fromDate={fromDate} toDate={toDate} />}
+      {subTab === 'region' && canSeeRegionTab && <RegionOverviewTable fromDate={fromDate} toDate={toDate} />}
     </div>
   );
 }
