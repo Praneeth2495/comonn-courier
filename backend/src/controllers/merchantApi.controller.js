@@ -84,12 +84,9 @@ async function createShipment(req, res, next) {
       });
     }
 
-    const senderAddress = await prisma.address.create({ data: { ...sender } });
-    const receiverAddress = await prisma.address.create({ data: { ...receiver } });
-
-    const orderNumber = await generateOrderNumber();
-    const invoiceNumber = await generateInvoiceNumber();
-
+    // Pricing runs BEFORE any write — a quote failure (bad rate card, zone
+    // not found) never touches the database, not even to consume a
+    // sequence number.
     const quote = await generateQuote({
       serviceCode,
       destinationCountryCode: receiver.countryCode,
@@ -102,7 +99,16 @@ async function createShipment(req, res, next) {
     });
     // generateQuote already looked this service up internally (and
     // returns its id) — no need to query it again here.
-    const order = await prisma.order.create({
+
+    // Sequence numbers, both addresses, and the order are atomic — a
+    // failure anywhere in here rolls back the numbers too, same reasoning
+    // as the consumer booking flow (order.controller.js's createOrder).
+    const order = await prisma.$transaction(async (tx) => {
+      const orderNumber = await generateOrderNumber(tx);
+      const invoiceNumber = await generateInvoiceNumber(tx);
+      const senderAddress = await tx.address.create({ data: { ...sender } });
+      const receiverAddress = await tx.address.create({ data: { ...receiver } });
+      return tx.order.create({
       data: {
         orderNumber,
         invoiceNumber,
