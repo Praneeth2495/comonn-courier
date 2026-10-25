@@ -70,4 +70,4 @@ function startDriverAutoUnassignJob() {
   }, { timezone: 'Asia/Kolkata' });
 }
 
-module.exports = { startDriverAutoUnassignJob, unassignOverdueDriverJobs };
+module.exports = { startDriverAutoUnassignJob, unassignOverdueDriverJobs, parsePickupDate };
