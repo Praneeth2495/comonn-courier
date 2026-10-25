@@ -45,6 +45,7 @@ export default function () {
 
   const res = http.post(`${BASE_URL}/api/orders`, payload, {
     headers: { 'Content-Type': 'application/json' },
+    timeout: '10s',
   });
   check(res, {
     'status is 201 or 200': (r) => r.status === 200 || r.status === 201,
