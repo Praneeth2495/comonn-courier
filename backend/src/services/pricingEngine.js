@@ -377,6 +377,7 @@ async function generateQuote(input) {
 
   return {
     service: {
+      id: service.id,
       code: service.code,
       name: service.name,
       transitDays: `${transitDaysMin}-${transitDaysMax}`,
