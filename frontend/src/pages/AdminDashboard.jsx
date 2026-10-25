@@ -2071,46 +2071,66 @@ function UsersPanel() {
       )}
 
       {editingPageAccess && (
-        <PageAccessModal
-          staff={editingPageAccess}
-          currentAllowedPages={editingPageAccess.allowedPages}
-          onSave={(allowedPages) => savePageAccess(editingPageAccess.id, allowedPages)}
+        <AccessEditorModal
+          title={`Page access for ${editingPageAccess.fullName}`}
+          description="Overview, Orders (view), Inventory and Profile are always visible. Check any extra pages this account should also see and use."
+          optionKeys={PAGE_KEYS}
+          optionLabels={PAGE_LABELS}
+          currentSelected={editingPageAccess.allowedPages}
+          saveLabel="Save page access"
+          onSave={(allowedPages) => savePermission(editingPageAccess.id, { allowedPages }, () => setEditingPageAccess(null))}
           onClose={() => setEditingPageAccess(null)}
         />
       )}
 
       {editingOrderTabAccess && (
-        <OrderTabAccessModal
-          staff={editingOrderTabAccess}
-          currentAllowedOrderTabs={editingOrderTabAccess.allowedOrderTabs}
-          onSave={(allowedOrderTabs) => saveOrderTabAccess(editingOrderTabAccess.id, allowedOrderTabs)}
+        <AccessEditorModal
+          title={`Order tabs for ${editingOrderTabAccess.fullName}`}
+          description="Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Orders page."
+          optionKeys={ORDER_TAB_PERM_KEYS}
+          optionLabels={ORDER_TAB_PERM_LABELS}
+          currentSelected={editingOrderTabAccess.allowedOrderTabs}
+          saveLabel="Save order tab access"
+          onSave={(allowedOrderTabs) => savePermission(editingOrderTabAccess.id, { allowedOrderTabs }, () => setEditingOrderTabAccess(null))}
           onClose={() => setEditingOrderTabAccess(null)}
         />
       )}
 
       {editingAccountsTabAccess && (
-        <AccountsTabAccessModal
-          staff={editingAccountsTabAccess}
-          currentAllowedAccountsTabs={editingAccountsTabAccess.allowedAccountsTabs}
-          onSave={(allowedAccountsTabs) => saveAccountsTabAccess(editingAccountsTabAccess.id, allowedAccountsTabs)}
+        <AccessEditorModal
+          title={`Accounts tabs for ${editingAccountsTabAccess.fullName}`}
+          description="Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Accounts page. The Assets tab is controlled separately, under Page access."
+          optionKeys={ACCOUNTS_TAB_PERM_KEYS}
+          optionLabels={ACCOUNTS_TAB_PERM_LABELS}
+          currentSelected={editingAccountsTabAccess.allowedAccountsTabs}
+          saveLabel="Save accounts tab access"
+          onSave={(allowedAccountsTabs) => savePermission(editingAccountsTabAccess.id, { allowedAccountsTabs }, () => setEditingAccountsTabAccess(null))}
           onClose={() => setEditingAccountsTabAccess(null)}
         />
       )}
 
       {editingOverviewTabAccess && (
-        <OverviewTabAccessModal
-          staff={editingOverviewTabAccess}
-          currentAllowedOverviewTabs={editingOverviewTabAccess.allowedOverviewTabs}
-          onSave={(allowedOverviewTabs) => saveOverviewTabAccess(editingOverviewTabAccess.id, allowedOverviewTabs)}
+        <AccessEditorModal
+          title={`Overview tabs for ${editingOverviewTabAccess.fullName}`}
+          description="Summary is always visible. Leave nothing checked to keep this account to Summary only — check specific tabs to additionally grant Staff overview and/or Region overview, which show every region/staff member, not just the ones this account is assigned."
+          optionKeys={OVERVIEW_TAB_PERM_KEYS}
+          optionLabels={OVERVIEW_TAB_PERM_LABELS}
+          currentSelected={editingOverviewTabAccess.allowedOverviewTabs}
+          saveLabel="Save overview tab access"
+          onSave={(allowedOverviewTabs) => savePermission(editingOverviewTabAccess.id, { allowedOverviewTabs }, () => setEditingOverviewTabAccess(null))}
           onClose={() => setEditingOverviewTabAccess(null)}
         />
       )}
 
       {editingPrintLabelTabAccess && (
-        <PrintLabelTabAccessModal
-          staff={editingPrintLabelTabAccess}
-          currentAllowedPrintLabelTabs={editingPrintLabelTabAccess.allowedPrintLabelTabs}
-          onSave={(allowedPrintLabelTabs) => savePrintLabelTabAccess(editingPrintLabelTabAccess.id, allowedPrintLabelTabs)}
+        <AccessEditorModal
+          title={`Print Label tabs for ${editingPrintLabelTabAccess.fullName}`}
+          description="Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Print Label page."
+          optionKeys={PRINTLABEL_TAB_PERM_KEYS}
+          optionLabels={PRINTLABEL_TAB_PERM_LABELS}
+          currentSelected={editingPrintLabelTabAccess.allowedPrintLabelTabs}
+          saveLabel="Save print label tab access"
+          onSave={(allowedPrintLabelTabs) => savePermission(editingPrintLabelTabAccess.id, { allowedPrintLabelTabs }, () => setEditingPrintLabelTabAccess(null))}
           onClose={() => setEditingPrintLabelTabAccess(null)}
         />
       )}
