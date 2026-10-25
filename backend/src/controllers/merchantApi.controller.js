@@ -177,4 +177,37 @@ async function createShipment(req, res, next) {
   }
 }
 
-module.exports = { createQuote, createShipment };
+/** GET /api/v1/shipments/:trackingNumber — scoped to the calling merchant. */
+async function getShipment(req, res, next) {
+  try {
+    const order = await prisma.order.findFirst({
+      where: {
+        merchantId: req.merchant.id,
+        OR: [{ trackingNumber: req.params.trackingNumber }, { orderNumber: req.params.trackingNumber }],
+      },
+      include: {
+        service: true,
+        receiverAddress: { select: { city: true, state: true, countryCode: true } },
+        trackingEvents: { orderBy: { occurredAt: 'asc' } },
+        labels: true,
+        invoice: true,
+      },
+    });
+    if (!order) return res.status(404).json({ error: 'No shipment found for that tracking/order number' });
+
+    res.json({
+      orderNumber: order.orderNumber,
+      trackingNumber: order.trackingNumber,
+      status: order.status,
+      service: order.service.name,
+      destination: order.receiverAddress,
+      events: order.trackingEvents,
+      labels: order.labels.map((l) => ({ id: l.id, packageIndex: l.packageIndex, downloadUrl: `/labels/download/${l.id}` })),
+      invoice: order.invoice ? { downloadUrl: `/labels/invoice/download/${order.id}` } : null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createQuote, createShipment, getShipment };
