@@ -183,7 +183,7 @@ model WalletTransaction {
 // "Onboarding" tab (which creates the User account itself in the same
 // step — see employee.controller.js). Captures the joining/personal
 // details a plain User row doesn't have. ADMIN-only throughout: never
-// exposed to STAFF, even ones with canViewOverviewBreakdown.
+// exposed to STAFF, even ones with allowedOverviewTabs set.
 model EmployeeProfile {
   id     String @id @default(uuid())
   userId String @unique
