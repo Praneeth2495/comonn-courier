@@ -144,10 +144,15 @@ function Overview() {
   const [kpis, setKpis] = useState(null);
   const [dayWiseRange, setDayWiseRange] = useState('4weeks');
   const [expandedKpi, setExpandedKpi] = useState(null);
-  // ADMIN always sees the breakdown tabs; a STAFF viewer only does if
-  // individually granted access (Users panel) — see requireOverviewBreakdownAccess
-  // in admin.controller.js, which enforces the same rule server-side.
-  const canSeeBreakdown = user?.role === 'ADMIN' || user?.canViewOverviewBreakdown;
+  // ADMIN always sees both breakdown tabs; a STAFF/ACCOUNTS viewer only
+  // sees whichever of 'staff'/'region' they're individually granted via
+  // allowedOverviewTabs (Users panel) — see requireOverviewTabAccess in
+  // admin.controller.js, which enforces the same per-tab rule server-side.
+  const isAdminViewer = user?.role === 'ADMIN';
+  const allowedOverviewTabs = user?.allowedOverviewTabs || [];
+  const canSeeStaffTab = isAdminViewer || allowedOverviewTabs.includes('staff');
+  const canSeeRegionTab = isAdminViewer || allowedOverviewTabs.includes('region');
+  const canSeeBreakdown = canSeeStaffTab || canSeeRegionTab;
 
   useEffect(() => {
     function load(silent) {
