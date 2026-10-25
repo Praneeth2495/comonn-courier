@@ -872,12 +872,21 @@ async function getDriverDashboard(req, res, next) {
 
 async function setUserRole(req, res, next) {
   try {
-    const { role, isActive, driverRegion, canViewOverviewBreakdown, allowedPages, allowedOrderTabs } = req.body;
+    const { role, isActive, driverRegion, allowedPages, allowedOrderTabs, allowedAccountsTabs, allowedOverviewTabs, allowedPrintLabelTabs } = req.body;
     if (allowedPages !== undefined && (!Array.isArray(allowedPages) || allowedPages.some((p) => !PAGE_KEYS.includes(p)))) {
       return res.status(400).json({ error: 'allowedPages must be an array of valid page keys' });
     }
     if (allowedOrderTabs !== undefined && (!Array.isArray(allowedOrderTabs) || allowedOrderTabs.some((t) => !ORDER_TAB_KEYS.includes(t)))) {
       return res.status(400).json({ error: 'allowedOrderTabs must be an array of valid order tab keys' });
+    }
+    if (allowedAccountsTabs !== undefined && (!Array.isArray(allowedAccountsTabs) || allowedAccountsTabs.some((t) => !ACCOUNTS_TAB_KEYS.includes(t)))) {
+      return res.status(400).json({ error: 'allowedAccountsTabs must be an array of valid accounts tab keys' });
+    }
+    if (allowedOverviewTabs !== undefined && (!Array.isArray(allowedOverviewTabs) || allowedOverviewTabs.some((t) => !OVERVIEW_TAB_KEYS.includes(t)))) {
+      return res.status(400).json({ error: 'allowedOverviewTabs must be an array of valid overview tab keys' });
+    }
+    if (allowedPrintLabelTabs !== undefined && (!Array.isArray(allowedPrintLabelTabs) || allowedPrintLabelTabs.some((t) => !PRINTLABEL_TAB_KEYS.includes(t)))) {
+      return res.status(400).json({ error: 'allowedPrintLabelTabs must be an array of valid print label tab keys' });
     }
 
     let seededAllowedPages;
