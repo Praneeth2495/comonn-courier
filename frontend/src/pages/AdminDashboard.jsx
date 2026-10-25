@@ -1347,6 +1347,7 @@ function AccountsPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Accounts</h1>
 
       <div className="dash-tabs" style={{ marginBottom: 16 }}>
+        {canSeeAccountsTab('overview') && <button className={`dash-tab ${subTab === 'overview' ? 'active' : ''}`} onClick={() => setSubTab('overview')}>Overview</button>}
         {canSeeAccountsTab('bookings') && <button className={`dash-tab ${subTab === 'bookings' ? 'active' : ''}`} onClick={() => setSubTab('bookings')}>Bookings</button>}
         {canSeeAccountsTab('receivable') && <button className={`dash-tab ${subTab === 'receivable' ? 'active' : ''}`} onClick={() => setSubTab('receivable')}>Receivable</button>}
         {canSeeAccountsTab('payable') && <button className={`dash-tab ${subTab === 'payable' ? 'active' : ''}`} onClick={() => setSubTab('payable')}>Payable</button>}
@@ -1354,6 +1355,8 @@ function AccountsPanel() {
           <button className={`dash-tab ${subTab === 'assets' ? 'active' : ''}`} onClick={() => setSubTab('assets')}>Assets</button>
         )}
       </div>
+
+      {subTab === 'overview' && canSeeAccountsTab('overview') && <AccountsOverviewPanel />}
 
       {subTab === 'bookings' && canSeeAccountsTab('bookings') && (
         <>
