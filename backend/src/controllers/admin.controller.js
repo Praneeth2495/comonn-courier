@@ -1151,6 +1151,7 @@ module.exports = {
   staffOverview,
   regionOverview,
   dashboardKpis,
+  accountsOverview,
   listPickupOrigins,
   listZones,
   createZone,
