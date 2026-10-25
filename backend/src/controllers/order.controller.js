@@ -126,13 +126,9 @@ async function createOrder(req, res, next) {
       });
       // generateQuote already looked this service up internally (and
       // returns its id) — no need to query it again here.
-      orderData = {
-        orderNumber,
-        invoiceNumber,
+      orderDataWithoutNumbers = {
         userId: ownerUserId,
         serviceId: quote.service.id,
-        senderAddressId: senderAddress.id,
-        receiverAddressId: receiverAddress.id,
         actualWeightKg: quote.weight.actualWeightKg,
         volumetricWeightKg: quote.weight.volumetricWeightKg,
         chargeableWeightKg: quote.weight.chargeableWeightKg,
