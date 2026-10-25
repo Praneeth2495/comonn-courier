@@ -1958,15 +1958,15 @@ function UsersPanel() {
                   )}
                 </td>
                 <td>
-                  {u.role === 'STAFF' ? (
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, cursor: 'pointer' }}>
-                      <input
-                        type="checkbox"
-                        checked={!!u.canViewOverviewBreakdown}
-                        onChange={(e) => setOverviewAccess(u.id, e.target.checked)}
-                      />
-                      Staff &amp; Region tabs
-                    </label>
+                  {u.role === 'STAFF' || u.role === 'ACCOUNTS' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(u.allowedOverviewTabs || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Summary only</span>
+                      ) : (
+                        (u.allowedOverviewTabs || []).map((key) => <span key={key} className="pill pill-cobalt" style={{ fontSize: 11 }}>{OVERVIEW_TAB_PERM_LABELS[key] || key}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingOverviewTabAccess({ id: u.id, fullName: u.fullName, allowedOverviewTabs: u.allowedOverviewTabs || [] })}>Edit</button>
+                    </div>
                   ) : (
                     <span style={{ color: 'var(--slate-light)' }}>—</span>
                   )}
