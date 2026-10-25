@@ -1829,31 +1829,13 @@ function UsersPanel() {
     setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
   }
 
-  async function saveOverviewTabAccess(userId, allowedOverviewTabs) {
-    const { data } = await client.patch(`/admin/users/${userId}`, { allowedOverviewTabs });
+  // Shared by every "page/tab access" editor modal (Page access, Order
+  // tabs, Accounts tabs, Overview tabs, Print Label tabs) — each just
+  // PATCHes its own field and closes its own modal on success.
+  async function savePermission(userId, patch, closeEditor) {
+    const { data } = await client.patch(`/admin/users/${userId}`, patch);
     setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
-  }
-
-  async function saveAccountsTabAccess(userId, allowedAccountsTabs) {
-    const { data } = await client.patch(`/admin/users/${userId}`, { allowedAccountsTabs });
-    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
-  }
-
-  async function savePrintLabelTabAccess(userId, allowedPrintLabelTabs) {
-    const { data } = await client.patch(`/admin/users/${userId}`, { allowedPrintLabelTabs });
-    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
-  }
-
-  async function savePageAccess(userId, allowedPages) {
-    const { data } = await client.patch(`/admin/users/${userId}`, { allowedPages });
-    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
-    setEditingPageAccess(null);
-  }
-
-  async function saveOrderTabAccess(userId, allowedOrderTabs) {
-    const { data } = await client.patch(`/admin/users/${userId}`, { allowedOrderTabs });
-    setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
-    setEditingOrderTabAccess(null);
+    closeEditor();
   }
 
   async function saveZones(userId, zoneIds) {
