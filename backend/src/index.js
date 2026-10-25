@@ -48,6 +48,7 @@ const { startAccountSetupFollowupJob } = require('./services/accountSetupFollowu
 const { startMerchantInvoiceGenerationJob } = require('./services/merchantInvoiceGenerator');
 const { startPartyInvoiceRecurrenceJob } = require('./services/partyInvoiceRecurrence');
 const { startBoxBookingExpiryJob } = require('./services/boxBookingExpiry');
+const { startDailyOrderSummaryJob } = require('./services/dailyOrderSummary');
 
 const app = express();
 
