@@ -747,6 +747,30 @@ const ORDER_TAB_PERM_LABELS = {
 };
 const ORDER_TAB_PERM_KEYS = Object.keys(ORDER_TAB_PERM_LABELS);
 
+// Mirrors backend/src/constants/pages.js's ACCOUNTS_TAB_KEYS/LABELS. Does
+// NOT include the Accounts page's "Assets" tab — that stays gated by the
+// separate `assets` entry in allowedPages (hasAssetsAccess, below).
+const ACCOUNTS_TAB_PERM_LABELS = {
+  bookings: 'Bookings',
+  receivable: 'Receivable',
+  payable: 'Payable',
+};
+const ACCOUNTS_TAB_PERM_KEYS = Object.keys(ACCOUNTS_TAB_PERM_LABELS);
+
+// Mirrors backend/src/constants/pages.js's OVERVIEW_TAB_KEYS/LABELS.
+const OVERVIEW_TAB_PERM_LABELS = {
+  staff: 'Staff overview',
+  region: 'Region overview',
+};
+const OVERVIEW_TAB_PERM_KEYS = Object.keys(OVERVIEW_TAB_PERM_LABELS);
+
+// Mirrors backend/src/constants/pages.js's PRINTLABEL_TAB_KEYS/LABELS.
+const PRINTLABEL_TAB_PERM_LABELS = {
+  scan: 'Scan & Print',
+  manual: 'Manual Label',
+};
+const PRINTLABEL_TAB_PERM_KEYS = Object.keys(PRINTLABEL_TAB_PERM_LABELS);
+
 function OrdersPanel() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
