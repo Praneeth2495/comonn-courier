@@ -414,7 +414,7 @@ async function dashboardKpis(req, res, next) {
       staffActivityBreakdown(),
       riderActivityBreakdown(),
       accountsActivityBreakdown(),
-      hasOverviewBreakdownAccess(req),
+      hasOverviewTabAccess(req, 'region'),
     ]);
     const regions = canSeeRegions ? await computeRegionBreakdown(from, to) : null;
 
