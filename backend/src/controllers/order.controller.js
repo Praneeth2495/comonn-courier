@@ -72,28 +72,17 @@ async function createOrder(req, res, next) {
     // drive guest-account linking below).
     const ownerUserId = req.user?.role === 'CUSTOMER' ? req.user.id : undefined;
 
-    const senderAddress = await prisma.address.create({
-      data: { userId: ownerUserId, ...sender },
-    });
-    const receiverAddress = await prisma.address.create({
-      data: { userId: ownerUserId, ...receiver },
-    });
-
-    const orderNumber = await generateOrderNumber();
-    const invoiceNumber = await generateInvoiceNumber();
-
-    let orderData;
+    // Everything below that can fail (pricing lookups, rate-card
+    // resolution) runs BEFORE any write — so a pricing failure never
+    // touches the database at all, not even to consume a sequence number.
+    let orderDataWithoutNumbers;
     if (pricingPending) {
       const service = await prisma.service.findUnique({ where: { code: 'PICKUP' } });
       const zone = await resolveZoneForCountry(receiver.countryCode);
       const airportCode = await resolveAirportForDestination(receiver.countryCode, receiver.postcode);
-      orderData = {
-        orderNumber,
-        invoiceNumber,
+      orderDataWithoutNumbers = {
         userId: ownerUserId,
         serviceId: service.id,
-        senderAddressId: senderAddress.id,
-        receiverAddressId: receiverAddress.id,
         actualWeightKg: 0,
         volumetricWeightKg: 0,
         chargeableWeightKg: 0,
