@@ -146,6 +146,7 @@ async function createShipment(req, res, next) {
         status: 'PAID',
         trackingNumber: orderNumber,
       },
+      });
     });
 
     await prisma.payment.create({
