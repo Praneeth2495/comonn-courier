@@ -511,7 +511,7 @@ async function accountsOverview(req, res, next) {
     const [orders, prevOrders, costRows, prevCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: window },
-        select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true },
+        select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true, user: { select: { company: true } } },
       }),
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: prevWindow },
