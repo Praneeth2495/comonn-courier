@@ -610,8 +610,9 @@ async function accountsOverview(req, res, next) {
         marginPp: (margin - prevMargin) * 100,
       },
       channel: {
-        retail: round2(totals.retailGross),
-        merchant: round2(totals.merchantGross),
+        b2c: round2(totals.b2cGross),
+        b2b: round2(totals.b2bGross),
+        c2c: round2(totals.c2cGross),
       },
       outstanding: {
         receivable: {
