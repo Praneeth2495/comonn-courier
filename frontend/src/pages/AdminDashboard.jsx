@@ -1346,14 +1346,22 @@ function AccountsOverviewPanel() {
   ];
 
   // ---- chart geometry ----
+  // Range covers bars (net/cost, always >= 0) AND the profit line, which can
+  // go negative when cost outruns revenue for a bucket — without including
+  // it here, a negative profit point maps below the plot box entirely and,
+  // since nothing clips an SVG at its viewBox by default, bleeds straight
+  // into whatever section sits below the chart on the page.
   const W = 880, H = 260, padL = 50, padB = 28, padT = 10, padR = 8;
   const plotW = W - padL - padR, plotH = H - padT - padB;
-  const maxVal = Math.max(1, ...series.map((b) => Math.max(b.net, b.cost))) * 1.12;
+  const maxVal = Math.max(1, ...series.map((b) => Math.max(b.net, b.cost, b.profit))) * 1.12;
+  const minVal = Math.min(0, ...series.map((b) => b.profit)) * 1.12;
+  const valueRange = maxVal - minVal || 1;
   const n = Math.max(series.length, 1);
   const groupW = plotW / n;
   const barW = Math.min(16, groupW * 0.32);
-  const yFor = (v) => padT + plotH - (v / maxVal) * plotH;
-  const gridVals = [0, 0.25, 0.5, 0.75, 1].map((f) => f * maxVal);
+  const yFor = (v) => padT + ((maxVal - v) / valueRange) * plotH;
+  const zeroY = yFor(0);
+  const gridVals = [0, 0.25, 0.5, 0.75, 1].map((f) => minVal + f * valueRange);
   const profitPts = series.map((b, i) => [padL + i * groupW + groupW / 2, yFor(b.profit)]);
   const linePath = profitPts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
 
