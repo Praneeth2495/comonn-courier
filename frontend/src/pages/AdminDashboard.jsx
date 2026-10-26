@@ -1334,7 +1334,7 @@ function AccountsOverviewPanel() {
   }
 
   const { totals, deltas, series, channel, outstanding } = data;
-  const channelTotal = channel.retail + channel.merchant || 1;
+  const channelTotal = channel.b2c + channel.b2b + channel.c2c || 1;
 
   const kpis = [
     { label: 'Gross Revenue', display: fmtShort(totals.gross), delta: deltas.gross, badge: 'live' },
