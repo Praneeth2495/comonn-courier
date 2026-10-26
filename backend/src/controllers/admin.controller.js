@@ -548,13 +548,13 @@ async function accountsOverview(req, res, next) {
       return buckets.get(key);
     };
 
-    const totals = { gross: 0, discount: 0, net: 0, retailGross: 0, merchantGross: 0 };
+    const totals = { gross: 0, discount: 0, net: 0, b2cGross: 0, b2bGross: 0, c2cGross: 0 };
     for (const o of orders) {
       const { gross, net, discount } = splitOrderRevenue(o);
       totals.gross += gross;
       totals.discount += discount;
       totals.net += net;
-      if (o.merchantId) totals.merchantGross += gross; else totals.retailGross += gross;
+      totals[`${classifyChannel(o)}Gross`] += gross;
 
       const { key, label } = accountsBucketFor(o.createdAt, cfg.granularity);
       const b = getBucket(key, label);
