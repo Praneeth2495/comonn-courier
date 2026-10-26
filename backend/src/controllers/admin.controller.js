@@ -485,6 +485,19 @@ function splitOrderRevenue(o) {
   return { gross, net, discount: Number(o.discountTotal) };
 }
 
+// B2B is unambiguous (booked through the merchant API — see merchantId's
+// comment on the Order model). Among the remaining consumer-checkout
+// orders there's no explicit "is this a business" flag, so this uses the
+// best available signal: whether the booking user filled in User.company —
+// a business shipping through the retail flow (no merchant API access
+// yet) counts as B2C, an order with no company on file (or no account at
+// all, e.g. a guest booking) counts as C2C.
+function classifyChannel(o) {
+  if (o.merchantId) return 'b2b';
+  if (o.user?.company?.trim()) return 'b2c';
+  return 'c2c';
+}
+
 /**
  * GET /api/admin/accounts/overview?range=day|week|month|quarter|sixmo|year
  * Powers the Accounts page's Overview tab — gross/net revenue, operating
