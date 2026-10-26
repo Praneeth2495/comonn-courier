@@ -1388,24 +1388,24 @@ function AccountsOverviewPanel() {
         {series.length === 0 ? (
           <p style={{ color: 'var(--slate)', fontSize: 13 }}>No bookings in this window yet.</p>
         ) : (
-          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'hidden' }}>
             {gridVals.map((v, i) => (
               <g key={i}>
                 <line x1={padL} x2={W - padR} y1={yFor(v)} y2={yFor(v)} stroke="var(--line)" strokeWidth={1} />
-                <text x={padL - 8} y={yFor(v) + 3} textAnchor="end" fontSize={10} fill="var(--slate-light)">{v >= 1e5 ? (v / 1e5).toFixed(1) + 'L' : Math.round(v)}</text>
+                <text x={padL - 8} y={yFor(v) + 3} textAnchor="end" fontSize={10} fill="var(--slate-light)">{Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + 'L' : Math.round(v)}</text>
               </g>
             ))}
-            <line x1={padL} x2={W - padR} y1={padT + plotH} y2={padT + plotH} stroke="var(--line-2)" strokeWidth={1.4} />
+            <line x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} stroke="var(--line-2)" strokeWidth={1.4} />
             {series.map((b, i) => {
               const gx = padL + i * groupW + groupW / 2;
-              const netH = (b.net / maxVal) * plotH, costH = (b.cost / maxVal) * plotH;
+              const netY = yFor(b.net), costY = yFor(b.cost);
               return (
                 <g key={i}>
-                  <rect x={gx - barW - 2} y={padT + plotH - netH} width={barW} height={Math.max(netH, 1)} rx={3} fill="var(--cobalt)"
+                  <rect x={gx - barW - 2} y={netY} width={barW} height={Math.max(zeroY - netY, 1)} rx={3} fill="var(--cobalt)"
                     onMouseEnter={(e) => setHover({ x: e.clientX, y: e.clientY, label: b.label, net: b.net, cost: b.cost, profit: b.profit })}
                     onMouseMove={(e) => setHover((h) => h && ({ ...h, x: e.clientX, y: e.clientY }))}
                     onMouseLeave={() => setHover(null)} style={{ cursor: 'pointer' }} />
-                  <rect x={gx + 2} y={padT + plotH - costH} width={barW} height={Math.max(costH, 1)} rx={3} fill="var(--coral)"
+                  <rect x={gx + 2} y={costY} width={barW} height={Math.max(zeroY - costY, 1)} rx={3} fill="var(--coral)"
                     onMouseEnter={(e) => setHover({ x: e.clientX, y: e.clientY, label: b.label, net: b.net, cost: b.cost, profit: b.profit })}
                     onMouseMove={(e) => setHover((h) => h && ({ ...h, x: e.clientX, y: e.clientY }))}
                     onMouseLeave={() => setHover(null)} style={{ cursor: 'pointer' }} />
