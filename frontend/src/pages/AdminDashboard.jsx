@@ -1432,7 +1432,7 @@ function AccountsOverviewPanel() {
             <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Where revenue comes from</h3>
             <span className="badge-chip badge-live">Live</span>
           </div>
-          {[['Retail (D2C checkout)', channel.retail, 'var(--cobalt)'], ['Merchant / B2B API', channel.merchant, 'var(--coral)']].map(([nm, v, c]) => (
+          {[['B2C', channel.b2c, 'var(--cobalt)'], ['B2B', channel.b2b, 'var(--coral)'], ['C2C', channel.c2c, 'var(--navy)']].map(([nm, v, c]) => (
             <div className="chbar-row" key={nm}>
               <div className="chbar-nm">{nm}</div>
               <div className="chbar-track"><div className="chbar-fill" style={{ width: `${(v / channelTotal) * 100}%`, background: c }} /></div>
