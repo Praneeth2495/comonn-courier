@@ -1314,6 +1314,14 @@ function AcctKpiTile({ label, display, delta, deltaIsPoints, badge, info }) {
   );
 }
 
+// Dev-only escape hatch: http://localhost:5183/admin?mockAccounts=1 skips
+// the API call and renders editable sample data from
+// accountsOverviewMockData.js instead — lets changes to this panel be
+// tested/reviewed without needing real orders in any database.
+// import.meta.env.DEV gates this off in every production build regardless
+// of the query string, so it can never activate for a real user.
+const MOCK_ACCOUNTS = import.meta.env.DEV && new URLSearchParams(window.location.search).get('mockAccounts') === '1';
+
 function AccountsOverviewPanel() {
   const [range, setRange] = useState('month');
   const [data, setData] = useState(null);
@@ -1321,6 +1329,13 @@ function AccountsOverviewPanel() {
   const [hover, setHover] = useState(null); // { x, y, label, gross, cost, net, profit }
 
   useEffect(() => {
+    if (MOCK_ACCOUNTS) {
+      import('./accountsOverviewMockData').then(({ buildMockAccountsOverview }) => {
+        setData(buildMockAccountsOverview(range));
+        setLoading(false);
+      });
+      return;
+    }
     setLoading(true);
     let cancelled = false;
     client.get('/admin/accounts/overview', { params: { range } }).then(({ data }) => {
