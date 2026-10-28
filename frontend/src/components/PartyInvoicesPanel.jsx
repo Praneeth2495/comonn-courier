@@ -254,6 +254,21 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
             <label>Due date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
+          {direction === 'PAYABLE' && (
+            <div style={{ display: 'flex', gap: 10 }}>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Category</label>
+                <select className="select" value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <option value="">— None —</option>
+                  {CATEGORY_KEYS.map((k) => <option key={k} value={k}>{CATEGORY_LABELS[k]}</option>)}
+                </select>
+              </div>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Manifest #</label>
+                <ManifestAutosuggest value={manifestId} onChange={setManifestId} />
+              </div>
+            </div>
+          )}
           <div className="field">
             <label>Email</label>
             <input className="input" type="email" placeholder="Optional" value={email} onChange={(e) => setEmail(e.target.value)} />
