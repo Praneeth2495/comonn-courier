@@ -157,7 +157,6 @@ async function createManifest(req, res, next) {
   try {
     const { orderIds, hubId, toAddress, manifestDate, departureDate, fromAirportCode, fromAirportName } = req.body;
     if (!Array.isArray(orderIds) || orderIds.length === 0) return res.status(400).json({ error: 'orderIds is required' });
-    if (!hubId) return res.status(400).json({ error: 'hubId is required' });
     if (!toAddress?.trim()) return res.status(400).json({ error: 'toAddress is required' });
     if (!manifestDate) return res.status(400).json({ error: 'manifestDate is required' });
 
