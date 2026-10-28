@@ -398,27 +398,12 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected{codes.length ? `, routing via ${codes.join(', ')}` : ''}.</p>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>Origin Hub / Warehouse <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-            <select className="select" required value={hubId} onChange={(e) => pickHub(e.target.value)}>
-              <option value="">Choose origin hub…</option>
-              {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
-              <option value={NEW_OPTION}>+ Add new origin hub…</option>
-            </select>
-          </div>
-          <div className="field">
             <label>From Airport</label>
             <select className="select" value={fromAirportCode} onChange={(e) => setFromAirportCode(e.target.value)}>
               <option value="">Optional — departure airport</option>
               {INDIAN_AIRPORTS.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
             </select>
           </div>
-          {hubId === NEW_OPTION && (
-            <div className="card" style={{ padding: 12, background: 'var(--paper)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <input className="input" placeholder="Name, e.g. MAA Airport" value={newHub.name} onChange={(e) => setNewHub({ ...newHub, name: e.target.value })} />
-              <input className="input" placeholder="Full airport/cargo address" value={newHub.address} onChange={(e) => setNewHub({ ...newHub, address: e.target.value })} />
-              <button type="button" className="btn btn-outline btn-sm" disabled={addingHub} onClick={submitNewHub}>{addingHub ? 'Adding…' : 'Add & use this airport'}</button>
-            </div>
-          )}
 
           <div className="field">
             <label>To Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
