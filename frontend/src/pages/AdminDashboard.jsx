@@ -1712,16 +1712,30 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
 
         <div className="table-wrap" style={{ marginBottom: 18, maxHeight: 200, overflowY: 'auto' }}>
           <table className="data-table">
-            <thead><tr><th>Order</th><th>Receiver</th><th className="num">Qty</th><th className="num">Weight</th></tr></thead>
+            <thead><tr><th>Order</th><th>Receiver</th><th className="num">Qty</th><th className="num">Weight</th><th className="num">Revenue</th><th className="num">Alloc. cost</th><th className="num">Profit/Loss</th></tr></thead>
             <tbody>
-              {manifest.orders.map((o) => (
-                <tr key={o.id}>
-                  <td className="mono">{o.orderNumber}</td>
-                  <td>{o.receiverAddress?.contactName}</td>
-                  <td className="num">{o.qty}</td>
-                  <td className="num">{Number(o.chargeableWeightKg).toFixed(2)} kg</td>
-                </tr>
-              ))}
+              {manifest.orders.map((o) => {
+                const orderWeight = Number(o.chargeableWeightKg);
+                const orderRevenue = Number(o.grandTotal) - Number(o.taxTotal) + Number(o.discountTotal);
+                // Each order's slice of the live (not-yet-saved) operating
+                // cost total, by its own share of the manifest's weight —
+                // same split the backend uses to attribute branch costs
+                // (see computeBranchCosts), shown here live as you edit
+                // the form so the per-order P&L updates before you submit.
+                const orderCostShare = weightKg > 0 ? operatingCost * (orderWeight / weightKg) : 0;
+                const orderProfit = orderRevenue - orderCostShare;
+                return (
+                  <tr key={o.id}>
+                    <td className="mono">{o.orderNumber}</td>
+                    <td>{o.receiverAddress?.contactName}</td>
+                    <td className="num">{o.qty}</td>
+                    <td className="num">{orderWeight.toFixed(2)} kg</td>
+                    <td className="num">₹{orderRevenue.toFixed(2)}</td>
+                    <td className="num">₹{orderCostShare.toFixed(2)}</td>
+                    <td className="num" style={{ color: orderProfit >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>₹{orderProfit.toFixed(2)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
