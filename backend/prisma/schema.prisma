@@ -420,6 +420,17 @@ model PartyInvoice {
   phone            String?
   status           String                @default("UNPAID") // UNPAID | PAID
   paidAt           DateTime?
+  // Set when this is one of the 8 manifest operating-cost categories
+  // (PAYABLE only) — see PartyInvoiceCategory. costRate is the raw
+  // flat-₹/₹-per-kg/% value that produced `amount` (null for invoices
+  // entered the normal way, with just a total); costMode says how to read
+  // it. Kept so the manifest cost-sheet form can re-show "Hub: ₹100/kg"
+  // rather than only the computed total on reopen.
+  category         PartyInvoiceCategory?
+  costMode         CostInputMode?
+  costRate         Decimal?              @db.Decimal(10, 4)
+  manifestId       String?
+  manifest         Manifest?             @relation(fields: [manifestId], references: [id])
   recurrence       RecurrenceInterval    @default(NONE)
   // Only set (and only meaningful) on the root invoice of a recurring
   // series — the background job (partyInvoiceRecurrence.js) scans for rows
