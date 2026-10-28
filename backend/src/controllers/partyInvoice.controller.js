@@ -99,6 +99,8 @@ async function createInvoice(req, res, next) {
           phone: phone?.trim() || null,
           status: statusValue,
           paidAt: statusValue === 'PAID' ? createdAt : null,
+          category: categoryValue,
+          manifestId: manifestIdValue,
           recurrence: recurrenceValue,
           nextRecurrenceAt: recurrenceValue !== 'NONE' ? advance(createdAt, recurrenceValue) : null,
           attachmentName: req.file?.originalname || null,
