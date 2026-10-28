@@ -1511,6 +1511,222 @@ function AccountsOverviewPanel() {
   );
 }
 
+// Mirrors backend/src/constants/partyInvoiceCategories.js's
+// MANIFEST_COST_CATEGORIES/labels, plus the default mode+value each field
+// opens with — see the Accounts Overview request these came from: Company
+// defaults to 10% of the manifest's gross revenue, Hub to ₹100/kg, Origin
+// Customs to ₹25/kg, everything else starts blank (flat ₹, "INR"
+// placeholder) since there's no sensible one-size default for them.
+const MANIFEST_COST_CATEGORIES = [
+  { key: 'AIRLINE', label: 'Airline Fare', defaultMode: 'FLAT', defaultValue: '' },
+  { key: 'ORIGIN_CUSTOMS', label: 'Origin Customs', defaultMode: 'PER_KG', defaultValue: '25' },
+  { key: 'DEST_CUSTOMS', label: 'Destination Customs', defaultMode: 'FLAT', defaultValue: '' },
+  { key: 'DELIVERY', label: 'Delivery Charges', defaultMode: 'FLAT', defaultValue: '' },
+  { key: 'HUB', label: 'Hub', defaultMode: 'PER_KG', defaultValue: '100' },
+  { key: 'COMPANY', label: 'Company', defaultMode: 'PERCENT', defaultValue: '10' },
+  { key: 'STATIONERY', label: 'Stationery', defaultMode: 'FLAT', defaultValue: '' },
+  { key: 'MISC', label: 'Miscellaneous', defaultMode: 'FLAT', defaultValue: '' },
+];
+
+function grossRevenueOfOrders(orders) {
+  return orders.reduce((sum, o) => sum + (Number(o.grandTotal) - Number(o.taxTotal) + Number(o.discountTotal)), 0);
+}
+
+function ManifestCostsPanel() {
+  const [manifests, setManifests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openId, setOpenId] = useState(null);
+
+  useEffect(() => {
+    client.get('/admin/manifests').then(({ data }) => { setManifests(data.manifests); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
+      <div className="panel-head-row">
+        <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Manifests — operating cost sheet</h3>
+        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Click a manifest to enter airline, customs, hub &amp; other costs</span>
+      </div>
+      {loading ? <LoadingLogo size={30} /> : manifests.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No manifests yet.</p>
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>Manifest</th><th>Date</th><th>Hub</th><th>Destination</th><th className="num">Orders</th><th className="num">Weight</th></tr></thead>
+            <tbody>
+              {manifests.map((m) => (
+                <tr key={m.id} style={{ cursor: 'pointer' }} onClick={() => setOpenId(m.id)}>
+                  <td className="mono" style={{ color: 'var(--cobalt)', fontWeight: 600 }}>{m.manifestNumber}</td>
+                  <td>{new Date(m.manifestDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
+                  <td>{m.hub?.name}</td>
+                  <td>{m.countryCode}</td>
+                  <td className="num">{m._count?.orders ?? m.orderCount}</td>
+                  <td className="num">{Number(m.totalWeightKg).toFixed(1)} kg</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {openId && <ManifestCostModal manifestId={openId} onClose={() => setOpenId(null)} />}
+    </div>
+  );
+}
+
+function ManifestCostModal({ manifestId, onClose }) {
+  const [manifest, setManifest] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({}); // { CATEGORY: { mode, value } }
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [savedTotals, setSavedTotals] = useState(null);
+
+  useEffect(() => {
+    client.get(`/admin/manifests/${manifestId}`).then(({ data }) => {
+      const m = data.manifest;
+      setManifest(m);
+      const next = {};
+      for (const cat of MANIFEST_COST_CATEGORIES) {
+        const existing = m.partyInvoices?.find((pi) => pi.category === cat.key);
+        next[cat.key] = existing
+          ? { mode: existing.costMode || cat.defaultMode, value: existing.costRate != null ? String(existing.costRate) : '' }
+          : { mode: cat.defaultMode, value: cat.defaultValue };
+      }
+      setForm(next);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [manifestId]);
+
+  function updateField(key, patch) {
+    setForm((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+    setSavedTotals(null);
+  }
+
+  async function save() {
+    setSaving(true);
+    setError('');
+    try {
+      const items = MANIFEST_COST_CATEGORIES.map((c) => ({ category: c.key, mode: form[c.key].mode, value: form[c.key].value }));
+      const { data } = await client.post(`/admin/manifests/${manifestId}/costs`, { items });
+      setSavedTotals(data.totals);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not save operating costs.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading || !manifest) {
+    return (
+      <div className="modal-overlay open" onClick={onClose}>
+        <div className="modal-box" style={{ maxWidth: 680 }} onClick={(e) => e.stopPropagation()}><LoadingLogo size={40} /></div>
+      </div>
+    );
+  }
+
+  const weightKg = Number(manifest.totalWeightKg);
+  const grossRevenue = grossRevenueOfOrders(manifest.orders);
+
+  function amountFor(key) {
+    const f = form[key];
+    const v = Number(f?.value);
+    if (!v) return 0;
+    if (f.mode === 'PER_KG') return v * weightKg;
+    if (f.mode === 'PERCENT') return (v / 100) * grossRevenue;
+    return v;
+  }
+  const operatingCost = MANIFEST_COST_CATEGORIES.reduce((sum, c) => sum + amountFor(c.key), 0);
+  const airlineRatePerKg = weightKg > 0 ? amountFor('AIRLINE') / weightKg : 0;
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 680, maxHeight: '88vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+          <div>
+            <h3>{manifest.manifestNumber}</h3>
+            <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
+              {manifest.hub?.name} → {manifest.countryCode} · {new Date(manifest.manifestDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
+            </p>
+          </div>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'flex', gap: 20, margin: '12px 0 16px', flexWrap: 'wrap' }}>
+          {[['Orders', manifest.orders.length], ['Qty', manifest.totalQty], ['Weight', `${weightKg.toFixed(1)} kg`], ['Gross revenue', `₹${grossRevenue.toFixed(2)}`]].map(([lbl, val]) => (
+            <div key={lbl}>
+              <div style={{ fontSize: 10.5, color: 'var(--slate-light)', textTransform: 'uppercase', letterSpacing: '.03em' }}>{lbl}</div>
+              <div className="num" style={{ fontWeight: 700, color: 'var(--navy)' }}>{val}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="table-wrap" style={{ marginBottom: 18, maxHeight: 200, overflowY: 'auto' }}>
+          <table className="data-table">
+            <thead><tr><th>Order</th><th>Receiver</th><th className="num">Qty</th><th className="num">Weight</th></tr></thead>
+            <tbody>
+              {manifest.orders.map((o) => (
+                <tr key={o.id}>
+                  <td className="mono">{o.orderNumber}</td>
+                  <td>{o.receiverAddress?.contactName}</td>
+                  <td className="num">{o.qty}</td>
+                  <td className="num">{Number(o.chargeableWeightKg).toFixed(2)} kg</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h4 style={{ fontSize: 13, marginBottom: 10 }}>Operating costs</h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+          {MANIFEST_COST_CATEGORIES.map((cat) => {
+            const f = form[cat.key] || { mode: cat.defaultMode, value: '' };
+            const amount = amountFor(cat.key);
+            return (
+              <div key={cat.key} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ width: 150, flex: 'none', fontSize: 13, fontWeight: 600 }}>{cat.label}</div>
+                <input
+                  className="input" type="number" min="0" step="0.01"
+                  placeholder={cat.defaultValue ? undefined : 'INR'}
+                  value={f.value}
+                  onChange={(e) => updateField(cat.key, { value: e.target.value })}
+                  style={{ flex: '1 1 100px', minWidth: 90 }}
+                />
+                <select className="select" value={f.mode} onChange={(e) => updateField(cat.key, { mode: e.target.value })} style={{ width: 120, flex: 'none' }}>
+                  <option value="FLAT">₹ flat</option>
+                  <option value="PER_KG">₹ / kg</option>
+                  <option value="PERCENT">% of revenue</option>
+                </select>
+                <div className="num" style={{ width: 120, flex: 'none', textAlign: 'right', fontSize: 12.5, color: 'var(--slate)' }}>
+                  = ₹{amount.toFixed(2)}
+                  {cat.key === 'AIRLINE' && weightKg > 0 && <div style={{ fontSize: 10.5, color: 'var(--slate-light)' }}>₹{airlineRatePerKg.toFixed(2)}/kg</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--line-2)', paddingTop: 14, marginBottom: 14, flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 10.5, color: 'var(--slate-light)', textTransform: 'uppercase', letterSpacing: '.03em' }}>Total operating cost</div>
+            <div className="num" style={{ fontSize: 20, fontWeight: 700, color: 'var(--coral)' }}>₹{(savedTotals?.operatingCost ?? operatingCost).toFixed(2)}</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 10.5, color: 'var(--slate-light)', textTransform: 'uppercase', letterSpacing: '.03em' }}>Gross revenue</div>
+            <div className="num" style={{ fontSize: 20, fontWeight: 700, color: 'var(--navy)' }}>₹{(savedTotals?.grossRevenue ?? grossRevenue).toFixed(2)}</div>
+          </div>
+        </div>
+
+        {error && <div className="error-text" style={{ marginBottom: 10 }}>{error}</div>}
+        {savedTotals && <p style={{ fontSize: 12.5, color: 'var(--success)', marginBottom: 10 }}>Saved — reflected in Accounts Overview.</p>}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button type="button" className="btn btn-outline" onClick={onClose}>Close</button>
+          <button type="button" className="btn btn-primary" style={{ flex: 1 }} disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save cost sheet'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AccountsPanel() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
