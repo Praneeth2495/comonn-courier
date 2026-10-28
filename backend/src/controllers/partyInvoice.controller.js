@@ -61,7 +61,7 @@ async function createInvoice(req, res, next) {
   upload(req, res, async (uploadErr) => {
     if (uploadErr) return res.status(400).json({ error: uploadErr.message });
     try {
-      const { direction, partyName, businessName, description, amount, gstPercent, dueDate, email, phone, recurrence, status } = req.body;
+      const { direction, partyName, businessName, description, amount, gstPercent, dueDate, email, phone, recurrence, status, category, manifestId } = req.body;
 
       if (!['RECEIVABLE', 'PAYABLE'].includes(direction)) {
         return res.status(400).json({ error: 'direction must be RECEIVABLE or PAYABLE' });
@@ -69,6 +69,12 @@ async function createInvoice(req, res, next) {
       if (!partyName?.trim() || !description?.trim() || !amount || !dueDate) {
         return res.status(400).json({ error: 'partyName, description, amount and dueDate are required' });
       }
+      // Category/manifest linking is a PAYABLE-only concept (see
+      // PartyInvoiceCategory) — silently ignored on a RECEIVABLE rather
+      // than erroring, since the form simply doesn't show those fields
+      // there.
+      const categoryValue = direction === 'PAYABLE' && VALID_CATEGORIES.includes(category) ? category : null;
+      const manifestIdValue = direction === 'PAYABLE' && manifestId ? manifestId : null;
       const recurrenceValue = ['WEEKLY', 'MONTHLY', 'YEARLY'].includes(recurrence) ? recurrence : 'NONE';
       const statusValue = status === 'PAID' ? 'PAID' : 'UNPAID';
 
