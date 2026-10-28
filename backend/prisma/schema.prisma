@@ -1123,6 +1123,7 @@ model Manifest {
   createdById    String
   createdBy      User            @relation(fields: [createdById], references: [id])
   orders         Order[]
+  partyInvoices  PartyInvoice[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
