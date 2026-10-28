@@ -42,8 +42,11 @@ async function generateManifestPdf(manifest) {
     doc.moveDown(0.5);
 
     const metaTop = doc.y;
-    doc.font('Helvetica-Bold').fontSize(10).text('From (Hub)', 50, metaTop);
-    doc.font('Helvetica').fontSize(9).text(`${manifest.hub.name}\n${manifest.hub.address}`, 50, metaTop + 14, { width: 220 });
+    doc.font('Helvetica-Bold').fontSize(10).text('From', 50, metaTop);
+    const fromLine = manifest.hub
+      ? `${manifest.hub.name}\n${manifest.hub.address}`
+      : manifest.fromAirportName || manifest.fromAirportCode || '—';
+    doc.font('Helvetica').fontSize(9).text(fromLine, 50, metaTop + 14, { width: 220 });
     doc.font('Helvetica-Bold').fontSize(10).text('To (Airport)', 320, metaTop);
     doc.font('Helvetica').fontSize(9).text(manifest.toAddress, 320, metaTop + 14, { width: 220 });
     doc.y = Math.max(doc.y, metaTop + 80);
