@@ -598,18 +598,30 @@ function EditInvoiceModal({ invoiceId, onClose, onSaved }) {
   );
 }
 
-function SalaryPaymentModal({ onClose, onCreated }) {
+// Also doubles as the edit form when `invoice` is passed — the
+// employee/month fields are create-only (an existing invoice's partyName
+// etc. don't change), but hub/amount/due date are editable either way.
+function SalaryPaymentModal({ invoice, onClose, onCreated }) {
   const [staff, setStaff] = useState([]);
-  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [hubs, setHubs] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
   const [employeeUserId, setEmployeeUserId] = useState('');
-  const [amount, setAmount] = useState('');
+  const [hubId, setHubId] = useState(invoice?.hubId || '');
+  const [amount, setAmount] = useState(invoice ? String(invoice.amount) : '');
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
-  const [dueDate, setDueDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [dueDate, setDueDate] = useState(() => (invoice ? toDateInputValue(invoice.dueDate) : new Date().toISOString().slice(0, 10)));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    client.get('/admin/party-invoices/staff').then(({ data }) => { setStaff(data.staff); setLoadingStaff(false); }).catch(() => setLoadingStaff(false));
+    Promise.all([
+      client.get('/admin/party-invoices/staff'),
+      client.get('/admin/hubs'),
+    ]).then(([staffRes, hubsRes]) => {
+      setStaff(staffRes.data.staff);
+      setHubs(hubsRes.data.hubs.filter((h) => h.isActive));
+      setLoadingOptions(false);
+    }).catch(() => setLoadingOptions(false));
   }, []);
 
   async function submit(e) {
@@ -617,10 +629,14 @@ function SalaryPaymentModal({ onClose, onCreated }) {
     setSubmitting(true);
     setError('');
     try {
-      await client.post('/admin/party-invoices/salary', { employeeUserId, amount, month, dueDate });
+      if (invoice) {
+        await client.patch(`/admin/party-invoices/${invoice.id}`, { amount, dueDate, hubId: hubId || null });
+      } else {
+        await client.post('/admin/party-invoices/salary', { employeeUserId, amount, month, dueDate, hubId: hubId || null });
+      }
       onCreated();
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not record this salary payment.');
+      setError(err.response?.data?.error || 'Could not save this salary payment.');
     } finally {
       setSubmitting(false);
     }
@@ -630,16 +646,25 @@ function SalaryPaymentModal({ onClose, onCreated }) {
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-          <h3>Pay salary</h3>
+          <h3>{invoice ? `Edit salary — ${invoice.partyName}` : 'Pay salary'}</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
-        {loadingStaff ? <LoadingLogo size={40} /> : (
+        {loadingOptions ? <LoadingLogo size={40} /> : (
           <form onSubmit={submit} className="form-stack">
+            {!invoice && (
+              <div className="field">
+                <label>Staff member <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+                <select className="select" required value={employeeUserId} onChange={(e) => setEmployeeUserId(e.target.value)}>
+                  <option value="">Select…</option>
+                  {staff.map((s) => <option key={s.id} value={s.id}>{s.fullName} · {s.role}</option>)}
+                </select>
+              </div>
+            )}
             <div className="field">
-              <label>Staff member <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-              <select className="select" required value={employeeUserId} onChange={(e) => setEmployeeUserId(e.target.value)}>
-                <option value="">Select…</option>
-                {staff.map((s) => <option key={s.id} value={s.id}>{s.fullName} · {s.role}</option>)}
+              <label>Hub <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+              <select className="select" required value={hubId} onChange={(e) => setHubId(e.target.value)}>
+                <option value="">Which hub is this salary for?</option>
+                {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
               </select>
             </div>
             <div className="field">
@@ -647,10 +672,12 @@ function SalaryPaymentModal({ onClose, onCreated }) {
               <input className="input" type="number" min="0" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <div className="field" style={{ flex: 1 }}>
-                <label>Month</label>
-                <input className="input" type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
-              </div>
+              {!invoice && (
+                <div className="field" style={{ flex: 1 }}>
+                  <label>Month</label>
+                  <input className="input" type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
+                </div>
+              )}
               <div className="field" style={{ flex: 1 }}>
                 <label>Due date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
                 <input className="input" type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
@@ -659,11 +686,77 @@ function SalaryPaymentModal({ onClose, onCreated }) {
             {error && <div className="error-text">{error}</div>}
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
-              <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? 'Recording…' : 'Record payment'}</button>
+              <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? 'Saving…' : invoice ? 'Save changes' : 'Record payment'}</button>
             </div>
           </form>
         )}
       </div>
+    </div>
+  );
+}
+
+// Dedicated Accounts → Salary tab: lists every SALARY-category payable
+// (client-side filtered off the normal party-invoices list — simpler than
+// a server-side category filter for this data volume) and the "+ Pay
+// salary" entry point, which used to live on the Payable tab itself.
+export function SalaryPanel() {
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+
+  function load() {
+    setLoading(true);
+    client.get('/admin/party-invoices', { params: { direction: 'PAYABLE' } })
+      .then(({ data }) => { setInvoices(data.invoices.filter((inv) => inv.category === 'SALARY')); setLoading(false); })
+      .catch(() => setLoading(false));
+  }
+  useEffect(load, []);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h1 className="h-lg">Salary</h1>
+        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Pay salary</button>
+      </div>
+
+      {loading ? <LoadingLogo /> : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>Invoice #</th><th>Staff member</th><th>Description</th><th>Amount</th><th>Due date</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {invoices.map((inv) => (
+                <tr key={inv.id} style={{ background: inv.overdue ? 'var(--danger-bg)' : undefined }}>
+                  <td className="mono">{inv.invoiceNumber}</td>
+                  <td>{inv.partyName}{inv.businessName ? <span style={{ color: 'var(--slate-light)' }}> · {inv.businessName}</span> : null}</td>
+                  <td>{inv.description}</td>
+                  <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
+                  <td>{formatDateShort(inv.dueDate)}</td>
+                  <td>{statusPill(inv)}</td>
+                  <td style={{ display: 'flex', gap: 6 }}>
+                    <button className="btn btn-outline btn-sm" onClick={() => setSelectedId(inv.id)}>View</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => setEditingInvoice(inv)}>Edit</button>
+                  </td>
+                </tr>
+              ))}
+              {invoices.length === 0 && (
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No salary payments yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showCreate && <SalaryPaymentModal onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); load(); }} />}
+      {editingInvoice && (
+        <SalaryPaymentModal
+          invoice={editingInvoice}
+          onClose={() => setEditingInvoice(null)}
+          onCreated={() => { setEditingInvoice(null); load(); }}
+        />
+      )}
+      {selectedId && <InvoiceDetailModal invoiceId={selectedId} onClose={() => setSelectedId(null)} onChanged={load} />}
     </div>
   );
 }
