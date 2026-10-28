@@ -755,6 +755,7 @@ const ACCOUNTS_TAB_PERM_LABELS = {
   bookings: 'Bookings',
   receivable: 'Receivable',
   payable: 'Payable',
+  salary: 'Salary',
 };
 const ACCOUNTS_TAB_PERM_KEYS = Object.keys(ACCOUNTS_TAB_PERM_LABELS);
 
