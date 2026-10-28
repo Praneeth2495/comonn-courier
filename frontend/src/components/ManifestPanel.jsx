@@ -364,7 +364,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
   async function submit(e) {
     e.preventDefault();
-    if (!hubId || hubId === NEW_OPTION || !regionSelection || regionSelection === NEW_OPTION) return;
+    if (!regionSelection || regionSelection === NEW_OPTION) return;
     const region = regions.find((r) => r.id === regionSelection);
     if (!region) return;
     setSubmitting(true);
@@ -373,7 +373,6 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
       const fromAirport = INDIAN_AIRPORTS.find((a) => a.code === fromAirportCode);
       const { data } = await client.post('/admin/manifests', {
         orderIds,
-        hubId,
         toAddress: region.airportAddress,
         fromAirportCode: fromAirport?.code || null,
         fromAirportName: fromAirport?.name || null,
