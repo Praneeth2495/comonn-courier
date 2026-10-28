@@ -576,6 +576,7 @@ async function accountsOverview(req, res, next) {
       // cost-by-bucket merge below.
       prisma.partyInvoice.findMany({ where: { direction: 'PAYABLE', createdAt: window, ...costWhere }, select: { createdAt: true, totalAmount: true, category: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow, ...costWhere }, _sum: { totalAmount: true } }),
+      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', category: 'HUB', createdAt: prevWindow, ...costWhere }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'RECEIVABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.count({ where: { direction: 'RECEIVABLE', status: 'UNPAID', dueDate: { lt: new Date() } } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
