@@ -436,6 +436,13 @@ model PartyInvoice {
   costRate         Decimal?              @db.Decimal(10, 4)
   manifestId       String?
   manifest         Manifest?             @relation(fields: [manifestId], references: [id])
+  // Direct branch tag for PAYABLE entries that have no manifest/orders to
+  // derive a branch from (salary being the main case — see the Payable
+  // tab's Salary quick-add) — manifest-linked costs never set this, since
+  // their branch split is computed per-order instead (see manifestId
+  // above / accountsOverview).
+  hubId            String?
+  hub              Hub?                  @relation(fields: [hubId], references: [id])
   recurrence       RecurrenceInterval    @default(NONE)
   // Only set (and only meaningful) on the root invoice of a recurring
   // series — the background job (partyInvoiceRecurrence.js) scans for rows
