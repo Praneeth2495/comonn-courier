@@ -1848,6 +1848,7 @@ function AccountsPanel() {
         {canSeeAccountsTab('bookings') && <button className={`dash-tab ${subTab === 'bookings' ? 'active' : ''}`} onClick={() => setSubTab('bookings')}>Bookings</button>}
         {canSeeAccountsTab('receivable') && <button className={`dash-tab ${subTab === 'receivable' ? 'active' : ''}`} onClick={() => setSubTab('receivable')}>Receivable</button>}
         {canSeeAccountsTab('payable') && <button className={`dash-tab ${subTab === 'payable' ? 'active' : ''}`} onClick={() => setSubTab('payable')}>Payable</button>}
+        {canSeeAccountsTab('salary') && <button className={`dash-tab ${subTab === 'salary' ? 'active' : ''}`} onClick={() => setSubTab('salary')}>Salary</button>}
         {hasAssetsAccess && (
           <button className={`dash-tab ${subTab === 'assets' ? 'active' : ''}`} onClick={() => setSubTab('assets')}>Assets</button>
         )}
