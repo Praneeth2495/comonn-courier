@@ -553,6 +553,15 @@ async function accountsOverview(req, res, next) {
     // never count as revenue, regardless of how far along the shipment is.
     const revenueWhere = { status: { notIn: UNPAID_STATUSES } };
 
+    const branchKey = BRANCH_SENDER_DEFS[req.query.branch] ? req.query.branch : null;
+    const branchSenderWhere = branchKey ? await resolveBranchSenderWhere(branchKey) : null;
+    if (branchSenderWhere) revenueWhere.senderAddress = branchSenderWhere;
+    // Costs aren't sender-scoped — see BRANCH_HUB_NAMES — so this only
+    // narrows PartyInvoice rows that are actually manifest-linked;
+    // un-linked bills (manual entries with no manifest) never show under
+    // a specific branch, only Total, same as an unmapped order's district.
+    const costWhere = branchKey ? { manifest: { hub: { name: BRANCH_HUB_NAMES[branchKey] } } } : {};
+
     const [orders, prevOrders, costRows, prevCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: window },
@@ -565,8 +574,8 @@ async function accountsOverview(req, res, next) {
       // Fetched as rows (not an aggregate) so the same createdAt can be
       // bucketed into the trend chart alongside revenue — see the
       // cost-by-bucket merge below.
-      prisma.partyInvoice.findMany({ where: { direction: 'PAYABLE', createdAt: window }, select: { createdAt: true, totalAmount: true, category: true } }),
-      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow }, _sum: { totalAmount: true } }),
+      prisma.partyInvoice.findMany({ where: { direction: 'PAYABLE', createdAt: window, ...costWhere }, select: { createdAt: true, totalAmount: true, category: true } }),
+      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow, ...costWhere }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'RECEIVABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.count({ where: { direction: 'RECEIVABLE', status: 'UNPAID', dueDate: { lt: new Date() } } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
