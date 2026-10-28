@@ -461,12 +461,12 @@ function ManifestHistory() {
     <div>
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Manifest #</th><th>From (airport)</th><th>Sub-region</th><th>Created</th><th>Orders</th><th>Qty</th><th>Weight</th><th>Created by</th><th></th></tr></thead>
+          <thead><tr><th>Manifest #</th><th>From Airport</th><th>To Airport</th><th>Created</th><th>Orders</th><th>Qty</th><th>Weight</th><th>Created by</th><th></th></tr></thead>
           <tbody>
             {manifests.map((m) => (
               <tr key={m.id}>
                 <td className="mono">{m.manifestNumber}</td>
-                <td>{m.hub?.name || '—'}</td>
+                <td>{m.fromAirportName || m.fromAirportCode || '—'}</td>
                 <td>{m.region?.name || countryLabel(m.countryCode, [])}</td>
                 <td>{formatDateTime(m.createdAt)}</td>
                 <td>{m._count?.orders ?? m.orderCount}</td>
