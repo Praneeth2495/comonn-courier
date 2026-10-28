@@ -468,3 +468,210 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
     </div>
   );
 }
+
+function toDateInputValue(iso) {
+  return iso ? new Date(iso).toISOString().slice(0, 10) : '';
+}
+
+function EditInvoiceModal({ invoiceId, onClose, onSaved }) {
+  const [invoice, setInvoice] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    client.get(`/admin/party-invoices/${invoiceId}`).then(({ data }) => {
+      const inv = data.invoice;
+      setInvoice(inv);
+      setForm({
+        partyName: inv.partyName,
+        businessName: inv.businessName || '',
+        description: inv.description,
+        amount: String(inv.amount),
+        gstPercent: String(inv.gstPercent),
+        dueDate: toDateInputValue(inv.dueDate),
+        email: inv.email || '',
+        phone: inv.phone || '',
+        recurrence: inv.recurrence,
+        category: inv.category || '',
+        manifestId: inv.manifestId || '',
+      });
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [invoiceId]);
+
+  function set(key, value) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      const payload = { ...form };
+      if (invoice.direction !== 'PAYABLE') { delete payload.category; delete payload.manifestId; }
+      await client.patch(`/admin/party-invoices/${invoiceId}`, payload);
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not save changes.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading || !form || !invoice) {
+    return (
+      <div className="modal-overlay open" onClick={onClose}>
+        <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}><LoadingLogo size={40} /></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <h3>Edit {invoice.invoiceNumber}</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+        <form onSubmit={submit} className="form-stack">
+          <div className="field">
+            <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <input className="input" required value={form.partyName} onChange={(e) => set('partyName', e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Business name</label>
+            <input className="input" placeholder="Optional" value={form.businessName} onChange={(e) => set('businessName', e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Description <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <textarea className="input" required rows={2} style={{ resize: 'vertical' }} value={form.description} onChange={(e) => set('description', e.target.value)} />
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Amount (₹) <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+              <input className="input" type="number" min="0" step="0.01" required value={form.amount} onChange={(e) => set('amount', e.target.value)} />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label>GST %</label>
+              <input className="input" type="number" min="0" step="0.01" value={form.gstPercent} onChange={(e) => set('gstPercent', e.target.value)} />
+            </div>
+          </div>
+          <div className="field">
+            <label>Due date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <input className="input" type="date" required value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
+          </div>
+          {invoice.direction === 'PAYABLE' && (
+            <div style={{ display: 'flex', gap: 10 }}>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Category</label>
+                <select className="select" value={form.category} onChange={(e) => set('category', e.target.value)}>
+                  <option value="">— None —</option>
+                  {CATEGORY_KEYS.map((k) => <option key={k} value={k}>{CATEGORY_LABELS[k]}</option>)}
+                </select>
+              </div>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Manifest #</label>
+                <ManifestAutosuggest value={form.manifestId} onChange={(v) => set('manifestId', v)} />
+              </div>
+            </div>
+          )}
+          <div className="field">
+            <label>Email</label>
+            <input className="input" type="email" placeholder="Optional" value={form.email} onChange={(e) => set('email', e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Mobile</label>
+            <input className="input" placeholder="Optional" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Recurring</label>
+            <select className="select" value={form.recurrence} onChange={(e) => set('recurrence', e.target.value)}>
+              <option value="NONE">None</option>
+              <option value="WEEKLY">Weekly</option>
+              <option value="MONTHLY">Monthly</option>
+              <option value="YEARLY">Yearly</option>
+            </select>
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? 'Saving…' : 'Save changes'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function SalaryPaymentModal({ onClose, onCreated }) {
+  const [staff, setStaff] = useState([]);
+  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [employeeUserId, setEmployeeUserId] = useState('');
+  const [amount, setAmount] = useState('');
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [dueDate, setDueDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    client.get('/admin/party-invoices/staff').then(({ data }) => { setStaff(data.staff); setLoadingStaff(false); }).catch(() => setLoadingStaff(false));
+  }, []);
+
+  async function submit(e) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      await client.post('/admin/party-invoices/salary', { employeeUserId, amount, month, dueDate });
+      onCreated();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not record this salary payment.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <h3>Pay salary</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+        {loadingStaff ? <LoadingLogo size={40} /> : (
+          <form onSubmit={submit} className="form-stack">
+            <div className="field">
+              <label>Staff member <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+              <select className="select" required value={employeeUserId} onChange={(e) => setEmployeeUserId(e.target.value)}>
+                <option value="">Select…</option>
+                {staff.map((s) => <option key={s.id} value={s.id}>{s.fullName} · {s.role}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label>Amount (₹) <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+              <input className="input" type="number" min="0" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Month</label>
+                <input className="input" type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
+              </div>
+              <div className="field" style={{ flex: 1 }}>
+                <label>Due date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+                <input className="input" type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              </div>
+            </div>
+            {error && <div className="error-text">{error}</div>}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+              <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? 'Recording…' : 'Record payment'}</button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
