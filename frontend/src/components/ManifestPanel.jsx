@@ -430,11 +430,18 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected{codes.length ? `, routing via ${codes.join(', ')}` : ''}.</p>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
-            <label>From Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <label>Origin Hub / Warehouse <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="select" required value={hubId} onChange={(e) => pickHub(e.target.value)}>
-              <option value="">Choose origin airport…</option>
+              <option value="">Choose origin hub…</option>
               {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
-              <option value={NEW_OPTION}>+ Add new origin airport…</option>
+              <option value={NEW_OPTION}>+ Add new origin hub…</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>From Airport</label>
+            <select className="select" value={fromAirportCode} onChange={(e) => setFromAirportCode(e.target.value)}>
+              <option value="">Optional — departure airport</option>
+              {INDIAN_AIRPORTS.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
             </select>
           </div>
           {hubId === NEW_OPTION && (
