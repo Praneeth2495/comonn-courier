@@ -562,7 +562,7 @@ async function accountsOverview(req, res, next) {
     // a specific branch, only Total, same as an unmapped order's district.
     const costWhere = branchKey ? { manifest: { hub: { name: BRANCH_HUB_NAMES[branchKey] } } } : {};
 
-    const [orders, prevOrders, costRows, prevCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
+    const [orders, prevOrders, costRows, prevCostAgg, prevHubCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: window },
         select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true, user: { select: { company: true } } },
