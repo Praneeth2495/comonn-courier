@@ -1549,14 +1549,35 @@ function grossRevenueOfOrders(orders) {
   return orders.reduce((sum, o) => sum + (Number(o.grandTotal) - Number(o.taxTotal) + Number(o.discountTotal)), 0);
 }
 
-function ManifestCostsPanel() {
+function currentMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function shiftMonthKey(monthKey, delta) {
+  const [y, m] = monthKey.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function monthLabel(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+}
+
+function ManifestCostsPanel({ branch }) {
+  const [month, setMonth] = useState(currentMonthKey);
   const [manifests, setManifests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState(null);
 
-  useEffect(() => {
-    client.get('/admin/manifests').then(({ data }) => { setManifests(data.manifests); setLoading(false); }).catch(() => setLoading(false));
-  }, []);
+  const hubName = BRANCH_OPTIONS.find((b) => b.key === branch)?.hubName || undefined;
+
+  function load() {
+    setLoading(true);
+    client.get('/admin/manifests', { params: { month, hubName } })
+      .then(({ data }) => { setManifests(data.manifests); setLoading(false); })
+      .catch(() => setLoading(false));
+  }
+  useEffect(load, [month, hubName]);
 
   return (
     <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
@@ -1564,28 +1585,37 @@ function ManifestCostsPanel() {
         <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Manifests — operating cost sheet</h3>
         <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Click a manifest to enter airline, customs, hub &amp; other costs</span>
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <button type="button" className="btn btn-outline btn-sm" onClick={() => setMonth((m) => shiftMonthKey(m, -1))}>← Prev</button>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--navy)', minWidth: 140, textAlign: 'center' }}>{monthLabel(month)}</div>
+        <button type="button" className="btn btn-outline btn-sm" disabled={month >= currentMonthKey()} onClick={() => setMonth((m) => shiftMonthKey(m, 1))}>Next →</button>
+      </div>
       {loading ? <LoadingLogo size={30} /> : manifests.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No manifests yet.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No manifests created in {monthLabel(month)}{hubName ? ` for ${hubName}` : ''}.</p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
-            <thead><tr><th>Manifest</th><th>Date</th><th>Hub</th><th>Destination</th><th className="num">Orders</th><th className="num">Weight</th></tr></thead>
+            <thead><tr><th>Manifest</th><th>Date</th><th>Hub</th><th>Destination</th><th className="num">Orders</th><th className="num">Weight</th><th>Status</th></tr></thead>
             <tbody>
-              {manifests.map((m) => (
-                <tr key={m.id} style={{ cursor: 'pointer' }} onClick={() => setOpenId(m.id)}>
-                  <td className="mono" style={{ color: 'var(--cobalt)', fontWeight: 600 }}>{m.manifestNumber}</td>
-                  <td>{new Date(m.manifestDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
-                  <td>{m.hub?.name}</td>
-                  <td>{m.countryCode}</td>
-                  <td className="num">{m._count?.orders ?? m.orderCount}</td>
-                  <td className="num">{Number(m.totalWeightKg).toFixed(1)} kg</td>
-                </tr>
-              ))}
+              {manifests.map((m) => {
+                const overdue = (m._count?.partyInvoices ?? 0) === 0;
+                return (
+                  <tr key={m.id} style={{ cursor: 'pointer', background: overdue ? 'var(--danger-bg)' : undefined }} onClick={() => setOpenId(m.id)}>
+                    <td className="mono" style={{ color: 'var(--cobalt)', fontWeight: 600 }}>{m.manifestNumber}</td>
+                    <td>{new Date(m.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
+                    <td>{m.hub?.name}</td>
+                    <td>{m.countryCode}</td>
+                    <td className="num">{m._count?.orders ?? m.orderCount}</td>
+                    <td className="num">{Number(m.totalWeightKg).toFixed(1)} kg</td>
+                    <td>{overdue ? <span className="pill pill-danger">Overdue manifest</span> : <span className="pill pill-success">Costed</span>}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
-      {openId && <ManifestCostModal manifestId={openId} onClose={() => setOpenId(null)} />}
+      {openId && <ManifestCostModal manifestId={openId} onClose={() => setOpenId(null)} onSaved={() => { setOpenId(null); load(); }} />}
     </div>
   );
 }
