@@ -368,6 +368,35 @@ enum InvoiceDirection {
   PAYABLE
 }
 
+// The 8 recurring per-manifest operating-cost types — set on a PAYABLE
+// invoice either by hand (Payable tab's category dropdown) or in bulk by
+// the Accounts Overview manifest cost-sheet form (see
+// manifest.controller.js's saveManifestCosts), which upserts one row per
+// category. Null on every pre-existing/unrelated invoice and on
+// RECEIVABLEs — this is a PAYABLE-only concept.
+enum PartyInvoiceCategory {
+  ORIGIN_CUSTOMS
+  DEST_CUSTOMS
+  AIRLINE
+  HUB
+  DELIVERY
+  STATIONERY
+  COMPANY
+  MISC
+}
+
+// How costRate on a category-tagged invoice should be read — mirrors the
+// manifest cost-sheet form's value+mode toggle (flat ₹, ₹/kg, or % of the
+// manifest's gross revenue). Null (FLAT is still the default elsewhere)
+// specifically distinguishes "this invoice has no stored rate because it
+// was entered by hand with just a total amount" from an actual flat-mode
+// entry — see costRate's comment on PartyInvoice.
+enum CostInputMode {
+  FLAT
+  PER_KG
+  PERCENT
+}
+
 enum RecurrenceInterval {
   NONE
   WEEKLY
