@@ -1756,19 +1756,18 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--line-2)', paddingTop: 14, marginBottom: 14, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ fontSize: 10.5, color: 'var(--slate-light)', textTransform: 'uppercase', letterSpacing: '.03em' }}>Total operating cost</div>
-            <div className="num" style={{ fontSize: 20, fontWeight: 700, color: 'var(--coral)' }}>₹{(savedTotals?.operatingCost ?? operatingCost).toFixed(2)}</div>
+            <div className="num" style={{ fontSize: 20, fontWeight: 700, color: 'var(--coral)' }}>₹{operatingCost.toFixed(2)}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 10.5, color: 'var(--slate-light)', textTransform: 'uppercase', letterSpacing: '.03em' }}>Gross revenue</div>
-            <div className="num" style={{ fontSize: 20, fontWeight: 700, color: 'var(--navy)' }}>₹{(savedTotals?.grossRevenue ?? grossRevenue).toFixed(2)}</div>
+            <div className="num" style={{ fontSize: 20, fontWeight: 700, color: 'var(--navy)' }}>₹{grossRevenue.toFixed(2)}</div>
           </div>
         </div>
 
         {error && <div className="error-text" style={{ marginBottom: 10 }}>{error}</div>}
-        {savedTotals && <p style={{ fontSize: 12.5, color: 'var(--success)', marginBottom: 10 }}>Saved — reflected in Accounts Overview.</p>}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button type="button" className="btn btn-outline" onClick={onClose}>Close</button>
-          <button type="button" className="btn btn-primary" style={{ flex: 1 }} disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save cost sheet'}</button>
+          <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+          <button type="button" className="btn btn-primary" style={{ flex: 1 }} disabled={saving} onClick={submit}>{saving ? 'Submitting…' : 'Submit'}</button>
         </div>
       </div>
     </div>
