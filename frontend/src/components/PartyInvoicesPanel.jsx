@@ -103,12 +103,6 @@ export default function PartyInvoicesPanel({ direction }) {
           onCreated={() => { setShowCreate(false); load(); }}
         />
       )}
-      {showSalary && (
-        <SalaryPaymentModal
-          onClose={() => setShowSalary(false)}
-          onCreated={() => { setShowSalary(false); load(); }}
-        />
-      )}
       {editingId && (
         <EditInvoiceModal
           invoiceId={editingId}
