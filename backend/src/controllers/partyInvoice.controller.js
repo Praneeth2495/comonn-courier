@@ -174,6 +174,7 @@ async function updateInvoice(req, res, next) {
     if (existing.direction === 'PAYABLE') {
       if (category !== undefined) data.category = VALID_CATEGORIES.includes(category) ? category : null;
       if (manifestId !== undefined) data.manifestId = manifestId || null;
+      if (hubId !== undefined) data.hubId = hubId || null;
       const nextManifestId = data.manifestId !== undefined ? data.manifestId : existing.manifestId;
       const nextCategory = data.category !== undefined ? data.category : existing.category;
       if (nextManifestId && nextCategory) {
