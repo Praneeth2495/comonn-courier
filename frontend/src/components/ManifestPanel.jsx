@@ -311,9 +311,7 @@ function BuildManifest() {
 const NEW_OPTION = '__new__';
 
 function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
-  const [hubs, setHubs] = useState([]);
   const [regions, setRegions] = useState([]);
-  const [hubId, setHubId] = useState('');
   const [fromAirportCode, setFromAirportCode] = useState('');
   const [regionSelection, setRegionSelection] = useState('');
   const [manifestDate, setManifestDate] = useState(todayIso());
@@ -324,8 +322,6 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const [newHub, setNewHub] = useState({ name: '', address: '' });
-  const [addingHub, setAddingHub] = useState(false);
   const [newRegion, setNewRegion] = useState({
     code: airports.length === 1 ? airports[0].airportCode : '',
     name: '',
@@ -335,15 +331,9 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [addingRegion, setAddingRegion] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      client.get('/admin/hubs'),
-      client.get('/admin/manifest-regions'),
-    ]).then(([hubsRes, regionsRes]) => {
-      const activeHubs = hubsRes.data.hubs.filter((h) => h.isActive);
+    client.get('/admin/manifest-regions').then((regionsRes) => {
       const activeRegions = regionsRes.data.regions.filter((r) => r.isActive);
-      setHubs(activeHubs);
       setRegions(activeRegions);
-      if (activeHubs.length === 1) setHubId(activeHubs[0].id);
       if (airports.length === 1) {
         const match = activeRegions.find((r) => r.code === airports[0].airportCode);
         if (match) setRegionSelection(match.id);
@@ -351,27 +341,6 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     });
   }, []);
-
-  function pickHub(value) {
-    setHubId(value);
-    if (value !== NEW_OPTION) setNewHub({ name: '', address: '' });
-  }
-
-  async function submitNewHub() {
-    if (!newHub.name.trim() || !newHub.address.trim()) return;
-    setAddingHub(true);
-    setError('');
-    try {
-      const { data } = await client.post('/admin/hubs', newHub);
-      setHubs((prev) => [...prev, data.hub]);
-      setHubId(data.hub.id);
-      setNewHub({ name: '', address: '' });
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not add this origin airport.');
-    } finally {
-      setAddingHub(false);
-    }
-  }
 
   function pickRegion(value) {
     setRegionSelection(value);
