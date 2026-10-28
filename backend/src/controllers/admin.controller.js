@@ -533,7 +533,7 @@ async function accountsOverview(req, res, next) {
       // Fetched as rows (not an aggregate) so the same createdAt can be
       // bucketed into the trend chart alongside revenue — see the
       // cost-by-bucket merge below.
-      prisma.partyInvoice.findMany({ where: { direction: 'PAYABLE', createdAt: window }, select: { createdAt: true, totalAmount: true } }),
+      prisma.partyInvoice.findMany({ where: { direction: 'PAYABLE', createdAt: window }, select: { createdAt: true, totalAmount: true, category: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'RECEIVABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.count({ where: { direction: 'RECEIVABLE', status: 'UNPAID', dueDate: { lt: new Date() } } }),
