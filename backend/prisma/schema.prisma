@@ -1075,12 +1075,13 @@ model ManifestRegion {
 // Kept as its own small managed list (not hardcoded) since a business with
 // multiple hubs needs to pick the right one per manifest.
 model Hub {
-  id        String     @id @default(uuid())
-  name      String
-  address   String
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  manifests Manifest[]
+  id            String         @id @default(uuid())
+  name          String
+  address       String
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  manifests     Manifest[]
+  partyInvoices PartyInvoice[]
 }
 
 // One physical bag/consignment of orders shipped together from a Hub to an
