@@ -499,11 +499,42 @@ function classifyChannel(o) {
   return 'c2c';
 }
 
+// ---------------- Accounts Overview → branch filter ----------------
+// Starting point for a 3-hub rollout (HYD/Vijayawada/Vizag) — the user
+// confirmed HYD covers the whole of Telangana for now, Vijayawada and
+// Vizag are scoped to their own district (Krishna/Visakhapatnam) within
+// Andhra Pradesh, and every other AP district is unmapped until the
+// regions get split up further later. An order from an unmapped
+// district only ever shows under "Total", never under a specific branch.
+const BRANCH_SENDER_DEFS = {
+  HYD: { state: 'TG' },
+  VIJAYAWADA: { state: 'AP', region: 'Krishna' },
+  VIZAG: { state: 'AP', region: 'Visakhapatnam' },
+};
+// Operating costs aren't tied to a sender address the way revenue is —
+// they're scoped via which Manifest (and so which Hub) they're linked to.
+// No separate Hub.branchKey field for this (would be a second schema
+// change right after the migration mishap) — relies on the Hub being
+// named exactly this, case-sensitively, when it's created on the Hubs
+// admin page. If hub naming drifts from this, branch cost figures will
+// silently show ₹0 rather than erroring, so this is worth revisiting if
+// that happens.
+const BRANCH_HUB_NAMES = { HYD: 'HYD', VIJAYAWADA: 'Vijayawada', VIZAG: 'Vizag' };
+
+async function resolveBranchSenderWhere(branchKey) {
+  const def = BRANCH_SENDER_DEFS[branchKey];
+  if (!def) return null;
+  if (!def.region) return { state: def.state };
+  const rows = await prisma.postcodeSuggestion.findMany({ where: { countryCode: 'IN', region: def.region }, select: { postcode: true } });
+  return { state: def.state, postcode: { in: rows.map((r) => r.postcode) } };
+}
+
 /**
- * GET /api/admin/accounts/overview?range=day|week|month|quarter|sixmo|year
+ * GET /api/admin/accounts/overview?range=day|week|month|quarter|sixmo|year&branch=HYD|VIJAYAWADA|VIZAG
  * Powers the Accounts page's Overview tab — gross/net revenue, operating
  * cost, and profit for the selected window, bucketed for the trend chart,
  * plus a revenue-by-channel split and a point-in-time AR/AP snapshot.
+ * `branch` omitted (or unrecognized) means Total — no filtering.
  */
 async function accountsOverview(req, res, next) {
   try {
