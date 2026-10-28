@@ -49,19 +49,22 @@ export function buildMockAccountsOverview(range) {
   }), { gross: 0, discount: 0, net: 0, cost: 0 });
   const profit = round2(totals.net - totals.cost);
   const margin = totals.net > 0 ? profit / totals.net : 0;
+  const hubCost = round2(totals.cost * 0.18); // matches COST_CATEGORY_SPLIT's HUB share
 
   return {
     range,
+    branch: 'TOTAL',
     window: { from: 'sample', to: 'sample' },
     series,
-    totals: { gross: round2(totals.gross), discount: round2(totals.discount), net: round2(totals.net), cost: round2(totals.cost), profit, margin },
+    totals: { gross: round2(totals.gross), discount: round2(totals.discount), hub: hubCost, net: round2(totals.net), cost: round2(totals.cost), profit, margin },
     deltas: cfg.deltas,
     channel: { b2c: round2(totals.gross * CHANNEL_SPLIT.b2c), b2b: round2(totals.gross * CHANNEL_SPLIT.b2b), c2c: round2(totals.gross * CHANNEL_SPLIT.c2c) },
     outstanding: {
       receivable: { total: 597000, partyInvoices: 115000, merchantInvoices: 482000, overdueCount: 2 },
       payable: { total: 364000, overdueCount: 1 },
     },
-    costBreakdownAvailable: false,
+    costBreakdownAvailable: true,
+    costByCategory: COST_CATEGORY_SPLIT.map(([category, label, pct]) => ({ category, label, amount: round2(totals.cost * pct) })),
   };
 }
 
