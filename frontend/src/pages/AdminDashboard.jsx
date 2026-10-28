@@ -1395,10 +1395,15 @@ function AccountsOverviewPanel() {
   return (
     <div>
       <div className="acct-ov-head">
-        <div className="range-pills">
-          {ACCOUNTS_RANGE_OPTIONS.map(([key, label]) => (
-            <button key={key} className={`range-pill ${range === key ? 'active' : ''}`} onClick={() => setRange(key)}>{label}</button>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <select className="select" style={{ width: 160 }} value={branch} onChange={(e) => setBranch(e.target.value)}>
+            {BRANCH_OPTIONS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
+          </select>
+          <div className="range-pills">
+            {ACCOUNTS_RANGE_OPTIONS.map(([key, label]) => (
+              <button key={key} className={`range-pill ${range === key ? 'active' : ''}`} onClick={() => setRange(key)}>{label}</button>
+            ))}
+          </div>
         </div>
         <div className="acct-ov-window">{data.window.from} → {data.window.to}</div>
       </div>
