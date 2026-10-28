@@ -1563,21 +1563,25 @@ function monthLabel(monthKey) {
   return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 }
 
-function ManifestCostsPanel({ branch }) {
+// Deliberately NOT branch-filtered — this list always shows every
+// manifest for the selected month regardless of which branch is picked
+// in the Overview dropdown above. Only the revenue/cost *totals* are
+// branch-scoped; the manifest cost-sheet worklist itself stays global so
+// nothing gets missed just because a specific branch happens to be
+// selected when you're filling in cost sheets.
+function ManifestCostsPanel() {
   const [month, setMonth] = useState(currentMonthKey);
   const [manifests, setManifests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState(null);
 
-  const hubName = BRANCH_OPTIONS.find((b) => b.key === branch)?.hubName || undefined;
-
   function load() {
     setLoading(true);
-    client.get('/admin/manifests', { params: { month, hubName } })
+    client.get('/admin/manifests', { params: { month } })
       .then(({ data }) => { setManifests(data.manifests); setLoading(false); })
       .catch(() => setLoading(false));
   }
-  useEffect(load, [month, hubName]);
+  useEffect(load, [month]);
 
   return (
     <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
@@ -1591,7 +1595,7 @@ function ManifestCostsPanel({ branch }) {
         <button type="button" className="btn btn-outline btn-sm" disabled={month >= currentMonthKey()} onClick={() => setMonth((m) => shiftMonthKey(m, 1))}>Next →</button>
       </div>
       {loading ? <LoadingLogo size={30} /> : manifests.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No manifests created in {monthLabel(month)}{hubName ? ` for ${hubName}` : ''}.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No manifests created in {monthLabel(month)}.</p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
