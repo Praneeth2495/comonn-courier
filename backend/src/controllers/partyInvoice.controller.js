@@ -364,10 +364,13 @@ module.exports = {
   listInvoices,
   createInvoice,
   getInvoice,
+  updateInvoice,
   updateInvoiceStatus,
   sendInvoiceEmail,
   downloadInvoicePdf,
   downloadInvoiceAttachment,
   listInvoiceComments,
   addInvoiceComment,
+  listStaffForSalary,
+  createSalaryPayment,
 };
