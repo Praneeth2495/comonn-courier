@@ -10,6 +10,29 @@ import { normalizeRegionValue } from '../utils/regionNames';
 
 const EUROPE_SENTINEL = 'EU';
 
+// Fixed list of major Indian international cargo/passenger airports —
+// the departure airport cargo actually flies out of, distinct from the
+// Origin Hub/warehouse picker below (which is a managed, admin-editable
+// list, not necessarily airport-adjacent). Not a managed table like Hub/
+// ManifestRegion since there's nowhere near as many of these.
+const INDIAN_AIRPORTS = [
+  { code: 'DEL', name: 'Indira Gandhi International, Delhi' },
+  { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj International, Mumbai' },
+  { code: 'MAA', name: 'Chennai International' },
+  { code: 'BLR', name: 'Kempegowda International, Bangalore' },
+  { code: 'HYD', name: 'Rajiv Gandhi International, Hyderabad' },
+  { code: 'CCU', name: 'Netaji Subhas Chandra Bose International, Kolkata' },
+  { code: 'COK', name: 'Cochin International' },
+  { code: 'AMD', name: 'Sardar Vallabhbhai Patel International, Ahmedabad' },
+  { code: 'GOI', name: 'Goa International (Dabolim)' },
+  { code: 'TRV', name: 'Trivandrum International' },
+  { code: 'CJB', name: 'Coimbatore International' },
+  { code: 'ATQ', name: 'Sri Guru Ram Dass Jee International, Amritsar' },
+  { code: 'PNQ', name: 'Pune International' },
+  { code: 'NAG', name: 'Dr. Babasaheb Ambedkar International, Nagpur' },
+  { code: 'IXE', name: 'Mangalore International' },
+];
+
 // Label for a country chip row or a manifest's own country badge — "EU" is
 // never a real ISO code, it's the sentinel stored when a manifest combines
 // several European countries (see manifest.controller.js).
