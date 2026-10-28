@@ -562,11 +562,14 @@ async function accountsOverview(req, res, next) {
     }
 
     let costTotal = 0;
+    const costByCategory = new Map(); // category (or 'UNCATEGORIZED') -> ₹
     for (const row of costRows) {
       const amount = Number(row.totalAmount);
       costTotal += amount;
       const { key, label } = accountsBucketFor(row.createdAt, cfg.granularity);
       getBucket(key, label).cost += amount;
+      const catKey = row.category || 'UNCATEGORIZED';
+      costByCategory.set(catKey, (costByCategory.get(catKey) || 0) + amount);
     }
 
     const series = [...buckets.values()]
