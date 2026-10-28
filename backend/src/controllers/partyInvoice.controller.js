@@ -228,7 +228,7 @@ async function listStaffForSalary(req, res, next) {
  */
 async function createSalaryPayment(req, res, next) {
   try {
-    const { employeeUserId, amount, month, dueDate } = req.body;
+    const { employeeUserId, amount, month, dueDate, hubId } = req.body;
     if (!employeeUserId || !amount || !dueDate) {
       return res.status(400).json({ error: 'employeeUserId, amount and dueDate are required' });
     }
@@ -252,6 +252,11 @@ async function createSalaryPayment(req, res, next) {
         dueDate: new Date(dueDate),
         status: 'UNPAID',
         category: 'SALARY',
+        // No manifest for a salary — this is exactly the case
+        // PartyInvoice.hubId exists for: a direct branch tag instead of
+        // the per-order weight split manifest-linked costs use (see
+        // admin.controller.js's computeBranchCosts).
+        hubId: hubId || null,
         createdById: req.user.id,
       },
     });
