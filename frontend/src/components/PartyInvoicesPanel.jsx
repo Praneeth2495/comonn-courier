@@ -5,6 +5,21 @@ import { downloadBlob } from '../utils/downloadBlob';
 import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 
 const RECURRENCE_LABELS = { NONE: '—', WEEKLY: 'Weekly', MONTHLY: 'Monthly', YEARLY: 'Yearly' };
+// Mirrors backend/src/constants/partyInvoiceCategories.js — the 8
+// manifest-cost categories plus SALARY (set via the "+ Pay salary" quick
+// form below, never through this dropdown directly).
+const CATEGORY_LABELS = {
+  ORIGIN_CUSTOMS: 'Origin Customs',
+  DEST_CUSTOMS: 'Destination Customs',
+  AIRLINE: 'Airline Fare',
+  HUB: 'Hub',
+  DELIVERY: 'Delivery Charges',
+  STATIONERY: 'Stationery',
+  COMPANY: 'Company',
+  MISC: 'Miscellaneous',
+  SALARY: 'Salary',
+};
+const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS).filter((k) => k !== 'SALARY');
 
 function statusPill(invoice) {
   if (invoice.status === 'PAID') return <span className="pill pill-success">Paid</span>;
