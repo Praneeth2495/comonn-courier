@@ -1467,15 +1467,24 @@ function AccountsOverviewPanel() {
         <div className="card" style={{ padding: '20px 22px' }}>
           <div className="panel-head-row">
             <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Where the cost goes</h3>
-            <span className="badge-chip badge-approx" title="Vendor bills aren't tagged by category yet">Phase 2</span>
+            <span className="badge-chip badge-live">Live</span>
           </div>
-          <p style={{ fontSize: 12.5, color: 'var(--slate)', lineHeight: 1.6 }}>
-            Operating cost is a real total (vendor &amp; party bills recorded this window), but bills aren't categorized yet —
-            so there's no breakdown by courier/salary/fuel/etc. to show here. Tag vendor bills with a category on the Payable tab
-            to unlock this.
-          </p>
+          {!data.costByCategory?.length ? (
+            <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No categorized bills in this window yet.</p>
+          ) : (() => {
+            const costCatTotal = data.costByCategory.reduce((sum, c) => sum + c.amount, 0) || 1;
+            return data.costByCategory.map((c) => (
+              <div className="chbar-row" key={c.category}>
+                <div className="chbar-nm">{c.label}</div>
+                <div className="chbar-track"><div className="chbar-fill" style={{ width: `${(c.amount / costCatTotal) * 100}%`, background: 'var(--coral)' }} /></div>
+                <div className="chbar-pct num">{fmtShort(c.amount)} · {((c.amount / costCatTotal) * 100).toFixed(0)}%</div>
+              </div>
+            ));
+          })()}
         </div>
       </div>
+
+      <ManifestCostsPanel />
 
       <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
         <div className="panel-head-row">
