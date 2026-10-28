@@ -641,9 +641,11 @@ async function accountsOverview(req, res, next) {
       range: rangeKey,
       window: { from: fromIso, to: todayIso },
       series,
+      branch: branchKey || 'TOTAL',
       totals: {
         gross: round2(totals.gross),
         discount: round2(totals.discount),
+        hub: round2(hubCost),
         net: round2(totals.net),
         cost: round2(costTotal),
         profit: round2(profit),
@@ -652,6 +654,7 @@ async function accountsOverview(req, res, next) {
       deltas: {
         gross: pctDelta(totals.gross, prevTotals.gross),
         net: pctDelta(totals.net, prevTotals.net),
+        hub: pctDelta(hubCost, prevHubCost),
         cost: pctDelta(costTotal, prevCostTotal),
         profit: pctDelta(profit, prevProfit),
         marginPp: (margin - prevMargin) * 100,
