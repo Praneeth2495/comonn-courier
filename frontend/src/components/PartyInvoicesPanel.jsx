@@ -69,21 +69,29 @@ export default function PartyInvoicesPanel({ direction }) {
       {loading ? <LoadingLogo /> : (
         <div className="table-wrap">
           <table className="data-table">
-            <thead><tr><th>Invoice #</th><th>Party</th><th>Amount</th><th>Due date</th><th>Recurring</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Invoice #</th><th>Party</th>{direction === 'PAYABLE' && <th>Category</th>}<th>Amount</th><th>Due date</th><th>Recurring</th><th>Status</th><th></th></tr></thead>
             <tbody>
               {invoices.map((inv) => (
                 <tr key={inv.id} style={{ background: inv.overdue ? 'var(--danger-bg)' : undefined }}>
                   <td className="mono">{inv.invoiceNumber}</td>
                   <td>{inv.partyName}{inv.businessName ? <span style={{ color: 'var(--slate-light)' }}> · {inv.businessName}</span> : null}</td>
+                  {direction === 'PAYABLE' && (
+                    <td>
+                      {inv.category ? <span className="pill pill-cobalt" style={{ fontSize: 11 }}>{CATEGORY_LABELS[inv.category]}</span> : <span style={{ color: 'var(--slate-light)' }}>—</span>}
+                    </td>
+                  )}
                   <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
                   <td>{formatDateShort(inv.dueDate)}</td>
                   <td>{RECURRENCE_LABELS[inv.recurrence] || '—'}</td>
                   <td>{statusPill(inv)}</td>
-                  <td><button className="btn btn-outline btn-sm" onClick={() => setSelectedId(inv.id)}>View</button></td>
+                  <td style={{ display: 'flex', gap: 6 }}>
+                    <button className="btn btn-outline btn-sm" onClick={() => setSelectedId(inv.id)}>View</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => setEditingId(inv.id)}>Edit</button>
+                  </td>
                 </tr>
               ))}
               {invoices.length === 0 && (
-                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No {label.toLowerCase()} invoices yet.</td></tr>
+                <tr><td colSpan={direction === 'PAYABLE' ? 8 : 7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No {label.toLowerCase()} invoices yet.</td></tr>
               )}
             </tbody>
           </table>
