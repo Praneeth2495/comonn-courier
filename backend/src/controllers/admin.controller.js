@@ -625,6 +625,8 @@ async function accountsOverview(req, res, next) {
     }, { gross: 0, net: 0 });
 
     const prevCostTotal = Number(prevCostAgg._sum.totalAmount || 0);
+    const hubCost = costByCategory.get('HUB') || 0;
+    const prevHubCost = Number(prevHubCostAgg._sum.totalAmount || 0);
     const profit = totals.net - costTotal;
     const prevProfit = prevTotals.net - prevCostTotal;
     const margin = totals.net > 0 ? profit / totals.net : 0;
