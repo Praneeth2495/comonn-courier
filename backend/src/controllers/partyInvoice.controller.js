@@ -7,8 +7,10 @@ const { generatePartyInvoicePdf, STORAGE_DIR } = require('../services/partyInvoi
 const { advance } = require('../services/partyInvoiceRecurrence');
 const { sendEmail } = require('../services/emailService');
 const { makeCommentHandlers } = require('../utils/commentHandlers');
+const { PARTY_INVOICE_CATEGORY_LABELS } = require('../constants/partyInvoiceCategories');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }).single('attachment');
+const VALID_CATEGORIES = Object.keys(PARTY_INVOICE_CATEGORY_LABELS);
 
 function isOverdue(invoice) {
   return invoice.status === 'UNPAID' && new Date(invoice.dueDate) < new Date();
