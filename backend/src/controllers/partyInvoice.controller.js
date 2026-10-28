@@ -155,7 +155,7 @@ async function updateInvoice(req, res, next) {
     const existing = await prisma.partyInvoice.findUnique({ where: { id: req.params.id } });
     if (!existing) return res.status(404).json({ error: 'Invoice not found' });
 
-    const { partyName, businessName, description, amount, gstPercent, dueDate, email, phone, recurrence, category, manifestId } = req.body;
+    const { partyName, businessName, description, amount, gstPercent, dueDate, email, phone, recurrence, category, manifestId, hubId } = req.body;
     const data = {};
     if (partyName !== undefined) {
       if (!partyName.trim()) return res.status(400).json({ error: 'partyName cannot be empty' });
