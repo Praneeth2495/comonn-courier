@@ -1365,7 +1365,7 @@ function AccountsOverviewPanel() {
 
   const kpis = [
     { label: 'Gross Revenue', display: fmtShort(totals.gross), delta: deltas.gross, badge: 'live' },
-    { label: 'Discounts', display: '−' + fmtShort(totals.discount), delta: deltas.gross, badge: 'live', info: 'Sum of promo-code discounts applied in this window.' },
+    { label: 'Hub', display: fmtShort(totals.hub), delta: deltas.hub, badge: 'approx', info: 'Operating cost tagged category=Hub for this window (and branch, if one is selected).' },
     { label: 'Net Revenue', display: fmtShort(totals.net), delta: deltas.net, badge: 'live', info: 'Gross revenue minus discounts and tax collected.' },
     { label: 'Operating Cost', display: fmtShort(totals.cost), delta: deltas.cost, badge: 'approx', info: 'Vendor bills recorded in this window — not yet matched order-by-order.' },
     { label: 'Net Profit', display: fmtShort(totals.profit), delta: deltas.profit, badge: 'approx', info: 'Net revenue minus operating cost for the same window.' },
