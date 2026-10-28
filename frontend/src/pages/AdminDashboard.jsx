@@ -1501,7 +1501,7 @@ function AccountsOverviewPanel() {
         </div>
       </div>
 
-      <ManifestCostsPanel branch={branch} />
+      <ManifestCostsPanel />
 
       <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
         <div className="panel-head-row">
