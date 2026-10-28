@@ -190,6 +190,8 @@ async function createManifest(req, res, next) {
           countryCode,
           regionId,
           toAddress: toAddress.trim(),
+          fromAirportCode: fromAirportCode || null,
+          fromAirportName: fromAirportName || null,
           manifestDate: new Date(manifestDate),
           departureDate: departureDate ? new Date(departureDate) : null,
           createdById: req.user.id,
