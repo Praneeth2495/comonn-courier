@@ -6,7 +6,7 @@ import { useBooking } from '../api/BookingContext';
 import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
 import MerchantsPanel from '../components/MerchantsPanel';
-import PartyInvoicesPanel from '../components/PartyInvoicesPanel';
+import PartyInvoicesPanel, { SalaryPanel } from '../components/PartyInvoicesPanel';
 import CustomsClientsPanel from '../components/CustomsClientsPanel';
 import AssetsPanel from '../components/AssetsPanel';
 import ClockInOutPanel from '../components/ClockInOutPanel';
