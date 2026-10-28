@@ -630,12 +630,14 @@ async function accountsOverview(req, res, next) {
           overdueCount: payableOverdueCount,
         },
       },
-      // Cost is a real total (PartyInvoice PAYABLE), but not yet linked to
-      // individual orders or tagged by category — see the schema note on
-      // PartyInvoice. The frontend uses this to label Cost/Profit/Margin
-      // "Approximate" and skip the cost-by-category breakdown entirely
-      // rather than show a number that doesn't exist yet.
-      costBreakdownAvailable: false,
+      // Live now that PartyInvoice carries a category (manifest cost
+      // sheet + Payable tab's dropdown/salary form all tag it) — rows
+      // predating that still have category: null and land in
+      // "Uncategorized" rather than vanishing from the total.
+      costBreakdownAvailable: true,
+      costByCategory: [...costByCategory.entries()]
+        .map(([key, amount]) => ({ category: key, label: key === 'UNCATEGORIZED' ? 'Uncategorized' : PARTY_INVOICE_CATEGORY_LABELS[key], amount: round2(amount) }))
+        .sort((a, b) => b.amount - a.amount),
     });
   } catch (err) {
     next(err);
