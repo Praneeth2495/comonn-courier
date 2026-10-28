@@ -314,6 +314,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [hubs, setHubs] = useState([]);
   const [regions, setRegions] = useState([]);
   const [hubId, setHubId] = useState('');
+  const [fromAirportCode, setFromAirportCode] = useState('');
   const [regionSelection, setRegionSelection] = useState('');
   const [manifestDate, setManifestDate] = useState(todayIso());
   // Defaults to the same day as manifestDate (the common case — cargo
