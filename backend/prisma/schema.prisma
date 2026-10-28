@@ -461,6 +461,11 @@ model PartyInvoice {
   @@index([direction])
   @@index([status])
   @@index([nextRecurrenceAt])
+  // Postgres treats NULLs as distinct in a unique index, so this only
+  // actually constrains the rows that DO have a manifestId (the bulk
+  // cost-sheet upserts) — ordinary manually-entered invoices, which never
+  // set manifestId, never collide with each other over it.
+  @@unique([manifestId, category])
 }
 
 // Same shape/purpose as OrderComment/MerchantInvoiceComment.
