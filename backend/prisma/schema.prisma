@@ -373,7 +373,11 @@ enum InvoiceDirection {
 // the Accounts Overview manifest cost-sheet form (see
 // manifest.controller.js's saveManifestCosts), which upserts one row per
 // category. Null on every pre-existing/unrelated invoice and on
-// RECEIVABLEs — this is a PAYABLE-only concept.
+// RECEIVABLEs — this is a PAYABLE-only concept. SALARY is separate from
+// the other 7 (never manifest-linked, never set in bulk) — it's the
+// Payable tab's salary-payment quick-create form (pick a staff member,
+// enter an amount) tagging its own entries so they group distinctly in
+// the Accounts Overview cost breakdown instead of falling into MISC.
 enum PartyInvoiceCategory {
   ORIGIN_CUSTOMS
   DEST_CUSTOMS
@@ -383,6 +387,7 @@ enum PartyInvoiceCategory {
   STATIONERY
   COMPANY
   MISC
+  SALARY
 }
 
 // How costRate on a category-tagged invoice should be read — mirrors the
