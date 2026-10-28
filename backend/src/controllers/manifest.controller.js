@@ -256,6 +256,107 @@ async function getManifest(req, res, next) {
   }
 }
 
+function round2(n) {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * POST /api/admin/manifests/:id/costs — { items: [{ category, mode, value }, ...] }
+ * Bulk-computes and saves the manifest's operating cost sheet (Accounts
+ * Overview → "Where the cost goes" → click a manifest) — one
+ * PartyInvoice(PAYABLE) row per category, upserted against the
+ * [manifestId, category] unique index so re-saving the form updates the
+ * same rows instead of creating duplicates. mode is FLAT (value is the ₹
+ * total), PER_KG (value × the manifest's totalWeightKg), or PERCENT
+ * (value% of the manifest orders' combined gross revenue) — see
+ * CostInputMode. A category sent with no value (or <= 0) has its row
+ * deleted instead, so clearing a field in the form clears the cost line;
+ * omitting a category from `items` entirely leaves its existing row
+ * untouched (the frontend always sends the full set, but this keeps a
+ * partial payload safe either way).
+ */
+async function saveManifestCosts(req, res, next) {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) return res.status(400).json({ error: 'items is required' });
+
+    const manifest = await prisma.manifest.findUnique({
+      where: { id: req.params.id },
+      include: { orders: { select: { grandTotal: true, discountTotal: true, taxTotal: true } } },
+    });
+    if (!manifest) return res.status(404).json({ error: 'Manifest not found' });
+
+    const grossRevenue = manifest.orders.reduce((sum, o) => sum + (Number(o.grandTotal) - Number(o.taxTotal) + Number(o.discountTotal)), 0);
+    const weightKg = Number(manifest.totalWeightKg);
+
+    for (const item of items) {
+      const { category, mode, value } = item || {};
+      if (!MANIFEST_COST_CATEGORIES.includes(category)) continue;
+      if (!['FLAT', 'PER_KG', 'PERCENT'].includes(mode)) continue;
+      const numValue = Number(value);
+
+      if (!numValue || numValue <= 0) {
+        await prisma.partyInvoice.deleteMany({ where: { manifestId: manifest.id, category } });
+        continue;
+      }
+
+      let amount;
+      if (mode === 'PER_KG') amount = numValue * weightKg;
+      else if (mode === 'PERCENT') amount = (numValue / 100) * grossRevenue;
+      else amount = numValue;
+      amount = round2(amount);
+
+      const label = PARTY_INVOICE_CATEGORY_LABELS[category];
+      const description = `Manifest ${manifest.manifestNumber} — ${label}`;
+      const existing = await prisma.partyInvoice.findUnique({ where: { manifestId_category: { manifestId: manifest.id, category } } });
+      if (existing) {
+        await prisma.partyInvoice.update({
+          where: { id: existing.id },
+          data: { amount, totalAmount: amount, costMode: mode, costRate: numValue, description },
+        });
+      } else {
+        const invoiceNumber = await generatePartyInvoiceNumber('PAYABLE');
+        await prisma.partyInvoice.create({
+          data: {
+            direction: 'PAYABLE',
+            invoiceNumber,
+            partyName: label,
+            description,
+            amount,
+            gstPercent: 0,
+            totalAmount: amount,
+            dueDate: manifest.manifestDate,
+            status: 'UNPAID',
+            category,
+            costMode: mode,
+            costRate: numValue,
+            manifestId: manifest.id,
+            createdById: req.user.id,
+          },
+        });
+      }
+    }
+
+    const current = await prisma.partyInvoice.findMany({
+      where: { manifestId: manifest.id },
+      select: { id: true, category: true, costMode: true, costRate: true, totalAmount: true, status: true },
+    });
+    const totalOperatingCost = round2(current.reduce((sum, i) => sum + Number(i.totalAmount), 0));
+    const airlineInvoice = current.find((i) => i.category === 'AIRLINE');
+
+    res.json({
+      items: current,
+      totals: {
+        grossRevenue: round2(grossRevenue),
+        operatingCost: totalOperatingCost,
+        airlineRatePerKg: airlineInvoice && weightKg > 0 ? round2(Number(airlineInvoice.totalAmount) / weightKg) : null,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** POST /api/admin/manifests/:id/orders — add more orders to an existing manifest. */
 async function addOrdersToManifest(req, res, next) {
   try {
