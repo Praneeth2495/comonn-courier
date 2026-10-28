@@ -241,7 +241,12 @@ async function getManifest(req, res, next) {
   try {
     const manifest = await prisma.manifest.findUnique({
       where: { id: req.params.id },
-      include: { hub: true, region: true, orders: { include: ORDER_INCLUDE } },
+      include: {
+        hub: true,
+        region: true,
+        orders: { include: ORDER_INCLUDE },
+        partyInvoices: { select: { id: true, category: true, costMode: true, costRate: true, totalAmount: true, status: true } },
+      },
     });
     if (!manifest) return res.status(404).json({ error: 'Manifest not found' });
     res.json({ manifest: { ...manifest, orders: manifest.orders.map(withQty) } });
