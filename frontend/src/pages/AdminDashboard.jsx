@@ -1620,13 +1620,12 @@ function ManifestCostsPanel({ branch }) {
   );
 }
 
-function ManifestCostModal({ manifestId, onClose }) {
+function ManifestCostModal({ manifestId, onClose, onSaved }) {
   const [manifest, setManifest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({}); // { CATEGORY: { mode, value } }
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [savedTotals, setSavedTotals] = useState(null);
 
   useEffect(() => {
     client.get(`/admin/manifests/${manifestId}`).then(({ data }) => {
