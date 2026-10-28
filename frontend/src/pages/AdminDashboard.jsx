@@ -1645,19 +1645,21 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
 
   function updateField(key, patch) {
     setForm((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
-    setSavedTotals(null);
   }
 
-  async function save() {
+  // Submit saves and closes the popup in one step (per the request this
+  // came from) rather than staying open to show a "saved" state — the
+  // manifest list re-fetches on close so the Overdue/Costed status there
+  // reflects the save immediately.
+  async function submit() {
     setSaving(true);
     setError('');
     try {
       const items = MANIFEST_COST_CATEGORIES.map((c) => ({ category: c.key, mode: form[c.key].mode, value: form[c.key].value }));
-      const { data } = await client.post(`/admin/manifests/${manifestId}/costs`, { items });
-      setSavedTotals(data.totals);
+      await client.post(`/admin/manifests/${manifestId}/costs`, { items });
+      onSaved();
     } catch (err) {
       setError(err.response?.data?.error || 'Could not save operating costs.');
-    } finally {
       setSaving(false);
     }
   }
