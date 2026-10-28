@@ -506,27 +506,94 @@ function classifyChannel(o) {
 // Andhra Pradesh, and every other AP district is unmapped until the
 // regions get split up further later. An order from an unmapped
 // district only ever shows under "Total", never under a specific branch.
-const BRANCH_SENDER_DEFS = {
-  HYD: { state: 'TG' },
-  VIJAYAWADA: { state: 'AP', region: 'Krishna' },
-  VIZAG: { state: 'AP', region: 'Visakhapatnam' },
-};
-// Operating costs aren't tied to a sender address the way revenue is —
-// they're scoped via which Manifest (and so which Hub) they're linked to.
-// No separate Hub.branchKey field for this (would be a second schema
-// change right after the migration mishap) — relies on the Hub being
-// named exactly this, case-sensitively, when it's created on the Hubs
-// admin page. If hub naming drifts from this, branch cost figures will
-// silently show ₹0 rather than erroring, so this is worth revisiting if
-// that happens.
+const BRANCH_KEYS = ['HYD', 'VIJAYAWADA', 'VIZAG'];
+// Direct hub tag (salary, or any other manifest-less PAYABLE) — relies on
+// the Hub being named exactly this, case-sensitively, when it's created
+// on the Hubs admin page. If hub naming drifts from this, that entry's
+// branch cost will silently show ₹0 rather than erroring.
 const BRANCH_HUB_NAMES = { HYD: 'HYD', VIJAYAWADA: 'Vijayawada', VIZAG: 'Vizag' };
 
-async function resolveBranchSenderWhere(branchKey) {
-  const def = BRANCH_SENDER_DEFS[branchKey];
-  if (!def) return null;
-  if (!def.region) return { state: def.state };
-  const rows = await prisma.postcodeSuggestion.findMany({ where: { countryCode: 'IN', region: def.region }, select: { postcode: true } });
-  return { state: def.state, postcode: { in: rows.map((r) => r.postcode) } };
+// Fetched once per request (not per branch) — both the revenue sender
+// filter and the per-order cost-allocation split below read off the same
+// two postcode sets.
+async function loadBranchPostcodeSets() {
+  const [krishnaRows, vizagRows] = await Promise.all([
+    prisma.postcodeSuggestion.findMany({ where: { countryCode: 'IN', region: 'Krishna' }, select: { postcode: true } }),
+    prisma.postcodeSuggestion.findMany({ where: { countryCode: 'IN', region: 'Visakhapatnam' }, select: { postcode: true } }),
+  ]);
+  return { krishna: new Set(krishnaRows.map((r) => r.postcode)), vizag: new Set(vizagRows.map((r) => r.postcode)) };
+}
+
+function branchSenderWhere(branchKey, sets) {
+  if (branchKey === 'HYD') return { state: 'TG' };
+  if (branchKey === 'VIJAYAWADA') return { state: 'AP', postcode: { in: [...sets.krishna] } };
+  if (branchKey === 'VIZAG') return { state: 'AP', postcode: { in: [...sets.vizag] } };
+  return null;
+}
+
+// The branch an individual order's sender resolves to — same three rules
+// as branchSenderWhere, just evaluated against one address instead of
+// turned into a Prisma filter. This is what the per-order cost split
+// below uses — operating costs aren't tagged with a branch directly
+// (except manifest-less entries like salary, via PartyInvoice.hubId);
+// a manifest-linked cost's branch is computed live from whichever orders
+// are actually in that manifest.
+function branchOfAddress(addr, sets) {
+  if (!addr) return null;
+  if (addr.state === 'TG') return 'HYD';
+  if (addr.state === 'AP' && sets.krishna.has(addr.postcode)) return 'VIJAYAWADA';
+  if (addr.state === 'AP' && sets.vizag.has(addr.postcode)) return 'VIZAG';
+  return null;
+}
+
+/**
+ * Branch-scoped operating cost for one window. A manifest-linked
+ * PartyInvoice splits its amount across branches by each of the
+ * manifest's orders' weight share (an order with no resolvable branch
+ * contributes its weight to neither — that slice of the cost simply
+ * isn't attributed to this branch, same as it isn't attributed to any
+ * other). A manifest-less PartyInvoice (salary; any other manual entry)
+ * counts in full if its own hubId's Hub name matches this branch,
+ * otherwise not at all. `onRow`, if given, is called with each row's
+ * branch-attributed share for bucketing into the trend chart — only
+ * meaningful for the current window, not the previous one.
+ */
+async function computeBranchCosts(branchKey, sets, window, onRow) {
+  const rows = await prisma.partyInvoice.findMany({
+    where: { direction: 'PAYABLE', createdAt: window },
+    select: { createdAt: true, totalAmount: true, category: true, manifestId: true, hubId: true, hub: { select: { name: true } } },
+  });
+  const manifestIds = [...new Set(rows.map((r) => r.manifestId).filter(Boolean))];
+  const manifests = manifestIds.length
+    ? await prisma.manifest.findMany({
+        where: { id: { in: manifestIds } },
+        select: { id: true, totalWeightKg: true, orders: { select: { chargeableWeightKg: true, senderAddress: { select: { state: true, postcode: true } } } } },
+      })
+    : [];
+  const manifestById = new Map(manifests.map((m) => [m.id, m]));
+
+  let total = 0;
+  const byCategory = new Map();
+  for (const row of rows) {
+    const amount = Number(row.totalAmount);
+    let share = 0;
+    if (row.manifestId) {
+      const m = manifestById.get(row.manifestId);
+      const totalWeight = m ? Number(m.totalWeightKg) : 0;
+      if (m && totalWeight > 0) {
+        const branchWeight = m.orders.reduce((sum, o) => (branchOfAddress(o.senderAddress, sets) === branchKey ? sum + Number(o.chargeableWeightKg) : sum), 0);
+        share = amount * (branchWeight / totalWeight);
+      }
+    } else if (row.hubId && row.hub?.name === BRANCH_HUB_NAMES[branchKey]) {
+      share = amount;
+    }
+    if (share <= 0) continue;
+    total += share;
+    const catKey = row.category || 'UNCATEGORIZED';
+    byCategory.set(catKey, (byCategory.get(catKey) || 0) + share);
+    if (onRow) onRow(row, share);
+  }
+  return { total, byCategory };
 }
 
 /**
