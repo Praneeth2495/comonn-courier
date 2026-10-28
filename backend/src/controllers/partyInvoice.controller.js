@@ -78,6 +78,15 @@ async function createInvoice(req, res, next) {
       const recurrenceValue = ['WEEKLY', 'MONTHLY', 'YEARLY'].includes(recurrence) ? recurrence : 'NONE';
       const statusValue = status === 'PAID' ? 'PAID' : 'UNPAID';
 
+      // Same [manifestId, category] pair the cost-sheet form upserts
+      // against — a manual entry here would otherwise collide with it
+      // (or a second manual one) at the DB constraint, so check first and
+      // give a clear message rather than a raw 500.
+      if (manifestIdValue && categoryValue) {
+        const conflict = await prisma.partyInvoice.findUnique({ where: { manifestId_category: { manifestId: manifestIdValue, category: categoryValue } } });
+        if (conflict) return res.status(409).json({ error: `This manifest already has a ${PARTY_INVOICE_CATEGORY_LABELS[categoryValue]} invoice (${conflict.invoiceNumber}) — edit that one instead.` });
+      }
+
       const amountNum = Number(amount);
       const gstNum = Number(gstPercent) || 0;
       const totalAmount = Math.round((amountNum + amountNum * gstNum / 100) * 100) / 100;
