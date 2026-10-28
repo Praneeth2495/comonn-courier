@@ -9,6 +9,7 @@ const {
   addOrdersToManifest,
   removeOrderFromManifest,
   downloadManifest,
+  saveManifestCosts,
 } = require('../controllers/manifest.controller');
 
 router.use(requireAuth, requireRole('ADMIN', 'STAFF'));
