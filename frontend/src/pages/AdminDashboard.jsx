@@ -1940,6 +1940,7 @@ function AccountsPanel() {
 
       {subTab === 'receivable' && canSeeAccountsTab('receivable') && <PartyInvoicesPanel direction="RECEIVABLE" />}
       {subTab === 'payable' && canSeeAccountsTab('payable') && <PartyInvoicesPanel direction="PAYABLE" />}
+      {subTab === 'salary' && canSeeAccountsTab('salary') && <SalaryPanel />}
       {subTab === 'assets' && hasAssetsAccess && <AssetsPanel />}
     </div>
   );
