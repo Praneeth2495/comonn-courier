@@ -123,6 +123,56 @@ export default function PartyInvoicesPanel({ direction }) {
   );
 }
 
+// Free-text input with a filtered dropdown of manifest numbers — fetches
+// the (small) full manifest list once and filters client-side, rather
+// than a server-side search endpoint, since the volume doesn't warrant
+// one. Shared by the create and edit Payable forms.
+function ManifestAutosuggest({ value, onChange }) {
+  const [manifests, setManifests] = useState([]);
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    client.get('/admin/manifests').then(({ data }) => setManifests(data.manifests)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!value) { setQuery(''); return; }
+    const m = manifests.find((x) => x.id === value);
+    if (m) setQuery(m.manifestNumber);
+  }, [value, manifests]);
+
+  const matches = query.trim()
+    ? manifests.filter((m) => m.manifestNumber.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
+    : manifests.slice(0, 8);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        className="input"
+        placeholder="Optional — e.g. MAN42"
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); onChange(''); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+      />
+      {open && matches.length > 0 && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, background: '#fff', border: '1px solid var(--line)', borderRadius: 10, marginTop: 4, maxHeight: 180, overflowY: 'auto', boxShadow: '0 14px 34px -12px rgba(0,0,0,.25)' }}>
+          {matches.map((m) => (
+            <div
+              key={m.id}
+              style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer' }}
+              onMouseDown={() => { onChange(m.id); setQuery(m.manifestNumber); setOpen(false); }}
+            >
+              <b className="mono">{m.manifestNumber}</b> <span style={{ color: 'var(--slate-light)' }}>· {m.hub?.name} → {m.countryCode}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CreateInvoiceModal({ direction, onClose, onCreated }) {
   const [partyName, setPartyName] = useState('');
   const [businessName, setBusinessName] = useState('');
@@ -134,6 +184,8 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
   const [phone, setPhone] = useState('');
   const [recurrence, setRecurrence] = useState('NONE');
   const [status, setStatus] = useState('UNPAID');
+  const [category, setCategory] = useState('');
+  const [manifestId, setManifestId] = useState('');
   const [attachment, setAttachment] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -155,6 +207,8 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
       if (phone) formData.append('phone', phone);
       formData.append('recurrence', recurrence);
       formData.append('status', status);
+      if (direction === 'PAYABLE' && category) formData.append('category', category);
+      if (direction === 'PAYABLE' && manifestId) formData.append('manifestId', manifestId);
       if (attachment) formData.append('attachment', attachment);
 
       await client.post('/admin/party-invoices', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
