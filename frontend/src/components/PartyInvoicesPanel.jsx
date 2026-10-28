@@ -33,7 +33,6 @@ export default function PartyInvoicesPanel({ direction }) {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [showSalary, setShowSalary] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [editingId, setEditingId] = useState(null);
 
