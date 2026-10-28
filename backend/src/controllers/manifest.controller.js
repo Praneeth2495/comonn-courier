@@ -437,4 +437,5 @@ module.exports = {
   addOrdersToManifest,
   removeOrderFromManifest,
   downloadManifest,
+  saveManifestCosts,
 };
