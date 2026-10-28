@@ -1335,6 +1335,7 @@ const MOCK_ACCOUNTS = import.meta.env.DEV && new URLSearchParams(window.location
 
 function AccountsOverviewPanel() {
   const [range, setRange] = useState('month');
+  const [branch, setBranch] = useState('TOTAL');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hover, setHover] = useState(null); // { x, y, label, gross, cost, net, profit }
@@ -1349,11 +1350,11 @@ function AccountsOverviewPanel() {
     }
     setLoading(true);
     let cancelled = false;
-    client.get('/admin/accounts/overview', { params: { range } }).then(({ data }) => {
+    client.get('/admin/accounts/overview', { params: { range, branch: branch === 'TOTAL' ? undefined : branch } }).then(({ data }) => {
       if (!cancelled) setData(data);
     }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [range]);
+  }, [range, branch]);
 
   if (!data) {
     return <div className="card" style={{ padding: 24, color: 'var(--slate)' }}>{loading ? 'Loading…' : 'Could not load the accounts overview.'}</div>;
