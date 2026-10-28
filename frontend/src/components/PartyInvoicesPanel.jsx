@@ -54,7 +54,6 @@ export default function PartyInvoicesPanel({ direction }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1 className="h-lg">{label}</h1>
         <div style={{ display: 'flex', gap: 10 }}>
-          {direction === 'PAYABLE' && <button className="btn btn-outline" onClick={() => setShowSalary(true)}>+ Pay salary</button>}
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Create invoice</button>
         </div>
       </div>
