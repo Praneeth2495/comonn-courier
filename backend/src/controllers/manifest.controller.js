@@ -186,7 +186,7 @@ async function createManifest(req, res, next) {
         data: {
           manifestNumber,
           barcodeValue: manifestNumber,
-          hubId,
+          hubId: hubId || null,
           countryCode,
           regionId,
           toAddress: toAddress.trim(),
