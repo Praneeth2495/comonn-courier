@@ -620,16 +620,11 @@ async function accountsOverview(req, res, next) {
     // never count as revenue, regardless of how far along the shipment is.
     const revenueWhere = { status: { notIn: UNPAID_STATUSES } };
 
-    const branchKey = BRANCH_SENDER_DEFS[req.query.branch] ? req.query.branch : null;
-    const branchSenderWhere = branchKey ? await resolveBranchSenderWhere(branchKey) : null;
-    if (branchSenderWhere) revenueWhere.senderAddress = branchSenderWhere;
-    // Costs aren't sender-scoped — see BRANCH_HUB_NAMES — so this only
-    // narrows PartyInvoice rows that are actually manifest-linked;
-    // un-linked bills (manual entries with no manifest) never show under
-    // a specific branch, only Total, same as an unmapped order's district.
-    const costWhere = branchKey ? { manifest: { hub: { name: BRANCH_HUB_NAMES[branchKey] } } } : {};
+    const branchKey = BRANCH_KEYS.includes(req.query.branch) ? req.query.branch : null;
+    const branchSets = branchKey ? await loadBranchPostcodeSets() : null;
+    if (branchKey) revenueWhere.senderAddress = branchSenderWhere(branchKey, branchSets);
 
-    const [orders, prevOrders, costRows, prevCostAgg, prevHubCostAgg, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
+    const [orders, prevOrders, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: window },
         select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true, user: { select: { company: true } } },
@@ -638,12 +633,6 @@ async function accountsOverview(req, res, next) {
         where: { ...revenueWhere, createdAt: prevWindow },
         select: { grandTotal: true, discountTotal: true, taxTotal: true },
       }),
-      // Fetched as rows (not an aggregate) so the same createdAt can be
-      // bucketed into the trend chart alongside revenue — see the
-      // cost-by-bucket merge below.
-      prisma.partyInvoice.findMany({ where: { direction: 'PAYABLE', createdAt: window, ...costWhere }, select: { createdAt: true, totalAmount: true, category: true } }),
-      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow, ...costWhere }, _sum: { totalAmount: true } }),
-      prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', category: 'HUB', createdAt: prevWindow, ...costWhere }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'RECEIVABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
       prisma.partyInvoice.count({ where: { direction: 'RECEIVABLE', status: 'UNPAID', dueDate: { lt: new Date() } } }),
       prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', status: 'UNPAID' }, _sum: { totalAmount: true } }),
@@ -670,15 +659,44 @@ async function accountsOverview(req, res, next) {
       b.gross += gross; b.discount += discount; b.net += net;
     }
 
+    // ---- costs ----
+    // Total (no branch) stays the simple "every PAYABLE row counts in
+    // full" path — no per-order splitting needed since nothing is being
+    // sliced by branch. A specific branch goes through computeBranchCosts
+    // instead (see its own comment for why).
     let costTotal = 0;
+    let prevCostTotal = 0;
+    let prevHubCost = 0;
     const costByCategory = new Map(); // category (or 'UNCATEGORIZED') -> ₹
-    for (const row of costRows) {
-      const amount = Number(row.totalAmount);
-      costTotal += amount;
-      const { key, label } = accountsBucketFor(row.createdAt, cfg.granularity);
-      getBucket(key, label).cost += amount;
-      const catKey = row.category || 'UNCATEGORIZED';
-      costByCategory.set(catKey, (costByCategory.get(catKey) || 0) + amount);
+    if (branchKey) {
+      const curr = await computeBranchCosts(branchKey, branchSets, window, (row, share) => {
+        const { key, label } = accountsBucketFor(row.createdAt, cfg.granularity);
+        getBucket(key, label).cost += share;
+      });
+      costTotal = curr.total;
+      for (const [k, v] of curr.byCategory) costByCategory.set(k, v);
+      const prev = await computeBranchCosts(branchKey, branchSets, prevWindow, null);
+      prevCostTotal = prev.total;
+      prevHubCost = prev.byCategory.get('HUB') || 0;
+    } else {
+      const costRows = await prisma.partyInvoice.findMany({
+        where: { direction: 'PAYABLE', createdAt: window },
+        select: { createdAt: true, totalAmount: true, category: true },
+      });
+      for (const row of costRows) {
+        const amount = Number(row.totalAmount);
+        costTotal += amount;
+        const { key, label } = accountsBucketFor(row.createdAt, cfg.granularity);
+        getBucket(key, label).cost += amount;
+        const catKey = row.category || 'UNCATEGORIZED';
+        costByCategory.set(catKey, (costByCategory.get(catKey) || 0) + amount);
+      }
+      const [prevCostAgg, prevHubCostAgg] = await Promise.all([
+        prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', createdAt: prevWindow }, _sum: { totalAmount: true } }),
+        prisma.partyInvoice.aggregate({ where: { direction: 'PAYABLE', category: 'HUB', createdAt: prevWindow }, _sum: { totalAmount: true } }),
+      ]);
+      prevCostTotal = Number(prevCostAgg._sum.totalAmount || 0);
+      prevHubCost = Number(prevHubCostAgg._sum.totalAmount || 0);
     }
 
     const series = [...buckets.values()]
@@ -691,9 +709,7 @@ async function accountsOverview(req, res, next) {
       return acc;
     }, { gross: 0, net: 0 });
 
-    const prevCostTotal = Number(prevCostAgg._sum.totalAmount || 0);
     const hubCost = costByCategory.get('HUB') || 0;
-    const prevHubCost = Number(prevHubCostAgg._sum.totalAmount || 0);
     const profit = totals.net - costTotal;
     const prevProfit = prevTotals.net - prevCostTotal;
     const margin = totals.net > 0 ? profit / totals.net : 0;
