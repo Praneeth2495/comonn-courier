@@ -225,10 +225,30 @@ async function createManifest(req, res, next) {
 }
 
 /** GET /api/admin/manifests */
+/**
+ * GET /api/admin/manifests?month=YYYY-MM&hubName=HYD — both optional and
+ * additive to the plain unfiltered list every other caller (ManifestPanel,
+ * the manifest autosuggest) relies on. `month` scopes by createdAt (the
+ * date the manifest itself was created, per the Accounts Overview request
+ * this came from — not manifestDate/departureDate). `hubName` is an exact,
+ * case-sensitive match against Hub.name — see BRANCH_HUB_NAMES in
+ * admin.controller.js for why that's the chosen key, not a separate id.
+ */
 async function listManifests(req, res, next) {
   try {
+    const { month, hubName } = req.query;
+    const where = {};
+    if (month) {
+      const start = new Date(`${month}-01T00:00:00.000Z`);
+      const end = new Date(start);
+      end.setUTCMonth(end.getUTCMonth() + 1);
+      where.createdAt = { gte: start, lt: end };
+    }
+    if (hubName) where.hub = { name: hubName };
+
     const manifests = await prisma.manifest.findMany({
-      include: { hub: true, region: true, createdBy: { select: { fullName: true } }, _count: { select: { orders: true } } },
+      where,
+      include: { hub: true, region: true, createdBy: { select: { fullName: true } }, _count: { select: { orders: true, partyInvoices: true } } },
       orderBy: { createdAt: 'desc' },
     });
     res.json({ manifests });
