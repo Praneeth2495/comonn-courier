@@ -1084,8 +1084,13 @@ model Manifest {
   id             String          @id @default(uuid())
   manifestNumber String          @unique // "MAN1", "MAN2"... yearly-resetting
   barcodeValue   String          @unique // scannable in Batch Scan — same value as manifestNumber today, kept separate in case that ever needs to differ
-  hubId          String
-  hub            Hub             @relation(fields: [hubId], references: [id])
+  // Optional — not used for branch cost attribution (that's computed
+  // per-order, by weight share, off each order's own sender address; see
+  // admin.controller.js's accountsOverview). Only still meaningful for
+  // the printed manifest PDF's "From" line (falls back to
+  // fromAirportName/Code below when unset — see manifestPdf.js).
+  hubId          String?
+  hub            Hub?            @relation(fields: [hubId], references: [id])
   // Destination country every order in this manifest shares — always set,
   // even when the orders span several airports within that country (see
   // regionId below), since it's what scopes "add more orders" to the right
