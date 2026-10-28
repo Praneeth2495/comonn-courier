@@ -1288,6 +1288,17 @@ const ACCOUNTS_RANGE_OPTIONS = [
   ['sixmo', '6 Months'],
   ['year', 'Year'],
 ];
+// Mirrors backend/src/controllers/admin.controller.js's BRANCH_SENDER_DEFS
+// / BRANCH_HUB_NAMES — 'TOTAL' means no filter. hubName is the exact Hub
+// record name the manifest cost-sheet panel below filters by; it only
+// matters for branches that have one (none do yet until hubs named
+// exactly this are created on the Hubs admin page).
+const BRANCH_OPTIONS = [
+  { key: 'TOTAL', label: 'Total', hubName: null },
+  { key: 'HYD', label: 'HYD', hubName: 'HYD' },
+  { key: 'VIJAYAWADA', label: 'Vijayawada', hubName: 'Vijayawada' },
+  { key: 'VIZAG', label: 'Vizag', hubName: 'Vizag' },
+];
 
 function fmtINR(n) { return '₹' + Math.round(n || 0).toLocaleString('en-IN'); }
 function fmtShort(n) {
