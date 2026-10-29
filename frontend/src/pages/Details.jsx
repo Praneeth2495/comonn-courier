@@ -109,6 +109,18 @@ function DetailsForm() {
   // when staff assess the parcel, not asked of the customer at booking) —
   // hidden from the customer-facing form entirely.
   const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
+  const norm = (s) => (s || '').trim().toLowerCase();
+  // Same pickup pincode as a booking already saved this session ("New
+  // booking") almost always means the same sender is shipping again — see
+  // the sender useState below for what gets carried over, and the email
+  // field's lockedFields entry further down for why email specifically
+  // also gets locked once this matches (request: a second+ order's sender
+  // email shouldn't need re-typing or be editable, unlike the other
+  // contact fields which stay editable in case a different person is
+  // dropping this particular parcel off).
+  const matchedSenderBooking = !isEditingExisting && quoteInput?.originPostcode
+    ? savedBookings?.find((b) => norm(b.senderAddress?.postcode) === norm(quoteInput.originPostcode))
+    : null;
   const [sender, setSender] = useState(() => {
     if (isEditingExisting) return fromSavedAddress(bookingOrder.senderAddress);
     // Pre-fill from the pickup pincode entered on the Quote page's Origin
@@ -118,19 +130,13 @@ function DetailsForm() {
     if (quoteInput?.originSuburb) base.city = quoteInput.originSuburb;
     if (quoteInput?.originState) base.state = normalizeRegionValue('IN', quoteInput.originState);
 
-    // Same pickup pincode as a booking already saved this session ("+ Add
-    // another item" / "New booking") almost always means the same sender is
-    // shipping again — carry over just their contact details (name, phone,
-    // email, address, instructions) so they don't have to retype them.
-    // Postcode/city/state/country stay driven by this booking's own quoted
-    // origin above (not the matched booking's) since that's what pricing
-    // was actually calculated against.
-    const norm = (s) => (s || '').trim().toLowerCase();
-    const matchedBooking = quoteInput?.originPostcode
-      ? savedBookings?.find((b) => norm(b.senderAddress?.postcode) === norm(quoteInput.originPostcode))
-      : null;
-    if (matchedBooking?.senderAddress) {
-      const matchedSender = fromSavedAddress(matchedBooking.senderAddress);
+    // Carry over just the contact details (name, phone, email, address,
+    // instructions) so they don't have to retype them. Postcode/city/
+    // state/country stay driven by this booking's own quoted origin above
+    // (not the matched booking's) since that's what pricing was actually
+    // calculated against.
+    if (matchedSenderBooking?.senderAddress) {
+      const matchedSender = fromSavedAddress(matchedSenderBooking.senderAddress);
       return {
         ...base,
         contactName: matchedSender.contactName,
