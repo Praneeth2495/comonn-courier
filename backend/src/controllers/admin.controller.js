@@ -459,18 +459,31 @@ function prevMonthRangeIso(todayIso) {
   return { firstOfPrevMonthIso, lastOfPrevMonthIso };
 }
 
+// Exact IST-midnight-to-IST-midnight boundaries — unlike windowRange's loose
+// UTC-midnight approximation (fine for the wide trailing windows below,
+// where the ~5.5h IST/UTC gap is negligible), Today/Yesterday/This
+// week/Current month are narrow enough that the gap would actually hide or
+// misplace same-day orders: e.g. right now (03:24 IST) is still 29 Oct in
+// UTC, so windowRange('2026-10-30','2026-10-30') wouldn't even have started
+// yet and every order placed since IST midnight would be invisible to it.
+function istDayBoundsUtc(fromIso, toIso) {
+  const gte = new Date(`${fromIso}T00:00:00.000+05:30`);
+  const lte = new Date(new Date(`${toIso}T00:00:00.000+05:30`).getTime() + 86400000 - 1);
+  return { gte, lte };
+}
+
 function accountsWindowFor(rangeKey) {
   const todayIso = isoDateIst(new Date());
   const granularity = ACCOUNTS_GRANULARITY[rangeKey];
 
   if (rangeKey === 'today') {
     const yestIso = isoDateIst(daysAgo(1));
-    return { fromIso: todayIso, toIso: todayIso, window: windowRange(todayIso, todayIso), prevWindow: windowRange(yestIso, yestIso), granularity };
+    return { fromIso: todayIso, toIso: todayIso, window: istDayBoundsUtc(todayIso, todayIso), prevWindow: istDayBoundsUtc(yestIso, yestIso), granularity };
   }
   if (rangeKey === 'yesterday') {
     const yestIso = isoDateIst(daysAgo(1));
     const dayBeforeIso = isoDateIst(daysAgo(2));
-    return { fromIso: yestIso, toIso: yestIso, window: windowRange(yestIso, yestIso), prevWindow: windowRange(dayBeforeIso, dayBeforeIso), granularity };
+    return { fromIso: yestIso, toIso: yestIso, window: istDayBoundsUtc(yestIso, yestIso), prevWindow: istDayBoundsUtc(dayBeforeIso, dayBeforeIso), granularity };
   }
   if (rangeKey === 'thisWeek') {
     // Monday-start, same as dayWiseWindow's 'currentWeek' and the
@@ -479,15 +492,17 @@ function accountsWindowFor(rangeKey) {
     const mondayIso = isoDateIst(daysAgo(daysSinceMonday));
     const prevMondayIso = isoDateIst(daysAgo(daysSinceMonday + 7));
     const prevSundayIso = isoDateIst(daysAgo(daysSinceMonday + 1));
-    return { fromIso: mondayIso, toIso: todayIso, window: windowRange(mondayIso, todayIso), prevWindow: windowRange(prevMondayIso, prevSundayIso), granularity };
+    return { fromIso: mondayIso, toIso: todayIso, window: istDayBoundsUtc(mondayIso, todayIso), prevWindow: istDayBoundsUtc(prevMondayIso, prevSundayIso), granularity };
   }
   if (rangeKey === 'currentMonth') {
     const firstOfMonthIso = `${todayIso.slice(0, 7)}-01`;
     const { firstOfPrevMonthIso, lastOfPrevMonthIso } = prevMonthRangeIso(todayIso);
-    return { fromIso: firstOfMonthIso, toIso: todayIso, window: windowRange(firstOfMonthIso, todayIso), prevWindow: windowRange(firstOfPrevMonthIso, lastOfPrevMonthIso), granularity };
+    return { fromIso: firstOfMonthIso, toIso: todayIso, window: istDayBoundsUtc(firstOfMonthIso, todayIso), prevWindow: istDayBoundsUtc(firstOfPrevMonthIso, lastOfPrevMonthIso), granularity };
   }
 
-  // threeMonths / sixMonths / year — trailing windows.
+  // threeMonths / sixMonths / year — trailing windows, wide enough that the
+  // loose UTC-midnight convention's ~5.5h fuzziness is negligible, so these
+  // stay on windowRange for consistency with the rest of this file.
   const days = ACCOUNTS_TRAILING_DAYS[rangeKey];
   const fromIso = isoDateIst(daysAgo(days - 1));
   const prevFromIso = isoDateIst(daysAgo(days * 2 - 1));
