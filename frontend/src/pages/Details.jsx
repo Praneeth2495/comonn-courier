@@ -210,7 +210,6 @@ function DetailsForm() {
     ? Boolean(bookingOrder?.receiverAddress?.eircode)
     : Boolean(quoteInput?.destinationEircode);
 
-  const norm = (s) => (s || '').trim().toLowerCase();
   // Only surface saved addresses that fully match this quote's chosen
   // pickup — postcode, city, and state all have to match (case/whitespace
   // normalized). Note: this means a saved address whose city/state was
