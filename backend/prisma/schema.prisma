@@ -1436,6 +1436,16 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
+// Dedup guard for the 9pm IST admin daily-summary WhatsApp job — the unique
+// constraint on dateIso lets concurrent cron firings (multiple Railway
+// replicas, or a restart overlapping the schedule) race to insert, with only
+// the first succeeding, so at most one summary goes out per IST calendar day.
+model DailySummarySend {
+  id      String   @id @default(uuid())
+  dateIso String   @unique
+  sentAt  DateTime @default(now())
+}
+
 // ------------------------------------------------------------
 // Inventory (equipment/supplies used for courier services)
 // ------------------------------------------------------------
