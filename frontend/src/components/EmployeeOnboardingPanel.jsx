@@ -220,6 +220,7 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
         fullName: e.fullName || '', email: e.email || '', phone: e.phone || '', role: e.role,
         designation: p.designation || '', department: p.department || '',
         dateOfJoining: p.dateOfJoining ? p.dateOfJoining.slice(0, 10) : '', hubId: p.hubId || '',
+        salaryAmount: p.salaryAmount != null ? String(p.salaryAmount) : '',
         addressLine1: p.addressLine1 || '', addressLine2: p.addressLine2 || '',
         city: p.city || '', state: p.state || '', postcode: p.postcode || '',
         emergencyContactName: p.emergencyContactName || '', emergencyContactRelation: p.emergencyContactRelation || '',
