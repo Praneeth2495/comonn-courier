@@ -1598,7 +1598,7 @@ function ManifestCostsPanel() {
       ) : (
         <div className="table-wrap">
           <table className="data-table">
-            <thead><tr><th>Manifest</th><th>Date</th><th>Hub</th><th>Destination</th><th className="num">Orders</th><th className="num">Weight</th><th>Status</th></tr></thead>
+            <thead><tr><th>Manifest</th><th>Date</th><th>Destination</th><th className="num">Orders</th><th className="num">Weight</th><th>Status</th></tr></thead>
             <tbody>
               {manifests.map((m) => {
                 const overdue = (m._count?.partyInvoices ?? 0) === 0;
@@ -1606,7 +1606,6 @@ function ManifestCostsPanel() {
                   <tr key={m.id} style={{ cursor: 'pointer', background: overdue ? 'var(--danger-bg)' : undefined }} onClick={() => setOpenId(m.id)}>
                     <td className="mono" style={{ color: 'var(--cobalt)', fontWeight: 600 }}>{m.manifestNumber}</td>
                     <td>{new Date(m.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</td>
-                    <td>{m.hub?.name}</td>
                     <td>{m.countryCode}</td>
                     <td className="num">{m._count?.orders ?? m.orderCount}</td>
                     <td className="num">{Number(m.totalWeightKg).toFixed(1)} kg</td>
