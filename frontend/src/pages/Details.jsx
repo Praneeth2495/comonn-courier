@@ -317,6 +317,7 @@ function DetailsForm() {
 
   function handleNewBookingClick() {
     if (!isAddressFilled(sender) || !isAddressFilled(receiver)) {
+      setPendingEditTarget(null);
       setShowNewBookingConfirm(true);
       return;
     }
@@ -338,33 +339,82 @@ function DetailsForm() {
     }
   }
 
-  // "Cancel" in the confirm popup — discard the current, not-yet-filled-in
-  // attempt (but keep any other bookings already saved this session) and
-  // start fresh.
+  // Loads a saved booking as the active one — the DetailsForm remount
+  // (keyed on order id, see the outer Details() wrapper) is what actually
+  // makes the form fields refresh to its values. Removed from
+  // savedBookings since it's "active" again, not "saved".
+  function loadBookingForEdit(booking) {
+    removeSavedBooking(booking.id);
+    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking) });
+  }
+
+  // "Cancel" in the confirm popup — discard the current booking's
+  // not-yet-filled-in attempt (but keep any other bookings already saved
+  // this session). If this prompt was triggered by clicking Edit on a
+  // saved booking (pendingEditTarget set) rather than plain "New
+  // booking", load that booking instead of bouncing to /quote — "discard
+  // this incomplete one" and "switch to editing that one" are the same
+  // action from here.
   function discardAndStartNew() {
     setShowNewBookingConfirm(false);
+    if (pendingEditTarget) {
+      const target = pendingEditTarget;
+      setPendingEditTarget(null);
+      loadBookingForEdit(target);
+      return;
+    }
     setBooking({ quoteInput: null, selectedQuote: null, order: null });
     navigate('/quote');
   }
 
-  // Brings a saved booking back as the active one for editing — the
-  // DetailsForm remount (keyed on order id, see the outer Details()
-  // wrapper) is what actually makes the form fields refresh to its values.
-  // Removed from savedBookings since it's "active" again, not "saved";
-  // if the customer saves-and-starts-another from here it'll go right
-  // back into the saved list via the existing New-booking flow.
-  function editSavedBooking(booking) {
-    removeSavedBooking(booking.id);
-    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking) });
+  // Clicking Edit on a saved booking must never silently throw away
+  // whatever's currently on screen — the previous version did exactly
+  // that (same bug for a brand-new unsaved booking or for a previously-
+  // reopened one), since swapping BookingContext's active order/
+  // quoteInput remounts this form from scratch. So: save/stash whatever's
+  // currently active first —
+  //  - nothing active (no quoteInput) → nothing to lose, proceed
+  //  - already a real order (bookingOrder set, i.e. this is itself a
+  //    reopened saved booking) → its address fields are always fully
+  //    filled already (they came from a real order), so just persist
+  //    any edits and put it back in the saved list
+  //  - a brand-new booking that hasn't been saved yet → persist it only
+  //    if sender+receiver are actually filled in; otherwise fall back to
+  //    the same confirm-or-discard prompt "New booking" already uses,
+  //    with this booking queued up to load once they decide
+  async function editSavedBooking(booking) {
+    if (!quoteInput) {
+      loadBookingForEdit(booking);
+      return;
+    }
+    if (!bookingOrder && (!isAddressFilled(sender) || !isAddressFilled(receiver))) {
+      setPendingEditTarget(booking);
+      setShowNewBookingConfirm(true);
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const stashed = await saveOrder();
+      addSavedBooking(stashed);
+      loadBookingForEdit(booking);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not save your current booking before switching — nothing was changed.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   // Only removes it from this session's saved list — the order itself
   // stays on the server as an abandoned PENDING_PAYMENT/UNFINISHED record,
   // same as any booking a customer simply never returns to. There's no
   // customer-facing "delete order" endpoint, and adding one is a bigger
-  // change than this button calls for.
-  function deleteSavedBooking(id) {
-    removeSavedBooking(id);
+  // change than this button calls for. Gated behind its own confirm
+  // modal (deleteTarget) rather than acting immediately — see the request
+  // this came from.
+  function confirmDeleteSavedBooking() {
+    if (deleteTarget) removeSavedBooking(deleteTarget.id);
+    setDeleteTarget(null);
   }
 
   return (
