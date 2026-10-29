@@ -716,7 +716,7 @@ async function accountsOverview(req, res, next) {
     const costByCategory = new Map(); // category (or 'UNCATEGORIZED') -> ₹
     if (branchKey) {
       const curr = await computeBranchCosts(branchKey, branchSets, window, (row, share) => {
-        const { key, label } = accountsBucketFor(row.createdAt, cfg.granularity);
+        const { key, label } = accountsBucketFor(row.createdAt, granularity);
         getBucket(key, label).cost += share;
       });
       costTotal = curr.total;
@@ -732,7 +732,7 @@ async function accountsOverview(req, res, next) {
       for (const row of costRows) {
         const amount = Number(row.totalAmount);
         costTotal += amount;
-        const { key, label } = accountsBucketFor(row.createdAt, cfg.granularity);
+        const { key, label } = accountsBucketFor(row.createdAt, granularity);
         getBucket(key, label).cost += amount;
         const catKey = row.category || 'UNCATEGORIZED';
         costByCategory.set(catKey, (costByCategory.get(catKey) || 0) + amount);
