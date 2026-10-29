@@ -699,12 +699,60 @@ function SalaryPaymentModal({ invoice, onClose, onCreated }) {
 // (client-side filtered off the normal party-invoices list — simpler than
 // a server-side category filter for this data volume) and the "+ Pay
 // salary" entry point, which used to live on the Payable tab itself.
+// One box per branch — "show the employees of HYD in a box, Vijayawada in
+// another box" per the explicit request — grouped by each salary entry's
+// own hubId/hub (required on every salary payment, see SalaryPaymentModal),
+// not a fixed employee→hub assignment, since the same person's hub can
+// change entry to entry if they move branches. Entries predating the
+// required-hub rule (hub: null) fall into their own "Unassigned" group
+// rather than vanishing.
+function groupInvoicesByHub(invoices) {
+  const groups = new Map(); // hub name (or 'Unassigned') -> invoices[]
+  for (const inv of invoices) {
+    const key = inv.hub?.name || 'Unassigned';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(inv);
+  }
+  return [...groups.entries()].sort(([a], [b]) => {
+    if (a === 'Unassigned') return 1;
+    if (b === 'Unassigned') return -1;
+    return a.localeCompare(b);
+  });
+}
+
+function SalaryTable({ invoices, onView, onEdit }) {
+  return (
+    <div className="table-wrap">
+      <table className="data-table">
+        <thead><tr><th>Invoice #</th><th>Staff member</th><th>Description</th><th>Amount</th><th>Due date</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {invoices.map((inv) => (
+            <tr key={inv.id} style={{ background: inv.overdue ? 'var(--danger-bg)' : undefined }}>
+              <td className="mono">{inv.invoiceNumber}</td>
+              <td>{inv.partyName}{inv.businessName ? <span style={{ color: 'var(--slate-light)' }}> · {inv.businessName}</span> : null}</td>
+              <td>{inv.description}</td>
+              <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
+              <td>{formatDateShort(inv.dueDate)}</td>
+              <td>{statusPill(inv)}</td>
+              <td style={{ display: 'flex', gap: 6 }}>
+                <button className="btn btn-outline btn-sm" onClick={() => onView(inv.id)}>View</button>
+                <button className="btn btn-outline btn-sm" onClick={() => onEdit(inv)}>Edit</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function SalaryPanel() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [search, setSearch] = useState('');
 
   function load() {
     setLoading(true);
@@ -714,37 +762,38 @@ export function SalaryPanel() {
   }
   useEffect(load, []);
 
+  const term = search.trim().toLowerCase();
+  const filtered = term
+    ? invoices.filter((inv) => [inv.partyName, inv.businessName, inv.invoiceNumber].some((v) => v?.toLowerCase().includes(term)))
+    : invoices;
+  const groups = groupInvoicesByHub(filtered);
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
         <h1 className="h-lg">Salary</h1>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Pay salary</button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <input
+            className="input" type="search" placeholder="Search employee…"
+            value={search} onChange={(e) => setSearch(e.target.value)}
+            style={{ minWidth: 220 }}
+          />
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Pay salary</button>
+        </div>
       </div>
 
-      {loading ? <LoadingLogo /> : (
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead><tr><th>Invoice #</th><th>Staff member</th><th>Description</th><th>Amount</th><th>Due date</th><th>Status</th><th></th></tr></thead>
-            <tbody>
-              {invoices.map((inv) => (
-                <tr key={inv.id} style={{ background: inv.overdue ? 'var(--danger-bg)' : undefined }}>
-                  <td className="mono">{inv.invoiceNumber}</td>
-                  <td>{inv.partyName}{inv.businessName ? <span style={{ color: 'var(--slate-light)' }}> · {inv.businessName}</span> : null}</td>
-                  <td>{inv.description}</td>
-                  <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
-                  <td>{formatDateShort(inv.dueDate)}</td>
-                  <td>{statusPill(inv)}</td>
-                  <td style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-outline btn-sm" onClick={() => setSelectedId(inv.id)}>View</button>
-                    <button className="btn btn-outline btn-sm" onClick={() => setEditingInvoice(inv)}>Edit</button>
-                  </td>
-                </tr>
-              ))}
-              {invoices.length === 0 && (
-                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No salary payments yet.</td></tr>
-              )}
-            </tbody>
-          </table>
+      {loading ? <LoadingLogo /> : groups.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', textAlign: 'center', padding: '24px 0' }}>
+          {term ? 'No employees match your search.' : 'No salary payments yet.'}
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {groups.map(([hubName, groupInvoices]) => (
+            <div key={hubName} className="card" style={{ padding: '18px 20px' }}>
+              <h3 style={{ fontSize: 14, color: 'var(--navy)', marginBottom: 12 }}>{hubName}</h3>
+              <SalaryTable invoices={groupInvoices} onView={setSelectedId} onEdit={setEditingInvoice} />
+            </div>
+          ))}
         </div>
       )}
 
