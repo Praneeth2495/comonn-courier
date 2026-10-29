@@ -314,7 +314,7 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
                 <div className="field"><label>Department</label><input className="input" value={form.department} onChange={(e) => update('department', e.target.value)} /></div>
                 <div className="field"><label>Date of joining</label><input className="input" type="date" value={form.dateOfJoining} onChange={(e) => update('dateOfJoining', e.target.value)} /></div>
                 <div className="field">
-                  <label>Branch</label>
+                  <label>Hub</label>
                   <select className="select" value={form.hubId} onChange={(e) => update('hubId', e.target.value)}>
                     <option value="">—</option>
                     {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
