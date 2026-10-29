@@ -615,9 +615,9 @@ function branchSenderWhere(branchKey, sets) {
 // are actually in that manifest.
 function branchOfAddress(addr, sets) {
   if (!addr) return null;
-  if (addr.state === 'TG') return 'HYD';
-  if (addr.state === 'AP' && sets.krishna.has(addr.postcode)) return 'VIJAYAWADA';
-  if (addr.state === 'AP' && sets.vizag.has(addr.postcode)) return 'VIZAG';
+  if (addr.state === 'Telangana') return 'HYD';
+  if (addr.state === 'Andhra Pradesh' && sets.krishna.has(addr.postcode)) return 'VIJAYAWADA';
+  if (addr.state === 'Andhra Pradesh' && sets.vizag.has(addr.postcode)) return 'VIZAG';
   return null;
 }
 
