@@ -187,7 +187,7 @@ function InviteEmployeeModal({ onClose, onSaved }) {
 
 const EMPTY_FORM = {
   fullName: '', email: '', phone: '', role: 'STAFF',
-  designation: '', department: '', dateOfJoining: '', hubId: '',
+  designation: '', department: '', dateOfJoining: '', hubId: '', salaryAmount: '',
   addressLine1: '', addressLine2: '', city: '', state: '', postcode: '',
   emergencyContactName: '', emergencyContactRelation: '', emergencyContactPhone: '',
   idProofType: '', idProofNumber: '', idProofType2: '', idProofNumber2: '',
