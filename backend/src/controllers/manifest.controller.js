@@ -375,7 +375,7 @@ async function saveManifestCosts(req, res, next) {
 
     const current = await prisma.partyInvoice.findMany({
       where: { manifestId: manifest.id },
-      select: { id: true, category: true, costMode: true, costRate: true, totalAmount: true, status: true },
+      select: { id: true, category: true, customLabel: true, costMode: true, costRate: true, totalAmount: true, status: true },
     });
     const totalOperatingCost = round2(current.reduce((sum, i) => sum + Number(i.totalAmount), 0));
     const airlineInvoice = current.find((i) => i.category === 'AIRLINE');
