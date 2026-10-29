@@ -93,7 +93,7 @@ function toEmployeeResponse(user) {
   };
 }
 
-const EMPLOYEE_INCLUDE = { employeeProfile: { include: { approvedBy: { select: { fullName: true } } } } };
+const EMPLOYEE_INCLUDE = { employeeProfile: { include: { approvedBy: { select: { fullName: true } }, hub: { select: { name: true } } } } };
 
 /** GET /api/admin/employees — ADMIN only: every STAFF/DRIVER account with its onboarding profile, if any. */
 async function listEmployees(req, res, next) {
