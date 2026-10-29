@@ -455,8 +455,8 @@ function DetailsForm() {
                   {b.pricingPending ? 'Priced at pickup' : `₹${Number(b.grandTotal).toFixed(2)}`}
                 </div>
                 <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-                  <button type="button" className="btn btn-outline btn-sm" onClick={() => editSavedBooking(b)}>Edit</button>
-                  <button type="button" className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }} onClick={() => deleteSavedBooking(b.id)}>Delete</button>
+                  <button type="button" className="btn btn-outline btn-sm" disabled={loading} onClick={() => editSavedBooking(b)}>Edit</button>
+                  <button type="button" className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }} disabled={loading} onClick={() => setDeleteTarget(b)}>Delete</button>
                 </div>
               </div>
             ))}
