@@ -119,7 +119,7 @@ async function notifyOrderStatusChange(orderId, status) {
         trackingNumber: true,
         whatsappOptIn: true,
         grandTotal: true,
-        senderAddress: { select: { contactName: true, phone: true, city: true } },
+        senderAddress: { select: { contactName: true, phone: true, city: true, countryCode: true } },
         receiverAddress: { select: { contactName: true, phone: true, city: true, countryCode: true } },
       },
     });
