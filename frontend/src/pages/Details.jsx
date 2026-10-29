@@ -155,6 +155,7 @@ function DetailsForm() {
         line2: matchedSender.line2,
       };
     }
+    if (firstSenderEmail) return { ...base, email: firstSenderEmail };
     return base;
   });
   const [receiver, setReceiver] = useState(() => {
