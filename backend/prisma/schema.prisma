@@ -201,6 +201,12 @@ model EmployeeProfile {
   // employee's own self-fill link) — which branch this hire belongs to.
   hubId String?
   hub   Hub?    @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  // Standard monthly salary set at onboarding — prefills the amount field
+  // when paying this employee from the Salary tab's roster (still freely
+  // editable per payment, e.g. for a raise or a one-off adjustment). Not
+  // itself a payment record — PartyInvoice(category: SALARY) is still the
+  // only source of truth for what was actually paid.
+  salaryAmount Decimal? @db.Decimal(10, 2)
 
   designation   String?
   department    String?
