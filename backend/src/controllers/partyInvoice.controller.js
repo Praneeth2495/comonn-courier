@@ -230,7 +230,7 @@ async function listEmployeesForSalaryRoster(req, res, next) {
   try {
     const users = await prisma.user.findMany({
       where: { role: { in: ['STAFF', 'DRIVER'] }, isActive: true },
-      select: { id: true, fullName: true, email: true, employeeProfile: { select: { hubId: true, hub: { select: { name: true } } } } },
+      select: { id: true, fullName: true, email: true, employeeProfile: { select: { hubId: true, hub: { select: { name: true } }, salaryAmount: true } } },
       orderBy: { fullName: 'asc' },
     });
     res.json({
@@ -240,6 +240,7 @@ async function listEmployeesForSalaryRoster(req, res, next) {
         email: u.email,
         hubId: u.employeeProfile?.hubId || null,
         hub: u.employeeProfile?.hub || null,
+        salaryAmount: u.employeeProfile?.salaryAmount || null,
       })),
     });
   } catch (err) {
