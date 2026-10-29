@@ -216,6 +216,22 @@ async function createManifest(req, res, next) {
     });
 
     const full = await recomputeAndRegenerate(manifest.id);
+
+    // Auto-log a system comment on every order just added to this manifest,
+    // same "visible with who/when in the internal comment history" pattern
+    // order.controller.js's status-change comments already use. req.user
+    // only carries { id, role, email } (the JWT payload, no fullName), so
+    // this reads "Manifest created by Admin - MAN19" rather than naming the
+    // actual staff member.
+    const actorLabel = req.user.role.charAt(0) + req.user.role.slice(1).toLowerCase();
+    await prisma.orderComment.createMany({
+      data: full.orders.map((o) => ({
+        orderId: o.id,
+        authorId: req.user.id,
+        body: `Manifest created by ${actorLabel} - ${manifest.manifestNumber}`,
+      })),
+    });
+
     res.status(201).json({ manifest: full });
   } catch (err) {
     if (err.status) return res.status(err.status).json({ error: err.message });
