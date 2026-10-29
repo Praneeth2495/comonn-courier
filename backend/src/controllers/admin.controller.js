@@ -658,15 +658,8 @@ async function computeBranchCosts(branchKey, sets, window, onRow) {
  */
 async function accountsOverview(req, res, next) {
   try {
-    const rangeKey = ACCOUNTS_RANGES[req.query.range] ? req.query.range : 'month';
-    const cfg = ACCOUNTS_RANGES[rangeKey];
-
-    const todayIso = isoDateIst(new Date());
-    const fromIso = isoDateIst(daysAgo(cfg.days - 1));
-    const window = windowRange(fromIso, todayIso);
-    const prevFromIso = isoDateIst(daysAgo(cfg.days * 2 - 1));
-    const prevToIso = isoDateIst(daysAgo(cfg.days));
-    const prevWindow = windowRange(prevFromIso, prevToIso);
+    const rangeKey = ACCOUNTS_RANGE_KEYS.includes(req.query.range) ? req.query.range : 'currentMonth';
+    const { fromIso, toIso, window, prevWindow, granularity } = accountsWindowFor(rangeKey);
 
     // Same "did money actually move" exclusion the Overview summary card
     // uses — DRAFT/UNFINISHED/PENDING_PAYMENT/PICKUP_CONFIRMED/CANCELLED
