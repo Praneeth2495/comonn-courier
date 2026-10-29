@@ -1799,6 +1799,39 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
               </div>
             );
           })}
+
+          {customItems.map((it) => {
+            const amount = amountForModeValue(it.mode, it.value);
+            return (
+              <div key={it.key} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <input
+                  className="input" type="text" placeholder="Cost label"
+                  value={it.label}
+                  onChange={(e) => updateCustomItem(it.key, { label: e.target.value })}
+                  style={{ width: 150, flex: 'none', fontSize: 13, fontWeight: 600 }}
+                />
+                <input
+                  className="input" type="number" min="0" step="0.01" placeholder="INR"
+                  value={it.value}
+                  onChange={(e) => updateCustomItem(it.key, { value: e.target.value })}
+                  style={{ flex: '1 1 100px', minWidth: 90 }}
+                />
+                <select className="select" value={it.mode} onChange={(e) => updateCustomItem(it.key, { mode: e.target.value })} style={{ width: 120, flex: 'none' }}>
+                  <option value="FLAT">₹ flat</option>
+                  <option value="PER_KG">₹ / kg</option>
+                  <option value="PERCENT">% of revenue</option>
+                </select>
+                <div className="num" style={{ width: 90, flex: 'none', textAlign: 'right', fontSize: 12.5, color: 'var(--slate)' }}>= ₹{amount.toFixed(2)}</div>
+                <button
+                  type="button" onClick={() => removeCustomItem(it.key)}
+                  style={{ background: 'none', border: 'none', color: 'var(--danger)', fontSize: 16, cursor: 'pointer', flex: 'none', width: 24 }}
+                  title="Remove this cost line"
+                >✕</button>
+              </div>
+            );
+          })}
+
+          <button type="button" className="btn btn-outline btn-sm" onClick={addCustomItem} style={{ alignSelf: 'flex-start' }}>+ Add cost</button>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--line-2)', paddingTop: 14, marginBottom: 14, flexWrap: 'wrap', gap: 12 }}>
