@@ -265,7 +265,7 @@ async function getManifest(req, res, next) {
         hub: true,
         region: true,
         orders: { include: ORDER_INCLUDE },
-        partyInvoices: { select: { id: true, category: true, costMode: true, costRate: true, totalAmount: true, status: true } },
+        partyInvoices: { select: { id: true, category: true, customLabel: true, costMode: true, costRate: true, totalAmount: true, status: true } },
       },
     });
     if (!manifest) return res.status(404).json({ error: 'Manifest not found' });
