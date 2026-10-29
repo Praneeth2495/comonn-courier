@@ -217,6 +217,36 @@ async function listStaffForSalary(req, res, next) {
   }
 }
 
+// GET /api/admin/party-invoices/employees-roster — active STAFF/DRIVER
+// employees with their onboarding hub, for the Salary tab's permanent
+// roster (every active employee shows up grouped by hub, whether or not
+// they've been paid yet this month). Deliberately minimal — id/fullName/
+// email/hub only, not the full onboarding profile (ID proofs, bank
+// details, address) — this route is gated by the Accounts/Salary
+// permission (see partyInvoice.routes.js), not Onboarding, so it must
+// never leak onboarding-only data to an ACCOUNTS user who lacks Onboarding
+// access.
+async function listEmployeesForSalaryRoster(req, res, next) {
+  try {
+    const users = await prisma.user.findMany({
+      where: { role: { in: ['STAFF', 'DRIVER'] }, isActive: true },
+      select: { id: true, fullName: true, email: true, employeeProfile: { select: { hubId: true, hub: { select: { name: true } } } } },
+      orderBy: { fullName: 'asc' },
+    });
+    res.json({
+      employees: users.map((u) => ({
+        id: u.id,
+        fullName: u.fullName,
+        email: u.email,
+        hubId: u.employeeProfile?.hubId || null,
+        hub: u.employeeProfile?.hub || null,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /**
  * POST /api/admin/party-invoices/salary — { employeeUserId, amount,
  * month (YYYY-MM), dueDate } — the Payable tab's salary quick-add: picks
