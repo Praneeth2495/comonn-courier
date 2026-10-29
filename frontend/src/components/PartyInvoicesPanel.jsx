@@ -601,12 +601,15 @@ function EditInvoiceModal({ invoiceId, onClose, onSaved }) {
 // Also doubles as the edit form when `invoice` is passed — the
 // employee/month fields are create-only (an existing invoice's partyName
 // etc. don't change), but hub/amount/due date are editable either way.
-function SalaryPaymentModal({ invoice, onClose, onCreated }) {
+// `prefill`, when given (from a roster row's "Pay salary" button), presets
+// the employee and their onboarding hub so the admin isn't re-picking
+// someone whose row they just clicked — still freely editable either way.
+function SalaryPaymentModal({ invoice, prefill, onClose, onCreated }) {
   const [staff, setStaff] = useState([]);
   const [hubs, setHubs] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
-  const [employeeUserId, setEmployeeUserId] = useState('');
-  const [hubId, setHubId] = useState(invoice?.hubId || '');
+  const [employeeUserId, setEmployeeUserId] = useState(prefill?.employeeUserId || '');
+  const [hubId, setHubId] = useState(invoice?.hubId || prefill?.hubId || '');
   const [amount, setAmount] = useState(invoice ? String(invoice.amount) : '');
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [dueDate, setDueDate] = useState(() => (invoice ? toDateInputValue(invoice.dueDate) : new Date().toISOString().slice(0, 10)));
