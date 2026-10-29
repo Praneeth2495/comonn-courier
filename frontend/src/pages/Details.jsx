@@ -117,6 +117,17 @@ function DetailsForm() {
   const matchedSenderBooking = !isEditingExisting && quoteInput?.originPostcode
     ? savedBookings?.find((b) => norm(b.senderAddress?.postcode) === norm(quoteInput.originPostcode))
     : null;
+  // Sender email specifically locks to the FIRST saved booking's email for
+  // every order after it in the session, regardless of whether this
+  // particular order's pickup postcode happens to match (unlike
+  // matchedSenderBooking's full prefill above, which only reuses the rest
+  // of the sender's details when the pickup location is literally the
+  // same) — same sender account placing several orders from different
+  // pickup points should still never need to retype or be able to change
+  // the email after the first one.
+  const firstSenderEmail = !isEditingExisting
+    ? savedBookings?.find((b) => b.senderAddress?.email)?.senderAddress?.email || null
+    : null;
   const [sender, setSender] = useState(() => {
     if (isEditingExisting) return fromSavedAddress(bookingOrder.senderAddress);
     // Pre-fill from the pickup pincode entered on the Quote page's Origin
