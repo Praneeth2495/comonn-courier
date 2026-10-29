@@ -39,4 +39,15 @@ async function updateHub(req, res, next) {
   }
 }
 
-module.exports = { listHubs, createHub, updateHub };
+/** DELETE /api/admin/hubs/:id — any manifest/salary/onboarding row tagged with this hub keeps its own data, just loses the hub link (onDelete: SetNull on every relation). */
+async function deleteHub(req, res, next) {
+  try {
+    await prisma.hub.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.code === 'P2025') return res.status(404).json({ error: 'Hub not found' });
+    next(err);
+  }
+}
+
+module.exports = { listHubs, createHub, updateHub, deleteHub };
