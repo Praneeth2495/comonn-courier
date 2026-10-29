@@ -35,7 +35,7 @@ const COST_CATEGORY_SPLIT = [
 ];
 
 export function buildMockAccountsOverview(range) {
-  const cfg = RANGE_CONFIG[range] || RANGE_CONFIG.month;
+  const cfg = RANGE_CONFIG[range] || RANGE_CONFIG.currentMonth;
   const series = cfg.revenue.map((gross, i) => {
     const discount = round2(gross * DISCOUNT_RATE);
     const net = round2(gross - discount);
