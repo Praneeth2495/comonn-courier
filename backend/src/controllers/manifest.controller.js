@@ -280,19 +280,26 @@ function round2(n) {
 }
 
 /**
- * POST /api/admin/manifests/:id/costs — { items: [{ category, mode, value }, ...] }
+ * POST /api/admin/manifests/:id/costs — { items: [{ category, mode, value, customLabel? }, ...] }
  * Bulk-computes and saves the manifest's operating cost sheet (Accounts
  * Overview → "Where the cost goes" → click a manifest) — one
  * PartyInvoice(PAYABLE) row per category, upserted against the
- * [manifestId, category] unique index so re-saving the form updates the
- * same rows instead of creating duplicates. mode is FLAT (value is the ₹
- * total), PER_KG (value × the manifest's totalWeightKg), or PERCENT
- * (value% of the manifest orders' combined gross revenue) — see
+ * [manifestId, category, customLabel] unique index so re-saving the form
+ * updates the same rows instead of creating duplicates. mode is FLAT (value
+ * is the ₹ total), PER_KG (value × the manifest's totalWeightKg), or
+ * PERCENT (value% of the manifest orders' combined gross revenue) — see
  * CostInputMode. A category sent with no value (or <= 0) has its row
  * deleted instead, so clearing a field in the form clears the cost line;
  * omitting a category from `items` entirely leaves its existing row
  * untouched (the frontend always sends the full set, but this keeps a
  * partial payload safe either way).
+ *
+ * customLabel is only meaningful on MISC items — it's how the "+ Add cost"
+ * row under Miscellaneous lets several ad-hoc named cost lines coexist per
+ * manifest (each its own PartyInvoice row) instead of the usual one row per
+ * category. Any previously-saved custom MISC row whose label isn't present
+ * in this submission gets deleted, so removing a custom row in the form and
+ * re-submitting actually clears it.
  */
 async function saveManifestCosts(req, res, next) {
   try {
@@ -307,15 +314,18 @@ async function saveManifestCosts(req, res, next) {
 
     const grossRevenue = manifest.orders.reduce((sum, o) => sum + (Number(o.grandTotal) - Number(o.taxTotal) + Number(o.discountTotal)), 0);
     const weightKg = Number(manifest.totalWeightKg);
+    const submittedCustomLabels = new Set();
 
     for (const item of items) {
       const { category, mode, value } = item || {};
       if (!MANIFEST_COST_CATEGORIES.includes(category)) continue;
       if (!['FLAT', 'PER_KG', 'PERCENT'].includes(mode)) continue;
+      const customLabel = category === 'MISC' ? (item.customLabel || '').trim() : '';
+      if (customLabel) submittedCustomLabels.add(customLabel);
       const numValue = Number(value);
 
       if (!numValue || numValue <= 0) {
-        await prisma.partyInvoice.deleteMany({ where: { manifestId: manifest.id, category } });
+        await prisma.partyInvoice.deleteMany({ where: { manifestId: manifest.id, category, customLabel } });
         continue;
       }
 
@@ -325,9 +335,9 @@ async function saveManifestCosts(req, res, next) {
       else amount = numValue;
       amount = round2(amount);
 
-      const label = PARTY_INVOICE_CATEGORY_LABELS[category];
+      const label = customLabel || PARTY_INVOICE_CATEGORY_LABELS[category];
       const description = `Manifest ${manifest.manifestNumber} — ${label}`;
-      const existing = await prisma.partyInvoice.findUnique({ where: { manifestId_category: { manifestId: manifest.id, category } } });
+      const existing = await prisma.partyInvoice.findUnique({ where: { manifestId_category_customLabel: { manifestId: manifest.id, category, customLabel } } });
       if (existing) {
         await prisma.partyInvoice.update({
           where: { id: existing.id },
@@ -347,6 +357,7 @@ async function saveManifestCosts(req, res, next) {
             dueDate: manifest.manifestDate,
             status: 'UNPAID',
             category,
+            customLabel,
             costMode: mode,
             costRate: numValue,
             manifestId: manifest.id,
@@ -355,6 +366,12 @@ async function saveManifestCosts(req, res, next) {
         });
       }
     }
+
+    // Any custom MISC row saved in a previous visit but no longer present
+    // in this submission (the user removed it in the form) gets dropped.
+    await prisma.partyInvoice.deleteMany({
+      where: { manifestId: manifest.id, category: 'MISC', customLabel: { notIn: ['', ...submittedCustomLabels] } },
+    });
 
     const current = await prisma.partyInvoice.findMany({
       where: { manifestId: manifest.id },
