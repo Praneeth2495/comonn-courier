@@ -592,10 +592,17 @@ async function loadBranchPostcodeSets() {
   return { krishna: new Set(krishnaRows.map((r) => r.postcode)), vizag: new Set(vizagRows.map((r) => r.postcode)) };
 }
 
+// Address.state stores the expanded full state name ("Telangana", "Andhra
+// Pradesh"), never the 2-letter code — see frontend's normalizeRegionValue
+// (utils/regionNames.js), which every address-entry path (postcode-suggestion
+// pick, quote-origin prefill) runs through before it ever reaches form state
+// or the order-creation payload. Comparing against 'TG'/'AP' here looked
+// right (that's what PostcodeSuggestion.state itself holds) but silently
+// matched zero real orders.
 function branchSenderWhere(branchKey, sets) {
-  if (branchKey === 'HYD') return { state: 'TG' };
-  if (branchKey === 'VIJAYAWADA') return { state: 'AP', postcode: { in: [...sets.krishna] } };
-  if (branchKey === 'VIZAG') return { state: 'AP', postcode: { in: [...sets.vizag] } };
+  if (branchKey === 'HYD') return { state: 'Telangana' };
+  if (branchKey === 'VIJAYAWADA') return { state: 'Andhra Pradesh', postcode: { in: [...sets.krishna] } };
+  if (branchKey === 'VIZAG') return { state: 'Andhra Pradesh', postcode: { in: [...sets.vizag] } };
   return null;
 }
 
