@@ -339,6 +339,26 @@ function DetailsForm() {
     navigate('/quote');
   }
 
+  // Brings a saved booking back as the active one for editing — the
+  // DetailsForm remount (keyed on order id, see the outer Details()
+  // wrapper) is what actually makes the form fields refresh to its values.
+  // Removed from savedBookings since it's "active" again, not "saved";
+  // if the customer saves-and-starts-another from here it'll go right
+  // back into the saved list via the existing New-booking flow.
+  function editSavedBooking(booking) {
+    removeSavedBooking(booking.id);
+    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking) });
+  }
+
+  // Only removes it from this session's saved list — the order itself
+  // stays on the server as an abandoned PENDING_PAYMENT/UNFINISHED record,
+  // same as any booking a customer simply never returns to. There's no
+  // customer-facing "delete order" endpoint, and adding one is a bigger
+  // change than this button calls for.
+  function deleteSavedBooking(id) {
+    removeSavedBooking(id);
+  }
+
   return (
     <div>
       <div id="stepper-details"><Stepper activeKey="details" /></div>
