@@ -161,6 +161,13 @@ function DetailsForm() {
   const [error, setError] = useState('');
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [showNewBookingConfirm, setShowNewBookingConfirm] = useState(false);
+  // Set only when "Edit" was clicked on a saved booking while the current
+  // one still needs the confirm-or-discard prompt below (incomplete
+  // sender/receiver) — lets that same modal's "discard" button load the
+  // requested booking instead of just bouncing to /quote. Null means the
+  // modal is there for the plain "New booking" flow instead.
+  const [pendingEditTarget, setPendingEditTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     if (user) client.get('/addresses').then(({ data }) => setSavedAddresses(data.addresses)).catch(() => {});
