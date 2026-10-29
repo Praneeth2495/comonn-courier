@@ -187,7 +187,7 @@ function InviteEmployeeModal({ onClose, onSaved }) {
 
 const EMPTY_FORM = {
   fullName: '', email: '', phone: '', role: 'STAFF',
-  designation: '', department: '', dateOfJoining: '',
+  designation: '', department: '', dateOfJoining: '', hubId: '',
   addressLine1: '', addressLine2: '', city: '', state: '', postcode: '',
   emergencyContactName: '', emergencyContactRelation: '', emergencyContactPhone: '',
   idProofType: '', idProofNumber: '', idProofType2: '', idProofNumber2: '',
@@ -197,6 +197,7 @@ const EMPTY_FORM = {
 function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState(null);
+  const [hubs, setHubs] = useState([]);
   const [idProofFile, setIdProofFile] = useState(null);
   const [idProofFile2, setIdProofFile2] = useState(null);
   const [existingIdProof, setExistingIdProof] = useState(false);
@@ -206,6 +207,10 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
   const [approving, setApproving] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    client.get('/admin/hubs').then(({ data }) => setHubs(data.hubs.filter((h) => h.isActive))).catch(() => {});
+  }, []);
+
   function load() {
     if (mode !== 'edit') return;
     client.get(`/admin/employees/${employeeId}`).then(({ data }) => {
@@ -214,7 +219,7 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
       setForm({
         fullName: e.fullName || '', email: e.email || '', phone: e.phone || '', role: e.role,
         designation: p.designation || '', department: p.department || '',
-        dateOfJoining: p.dateOfJoining ? p.dateOfJoining.slice(0, 10) : '',
+        dateOfJoining: p.dateOfJoining ? p.dateOfJoining.slice(0, 10) : '', hubId: p.hubId || '',
         addressLine1: p.addressLine1 || '', addressLine2: p.addressLine2 || '',
         city: p.city || '', state: p.state || '', postcode: p.postcode || '',
         emergencyContactName: p.emergencyContactName || '', emergencyContactRelation: p.emergencyContactRelation || '',
