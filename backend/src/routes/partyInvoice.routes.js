@@ -12,6 +12,7 @@ const {
   listInvoiceComments,
   addInvoiceComment,
   listStaffForSalary,
+  listEmployeesForSalaryRoster,
   createSalaryPayment,
 } = require('../controllers/partyInvoice.controller');
 
