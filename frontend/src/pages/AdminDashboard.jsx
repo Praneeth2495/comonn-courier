@@ -1333,7 +1333,7 @@ function AcctKpiTile({ label, display, delta, deltaIsPoints, badge, info }) {
 const MOCK_ACCOUNTS = import.meta.env.DEV && new URLSearchParams(window.location.search).get('mockAccounts') === '1';
 
 function AccountsOverviewPanel() {
-  const [range, setRange] = useState('month');
+  const [range, setRange] = useState('currentMonth');
   const [branch, setBranch] = useState('TOTAL');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
