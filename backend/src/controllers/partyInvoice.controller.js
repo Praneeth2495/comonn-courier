@@ -414,5 +414,6 @@ module.exports = {
   listInvoiceComments,
   addInvoiceComment,
   listStaffForSalary,
+  listEmployeesForSalaryRoster,
   createSalaryPayment,
 };
