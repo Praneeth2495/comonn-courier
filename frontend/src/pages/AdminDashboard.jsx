@@ -1623,10 +1623,17 @@ function ManifestCostsPanel() {
   );
 }
 
+let customCostSeq = 0;
+
 function ManifestCostModal({ manifestId, onClose, onSaved }) {
   const [manifest, setManifest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({}); // { CATEGORY: { mode, value } }
+  // Ad-hoc cost lines added via "+ Add cost" under Miscellaneous — each its
+  // own PartyInvoice(category: MISC, customLabel: <label>) row server-side.
+  // `key` is a local-only React key (never sent), separate from the
+  // invoice id so a freshly-added, not-yet-saved row still has a stable key.
+  const [customItems, setCustomItems] = useState([]); // [{ key, label, mode, value }]
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -1636,18 +1643,33 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
       setManifest(m);
       const next = {};
       for (const cat of MANIFEST_COST_CATEGORIES) {
-        const existing = m.partyInvoices?.find((pi) => pi.category === cat.key);
+        const existing = m.partyInvoices?.find((pi) => pi.category === cat.key && !pi.customLabel);
         next[cat.key] = existing
           ? { mode: existing.costMode || cat.defaultMode, value: existing.costRate != null ? String(existing.costRate) : '' }
           : { mode: cat.defaultMode, value: cat.defaultValue };
       }
       setForm(next);
+      setCustomItems(
+        (m.partyInvoices || [])
+          .filter((pi) => pi.category === 'MISC' && pi.customLabel)
+          .map((pi) => ({ key: `c${customCostSeq++}`, label: pi.customLabel, mode: pi.costMode || 'FLAT', value: pi.costRate != null ? String(pi.costRate) : '' }))
+      );
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [manifestId]);
 
   function updateField(key, patch) {
     setForm((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+  }
+
+  function addCustomItem() {
+    setCustomItems((prev) => [...prev, { key: `c${customCostSeq++}`, label: '', mode: 'FLAT', value: '' }]);
+  }
+  function updateCustomItem(key, patch) {
+    setCustomItems((prev) => prev.map((it) => (it.key === key ? { ...it, ...patch } : it)));
+  }
+  function removeCustomItem(key) {
+    setCustomItems((prev) => prev.filter((it) => it.key !== key));
   }
 
   // Submit saves and closes the popup in one step (per the request this
@@ -1659,6 +1681,11 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
     setError('');
     try {
       const items = MANIFEST_COST_CATEGORIES.map((c) => ({ category: c.key, mode: form[c.key].mode, value: form[c.key].value }));
+      for (const it of customItems) {
+        const label = it.label.trim();
+        if (!label) continue; // unlabeled rows are dropped silently rather than erroring
+        items.push({ category: 'MISC', customLabel: label, mode: it.mode, value: it.value });
+      }
       await client.post(`/admin/manifests/${manifestId}/costs`, { items });
       onSaved();
     } catch (err) {
@@ -1678,15 +1705,19 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
   const weightKg = Number(manifest.totalWeightKg);
   const grossRevenue = grossRevenueOfOrders(manifest.orders);
 
-  function amountFor(key) {
-    const f = form[key];
-    const v = Number(f?.value);
+  function amountForModeValue(mode, value) {
+    const v = Number(value);
     if (!v) return 0;
-    if (f.mode === 'PER_KG') return v * weightKg;
-    if (f.mode === 'PERCENT') return (v / 100) * grossRevenue;
+    if (mode === 'PER_KG') return v * weightKg;
+    if (mode === 'PERCENT') return (v / 100) * grossRevenue;
     return v;
   }
-  const operatingCost = MANIFEST_COST_CATEGORIES.reduce((sum, c) => sum + amountFor(c.key), 0);
+  function amountFor(key) {
+    const f = form[key];
+    return amountForModeValue(f?.mode, f?.value);
+  }
+  const operatingCost = MANIFEST_COST_CATEGORIES.reduce((sum, c) => sum + amountFor(c.key), 0)
+    + customItems.reduce((sum, it) => sum + amountForModeValue(it.mode, it.value), 0);
   const airlineRatePerKg = weightKg > 0 ? amountFor('AIRLINE') / weightKg : 0;
 
   return (
