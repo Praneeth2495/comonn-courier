@@ -25,6 +25,7 @@ router.post('/', createInvoice);
 // would match "/staff" and "/salary" as an :id param and these would
 // never be reached.
 router.get('/staff', listStaffForSalary);
+router.get('/employees-roster', listEmployeesForSalaryRoster);
 router.post('/salary', createSalaryPayment);
 router.get('/:id', getInvoice);
 router.patch('/:id', updateInvoice);
