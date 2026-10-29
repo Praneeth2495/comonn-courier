@@ -459,18 +459,16 @@ function DetailsForm() {
               </div>
             )}
 
-            {isStaffUser && (
-              <div className="grid-2" style={{ marginTop: 18 }}>
-                <div className="field">
-                  <label>Goods description</label>
-                  <input className="input" placeholder="Documents, clothes, decorative items" value={contentsDescription} onChange={(e) => setContentsDescription(e.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Value of goods</label>
-                  <input className="input" type="number" min="0" placeholder="₹5,000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} />
-                </div>
+            <div className="grid-2" style={{ marginTop: 18 }}>
+              <div className="field">
+                <label>Goods description</label>
+                <input className="input" placeholder="Documents, clothes, decorative items" value={contentsDescription} onChange={(e) => setContentsDescription(e.target.value)} />
               </div>
-            )}
+              <div className="field">
+                <label>Value of goods</label>
+                <input className="input" type="number" min="0" placeholder="₹5,000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} />
+              </div>
+            </div>
 
             <div className="form-section-title inline"><div className="badge">1</div><h4>Receiver details</h4></div>
             <AddressFields
