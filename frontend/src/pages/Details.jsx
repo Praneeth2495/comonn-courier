@@ -498,7 +498,7 @@ function DetailsForm() {
                 if (!a) return;
                 setSender((prev) => ({ ...fromSavedAddress(a), postcode: prev.postcode, city: prev.city, state: prev.state, countryCode: prev.countryCode }));
               }}
-              lockedFields={senderLocked ? ['postcode', 'city', 'state', 'countryCode'] : []}
+              lockedFields={senderLocked ? ['postcode', 'city', 'state', 'countryCode', ...(matchedSenderBooking ? ['email'] : [])] : []}
             />
           </div>
 
