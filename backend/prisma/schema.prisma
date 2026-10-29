@@ -432,6 +432,12 @@ model PartyInvoice {
   // it. Kept so the manifest cost-sheet form can re-show "Hub: ₹100/kg"
   // rather than only the computed total on reopen.
   category         PartyInvoiceCategory?
+  // Non-empty only for an ad-hoc cost line added under the manifest
+  // cost-sheet's MISC category (the "+ Add cost" row) — lets several
+  // custom-named entries coexist per manifest instead of the usual one
+  // row per category. Empty string (not null — see the unique index below)
+  // for every one of the 8 fixed categories.
+  customLabel      String                @default("")
   costMode         CostInputMode?
   costRate         Decimal?              @db.Decimal(10, 4)
   manifestId       String?
