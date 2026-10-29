@@ -610,7 +610,7 @@ function SalaryPaymentModal({ invoice, prefill, onClose, onCreated }) {
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [employeeUserId, setEmployeeUserId] = useState(prefill?.employeeUserId || '');
   const [hubId, setHubId] = useState(invoice?.hubId || prefill?.hubId || '');
-  const [amount, setAmount] = useState(invoice ? String(invoice.amount) : '');
+  const [amount, setAmount] = useState(invoice ? String(invoice.amount) : prefill?.amount != null ? String(prefill.amount) : '');
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [dueDate, setDueDate] = useState(() => (invoice ? toDateInputValue(invoice.dueDate) : new Date().toISOString().slice(0, 10)));
   const [submitting, setSubmitting] = useState(false);
