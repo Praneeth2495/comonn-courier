@@ -23,10 +23,11 @@ const ACTIVE_PICKUP_STATUSES = ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', '
  *    definition the Overview stat card already uses (computeOrderTotals).
  *  - collectedToday: orders physically picked up by the courier today
  *    (pickedUpAt, not payment-collected — see pickedUpAt on Order).
- *  - overdueToday: pickup orders whose scheduled pickupDate has passed
- *    without being picked up yet — mirrors the Pickup orders tab's own
- *    __overdue calculation (AdminDashboard.jsx) and
- *    driverAutoUnassign.js's parsePickupDate, just without the
+ *  - overdueToday: active pickup orders not collected by 9pm (IST) today —
+ *    scheduled pickupDate is today-or-earlier (IST) and still hasn't been
+ *    picked up. This job runs at 21:00 IST, so "today" pickups still
+ *    outstanding at send time count as overdue too, not just prior days.
+ *    Reuses driverAutoUnassign.js's parsePickupDate, just without the
  *    assignedDriverId requirement (overdue counts every such order, not
  *    only ones currently assigned to a rider).
  */
