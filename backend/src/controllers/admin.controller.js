@@ -768,7 +768,7 @@ async function accountsOverview(req, res, next) {
 
     res.json({
       range: rangeKey,
-      window: { from: fromIso, to: todayIso },
+      window: { from: fromIso, to: toIso },
       series,
       branch: branchKey || 'TOTAL',
       totals: {
