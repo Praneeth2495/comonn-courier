@@ -606,7 +606,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         </div>
         <div className="field">
           <label>Email <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-          <input className="input" type="email" placeholder="example@gmail.com" required value={value.email} onChange={(e) => onChange('email', e.target.value)} />
+          <input className="input" type="email" placeholder="example@gmail.com" required disabled={isLocked('email')} value={value.email} onChange={(e) => onChange('email', e.target.value)} />
         </div>
         <div className="field">
           <label>{instructionsLabel}</label>
