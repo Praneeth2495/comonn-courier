@@ -105,10 +105,6 @@ function DetailsForm() {
   // Otherwise a guest starting a second booking in the same tab would see
   // the previous customer's name/address auto-filled in these fields.
   const isEditingExisting = Boolean(bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role)));
-  // Goods description / value of goods are a staff-only field (filled in
-  // when staff assess the parcel, not asked of the customer at booking) —
-  // hidden from the customer-facing form entirely.
-  const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
   const norm = (s) => (s || '').trim().toLowerCase();
   // Same pickup pincode as a booking already saved this session ("New
   // booking") almost always means the same sender is shipping again — see
