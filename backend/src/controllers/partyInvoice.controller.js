@@ -251,6 +251,12 @@ async function createSalaryPayment(req, res, next) {
         gstPercent: 0,
         totalAmount: amountNum,
         dueDate: new Date(dueDate),
+        // Pinned to the 1st of the salary's own month (not whichever day
+        // it's actually entered/paid) — Accounts Overview buckets operating
+        // cost by createdAt, so an October salary paid a few days into
+        // November must still count as October's cost, not drift into
+        // whichever month the admin happened to click "Pay salary" in.
+        createdAt: month ? new Date(`${month}-01T00:00:00.000Z`) : undefined,
         status: 'UNPAID',
         category: 'SALARY',
         // No manifest for a salary — this is exactly the case
