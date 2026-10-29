@@ -43,7 +43,7 @@ async function listInvoices(req, res, next) {
       ];
     }
 
-    const invoices = await prisma.partyInvoice.findMany({ where, orderBy: { createdAt: 'desc' } });
+    const invoices = await prisma.partyInvoice.findMany({ where, include: { hub: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
     const mapped = invoices.map(toInvoiceResponse);
     // Overdue-first, then newest-first within each group — small table, so
     // sorting in JS after fetch (same approach MerchantsPanel takes
