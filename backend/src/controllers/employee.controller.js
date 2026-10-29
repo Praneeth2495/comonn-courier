@@ -130,6 +130,7 @@ function profileFieldsFromBody(body) {
     department: body.department?.trim() || null,
     dateOfJoining: body.dateOfJoining ? new Date(body.dateOfJoining) : null,
     hubId: body.hubId?.trim() || null,
+    salaryAmount: body.salaryAmount !== undefined && body.salaryAmount !== '' ? Number(body.salaryAmount) : null,
     ...employeeFillableFieldsFromBody(body),
   };
 }
