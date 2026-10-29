@@ -822,7 +822,7 @@ export function SalaryPanel() {
 
       {payingEmployee && (
         <SalaryPaymentModal
-          prefill={{ employeeUserId: payingEmployee.id, hubId: payingEmployee.profile?.hubId }}
+          prefill={{ employeeUserId: payingEmployee.id, hubId: payingEmployee.hubId }}
           onClose={() => setPayingEmployee(null)}
           onCreated={() => { setPayingEmployee(null); load(); }}
         />
