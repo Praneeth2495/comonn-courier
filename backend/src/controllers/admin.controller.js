@@ -427,20 +427,73 @@ async function dashboardKpis(req, res, next) {
 }
 
 // ---------------- Accounts → Overview (P&L) ----------------
-// Each range is a trailing window (ending today, IST) rather than a
-// calendar period — same convention dayWiseWindow/activityWindows already
-// use elsewhere in this file. The "previous" comparison window is the
-// same number of days immediately before it, so a delta is always like-for-like
-// (e.g. this 7-day week vs the 7 days before it), not skewed by different
-// window lengths.
-const ACCOUNTS_RANGES = {
-  day: { days: 1, granularity: 'hour' },
-  week: { days: 7, granularity: 'day' },
-  month: { days: 30, granularity: 'day' },
-  quarter: { days: 90, granularity: 'isoweek' },
-  sixmo: { days: 182, granularity: 'month' },
-  year: { days: 365, granularity: 'month' },
+// Today/Yesterday/This week/Current month are calendar-anchored (IST) —
+// "this week" is Monday-to-date, "current month" is the 1st-to-date, same
+// conventions dayWiseWindow/activityWindows already use elsewhere in this
+// file. The three longer options stay trailing windows (ending today) since
+// there's no single obvious calendar anchor for "3 months" the way there is
+// for a week or month. Every range's "previous" comparison window is a
+// like-for-like window of the same shape immediately before it (yesterday
+// for today, last calendar week for this week, last calendar month for
+// current month, the same number of trailing days for the rest) — never
+// skewed by different window lengths.
+const ACCOUNTS_RANGE_KEYS = ['today', 'yesterday', 'thisWeek', 'currentMonth', 'threeMonths', 'sixMonths', 'year'];
+const ACCOUNTS_TRAILING_DAYS = { threeMonths: 90, sixMonths: 182, year: 365 };
+const ACCOUNTS_GRANULARITY = {
+  today: 'hour',
+  yesterday: 'hour',
+  thisWeek: 'day',
+  currentMonth: 'day',
+  threeMonths: 'isoweek',
+  sixMonths: 'month',
+  year: 'month',
 };
+
+// First/last calendar day (IST, loose-UTC-midnight convention) of the
+// month immediately before whichever month `todayIso` falls in.
+function prevMonthRangeIso(todayIso) {
+  const firstOfThisMonth = new Date(`${todayIso.slice(0, 7)}-01T00:00:00.000Z`);
+  const lastOfPrevMonth = new Date(firstOfThisMonth.getTime() - 86400000);
+  const lastOfPrevMonthIso = lastOfPrevMonth.toISOString().slice(0, 10);
+  const firstOfPrevMonthIso = `${lastOfPrevMonthIso.slice(0, 7)}-01`;
+  return { firstOfPrevMonthIso, lastOfPrevMonthIso };
+}
+
+function accountsWindowFor(rangeKey) {
+  const todayIso = isoDateIst(new Date());
+  const granularity = ACCOUNTS_GRANULARITY[rangeKey];
+
+  if (rangeKey === 'today') {
+    const yestIso = isoDateIst(daysAgo(1));
+    return { fromIso: todayIso, toIso: todayIso, window: windowRange(todayIso, todayIso), prevWindow: windowRange(yestIso, yestIso), granularity };
+  }
+  if (rangeKey === 'yesterday') {
+    const yestIso = isoDateIst(daysAgo(1));
+    const dayBeforeIso = isoDateIst(daysAgo(2));
+    return { fromIso: yestIso, toIso: yestIso, window: windowRange(yestIso, yestIso), prevWindow: windowRange(dayBeforeIso, dayBeforeIso), granularity };
+  }
+  if (rangeKey === 'thisWeek') {
+    // Monday-start, same as dayWiseWindow's 'currentWeek' and the
+    // dayOfWeek chart's own WEEKDAYS ordering.
+    const daysSinceMonday = WEEKDAYS.indexOf(WEEKDAY_FORMATTER.format(new Date()));
+    const mondayIso = isoDateIst(daysAgo(daysSinceMonday));
+    const prevMondayIso = isoDateIst(daysAgo(daysSinceMonday + 7));
+    const prevSundayIso = isoDateIst(daysAgo(daysSinceMonday + 1));
+    return { fromIso: mondayIso, toIso: todayIso, window: windowRange(mondayIso, todayIso), prevWindow: windowRange(prevMondayIso, prevSundayIso), granularity };
+  }
+  if (rangeKey === 'currentMonth') {
+    const firstOfMonthIso = `${todayIso.slice(0, 7)}-01`;
+    const { firstOfPrevMonthIso, lastOfPrevMonthIso } = prevMonthRangeIso(todayIso);
+    return { fromIso: firstOfMonthIso, toIso: todayIso, window: windowRange(firstOfMonthIso, todayIso), prevWindow: windowRange(firstOfPrevMonthIso, lastOfPrevMonthIso), granularity };
+  }
+
+  // threeMonths / sixMonths / year — trailing windows.
+  const days = ACCOUNTS_TRAILING_DAYS[rangeKey];
+  const fromIso = isoDateIst(daysAgo(days - 1));
+  const prevFromIso = isoDateIst(daysAgo(days * 2 - 1));
+  const prevToIso = isoDateIst(daysAgo(days));
+  return { fromIso, toIso: todayIso, window: windowRange(fromIso, todayIso), prevWindow: windowRange(prevFromIso, prevToIso), granularity };
+}
 const IST_HOUR_FORMATTER = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: 'numeric', hour12: false });
 const IST_DAY_LABEL_FORMATTER = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' });
 const IST_MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', month: 'short' });
