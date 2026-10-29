@@ -321,6 +321,10 @@ function EmployeeFormModal({ mode, employeeId, onClose, onSaved }) {
                     {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
                   </select>
                 </div>
+                <div className="field">
+                  <label>Salary (₹)</label>
+                  <input className="input" type="number" min="0" step="0.01" placeholder="Monthly amount" value={form.salaryAmount} onChange={(e) => update('salaryAmount', e.target.value)} />
+                </div>
               </div>
             </div>
 
