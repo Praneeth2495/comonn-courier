@@ -197,6 +197,11 @@ model EmployeeProfile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 
+  // Admin-assigned at onboarding (profileFieldsFromBody — never the
+  // employee's own self-fill link) — which branch this hire belongs to.
+  hubId String?
+  hub   Hub?    @relation(fields: [hubId], references: [id], onDelete: SetNull)
+
   designation   String?
   department    String?
   dateOfJoining DateTime?
