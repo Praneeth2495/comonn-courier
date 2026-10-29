@@ -61,6 +61,18 @@ async function sendDailySummaryWhatsApp() {
   const to = process.env.ADMIN_WHATSAPP_NUMBER;
   if (!to) return;
   const { iso } = todayIstWindow();
+
+  // Claim today's send before doing anything else — the unique constraint on
+  // dateIso means only one of {this process firing twice, multiple replicas,
+  // a restart near 21:00 IST} wins the race, so at most one WhatsApp message
+  // goes out per IST calendar day.
+  try {
+    await prisma.dailySummarySend.create({ data: { dateIso: iso } });
+  } catch (err) {
+    if (err.code === 'P2002') return; // already sent today
+    throw err;
+  }
+
   const { totalToday, collectedToday, overdueToday } = await computeDailySummary();
   try {
     await sendTemplateMessage({
