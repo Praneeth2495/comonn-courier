@@ -698,23 +698,27 @@ function SalaryPaymentModal({ invoice, prefill, onClose, onCreated }) {
   );
 }
 
-// Dedicated Accounts → Salary tab: lists every SALARY-category payable
-// (client-side filtered off the normal party-invoices list — simpler than
-// a server-side category filter for this data volume) and the "+ Pay
-// salary" entry point, which used to live on the Payable tab itself.
-// One box per branch — "show the employees of HYD in a box, Vijayawada in
-// another box" per the explicit request — grouped by each salary entry's
-// own hubId/hub (required on every salary payment, see SalaryPaymentModal),
-// not a fixed employee→hub assignment, since the same person's hub can
-// change entry to entry if they move branches. Entries predating the
-// required-hub rule (hub: null) fall into their own "Unassigned" group
-// rather than vanishing.
-function groupInvoicesByHub(invoices) {
-  const groups = new Map(); // hub name (or 'Unassigned') -> invoices[]
-  for (const inv of invoices) {
-    const key = inv.hub?.name || 'Unassigned';
+// Dedicated Accounts → Salary tab. The roster of active employees is
+// permanent — every active STAFF/DRIVER account shows up here every month,
+// grouped by their onboarding hub (EmployeeProfile.hubId), whether or not
+// they've been paid yet this month, rather than only showing up once a
+// payment exists (the earlier invoice-first version). Clicking a row with
+// no payment yet opens the "Pay salary" form prefilled with that employee;
+// clicking a row that's already been paid this month opens
+// InvoiceDetailModal, which already has the Paid/Unpaid toggle and a
+// comments thread — nothing new needed there, it just wasn't reachable
+// without an invoice to click into.
+function currentMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function groupByHubName(items, hubNameOf) {
+  const groups = new Map(); // hub name (or 'Unassigned') -> items[]
+  for (const item of items) {
+    const key = hubNameOf(item) || 'Unassigned';
     if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(inv);
+    groups.get(key).push(item);
   }
   return [...groups.entries()].sort(([a], [b]) => {
     if (a === 'Unassigned') return 1;
@@ -723,26 +727,30 @@ function groupInvoicesByHub(invoices) {
   });
 }
 
-function SalaryTable({ invoices, onView, onEdit }) {
+function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
   return (
     <div className="table-wrap">
       <table className="data-table">
-        <thead><tr><th>Invoice #</th><th>Staff member</th><th>Description</th><th>Amount</th><th>Due date</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Name</th><th>Amount</th><th>Due date</th><th>Status</th><th></th></tr></thead>
         <tbody>
-          {invoices.map((inv) => (
-            <tr key={inv.id} style={{ background: inv.overdue ? 'var(--danger-bg)' : undefined }}>
-              <td className="mono">{inv.invoiceNumber}</td>
-              <td>{inv.partyName}{inv.businessName ? <span style={{ color: 'var(--slate-light)' }}> · {inv.businessName}</span> : null}</td>
-              <td>{inv.description}</td>
-              <td>₹{Number(inv.totalAmount).toFixed(2)}</td>
-              <td>{formatDateShort(inv.dueDate)}</td>
-              <td>{statusPill(inv)}</td>
-              <td style={{ display: 'flex', gap: 6 }}>
-                <button className="btn btn-outline btn-sm" onClick={() => onView(inv.id)}>View</button>
-                <button className="btn btn-outline btn-sm" onClick={() => onEdit(inv)}>Edit</button>
-              </td>
-            </tr>
-          ))}
+          {employees.map((e) => {
+            const inv = invoiceForEmail(e.email);
+            return (
+              <tr key={e.id} style={{ background: inv?.overdue ? 'var(--danger-bg)' : undefined }}>
+                <td>{e.fullName}<span style={{ color: 'var(--slate-light)' }}> · {e.email}</span></td>
+                <td>{inv ? `₹${Number(inv.totalAmount).toFixed(2)}` : '—'}</td>
+                <td>{inv ? formatDateShort(inv.dueDate) : '—'}</td>
+                <td>{inv ? statusPill(inv) : <span className="pill pill-navy">Not paid yet</span>}</td>
+                <td>
+                  {inv ? (
+                    <button className="btn btn-outline btn-sm" onClick={() => onView(inv.id)}>View</button>
+                  ) : (
+                    <button className="btn btn-primary btn-sm" onClick={() => onPay(e)}>Pay salary</button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -750,26 +758,39 @@ function SalaryTable({ invoices, onView, onEdit }) {
 }
 
 export function SalaryPanel() {
+  const [employees, setEmployees] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
-  const [editingInvoice, setEditingInvoice] = useState(null);
+  const [payingEmployee, setPayingEmployee] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [search, setSearch] = useState('');
 
   function load() {
     setLoading(true);
-    client.get('/admin/party-invoices', { params: { direction: 'PAYABLE' } })
-      .then(({ data }) => { setInvoices(data.invoices.filter((inv) => inv.category === 'SALARY')); setLoading(false); })
-      .catch(() => setLoading(false));
+    Promise.all([
+      client.get('/admin/employees'),
+      client.get('/admin/party-invoices', { params: { direction: 'PAYABLE' } }),
+    ]).then(([empRes, invRes]) => {
+      setEmployees(empRes.data.employees.filter((e) => e.isActive));
+      setInvoices(invRes.data.invoices.filter((inv) => inv.category === 'SALARY'));
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }
   useEffect(load, []);
 
+  const monthKey = currentMonthKey();
+  // createdAt on a salary invoice is pinned to the 1st of its own month
+  // (see createSalaryPayment) specifically so this lookup is exact rather
+  // than approximate.
+  function invoiceForEmail(email) {
+    return invoices.find((inv) => inv.businessName === email && inv.createdAt.slice(0, 7) === monthKey);
+  }
+
   const term = search.trim().toLowerCase();
-  const filtered = term
-    ? invoices.filter((inv) => [inv.partyName, inv.businessName, inv.invoiceNumber].some((v) => v?.toLowerCase().includes(term)))
-    : invoices;
-  const groups = groupInvoicesByHub(filtered);
+  const filteredEmployees = term
+    ? employees.filter((e) => [e.fullName, e.email].some((v) => v?.toLowerCase().includes(term)))
+    : employees;
+  const groups = groupByHubName(filteredEmployees, (e) => e.profile?.hub?.name);
 
   return (
     <div>
@@ -781,31 +802,29 @@ export function SalaryPanel() {
             value={search} onChange={(e) => setSearch(e.target.value)}
             style={{ minWidth: 220 }}
           />
-          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Pay salary</button>
         </div>
       </div>
 
       {loading ? <LoadingLogo /> : groups.length === 0 ? (
         <p style={{ fontSize: 12.5, color: 'var(--slate)', textAlign: 'center', padding: '24px 0' }}>
-          {term ? 'No employees match your search.' : 'No salary payments yet.'}
+          {term ? 'No employees match your search.' : 'No active employees onboarded yet.'}
         </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {groups.map(([hubName, groupInvoices]) => (
+          {groups.map(([hubName, groupEmployees]) => (
             <div key={hubName} className="card" style={{ padding: '18px 20px' }}>
               <h3 style={{ fontSize: 14, color: 'var(--navy)', marginBottom: 12 }}>{hubName}</h3>
-              <SalaryTable invoices={groupInvoices} onView={setSelectedId} onEdit={setEditingInvoice} />
+              <RosterTable employees={groupEmployees} invoiceForEmail={invoiceForEmail} onView={setSelectedId} onPay={setPayingEmployee} />
             </div>
           ))}
         </div>
       )}
 
-      {showCreate && <SalaryPaymentModal onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); load(); }} />}
-      {editingInvoice && (
+      {payingEmployee && (
         <SalaryPaymentModal
-          invoice={editingInvoice}
-          onClose={() => setEditingInvoice(null)}
-          onCreated={() => { setEditingInvoice(null); load(); }}
+          prefill={{ employeeUserId: payingEmployee.id, hubId: payingEmployee.profile?.hubId }}
+          onClose={() => setPayingEmployee(null)}
+          onCreated={() => { setPayingEmployee(null); load(); }}
         />
       )}
       {selectedId && <InvoiceDetailModal invoiceId={selectedId} onClose={() => setSelectedId(null)} onChanged={load} />}
