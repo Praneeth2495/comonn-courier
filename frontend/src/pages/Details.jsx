@@ -53,8 +53,20 @@ function isAddressFilled(addr) {
   return !!(addr.contactName && addr.phoneNumber && addr.line1 && addr.city && addr.postcode && addr.countryCode) && eircodeOk;
 }
 
+// Switching which booking is "active" (editing a saved one, or starting a
+// new one) only changes BookingContext — it doesn't remount this
+// component, so the useState() initializers below (which only ever run
+// once, on mount) would keep showing stale form values. Keying the inner
+// form on the active order's id forces React to tear down and recreate it
+// whenever that changes, which is the simplest fix without touching the
+// router.
 export default function Details() {
-  const { quoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking, addSavedBooking } = useBooking();
+  const { order: bookingOrder } = useBooking();
+  return <DetailsForm key={bookingOrder?.id || 'new'} />;
+}
+
+function DetailsForm() {
+  const { quoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking, addSavedBooking, removeSavedBooking } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
   // A completed (paid/labeled) order left over in context from a previous,
