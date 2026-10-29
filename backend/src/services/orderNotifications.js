@@ -25,6 +25,14 @@ const UPDATE_TEMPLATES = {
   OUT_FOR_DELIVERY: 'order_out_for_delivery',
 };
 
+// "Gudur, IN" / "Melbourne, AU" — city plus ISO 3166-1 alpha-2 country code,
+// for the admin_order_alert From/To params. Falls back gracefully if either
+// part is missing.
+function formatCityCountry(city, countryCode) {
+  if (!city) return '—';
+  return countryCode ? `${city}, ${countryCode}` : city;
+}
+
 // Each template has a different body/button shape, so params aren't
 // interchangeable — see each template's "Parameters" preview in the Gupshup
 // console for the exact wording:
