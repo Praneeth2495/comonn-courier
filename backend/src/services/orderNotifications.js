@@ -130,13 +130,15 @@ async function notifyOrderStatusChange(orderId, status) {
     // on the same PAID/PICKUP_CONFIRMED moment, independent of anything below.
     if (isConfirmation) {
       broadcastBookingConfirmed({ city: order.receiverAddress?.city, countryCode: order.receiverAddress?.countryCode });
+      const originLabel = formatCityCountry(order.senderAddress?.city, order.senderAddress?.countryCode);
+      const destinationLabel = formatCityCountry(order.receiverAddress?.city, order.receiverAddress?.countryCode);
       notifyRecipient(
         orderId,
         ADMIN_ALERT_TEMPLATE,
         'Admin',
         ADMIN_WHATSAPP_NUMBER,
         order.orderNumber,
-        [order.orderNumber, Number(order.grandTotal).toFixed(2), order.senderAddress?.city || '—', order.receiverAddress?.city || '—']
+        [order.orderNumber, Number(order.grandTotal).toFixed(2), originLabel, destinationLabel]
       );
     }
 
