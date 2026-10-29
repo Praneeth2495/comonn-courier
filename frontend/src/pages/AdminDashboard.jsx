@@ -1282,11 +1282,12 @@ function monthEnd(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
 
 // ---------------- Accounts → Overview (P&L) ----------------
 const ACCOUNTS_RANGE_OPTIONS = [
-  ['day', 'Today'],
-  ['week', 'Week'],
-  ['month', 'Month'],
-  ['quarter', '3 Months'],
-  ['sixmo', '6 Months'],
+  ['today', 'Today'],
+  ['yesterday', 'Yesterday'],
+  ['thisWeek', 'This week'],
+  ['currentMonth', 'Current month'],
+  ['threeMonths', '3 Months'],
+  ['sixMonths', '6 Months'],
   ['year', 'Year'],
 ];
 // Mirrors backend/src/controllers/admin.controller.js's BRANCH_SENDER_DEFS
