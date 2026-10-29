@@ -650,7 +650,7 @@ async function computeBranchCosts(branchKey, sets, window, onRow) {
 }
 
 /**
- * GET /api/admin/accounts/overview?range=day|week|month|quarter|sixmo|year&branch=HYD|VIJAYAWADA|VIZAG
+ * GET /api/admin/accounts/overview?range=today|yesterday|thisWeek|currentMonth|threeMonths|sixMonths|year&branch=HYD|VIJAYAWADA|VIZAG
  * Powers the Accounts page's Overview tab — gross/net revenue, operating
  * cost, and profit for the selected window, bucketed for the trend chart,
  * plus a revenue-by-channel split and a point-in-time AR/AP snapshot.
