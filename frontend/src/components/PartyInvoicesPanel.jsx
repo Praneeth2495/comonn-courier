@@ -771,7 +771,7 @@ export function SalaryPanel() {
       client.get('/admin/party-invoices/employees-roster'),
       client.get('/admin/party-invoices', { params: { direction: 'PAYABLE' } }),
     ]).then(([empRes, invRes]) => {
-      setEmployees(empRes.data.employees.filter((e) => e.isActive));
+      setEmployees(empRes.data.employees);
       setInvoices(invRes.data.invoices.filter((inv) => inv.category === 'SALARY'));
       setLoading(false);
     }).catch(() => setLoading(false));
