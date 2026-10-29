@@ -790,7 +790,7 @@ export function SalaryPanel() {
   const filteredEmployees = term
     ? employees.filter((e) => [e.fullName, e.email].some((v) => v?.toLowerCase().includes(term)))
     : employees;
-  const groups = groupByHubName(filteredEmployees, (e) => e.profile?.hub?.name);
+  const groups = groupByHubName(filteredEmployees, (e) => e.hub?.name);
 
   return (
     <div>
