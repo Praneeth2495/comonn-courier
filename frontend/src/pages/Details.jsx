@@ -562,7 +562,7 @@ function DetailsForm() {
 
           <div className="details-submit-row" style={{ display: 'flex', gap: 14, marginTop: 26 }}>
             <button type="button" className="btn btn-outline" style={{ flex: 1, padding: 13 }} disabled={loading} onClick={handleNewBookingClick}>
-              {loading ? 'Saving…' : 'New booking'}
+              {loading ? 'Saving…' : 'Add New Order'}
             </button>
             <button className="btn btn-primary" style={{ flex: 1, padding: 13 }} disabled={loading}>
               {loading ? 'Booking…' : 'Book now →'}
