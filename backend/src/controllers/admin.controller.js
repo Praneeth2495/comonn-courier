@@ -700,7 +700,7 @@ async function accountsOverview(req, res, next) {
       totals.net += net;
       totals[`${classifyChannel(o)}Gross`] += gross;
 
-      const { key, label } = accountsBucketFor(o.createdAt, cfg.granularity);
+      const { key, label } = accountsBucketFor(o.createdAt, granularity);
       const b = getBucket(key, label);
       b.gross += gross; b.discount += discount; b.net += net;
     }
