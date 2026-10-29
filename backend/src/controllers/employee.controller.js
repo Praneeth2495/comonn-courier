@@ -129,6 +129,7 @@ function profileFieldsFromBody(body) {
     designation: body.designation?.trim() || null,
     department: body.department?.trim() || null,
     dateOfJoining: body.dateOfJoining ? new Date(body.dateOfJoining) : null,
+    hubId: body.hubId?.trim() || null,
     ...employeeFillableFieldsFromBody(body),
   };
 }
