@@ -9,8 +9,6 @@ import MerchantsPanel from '../components/MerchantsPanel';
 import PartyInvoicesPanel, { SalaryPanel } from '../components/PartyInvoicesPanel';
 import CustomsClientsPanel from '../components/CustomsClientsPanel';
 import AssetsPanel from '../components/AssetsPanel';
-import ClockInOutPanel from '../components/ClockInOutPanel';
-import AttendanceAdminPanel from '../components/AttendanceAdminPanel';
 import StorageAdminPanel from '../components/StorageAdminPanel';
 import RidersPanel from '../components/RidersPanel';
 import CustomersPanel from '../components/CustomersPanel';
