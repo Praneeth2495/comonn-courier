@@ -51,6 +51,24 @@ export default function StaffPanel({ canViewDirectory, canViewOnboarding, isAdmi
   );
 }
 
+// ADMIN gets a sub-tab to see every user's clock-in/out history alongside
+// their own; STAFF/ACCOUNTS only ever see their own (ClockInOutPanel calls
+// /attendance/mine, which is scoped server-side to req.user.id regardless).
+function AttendanceTab({ isAdmin }) {
+  const [subTab, setSubTab] = useState('mine');
+  if (!isAdmin) return <ClockInOutPanel />;
+  return (
+    <div>
+      <div className="dash-tabs" style={{ marginBottom: 16 }}>
+        <button className={`dash-tab ${subTab === 'mine' ? 'active' : ''}`} onClick={() => setSubTab('mine')}>My attendance</button>
+        <button className={`dash-tab ${subTab === 'all' ? 'active' : ''}`} onClick={() => setSubTab('all')}>All staff</button>
+      </div>
+      {subTab === 'mine' && <ClockInOutPanel />}
+      {subTab === 'all' && <AttendanceAdminPanel />}
+    </div>
+  );
+}
+
 function StaffDirectory() {
   const [staff, setStaff] = useState(null);
   const [q, setQ] = useState('');
