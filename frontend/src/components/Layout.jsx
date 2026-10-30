@@ -118,8 +118,8 @@ function MobileNavMenu({ links }) {
       </button>
       {open && (
         <div className="card" style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, padding: 8, minWidth: 130, zIndex: 50 }}>
-          {links.map(([to, label]) => (
-            <Link key={to} to={to} className="acct-menu-item mobile-nav-item" onClick={() => setOpen(false)}>{label}</Link>
+          {links.map(([to, label, onNavClick]) => (
+            <Link key={to} to={to} className="acct-menu-item mobile-nav-item" onClick={() => { onNavClick?.(); setOpen(false); }}>{label}</Link>
           ))}
         </div>
       )}
