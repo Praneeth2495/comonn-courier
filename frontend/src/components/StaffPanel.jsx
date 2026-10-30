@@ -3,6 +3,8 @@ import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { formatDateShort as fmtDate } from '../utils/dateFormat';
 import EmployeeOnboardingPanel from './EmployeeOnboardingPanel';
+import ClockInOutPanel from './ClockInOutPanel';
+import AttendanceAdminPanel from './AttendanceAdminPanel';
 
 const ROLE_LABEL = { STAFF: 'Staff', DRIVER: 'Rider' };
 const STATUS_LABEL = { INVITED: 'Invited', SUBMITTED: 'Pending approval', APPROVED: 'Approved' };
@@ -15,28 +17,36 @@ function leaveDays(start, end) {
 
 /**
  * Staff page: "Directory" (read-focused list + detail, with the leave/
- * sick-call log — the one thing neither Onboarding nor Users has) and
- * "Onboarding" (where profiles actually get created/edited) as sub-tabs of
- * the same page, each gated by its own permission — a user with only one
- * of the two still lands straight on it, no empty sub-tab bar for a single
- * option.
+ * sick-call log — the one thing neither Onboarding nor Users has),
+ * "Onboarding" (where profiles actually get created/edited), and
+ * "Attendance" (clock-in/out — moved in from its own former top-level
+ * tab) as sub-tabs of the same page. Directory/Onboarding are each gated
+ * by their own permission; Attendance is always available (every internal
+ * user needs to clock in/out regardless of Staff/Onboarding access, same
+ * as when it was standalone) — the sub-tab bar only renders once more
+ * than one of the three is actually visible, so a user with none of the
+ * Staff/Onboarding permissions still lands straight on Attendance with no
+ * empty tab bar, exactly like before.
  */
-export default function StaffPanel({ canViewDirectory, canViewOnboarding }) {
-  const [subTab, setSubTab] = useState(canViewDirectory ? 'directory' : 'onboarding');
+export default function StaffPanel({ canViewDirectory, canViewOnboarding, isAdmin }) {
+  const [subTab, setSubTab] = useState(canViewDirectory ? 'directory' : canViewOnboarding ? 'onboarding' : 'attendance');
+  const visibleCount = (canViewDirectory ? 1 : 0) + (canViewOnboarding ? 1 : 0) + 1;
 
   return (
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Staff</h1>
 
-      {canViewDirectory && canViewOnboarding && (
+      {visibleCount > 1 && (
         <div className="dash-tabs" style={{ marginBottom: 16 }}>
-          <button className={`dash-tab ${subTab === 'directory' ? 'active' : ''}`} onClick={() => setSubTab('directory')}>Directory</button>
-          <button className={`dash-tab ${subTab === 'onboarding' ? 'active' : ''}`} onClick={() => setSubTab('onboarding')}>Onboarding</button>
+          {canViewDirectory && <button className={`dash-tab ${subTab === 'directory' ? 'active' : ''}`} onClick={() => setSubTab('directory')}>Directory</button>}
+          {canViewOnboarding && <button className={`dash-tab ${subTab === 'onboarding' ? 'active' : ''}`} onClick={() => setSubTab('onboarding')}>Onboarding</button>}
+          <button className={`dash-tab ${subTab === 'attendance' ? 'active' : ''}`} onClick={() => setSubTab('attendance')}>Attendance</button>
         </div>
       )}
 
       {subTab === 'directory' && canViewDirectory && <StaffDirectory />}
       {subTab === 'onboarding' && canViewOnboarding && <EmployeeOnboardingPanel />}
+      {subTab === 'attendance' && <AttendanceTab isAdmin={isAdmin} />}
     </div>
   );
 }
