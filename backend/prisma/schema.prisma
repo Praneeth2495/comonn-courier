@@ -131,6 +131,8 @@ model User {
   employeeProfile         EmployeeProfile?
   onboardingTokens        EmployeeOnboardingToken[]
   approvedEmployeeProfiles EmployeeProfile[] @relation("EmployeeProfileApprovedBy")
+  staffLeaves             StaffLeave[] @relation("StaffLeaveOwner")
+  staffLeavesLogged       StaffLeave[] @relation("StaffLeaveCreatedBy")
 
   // ---- Referral + wallet (CUSTOMER-only in practice, but not role-gated
   // in the schema itself — nothing stops any account from having a code) ----
