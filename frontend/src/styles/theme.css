@@ -708,7 +708,11 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .t-row.manual-paid{background:#FEF9E7;}
 .t-row.manual-paid:hover{background:#FCF0C8;}
 .t-row:not(.t-head):hover{background:#FAFAF7;}
-.t-oid{font-family:'IBM Plex Mono';font-weight:600;color:var(--cobalt);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:13.5px;}
+/* width:100% + text-align:left — a <button>, unlike the plain <div> every
+   other column uses, doesn't stretch to fill its grid cell by default, so
+   its left edge (and therefore where the order number starts) drifted from
+   the "Order ID" header above it. */
+.t-oid{font-family:'IBM Plex Mono';font-weight:600;color:var(--cobalt);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:13.5px;width:100%;text-align:left;}
 .t-oid:hover{color:var(--coral);}
 .detail-section{margin-bottom:20px;}
 .detail-section h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:700;margin-bottom:10px;}
