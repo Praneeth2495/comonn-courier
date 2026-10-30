@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../api/AuthContext';
+import { useBooking } from '../api/BookingContext';
 import { useClickOutside } from '../utils/useClickOutside';
 import ChangePassword from './ChangePassword';
 import EditProfile from './EditProfile';
