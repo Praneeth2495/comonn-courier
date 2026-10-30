@@ -106,8 +106,7 @@ export default function AdminDashboard() {
         {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
         {tab === 'riders' && hasPage('orders') && <RidersPanel />}
         {tab === 'customers' && hasPage('customers') && <CustomersPanel />}
-        {tab === 'staff' && (hasPage('staff') || hasPage('onboarding')) && <StaffPanel canViewDirectory={hasPage('staff')} canViewOnboarding={hasPage('onboarding')} />}
-        {tab === 'attendance' && <AttendancePanel isAdmin={isAdmin} />}
+        {tab === 'staff' && <StaffPanel canViewDirectory={hasPage('staff')} canViewOnboarding={hasPage('onboarding')} isAdmin={isAdmin} />}
         {tab === 'account' && <ChangePassword />}
       </main>
     </div>
