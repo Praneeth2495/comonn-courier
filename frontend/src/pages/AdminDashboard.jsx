@@ -57,12 +57,13 @@ export default function AdminDashboard() {
     ...(hasPage('storage') ? [['storage', 'Storage']] : []),
     ...(hasPage('orders') ? [['riders', 'Riders']] : []),
     ...(hasPage('customers') ? [['customers', 'Customers']] : []),
-    // Onboarding lives inside Staff as a sub-tab now (StaffPanel) rather
-    // than its own top-level nav entry — either permission alone is enough
-    // to see the Staff tab; which sub-tabs show up inside it is gated
-    // per-permission by StaffPanel itself.
-    ...(hasPage('staff') || hasPage('onboarding') ? [['staff', 'Staff']] : []),
-    ['attendance', 'Attendance'],
+    // Onboarding and Attendance both live inside Staff as sub-tabs now
+    // (StaffPanel) rather than their own top-level nav entries. Staff
+    // itself is always visible — Attendance's "My attendance" clock-in/out
+    // is for every internal user regardless of 'staff'/'onboarding'
+    // access, same as it was as a standalone tab; which of the other two
+    // sub-tabs show up is still gated per-permission inside StaffPanel.
+    ['staff', 'Staff'],
     ['account', 'Profile'],
   ];
 
