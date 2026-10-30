@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { formatDateShort as fmtDate } from '../utils/dateFormat';
+import EmployeeOnboardingPanel from './EmployeeOnboardingPanel';
 
 const ROLE_LABEL = { STAFF: 'Staff', DRIVER: 'Rider' };
 const STATUS_LABEL = { INVITED: 'Invited', SUBMITTED: 'Pending approval', APPROVED: 'Approved' };
@@ -13,13 +14,34 @@ function leaveDays(start, end) {
 }
 
 /**
- * Read-focused staff directory — separate from Onboarding (which is where
- * profiles actually get created/edited) and from Users (role/page-access
- * management). Same 'customers'-style pattern: searchable list, click a
- * row for a detail view. Adds the one thing neither of those pages has:
- * a per-staff leave/sick-call log (StaffLeave).
+ * Staff page: "Directory" (read-focused list + detail, with the leave/
+ * sick-call log — the one thing neither Onboarding nor Users has) and
+ * "Onboarding" (where profiles actually get created/edited) as sub-tabs of
+ * the same page, each gated by its own permission — a user with only one
+ * of the two still lands straight on it, no empty sub-tab bar for a single
+ * option.
  */
-export default function StaffPanel() {
+export default function StaffPanel({ canViewDirectory, canViewOnboarding }) {
+  const [subTab, setSubTab] = useState(canViewDirectory ? 'directory' : 'onboarding');
+
+  return (
+    <div>
+      <h1 className="h-lg" style={{ marginBottom: 16 }}>Staff</h1>
+
+      {canViewDirectory && canViewOnboarding && (
+        <div className="dash-tabs" style={{ marginBottom: 16 }}>
+          <button className={`dash-tab ${subTab === 'directory' ? 'active' : ''}`} onClick={() => setSubTab('directory')}>Directory</button>
+          <button className={`dash-tab ${subTab === 'onboarding' ? 'active' : ''}`} onClick={() => setSubTab('onboarding')}>Onboarding</button>
+        </div>
+      )}
+
+      {subTab === 'directory' && canViewDirectory && <StaffDirectory />}
+      {subTab === 'onboarding' && canViewOnboarding && <EmployeeOnboardingPanel />}
+    </div>
+  );
+}
+
+function StaffDirectory() {
   const [staff, setStaff] = useState(null);
   const [q, setQ] = useState('');
   const [selectedId, setSelectedId] = useState(null);
@@ -37,8 +59,6 @@ export default function StaffPanel() {
 
   return (
     <div>
-      <h1 className="h-lg" style={{ marginBottom: 16 }}>Staff</h1>
-
       <form className="search-box" style={{ marginBottom: 16, maxWidth: 360 }} onSubmit={search}>
         🔍<input placeholder="Search name, email, phone…" value={q} onChange={(e) => setQ(e.target.value)} />
       </form>
