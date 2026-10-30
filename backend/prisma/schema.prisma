@@ -587,6 +587,34 @@ model AttendanceLog {
   @@index([clockInAt])
 }
 
+enum StaffLeaveType {
+  SICK
+  CASUAL
+  EARNED
+  UNPAID
+  OTHER
+}
+
+// A logged leave/sick-call entry for a STAFF or DRIVER account — admin
+// record-keeping (the Staff directory's "Leaves" section), not a
+// self-service request/approval workflow. Append-only, same as
+// OrderComment — correcting a mis-entered one means logging a new row,
+// not editing/deleting the old one, so the history stays honest.
+model StaffLeave {
+  id          String         @id @default(uuid())
+  userId      String
+  user        User           @relation("StaffLeaveOwner", fields: [userId], references: [id])
+  type        StaffLeaveType
+  startDate   DateTime
+  endDate     DateTime
+  note        String?
+  createdById String
+  createdBy   User           @relation("StaffLeaveCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime       @default(now())
+
+  @@index([userId])
+}
+
 // ------------------------------------------------------------
 // Box Storage — customers rent a numbered physical box at the office
 // (3 sizes, day-based pricing) and get shown "<office address>, Box <N>"
