@@ -683,6 +683,20 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .search-box{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:10px;padding:9px 14px;background:#fff;min-width:260px;}
 .search-box input{border:none;outline:none;flex:1;font-size:13.5px;}
 .t-row{display:grid;grid-template-columns:1.2fr 1.6fr 1.6fr .8fr;gap:16px;padding:16px 22px;align-items:center;}
+/* Grid items default to min-width:auto, which lets a column's intrinsic
+   content width override its fr-based track size — since the header row
+   and each data row are separate grid containers (one per .t-row) rather
+   than rows of one shared grid, this let a column drift to a different
+   actual width per row whenever that row's content was narrower/wider
+   than another row's, misaligning every column after the first. Forcing
+   min-width:0 makes every row's columns size purely from the shared
+   grid-template-columns fr values, so they line up across every row
+   (header included) regardless of content. box-sizing covers any grid-item
+   child that sets its own padding/border (a button, a badge) so it still
+   fills its full track width instead of only the content box.
+   Applies to every .t-row-based table across the app (Orders, Accounts,
+   Customers, Manifest, Staff, etc. — anywhere this shared class is used). */
+.t-row > *{min-width:0;box-sizing:border-box;}
 .t-head{background:var(--paper);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:700;}
 .t-row:not(.t-head){border-top:1px solid var(--line-2);font-size:13.5px;}
 .t-row.overdue{background:#FEF0EF;}
