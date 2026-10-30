@@ -278,11 +278,13 @@ async function buildOrdersWhere(req) {
   // restriction above. Region has no direct column on Order/Address, so
   // it's resolved to the set of matching postcodes via PostcodeSuggestion.region.
   if (originState || originRegion) {
-    const senderFilter = {};
-    if (originState) senderFilter.state = originState;
+    let senderFilter;
     if (originRegion) {
-      const [resolved] = await resolveOriginFilters([{ state: originState, region: originRegion }]);
-      Object.assign(senderFilter, resolved);
+      // Postcode alone fully identifies the region — see resolveOriginFilters'
+      // own comment for why state is deliberately left out of this branch.
+      [senderFilter] = await resolveOriginFilters([{ state: originState, region: originRegion }]);
+    } else {
+      senderFilter = { state: expandInState(originState) };
     }
     andConditions.push({ senderAddress: senderFilter });
   }
