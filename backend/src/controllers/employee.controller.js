@@ -391,6 +391,49 @@ async function downloadIdProof2(req, res, next) {
   }
 }
 
+const STAFF_LEAVE_TYPES = ['SICK', 'CASUAL', 'EARNED', 'UNPAID', 'OTHER'];
+
+/** GET /api/admin/employees/:id/leaves — the Staff directory's "Leaves" log, newest-first. */
+async function listStaffLeaves(req, res, next) {
+  try {
+    const leaves = await prisma.staffLeave.findMany({
+      where: { userId: req.params.id },
+      include: { createdBy: { select: { fullName: true } } },
+      orderBy: { startDate: 'desc' },
+    });
+    res.json({ leaves });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** POST /api/admin/employees/:id/leaves — { type, startDate, endDate, note } — a logged entry, not a request/approval workflow (see StaffLeave's own comment). */
+async function createStaffLeave(req, res, next) {
+  try {
+    const { type, startDate, endDate, note } = req.body;
+    if (!type || !startDate || !endDate) {
+      return res.status(400).json({ error: 'type, startDate and endDate are required' });
+    }
+    if (!STAFF_LEAVE_TYPES.includes(type)) {
+      return res.status(400).json({ error: 'Invalid leave type' });
+    }
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (end < start) return res.status(400).json({ error: 'endDate cannot be before startDate' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!user) return res.status(404).json({ error: 'Employee not found' });
+
+    const leave = await prisma.staffLeave.create({
+      data: { userId: req.params.id, type, startDate: start, endDate: end, note: note?.trim() || null, createdById: req.user.id },
+      include: { createdBy: { select: { fullName: true } } },
+    });
+    res.status(201).json({ leave });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // --- Public, token-gated: the employee's own onboarding-details form ---
 // No requireAuth — the employee has no usable password yet (see
 // approveEmployee) — the unguessable token itself is the only gate, same
