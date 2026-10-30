@@ -54,14 +54,17 @@ export default function AdminDashboard() {
     ...(hasPage('printlabel') ? [['printlabel', 'Print Label']] : []),
     ...(hasPage('rates') ? [['rates', 'Zones & Rates']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
-    ...(hasPage('onboarding') ? [['onboarding', 'Onboarding']] : []),
     ...(isAdmin ? [['merchants', 'Merchants']] : []),
     ...(isAdmin ? [['fees', 'Service Fees']] : []),
     ...(hasPage('customsclients') ? [['customsclients', 'Customs Client']] : []),
     ...(hasPage('storage') ? [['storage', 'Storage']] : []),
     ...(hasPage('orders') ? [['riders', 'Riders']] : []),
     ...(hasPage('customers') ? [['customers', 'Customers']] : []),
-    ...(hasPage('staff') ? [['staff', 'Staff']] : []),
+    // Onboarding lives inside Staff as a sub-tab now (StaffPanel) rather
+    // than its own top-level nav entry — either permission alone is enough
+    // to see the Staff tab; which sub-tabs show up inside it is gated
+    // per-permission by StaffPanel itself.
+    ...(hasPage('staff') || hasPage('onboarding') ? [['staff', 'Staff']] : []),
     ['attendance', 'Attendance'],
     ['account', 'Profile'],
   ];
