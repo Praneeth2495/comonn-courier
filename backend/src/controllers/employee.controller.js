@@ -500,6 +500,8 @@ module.exports = {
   approveEmployee,
   downloadIdProof,
   downloadIdProof2,
+  listStaffLeaves,
+  createStaffLeave,
   getOnboardingInvite,
   submitOnboardingInvite,
 };
