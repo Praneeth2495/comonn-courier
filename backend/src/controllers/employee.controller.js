@@ -95,11 +95,26 @@ function toEmployeeResponse(user) {
 
 const EMPLOYEE_INCLUDE = { employeeProfile: { include: { approvedBy: { select: { fullName: true } }, hub: { select: { name: true } } } } };
 
-/** GET /api/admin/employees — ADMIN only: every STAFF/DRIVER account with its onboarding profile, if any. */
+/**
+ * GET /api/admin/employees?q=... — every STAFF/DRIVER account with its
+ * onboarding profile, if any. `q` (same shape as the Customers search —
+ * see customer.controller.js) filters by name/email/phone, case-
+ * insensitive substring, server-side.
+ */
 async function listEmployees(req, res, next) {
   try {
+    const { q } = req.query;
+    const where = { role: { in: ['STAFF', 'DRIVER'] } };
+    if (q && q.trim()) {
+      const term = q.trim();
+      where.OR = [
+        { fullName: { contains: term, mode: 'insensitive' } },
+        { email: { contains: term, mode: 'insensitive' } },
+        { phone: { contains: term, mode: 'insensitive' } },
+      ];
+    }
     const users = await prisma.user.findMany({
-      where: { role: { in: ['STAFF', 'DRIVER'] } },
+      where,
       include: EMPLOYEE_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
