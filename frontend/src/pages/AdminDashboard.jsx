@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
-import ChangePassword from '../components/ChangePassword';
 import BatchScanPanel from '../components/BatchScanPanel';
 import MerchantsPanel from '../components/MerchantsPanel';
 import PartyInvoicesPanel, { SalaryPanel } from '../components/PartyInvoicesPanel';
