@@ -102,14 +102,13 @@ export default function AdminDashboard() {
         {tab === 'printlabel' && hasPage('printlabel') && <PrintLabelPanel />}
         {tab === 'rates' && hasPage('rates') && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
-        {tab === 'onboarding' && hasPage('onboarding') && <EmployeeOnboardingPanel />}
         {tab === 'merchants' && isAdmin && <MerchantsPanel />}
         {tab === 'fees' && isAdmin && <AddonFeesCard />}
         {tab === 'customsclients' && hasPage('customsclients') && <CustomsClientsPanel />}
         {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
         {tab === 'riders' && hasPage('orders') && <RidersPanel />}
         {tab === 'customers' && hasPage('customers') && <CustomersPanel />}
-        {tab === 'staff' && hasPage('staff') && <StaffPanel />}
+        {tab === 'staff' && (hasPage('staff') || hasPage('onboarding')) && <StaffPanel canViewDirectory={hasPage('staff')} canViewOnboarding={hasPage('onboarding')} />}
         {tab === 'attendance' && <AttendancePanel isAdmin={isAdmin} />}
         {tab === 'account' && <ChangePassword />}
       </main>
