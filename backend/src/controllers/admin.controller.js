@@ -857,12 +857,16 @@ async function listPickupOrigins(req, res, next) {
       select: { state: true, region: true },
     });
 
-    let states = [...new Set(rows.map((r) => r.state).filter(Boolean))].sort();
+    // PostcodeSuggestion.state is a raw code ("TG"); Address.state on a
+    // real booked order is the full expanded name ("Telangana") — expand
+    // here so these chips' values round-trip back as an originState query
+    // param that actually matches (see expandInState's own comment).
+    let states = [...new Set(rows.map((r) => r.state).filter(Boolean).map(expandInState))].sort();
 
     const regionSetByState = {};
     for (const { state, region } of rows) {
       if (!state || !region) continue;
-      (regionSetByState[state] ||= new Set()).add(region);
+      (regionSetByState[expandInState(state)] ||= new Set()).add(region);
     }
     let regionsByState = Object.fromEntries(
       Object.entries(regionSetByState).map(([state, set]) => [state, [...set].sort()])
@@ -872,16 +876,18 @@ async function listPickupOrigins(req, res, next) {
     // individually assigned for Pickup orders (mirrors the STAFF branch of
     // listZones for destination zones) — ADMIN always gets the full
     // universe, both to browse freely and because the Users panel needs it
-    // to assign staff in the first place.
+    // to assign staff in the first place. StaffRegionAssignment.state may
+    // hold either an old raw code or an already-expanded name depending on
+    // when it was saved — expandInState handles both.
     if (req.user.role === 'STAFF') {
       const assignments = await prisma.staffRegionAssignment.findMany({
         where: { userId: req.user.id },
         select: { state: true, region: true },
       });
-      const wholeStates = new Set(assignments.filter((a) => !a.region).map((a) => a.state));
+      const wholeStates = new Set(assignments.filter((a) => !a.region).map((a) => expandInState(a.state)));
       const allowedRegionsByState = {};
       for (const a of assignments) {
-        if (a.region) (allowedRegionsByState[a.state] ||= new Set()).add(a.region);
+        if (a.region) (allowedRegionsByState[expandInState(a.state)] ||= new Set()).add(a.region);
       }
       states = states.filter((s) => wholeStates.has(s) || allowedRegionsByState[s]);
       regionsByState = Object.fromEntries(
