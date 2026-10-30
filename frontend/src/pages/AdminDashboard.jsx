@@ -63,7 +63,6 @@ export default function AdminDashboard() {
     // access, same as it was as a standalone tab; which of the other two
     // sub-tabs show up is still gated per-permission inside StaffPanel.
     ['staff', 'Staff'],
-    ['account', 'Profile'],
   ];
 
   function selectTab(key) {
