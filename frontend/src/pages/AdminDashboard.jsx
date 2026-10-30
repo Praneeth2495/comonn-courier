@@ -61,6 +61,7 @@ export default function AdminDashboard() {
     ...(hasPage('storage') ? [['storage', 'Storage']] : []),
     ...(hasPage('orders') ? [['riders', 'Riders']] : []),
     ...(hasPage('customers') ? [['customers', 'Customers']] : []),
+    ...(hasPage('staff') ? [['staff', 'Staff']] : []),
     ['attendance', 'Attendance'],
     ['account', 'Profile'],
   ];
