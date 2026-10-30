@@ -141,7 +141,23 @@ function dashboardLinks(role) {
 export function SiteHeader({ onOpenAccount }) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
+  const { setBooking } = useBooking();
   const navigate = useNavigate();
+  // A staff "Edit order" action (AdminDashboard's editOrder) deliberately
+  // seeds BookingContext with a specific order right before navigating to
+  // /quote itself, so it never goes through this link — but nothing else
+  // ever clears that order back out afterward. Left in sessionStorage, the
+  // next time the same admin clicks "Book" to start a genuinely new quote,
+  // ADMIN/STAFF/ACCOUNTS' broader carry-over rules in Quote.jsx/Details.jsx
+  // (status-in-progress is not the only qualifying condition for staff)
+  // pick that stale order back up — prefilling the form from it and then
+  // PATCHing an order that may no longer exist ("order not found") instead
+  // of creating a fresh one. Clearing here, only for staff and only on the
+  // "Book" entry point itself, guarantees every deliberate "start a new
+  // quote" click is actually fresh, without touching editOrder's own
+  // (unrelated) navigation.
+  const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
+  const startFreshQuote = () => setBooking({ quoteInput: null, selectedQuote: null, order: null });
   // Every nav destination — shown inline on desktop (.nav-links) and, on
   // mobile where that row is hidden entirely, inside MobileNavMenu's
   // hamburger dropdown instead (same array, same order). Services/About
@@ -149,7 +165,7 @@ export function SiteHeader({ onOpenAccount }) {
   // account, the header is all about their own shipments/wallet instead.
   const links = [
     ...(user ? dashboardLinks(user.role) : []),
-    ['/quote', 'Book'],
+    ['/quote', 'Book', isStaffUser ? startFreshQuote : undefined],
     ['/track', 'Track'],
     ['/storage', 'Storage'],
     ...(user ? [] : [['/services', 'Services'], ['/about', 'About']]),
@@ -162,8 +178,8 @@ export function SiteHeader({ onOpenAccount }) {
           <img className="logo-img lg" src={logoFull} alt="Comonn" width="640" height="108" />
         </Link>
         <nav className="nav-links">
-          {links.map(([to, label]) => (
-            <Link key={to} to={to} className={pathname === to ? 'current' : ''}>
+          {links.map(([to, label, onNavClick]) => (
+            <Link key={to} to={to} className={pathname === to ? 'current' : ''} onClick={onNavClick}>
               {label}
             </Link>
           ))}
