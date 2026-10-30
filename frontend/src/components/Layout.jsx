@@ -209,6 +209,11 @@ export function SiteHeader({ onOpenAccount }) {
 }
 
 export function SiteFooter() {
+  const { user } = useAuth();
+  const { setBooking } = useBooking();
+  // Same stale-order guard as SiteHeader's "Book" link — see its comment.
+  const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
+  const startFreshQuote = () => setBooking({ quoteInput: null, selectedQuote: null, order: null });
   return (
     <footer className="site-footer">
       <div className="footer-top">
@@ -218,7 +223,7 @@ export function SiteFooter() {
         <div className="footer-col">
           <h4>Quick links</h4>
           <Link to="/">Home</Link>
-          <Link to="/quote">Book</Link>
+          <Link to="/quote" onClick={isStaffUser ? startFreshQuote : undefined}>Book</Link>
           <a href="/terms-and-conditions.pdf" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
           <a href="#" onClick={(e) => e.preventDefault()}>Transit Warranty</a>
         </div>
