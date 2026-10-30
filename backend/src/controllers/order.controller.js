@@ -202,8 +202,16 @@ async function resolveOriginFilters(assignments) {
   const postcodesByRegion = {};
   for (const { region, postcode } of regionRows) (postcodesByRegion[region] ||= []).push(postcode);
 
+  // The region branch deliberately omits `state` — postcode already fully
+  // identifies the region, and state was (a) redundant and (b) actively
+  // broken: StaffRegionAssignment.state may be a raw code ("TG") while
+  // Address.state on a real order is the full expanded name ("Telangana"),
+  // so ANDing in a state match here silently zeroed out every region-scoped
+  // result. The whole-state branch still needs state (nothing else to
+  // filter on), so it goes through expandInState to handle either an old
+  // raw-code row or an already-expanded one.
   return assignments.map((a) =>
-    a.region ? { state: a.state, postcode: { in: postcodesByRegion[a.region] || [] } } : { state: a.state }
+    a.region ? { postcode: { in: postcodesByRegion[a.region] || [] } } : { state: expandInState(a.state) }
   );
 }
 
