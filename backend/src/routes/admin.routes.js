@@ -46,15 +46,22 @@ router.post('/surcharges', requireRole('ADMIN'), admin.upsertSurcharge);
 router.get('/users', requireRole('ADMIN'), admin.listUsers);
 router.patch('/users/:id', requireRole('ADMIN'), admin.setUserRole);
 
-router.get('/employees', requirePage('onboarding'), employee.listEmployees);
+// Read endpoints are shared with the Staff directory (requirePage accepts
+// either page — see its variadic signature) — writes (create/edit/invite/
+// approve) stay Onboarding-only.
+router.get('/employees', requirePage('onboarding', 'staff'), employee.listEmployees);
 router.post('/employees', requirePage('onboarding'), employee.createEmployee);
 router.post('/employees/invite', requirePage('onboarding'), employee.inviteEmployee);
-router.get('/employees/:id', requirePage('onboarding'), employee.getEmployee);
+router.get('/employees/:id', requirePage('onboarding', 'staff'), employee.getEmployee);
 router.patch('/employees/:id', requirePage('onboarding'), employee.updateEmployee);
 router.post('/employees/:id/resend-invite', requirePage('onboarding'), employee.resendOnboardingInvite);
 router.patch('/employees/:id/approve', requirePage('onboarding'), employee.approveEmployee);
-router.get('/employees/:id/id-proof', requirePage('onboarding'), employee.downloadIdProof);
-router.get('/employees/:id/id-proof-2', requirePage('onboarding'), employee.downloadIdProof2);
+router.get('/employees/:id/id-proof', requirePage('onboarding', 'staff'), employee.downloadIdProof);
+router.get('/employees/:id/id-proof-2', requirePage('onboarding', 'staff'), employee.downloadIdProof2);
+// Leaves/sick-calls are logged from the Staff directory — also reachable
+// from Onboarding since that page already has the full employee record open.
+router.get('/employees/:id/leaves', requirePage('onboarding', 'staff'), employee.listStaffLeaves);
+router.post('/employees/:id/leaves', requirePage('onboarding', 'staff'), employee.createStaffLeave);
 
 // Available to ADMIN & STAFF (both can dispatch pickup jobs to drivers)
 router.get('/drivers', requirePage('orders'), admin.listDrivers);
