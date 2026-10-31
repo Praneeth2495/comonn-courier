@@ -741,7 +741,14 @@ table.data-table tr:hover td{background:#FAFAF7;}
 @media(max-width:520px){.oda-route{flex-direction:column;}.oda-route-arrow{width:100%;height:26px;border-left:none;border-right:none;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);}}
 .detail-row.oda-highlight{background:#FFF5F2;margin:2px -8px;padding:8px;border-radius:8px;}
 .detail-row.oda-highlight .v{color:var(--coral);font-size:15px;}
-.status-badge{display:inline-flex;padding:4px 11px;border-radius:99px;font-size:11.5px;font-weight:700;}
+/* max-width:100% + ellipsis — a <select> sizes itself to fit its selected
+   option's text regardless of its parent cell's actual width, so a long
+   status like "ORIGIN CUSTOMS CLEARED" or "CANCELLED BY CUSTOMER" spilled
+   out of its narrow "Order Status" grid column and overlapped the column
+   after it. Truncating with an ellipsis keeps every status readable (full
+   text is still in the option itself / visible on open) without breaking
+   the row's layout. */
+.status-badge{display:inline-flex;padding:4px 11px;border-radius:99px;font-size:11.5px;font-weight:700;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 .pager{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--slate);}
 
 .chip-filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
