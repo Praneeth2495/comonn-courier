@@ -1996,6 +1996,11 @@ function AccountsPanel() {
                       ) : null}
                     </div>
                     <div>
+                      {o.payment?.status && (
+                        <span className={`pill ${PAYMENT_STATUS_PILL[o.payment.status] || 'pill-navy'}`} style={{ fontSize: 10.5, display: 'inline-block', marginBottom: 4 }}>
+                          {PAYMENT_STATUS_LABEL[o.payment.status] || o.payment.status}
+                        </span>
+                      )}
                       {hasRazorpayRef ? (
                         <>
                           <div className="mono" style={{ fontSize: 11 }}>{o.payment.providerPaymentId}</div>
