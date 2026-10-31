@@ -595,6 +595,27 @@ const STATUS_PILL = {
   CANCELLED: 'pill-danger',
 };
 
+// Payment.status (set by the Razorpay webhook / manual-paid flow) — shown
+// in Accounts → Bookings' "Payment reference" column so a glance tells you
+// whether the money actually landed, failed, or was refunded, not just
+// that a reference ID exists.
+const PAYMENT_STATUS_PILL = {
+  SUCCEEDED: 'pill-success',
+  FAILED: 'pill-danger',
+  REFUNDED: 'pill-warn',
+  PROCESSING: 'pill-cobalt',
+  CASH_PENDING: 'pill-cobalt',
+  REQUIRES_PAYMENT: 'pill-danger',
+};
+const PAYMENT_STATUS_LABEL = {
+  SUCCEEDED: 'Success',
+  FAILED: 'Failed',
+  REFUNDED: 'Refunded',
+  PROCESSING: 'Processing',
+  CASH_PENDING: 'Cash pending',
+  REQUIRES_PAYMENT: 'Awaiting payment',
+};
+
 // Third element is the status filter; fourth is the filter mode when there's
 // no status list — 'hasUser' scopes to orders tied to a registered account,
 // 'all' shows every booking regardless of account/status.
