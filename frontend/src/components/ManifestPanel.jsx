@@ -33,6 +33,40 @@ const INDIAN_AIRPORTS = [
   { code: 'IXE', name: 'Mangalore International' },
 ];
 
+// Major airlines (and major cargo carriers) this company actually books
+// freight with — ICAO 3-letter codes, not the 2-letter IATA ones, per the
+// request this list came from. Optional on a manifest (airline isn't
+// always known/booked at manifest-creation time), so no "required" here.
+const AIRLINES = [
+  { code: 'AIC', name: 'Air India' },
+  { code: 'IGO', name: 'IndiGo' },
+  { code: 'SEJ', name: 'SpiceJet' },
+  { code: 'VTI', name: 'Vistara' },
+  { code: 'UAE', name: 'Emirates' },
+  { code: 'QTR', name: 'Qatar Airways' },
+  { code: 'ETD', name: 'Etihad Airways' },
+  { code: 'SVA', name: 'Saudia' },
+  { code: 'SIA', name: 'Singapore Airlines' },
+  { code: 'CPA', name: 'Cathay Pacific' },
+  { code: 'THY', name: 'Turkish Airlines' },
+  { code: 'DLH', name: 'Lufthansa' },
+  { code: 'AFR', name: 'Air France' },
+  { code: 'KLM', name: 'KLM Royal Dutch Airlines' },
+  { code: 'BAW', name: 'British Airways' },
+  { code: 'SWR', name: 'Swiss International Air Lines' },
+  { code: 'MAS', name: 'Malaysia Airlines' },
+  { code: 'THA', name: 'Thai Airways' },
+  { code: 'ANA', name: 'All Nippon Airways' },
+  { code: 'JAL', name: 'Japan Airlines' },
+  { code: 'KAL', name: 'Korean Air' },
+  { code: 'CCA', name: 'Air China' },
+  { code: 'CSN', name: 'China Southern Airlines' },
+  { code: 'ANZ', name: 'Air New Zealand' },
+  { code: 'QFA', name: 'Qantas' },
+  { code: 'FDX', name: 'FedEx Express' },
+  { code: 'UPS', name: 'UPS Airlines' },
+];
+
 // Label for a country chip row or a manifest's own country badge — "EU" is
 // never a real ISO code, it's the sentinel stored when a manifest combines
 // several European countries (see manifest.controller.js).
