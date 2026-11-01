@@ -51,13 +51,14 @@ export function buildMockAccountsOverview(range) {
   const profit = round2(totals.net - totals.cost);
   const margin = totals.net > 0 ? profit / totals.net : 0;
   const hubCost = round2(totals.cost * 0.18); // matches COST_CATEGORY_SPLIT's HUB share
+  const aov = cfg.orderCount > 0 ? round2(totals.gross / cfg.orderCount) : 0;
 
   return {
     range,
     branch: 'TOTAL',
     window: { from: 'sample', to: 'sample' },
     series,
-    totals: { gross: round2(totals.gross), discount: round2(totals.discount), hub: hubCost, net: round2(totals.net), cost: round2(totals.cost), profit, margin },
+    totals: { gross: round2(totals.gross), discount: round2(totals.discount), hub: hubCost, net: round2(totals.net), cost: round2(totals.cost), profit, margin, aov },
     deltas: cfg.deltas,
     channel: { b2c: round2(totals.gross * CHANNEL_SPLIT.b2c), b2b: round2(totals.gross * CHANNEL_SPLIT.b2b), c2c: round2(totals.gross * CHANNEL_SPLIT.c2c) },
     outstanding: {
