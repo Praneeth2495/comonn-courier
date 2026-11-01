@@ -479,13 +479,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected{codes.length ? `, routing via ${codes.join(', ')}` : ''}.</p>
         <form onSubmit={submit} className="form-stack">
-          <div className="field">
-            <label>From Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-            <select className="select" required value={fromAirportCode} onChange={(e) => setFromAirportCode(e.target.value)}>
-              <option value="">Choose departure airport…</option>
-              {INDIAN_AIRPORTS.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
-            </select>
-          </div>
+          <FromAirportField value={fromAirportCode} onChange={setFromAirportCode} />
 
           <div className="field">
             <label>To Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
@@ -505,24 +499,8 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
             </div>
           )}
 
-          <div className="grid-2">
-            <div className="field">
-              <label>Departure date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-              <input className="input" type="date" required min={todayIso()} value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
-            </div>
-            <div className="field">
-              <label>Departure time</label>
-              <input className="input" type="time" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="field">
-            <label>Airline</label>
-            <select className="select" value={airlineCode} onChange={(e) => setAirlineCode(e.target.value)}>
-              <option value="">Optional — airline</option>
-              {AIRLINES.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
-            </select>
-          </div>
+          <DepartureDateTimeFields date={departureDate} onDateChange={setDepartureDate} time={departureTime} onTimeChange={setDepartureTime} />
+          <AirlineField value={airlineCode} onChange={setAirlineCode} />
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
             <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
