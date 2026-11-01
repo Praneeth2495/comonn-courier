@@ -633,6 +633,8 @@ function EditGenerateModal({ batch, onClose, onGenerated }) {
           {batch.truckType && <div><b>Truck:</b> {batch.truckType}</div>}
           <div><b>Items:</b> {(batch.items || []).map((it, i) => `${it.itemType} x${it.quantity} (${it.actualWeightKg} kg)`).join(', ')}</div>
           {batch.instructions && <div><b>Instructions:</b> {batch.instructions}</div>}
+          {batch.pickupDate && <div><b>Pickup:</b> {formatDateShort(batch.pickupDate)}{batch.pickupTime ? ` ${batch.pickupTime}` : ''}</div>}
+          {batch.deliveryDate && <div><b>Delivery:</b> {formatDateShort(batch.deliveryDate)}{batch.deliveryTime ? ` ${batch.deliveryTime}` : ''}</div>}
         </div>
 
         <form onSubmit={submit} className="form-stack">
