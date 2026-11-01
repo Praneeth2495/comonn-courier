@@ -54,6 +54,15 @@ async function generateManifestPdf(manifest) {
 
     doc.font('Helvetica-Bold').fontSize(10).text('Manifest date  ', 50, doc.y, { continued: true });
     doc.font('Helvetica').text(new Date(manifest.manifestDate).toLocaleDateString('en-IN'));
+    if (manifest.departureDate) {
+      doc.font('Helvetica-Bold').fontSize(10).text('Departure  ', 50, doc.y, { continued: true });
+      const departureBits = [new Date(manifest.departureDate).toLocaleDateString('en-IN'), manifest.departureTime].filter(Boolean);
+      doc.font('Helvetica').text(departureBits.join(' · '));
+    }
+    if (manifest.airlineName || manifest.airlineCode) {
+      doc.font('Helvetica-Bold').fontSize(10).text('Airline  ', 50, doc.y, { continued: true });
+      doc.font('Helvetica').text(manifest.airlineName ? `${manifest.airlineName} (${manifest.airlineCode})` : manifest.airlineCode);
+    }
     doc.moveDown(1);
 
     const summaryTop = doc.y;
