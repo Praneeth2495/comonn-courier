@@ -1443,6 +1443,14 @@ model ManualLabelBatch {
   // manual_label_items.
   items           Json
   instructions    String?
+  // All four optional, plain date("YYYY-MM-DD")/time("HH:MM") strings (same
+  // convention as Order.pickupDate / Manifest.departureTime) — shown on the
+  // Consignment sheet and Load sheet when set, never on the sticker Label
+  // itself, which has no use for them.
+  pickupDate      String?
+  pickupTime      String?
+  deliveryDate    String?
+  deliveryTime    String?
   masterFileUrl   String?
   masterPdfData   Bytes?
   // Whether staff have generated the consignment sheet / load sheet for
