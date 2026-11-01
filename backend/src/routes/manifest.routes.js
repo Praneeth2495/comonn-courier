@@ -26,6 +26,7 @@ router.get('/available-airports', listAvailableAirports);
 router.get('/', listManifests);
 router.post('/', createManifest);
 router.get('/:id', getManifest);
+router.patch('/:id', updateManifest);
 router.post('/:id/orders', addOrdersToManifest);
 router.delete('/:id/orders/:orderId', removeOrderFromManifest);
 router.get('/:id/download', downloadManifest);
