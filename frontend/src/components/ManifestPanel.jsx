@@ -717,13 +717,7 @@ function EditManifestDetailsForm({ manifest, onSaved, onCancel }) {
   return (
     <form onSubmit={submit} className="card" style={{ padding: 14, marginBottom: 14, background: 'var(--paper)', display: 'grid', gap: 10 }}>
       <div className="grid-2">
-        <div className="field">
-          <label>From Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-          <select className="select" required value={fromAirportCode} onChange={(e) => setFromAirportCode(e.target.value)}>
-            <option value="">Choose departure airport…</option>
-            {INDIAN_AIRPORTS.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
-          </select>
-        </div>
+        <FromAirportField value={fromAirportCode} onChange={setFromAirportCode} />
         <div className="field">
           <label>To Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <select className="select" required value={regionSelection} onChange={(e) => setRegionSelection(e.target.value)}>
@@ -732,23 +726,8 @@ function EditManifestDetailsForm({ manifest, onSaved, onCancel }) {
           </select>
         </div>
       </div>
-      <div className="grid-2">
-        <div className="field">
-          <label>Departure date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-          <input className="input" type="date" required min={todayIso()} value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
-        </div>
-        <div className="field">
-          <label>Departure time</label>
-          <input className="input" type="time" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} />
-        </div>
-      </div>
-      <div className="field">
-        <label>Airline</label>
-        <select className="select" value={airlineCode} onChange={(e) => setAirlineCode(e.target.value)}>
-          <option value="">Optional — airline</option>
-          {AIRLINES.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
-        </select>
-      </div>
+      <DepartureDateTimeFields date={departureDate} onDateChange={setDepartureDate} time={departureTime} onTimeChange={setDepartureTime} />
+      <AirlineField value={airlineCode} onChange={setAirlineCode} />
       {error && <div className="error-text">{error}</div>}
       <div style={{ display: 'flex', gap: 10 }}>
         <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>Cancel</button>
