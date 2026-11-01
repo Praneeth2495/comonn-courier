@@ -5,6 +5,20 @@ const { sanitizePdfText } = require('../utils/pdfText');
 const { STORAGE_DIR, LOGO_PATH, ensureStorageDir, money, drawLine: line, drawWatermark } = require('../utils/pdfHelpers');
 
 /**
+ * The document's own name, shown as its heading here and reused for the
+ * email subject/body in partyInvoice.controller.js's sendInvoiceEmail — a
+ * SALARY payable is a Pay Slip (paid to an employee, not billed to a
+ * vendor), a Receivable is a Remittance Advice (confirming an amount
+ * owed/settled, not a request to pay), and every other Payable keeps the
+ * plain "Payable Invoice" wording.
+ */
+function documentLabel(invoice) {
+  if (invoice.category === 'SALARY') return 'Pay Slip';
+  if (invoice.direction === 'RECEIVABLE') return 'Remittance Advice';
+  return 'Payable Invoice';
+}
+
+/**
  * Generates an A4 PDF for a PartyInvoice (Receivable or Payable). Safe to
  * regenerate on the fly from DB fields — unlike a staff-uploaded
  * attachment, nothing here is lost if the file goes missing on redeploy.
@@ -13,7 +27,7 @@ async function generatePartyInvoicePdf(invoice) {
   ensureStorageDir();
   const fileName = `${invoice.invoiceNumber}.pdf`;
   const filePath = path.join(STORAGE_DIR, fileName);
-  const title = invoice.direction === 'PAYABLE' ? 'Payable Invoice' : 'Receivable Invoice';
+  const title = documentLabel(invoice);
 
   await new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
