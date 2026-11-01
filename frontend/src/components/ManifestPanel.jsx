@@ -348,11 +348,13 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
   const [regions, setRegions] = useState([]);
   const [fromAirportCode, setFromAirportCode] = useState('');
   const [regionSelection, setRegionSelection] = useState('');
-  const [manifestDate, setManifestDate] = useState(todayIso());
-  // Defaults to the same day as manifestDate (the common case — cargo
-  // usually flies out the day it's manifested) but is its own editable
-  // field, since that's not always true.
+  // Defaults to today (the common case — cargo usually flies out the day
+  // it's manifested) but is its own editable field, since that's not
+  // always true. Manifest date itself isn't user input at all — the
+  // backend always stamps it as "today" (see manifest.controller.js).
   const [departureDate, setDepartureDate] = useState(todayIso());
+  const [airlineCode, setAirlineCode] = useState('');
+  const [departureTime, setDepartureTime] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
