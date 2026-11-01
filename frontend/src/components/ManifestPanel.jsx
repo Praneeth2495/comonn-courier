@@ -521,7 +521,7 @@ function ManifestHistory() {
                 <td>{Number(m.totalWeightKg).toFixed(2)} kg</td>
                 <td style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{m.createdBy?.fullName || '—'}</td>
                 <td style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-outline btn-sm" onClick={() => setViewingId(m.id)}>Manage</button>
+                  <button className="btn btn-outline btn-sm" onClick={() => setViewingId(m.id)}>Edit</button>
                   <button className="btn btn-outline btn-sm" onClick={() => downloadBlob(`/admin/manifests/${m.id}/download`, `${m.manifestNumber}.pdf`)}>Download</button>
                 </td>
               </tr>
