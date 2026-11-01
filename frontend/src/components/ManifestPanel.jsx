@@ -407,13 +407,16 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
     setError('');
     try {
       const fromAirport = INDIAN_AIRPORTS.find((a) => a.code === fromAirportCode);
+      const airline = AIRLINES.find((a) => a.code === airlineCode);
       const { data } = await client.post('/admin/manifests', {
         orderIds,
         toAddress: region.airportAddress,
         fromAirportCode: fromAirport?.code || null,
         fromAirportName: fromAirport?.name || null,
-        manifestDate,
         departureDate,
+        airlineCode: airline?.code || null,
+        airlineName: airline?.name || null,
+        departureTime: departureTime || null,
       });
       onCreated(data.manifest);
     } catch (err) {
