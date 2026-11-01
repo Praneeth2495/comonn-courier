@@ -29,6 +29,27 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
 }
 
+// pickupTime/deliveryTime are plain "HH:MM" (24h) strings from a <input
+// type="time">, same convention as Manifest.departureTime — reformatted to
+// 12h here purely for how it prints, the stored value is untouched.
+function fmtTime(t) {
+  const [h, m] = (t || '').split(':').map(Number);
+  if (!Number.isInteger(h) || !Number.isInteger(m)) return '';
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
+// "02 Nov 2026 · 10:30 AM", or just the date when no time was given —
+// pickupDate/deliveryDate are optional so this (and every call site) only
+// ever runs when there's actually a date to show.
+function fmtDateTime(date, time) {
+  const parts = [fmtDate(date)];
+  const t = fmtTime(time);
+  if (t) parts.push(t);
+  return parts.join(' · ');
+}
+
 // Draws one header-cell-plus-value row of the shipment details table —
 // label in the left (narrow) column, value word-wrapped in the right (wide)
 // column, row height following whichever of the two taller.
