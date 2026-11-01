@@ -183,6 +183,7 @@ async function createManualLabels(req, res, next) {
   try {
     const {
       orderId, refNumber, service, truckType, fromAddress, toAddress, items: rawItems, instructions,
+      pickupDate, pickupTime, deliveryDate, deliveryTime,
       generateLabel: wantLabel = true, generateConsignment: wantConsignment = true, generateLoadSheet: wantLoadSheet = true,
     } = req.body;
 
