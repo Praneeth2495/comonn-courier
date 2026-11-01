@@ -3,7 +3,7 @@ import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { COUNTRY_NAMES } from '../utils/countryNames';
 import LoadingLogo from './LoadingLogo';
-import { formatDateTime as fmtDate } from '../utils/dateFormat';
+import { formatDateTime as fmtDate, formatDateShort } from '../utils/dateFormat';
 
 // Mirrors backend/src/constants/pages.js's PRINTLABEL_TAB_KEYS. Empty
 // allowedPrintLabelTabs = no restriction (every tab visible), same "open
