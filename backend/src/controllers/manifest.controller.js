@@ -355,9 +355,16 @@ async function updateManifest(req, res, next) {
     }
     if (departureTime !== undefined) data.departureTime = departureTime || null;
 
-    await prisma.manifest.update({ where: { id: manifest.id }, data });
-    const full = await recomputeAndRegenerate(manifest.id);
-    res.json({ manifest: full });
+    // No order list change here, so unlike add/remove orders there's
+    // nothing for orderCount/totalQty/totalWeightKg to recompute — just
+    // save the edited fields and refresh the PDF sheet so it reflects them.
+    const updated = await prisma.manifest.update({
+      where: { id: manifest.id },
+      data,
+      include: { hub: true, region: true, orders: { include: ORDER_INCLUDE } },
+    });
+    const full = await regeneratePdf(updated);
+    res.json({ manifest: { ...full, orders: full.orders.map(withQty) } });
   } catch (err) {
     next(err);
   }
