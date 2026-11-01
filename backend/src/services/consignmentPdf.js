@@ -155,6 +155,15 @@ function drawCopy(doc, batch, top, halfHeight, copyLabel, isSenderCopy) {
     doc.font('Helvetica').fontSize(8.5).text(`Reference: ${sanitizePdfText(batch.refNumber)}`, left, y, { width });
     y = doc.y + 6;
   }
+  // Optional — only entered for a subset of batches, so only shown when set
+  // rather than printing a blank line on every sheet.
+  if (batch.pickupDate || batch.deliveryDate) {
+    const bits = [];
+    if (batch.pickupDate) bits.push(`Pickup: ${fmtDateTime(batch.pickupDate, batch.pickupTime)}`);
+    if (batch.deliveryDate) bits.push(`Delivery: ${fmtDateTime(batch.deliveryDate, batch.deliveryTime)}`);
+    doc.font('Helvetica').fontSize(8.5).text(bits.join('     '), left, y, { width });
+    y = doc.y + 6;
+  }
 
   const colWidth = (width - 20) / 2;
   const colTop = y;
