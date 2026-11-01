@@ -807,6 +807,7 @@ async function accountsOverview(req, res, next) {
         cost: round2(costTotal),
         profit: round2(profit),
         margin: Number(margin.toFixed(4)),
+        aov: round2(aov),
       },
       deltas: {
         gross: pctDelta(totals.gross, prevTotals.gross),
@@ -815,6 +816,7 @@ async function accountsOverview(req, res, next) {
         cost: pctDelta(costTotal, prevCostTotal),
         profit: pctDelta(profit, prevProfit),
         marginPp: (margin - prevMargin) * 100,
+        aov: pctDelta(aov, prevAov),
       },
       channel: {
         b2c: round2(totals.b2cGross),
