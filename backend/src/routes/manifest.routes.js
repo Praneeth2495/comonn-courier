@@ -6,6 +6,7 @@ const {
   createManifest,
   listManifests,
   getManifest,
+  updateManifest,
   addOrdersToManifest,
   removeOrderFromManifest,
   downloadManifest,
