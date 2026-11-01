@@ -8,14 +8,15 @@ const { STORAGE_DIR, LOGO_PATH, ensureStorageDir, money, drawLine: line, drawWat
  * The document's own name, shown as its heading here and reused for the
  * email subject/body in partyInvoice.controller.js's sendInvoiceEmail — a
  * SALARY payable is a Pay Slip (paid to an employee, not billed to a
- * vendor), a Receivable is a Remittance Advice (confirming an amount
- * owed/settled, not a request to pay), and every other Payable keeps the
- * plain "Payable Invoice" wording.
+ * vendor); every other Payable (vendors, customs, airline, hub, etc.) is a
+ * Remittance Advice (confirming an amount being remitted, not a request to
+ * pay); a Receivable keeps the plain "Receivable Invoice" wording — it's
+ * billing a customer, the one case this doesn't apply to.
  */
 function documentLabel(invoice) {
   if (invoice.category === 'SALARY') return 'Pay Slip';
-  if (invoice.direction === 'RECEIVABLE') return 'Remittance Advice';
-  return 'Payable Invoice';
+  if (invoice.direction === 'PAYABLE') return 'Remittance Advice';
+  return 'Receivable Invoice';
 }
 
 /**
