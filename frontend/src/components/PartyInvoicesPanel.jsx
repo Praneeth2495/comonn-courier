@@ -649,7 +649,7 @@ function SalaryPaymentModal({ invoice, prefill, onClose, onCreated }) {
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-          <h3>{invoice ? `Edit salary — ${invoice.partyName}` : 'Pay salary'}</h3>
+          <h3>{invoice ? `Edit salary — ${invoice.partyName}` : 'Record payment'}</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         {loadingOptions ? <LoadingLogo size={40} /> : (
