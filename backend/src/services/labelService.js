@@ -97,10 +97,12 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   const rightColumnBottom = headerTop + logoHeight + qrGap + qrSize;
   doc.y = Math.max(doc.y, rightColumnBottom + 3);
 
-  // Receiver / Sender — the receiver's address is what matters most on the
+  // Receiver / Sender — the receiver's ADDRESS is what matters most on the
   // package, so it's rendered first and noticeably larger/bolder than the
-  // sender's.
-  doc.font('Helvetica-Bold').fontSize(12).text('RECEIVER');
+  // sender's. The "RECEIVER"/"SENDER" labels themselves are just section
+  // headings though, so both get the same small, non-bold, grey treatment.
+  doc.font('Helvetica').fontSize(8).fillColor('#6B7280').text('RECEIVER');
+  doc.fillColor('black');
   doc.font('Helvetica-Bold').fontSize(12).text(formatAddress(order.receiverAddress));
   if (order.receiverAddress.instructions) {
     doc.moveDown(0.1);
