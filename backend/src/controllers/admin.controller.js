@@ -778,6 +778,11 @@ async function accountsOverview(req, res, next) {
       return acc;
     }, { gross: 0, net: 0 });
 
+    // Average order value: gross revenue per order, so discounts/tax
+    // handling on a given order don't muddy what it actually sold for.
+    const aov = orders.length > 0 ? totals.gross / orders.length : 0;
+    const prevAov = prevOrders.length > 0 ? prevTotals.gross / prevOrders.length : 0;
+
     const hubCost = costByCategory.get('HUB') || 0;
     const profit = totals.net - costTotal;
     const prevProfit = prevTotals.net - prevCostTotal;
