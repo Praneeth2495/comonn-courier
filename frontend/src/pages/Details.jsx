@@ -94,6 +94,20 @@ export default function Details() {
   return <DetailsForm key={bookingOrder?.id || 'new'} />;
 }
 
+// Countries with no real suburb to pre-fill or lock to: countries with zero
+// postcode-suggestion data at all (destinationSuburb was never set), UAE,
+// where the "postcode" field is really an Emirate picker so its "suburb" is
+// just the Emirate name repeated, and NZ, whose postcode-suggestion
+// coverage is known-incomplete (~1,738 of 3,000+ real combinations) — the
+// auto-suggested suburb may not match the customer's actual one. City stays
+// empty, editable, and required for all three (see where this is used
+// below, and AddressFields' city input) so the customer enters the real one
+// themselves rather than silently trusting (or having to overwrite) a
+// possibly-wrong guess. Hoisted to module scope since the receiver
+// useState's prefill (below) needs it before the component body would
+// otherwise define it.
+const UNRELIABLE_SUBURB_COUNTRIES = ['AE', 'NZ'];
+
 function DetailsForm() {
   const { quoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking, addSavedBooking, removeSavedBooking } = useBooking();
   const { user } = useAuth();
