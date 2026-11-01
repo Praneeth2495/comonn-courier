@@ -1186,6 +1186,13 @@ model Manifest {
   // depart the same day it's manifested. Nullable: existing manifests
   // created before this field existed have no value here.
   departureDate  DateTime?
+  // Optional — picked from a fixed list of major airlines (AIRLINES in
+  // ManifestPanel.jsx), same "static list, not a managed table" reasoning
+  // as fromAirportCode/Name above. "HH:MM" string, not a managed table,
+  // same as departureDate being separate from manifestDate.
+  airlineCode     String?
+  airlineName     String?
+  departureTime   String?
   orderCount     Int             @default(0)
   totalQty       Int             @default(0)
   totalWeightKg  Decimal         @default(0) @db.Decimal(10, 3)
