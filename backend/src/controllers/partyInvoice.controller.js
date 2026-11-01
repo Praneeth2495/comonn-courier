@@ -349,11 +349,11 @@ async function sendInvoiceEmail(req, res, next) {
       attachments.push({ filename: invoice.attachmentName || 'attachment', content: invoice.attachmentData.toString('base64') });
     }
 
-    const label = invoice.direction === 'PAYABLE' ? 'Payable' : 'Receivable';
+    const label = documentLabel(invoice);
     await sendEmail({
       to: invoice.email,
-      subject: `${label} Invoice ${invoice.invoiceNumber} from Comonn International Courier`,
-      html: `<p>Hi ${invoice.partyName},</p><p>Please find attached invoice <b>${invoice.invoiceNumber}</b> for <b>Rs. ${Number(invoice.totalAmount).toFixed(2)}</b>, due ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}.</p><p>${invoice.description}</p>`,
+      subject: `${label} ${invoice.invoiceNumber} from Comonn International Courier`,
+      html: `<p>Hi ${invoice.partyName},</p><p>Please find attached ${label.toLowerCase()} <b>${invoice.invoiceNumber}</b> for <b>Rs. ${Number(invoice.totalAmount).toFixed(2)}</b>, due ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}.</p><p>${invoice.description}</p>`,
       attachments,
     });
 
