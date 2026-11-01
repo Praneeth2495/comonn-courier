@@ -1186,10 +1186,12 @@ model Manifest {
   // depart the same day it's manifested. Nullable: existing manifests
   // created before this field existed have no value here.
   departureDate  DateTime?
-  // Optional — picked from a fixed list of major airlines (AIRLINES in
-  // ManifestPanel.jsx), same "static list, not a managed table" reasoning
-  // as fromAirportCode/Name above. "HH:MM" string, not a managed table,
-  // same as departureDate being separate from manifestDate.
+  // All three optional. airlineCode/Name are picked from a fixed list of
+  // major airlines (AIRLINES in ManifestPanel.jsx) — same "static list, not
+  // a managed table" reasoning as fromAirportCode/Name above. departureTime
+  // is a plain "HH:MM" string (same convention as Order.pickupDate), paired
+  // with departureDate rather than merged into one DateTime since the date
+  // alone is often all that's known at manifest time.
   airlineCode     String?
   airlineName     String?
   departureTime   String?
