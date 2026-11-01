@@ -1977,7 +1977,7 @@ function AccountsPanel() {
           {loading ? <LoadingLogo /> : (
             <div className="table-wrap">
               <div className="t-row t-head accounts-row">
-                <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>Paid / To pay</div><div>Payment reference</div><div>Comment</div>
+                <div>Order ID</div><div>Invoice #</div><div>From Address</div><div>Paid / To pay</div><div>Payment reference</div><div>P/L</div><div>Comment</div>
               </div>
               {orders.map((o) => {
                 const { amountPaid, due } = paidAndDue(o);
