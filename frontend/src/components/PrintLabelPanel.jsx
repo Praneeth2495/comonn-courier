@@ -531,6 +531,27 @@ function CreateLabelModal({ onClose, onCreated }) {
             <textarea className="input" rows={2} style={{ resize: 'vertical' }} placeholder="Optional" value={instructions} onChange={(e) => setInstructions(e.target.value)} />
           </div>
 
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Pickup date</label>
+              <input className="input" type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Pickup time</label>
+              <input className="input" type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Delivery date</label>
+              <input className="input" type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label>Delivery time</label>
+              <input className="input" type="time" value={deliveryTime} onChange={(e) => setDeliveryTime(e.target.value)} />
+            </div>
+          </div>
+
           <div className="field">
             <label>Generate</label>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
