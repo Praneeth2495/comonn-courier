@@ -101,9 +101,19 @@ export default function PartyInvoicesPanel({ direction }) {
                   <td>{formatDateShort(inv.dueDate)}</td>
                   <td>{RECURRENCE_LABELS[inv.recurrence] || '—'}</td>
                   <td>{statusPill(inv)}</td>
-                  <td style={{ display: 'flex', gap: 6 }}>
+                  <td style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <button className="btn btn-outline btn-sm" onClick={() => setSelectedId(inv.id)}>View</button>
                     <button className="btn btn-outline btn-sm" onClick={() => setEditingId(inv.id)}>Edit</button>
+                    {direction === 'PAYABLE' && inv.category === 'SALARY' && (
+                      <button
+                        className="btn btn-outline btn-sm"
+                        disabled={!inv.email || sendingId === inv.id}
+                        title={!inv.email ? 'No email on file' : sendMsgId === inv.id ? 'Sent!' : ''}
+                        onClick={() => quickSend(inv.id)}
+                      >
+                        {sendingId === inv.id ? 'Sending…' : sendMsgId === inv.id ? '✉️ Sent' : '✉️ Send Salary Invoice'}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
