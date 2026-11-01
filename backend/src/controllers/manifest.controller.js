@@ -154,19 +154,26 @@ async function recomputeAndRegenerate(manifestId) {
 }
 
 /**
- * POST /api/admin/manifests — { orderIds, hubId, toAddress, manifestDate, departureDate }.
+ * POST /api/admin/manifests — { orderIds, hubId, toAddress, departureDate,
+ * fromAirportCode, fromAirportName, airlineCode, airlineName, departureTime }.
  * airportCode is deliberately not client input — the destination country
  * (and whichever specific airport(s), if that turns out to be exactly one)
  * are derived server-side from the selected orders themselves, since a
  * manifest is now free to combine orders bound for several different
- * airports as long as they're all in the same country.
+ * airports as long as they're all in the same country. manifestDate is
+ * likewise not client input — always "today", since a manifest documents
+ * the day it was actually filed, not something staff should be able to
+ * backdate/postdate.
  */
 async function createManifest(req, res, next) {
   try {
-    const { orderIds, hubId, toAddress, manifestDate, departureDate, fromAirportCode, fromAirportName } = req.body;
+    const { orderIds, hubId, toAddress, departureDate, fromAirportCode, fromAirportName, airlineCode, airlineName, departureTime } = req.body;
     if (!Array.isArray(orderIds) || orderIds.length === 0) return res.status(400).json({ error: 'orderIds is required' });
     if (!toAddress?.trim()) return res.status(400).json({ error: 'toAddress is required' });
-    if (!manifestDate) return res.status(400).json({ error: 'manifestDate is required' });
+    if (!fromAirportCode) return res.status(400).json({ error: 'fromAirportCode is required' });
+    if (departureDate && departureDate < todayIsoIST()) {
+      return res.status(400).json({ error: 'Departure date cannot be in the past' });
+    }
 
     const orders = await prisma.order.findMany({ where: { id: { in: orderIds } }, include: { receiverAddress: true } });
     if (orders.length === 0) return res.status(400).json({ error: 'orderIds contains no known orders' });
