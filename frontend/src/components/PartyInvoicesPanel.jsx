@@ -745,7 +745,7 @@ function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
                   {inv ? (
                     <button className="btn btn-outline btn-sm" onClick={() => onView(inv.id)}>View</button>
                   ) : (
-                    <button className="btn btn-primary btn-sm" onClick={() => onPay(e)}>Pay salary</button>
+                    <button className="btn btn-primary btn-sm" onClick={() => onPay(e)}>Record payment</button>
                   )}
                 </td>
               </tr>
