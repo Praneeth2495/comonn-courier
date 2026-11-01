@@ -21,6 +21,15 @@ const CATEGORY_LABELS = {
 };
 const CATEGORY_KEYS = Object.keys(CATEGORY_LABELS).filter((k) => k !== 'SALARY');
 
+// Mirrors backend/src/services/partyInvoicePdf.js's documentLabel — what
+// the emailed PDF is actually titled, so the button describes what it
+// sends instead of a generic "email this".
+function sendButtonLabel(invoice) {
+  if (invoice.category === 'SALARY') return 'Send Salary Invoice';
+  if (invoice.direction === 'PAYABLE') return 'Send Remittance Advice';
+  return 'Send to email';
+}
+
 function statusPill(invoice) {
   if (invoice.status === 'PAID') return <span className="pill pill-success">Paid</span>;
   if (invoice.overdue) return <span className="pill pill-danger">Overdue</span>;
