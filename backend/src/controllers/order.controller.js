@@ -331,9 +331,46 @@ async function listOrders(req, res, next) {
       prisma.order.count({ where }),
     ]);
 
+    // Accounts → Bookings only: per-order profit/loss, same weight-share
+    // allocation as the Manifest cost sheet (ManifestCostModal/
+    // computeBranchCosts) — skipped elsewhere since it's two extra queries
+    // only Bookings needs.
+    if (req.query.withProfitLoss) await attachProfitLoss(orders);
+
     res.json({ orders, total, page: Number(page), pageSize: Number(pageSize) });
   } catch (err) {
     next(err);
+  }
+}
+
+/**
+ * Mutates `orders` in place, adding `profitLoss` (₹, or null when the order
+ * isn't manifested/costed yet so there's nothing to allocate against).
+ */
+async function attachProfitLoss(orders) {
+  const manifestIds = [...new Set(orders.map((o) => o.manifestId).filter(Boolean))];
+  if (manifestIds.length === 0) {
+    for (const o of orders) o.profitLoss = null;
+    return;
+  }
+
+  const [manifests, costAgg] = await Promise.all([
+    prisma.manifest.findMany({ where: { id: { in: manifestIds } }, select: { id: true, totalWeightKg: true } }),
+    prisma.partyInvoice.groupBy({ by: ['manifestId'], where: { manifestId: { in: manifestIds }, direction: 'PAYABLE' }, _sum: { totalAmount: true } }),
+  ]);
+  const weightByManifest = new Map(manifests.map((m) => [m.id, Number(m.totalWeightKg)]));
+  const costByManifest = new Map(costAgg.map((c) => [c.manifestId, Number(c._sum.totalAmount || 0)]));
+
+  for (const o of orders) {
+    const manifestWeight = o.manifestId ? weightByManifest.get(o.manifestId) : null;
+    if (!manifestWeight) {
+      o.profitLoss = null;
+      continue;
+    }
+    const operatingCost = costByManifest.get(o.manifestId) || 0;
+    const orderRevenue = Number(o.grandTotal) - Number(o.taxTotal) + Number(o.discountTotal);
+    const orderCostShare = operatingCost * (Number(o.chargeableWeightKg) / manifestWeight);
+    o.profitLoss = round2(orderRevenue - orderCostShare);
   }
 }
 
