@@ -394,6 +394,8 @@ function CreateLabelModal({ onClose, onCreated }) {
     try {
       const { data } = await client.post('/labels/manual', {
         orderId, refNumber, service, truckType: truckType || undefined, fromAddress, toAddress, items, instructions,
+        pickupDate: pickupDate || undefined, pickupTime: pickupTime || undefined,
+        deliveryDate: deliveryDate || undefined, deliveryTime: deliveryTime || undefined,
         generateLabel: wantLabel, generateConsignment: wantConsignment, generateLoadSheet: wantLoadSheet,
       });
       onCreated(data);
