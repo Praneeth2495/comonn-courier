@@ -67,6 +67,49 @@ const AIRLINES = [
   { code: 'UPS', name: 'UPS Airlines' },
 ];
 
+// Shared by CreateManifestModal and EditManifestDetailsForm — identical
+// From Airport / Airline fields in both (the "creating" vs "editing
+// after creation" distinction lives entirely in those two forms' submit
+// logic, not in how these particular fields render).
+function FromAirportField({ value, onChange }) {
+  return (
+    <div className="field">
+      <label>From Airport <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+      <select className="select" required value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Choose departure airport…</option>
+        {INDIAN_AIRPORTS.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function AirlineField({ value, onChange }) {
+  return (
+    <div className="field">
+      <label>Airline</label>
+      <select className="select" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Optional — airline</option>
+        {AIRLINES.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function DepartureDateTimeFields({ date, onDateChange, time, onTimeChange }) {
+  return (
+    <div className="grid-2">
+      <div className="field">
+        <label>Departure date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+        <input className="input" type="date" required min={todayIso()} value={date} onChange={(e) => onDateChange(e.target.value)} />
+      </div>
+      <div className="field">
+        <label>Departure time</label>
+        <input className="input" type="time" value={time} onChange={(e) => onTimeChange(e.target.value)} />
+      </div>
+    </div>
+  );
+}
+
 // Label for a country chip row or a manifest's own country badge — "EU" is
 // never a real ISO code, it's the sentinel stored when a manifest combines
 // several European countries (see manifest.controller.js).
