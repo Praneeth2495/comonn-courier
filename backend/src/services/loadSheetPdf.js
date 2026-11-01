@@ -146,6 +146,14 @@ function generateLoadSheet(batch, res) {
   leftY = drawDetailRow(doc, 'Reference', sanitizePdfText(batch.refNumber), left, leftY, labelWidth, valueWidth) + 8;
   leftY = drawDetailRow(doc, 'Service', sanitizePdfText(batch.service), left, leftY, labelWidth, valueWidth) + 8;
   leftY = drawDetailRow(doc, 'Date', fmtDate(batch.createdAt), left, leftY, labelWidth, valueWidth) + 8;
+  // Optional — only entered for a subset of batches, so only shown when set
+  // rather than printing a blank "Pickup —" row on every sheet.
+  if (batch.pickupDate) {
+    leftY = drawDetailRow(doc, 'Pickup', fmtDateTime(batch.pickupDate, batch.pickupTime), left, leftY, labelWidth, valueWidth) + 8;
+  }
+  if (batch.deliveryDate) {
+    leftY = drawDetailRow(doc, 'Delivery', fmtDateTime(batch.deliveryDate, batch.deliveryTime), left, leftY, labelWidth, valueWidth) + 8;
+  }
 
   const rightX = left + halfWidth + 20;
   let rightY = y;
