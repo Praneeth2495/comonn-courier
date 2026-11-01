@@ -599,13 +599,18 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
               <span style={{ fontSize: 12.5, color: 'var(--slate)' }}>
                 {manifest.orders.length} orders · {manifest.totalQty} qty · {Number(manifest.totalWeightKg).toFixed(2)} kg
                 {' · '}Manifest {formatDateShort(manifest.manifestDate)}
-                {manifest.departureDate && <> · Departs {formatDateShort(manifest.departureDate)}</>}
+                {manifest.departureDate && <> · Departs {formatDateShort(manifest.departureDate)}{manifest.departureTime && ` ${manifest.departureTime}`}</>}
+                {manifest.airlineName && <> · {manifest.airlineName} ({manifest.airlineCode})</>}
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn-outline btn-sm" onClick={() => setEditingDetails((v) => !v)}>{editingDetails ? 'Cancel edit' : 'Edit'}</button>
                 <button className="btn btn-outline btn-sm" onClick={() => downloadBlob(`/admin/manifests/${manifest.id}/download`, `${manifest.manifestNumber}.pdf`)}>Download sheet</button>
                 <button className="btn btn-primary btn-sm" onClick={() => setShowAddOrders(true)}>+ Add orders</button>
               </div>
             </div>
+            {editingDetails && (
+              <EditManifestDetailsForm manifest={manifest} onSaved={onDetailsSaved} onCancel={() => setEditingDetails(false)} />
+            )}
             {error && <div className="error-text" style={{ marginBottom: 10 }}>{error}</div>}
             <div style={{ maxHeight: 340, overflowY: 'auto' }}>
               <div className="table-wrap">
