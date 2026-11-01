@@ -2010,6 +2010,13 @@ function AccountsPanel() {
                         <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>{o.payment ? 'No Razorpay reference' : '—'}</span>
                       )}
                     </div>
+                    <div>
+                      {o.profitLoss == null ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Not costed</span>
+                      ) : (
+                        <span className="num" style={{ fontWeight: 700, fontSize: 13, color: o.profitLoss >= 0 ? 'var(--success)' : 'var(--danger)' }}>₹{o.profitLoss.toFixed(2)}</span>
+                      )}
+                    </div>
                     <div><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>View</button></div>
                   </div>
                 );
