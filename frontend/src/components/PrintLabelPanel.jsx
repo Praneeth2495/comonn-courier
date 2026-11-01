@@ -359,6 +359,12 @@ function CreateLabelModal({ onClose, onCreated }) {
   const [toAddress, setToAddress] = useState(emptyAddress());
   const [items, setItems] = useState([emptyItem()]);
   const [instructions, setInstructions] = useState('');
+  // All four optional — shown (when filled) on the Consignment sheet and
+  // Load sheet only; the sticker Label has no use for them.
+  const [pickupDate, setPickupDate] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
+  const [deliveryDate, setDeliveryDate] = useState('');
+  const [deliveryTime, setDeliveryTime] = useState('');
   const [wantLabel, setWantLabel] = useState(true);
   const [wantConsignment, setWantConsignment] = useState(true);
   const [wantLoadSheet, setWantLoadSheet] = useState(true);
