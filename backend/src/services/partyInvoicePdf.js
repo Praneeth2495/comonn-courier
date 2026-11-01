@@ -94,4 +94,4 @@ async function generatePartyInvoicePdf(invoice) {
   return { filePath, fileName };
 }
 
-module.exports = { generatePartyInvoicePdf, STORAGE_DIR };
+module.exports = { generatePartyInvoicePdf, documentLabel, STORAGE_DIR };
