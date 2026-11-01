@@ -309,6 +309,55 @@ async function getManifest(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/admin/manifests/:id — { fromAirportCode, fromAirportName,
+ * regionId, departureDate, airlineCode, airlineName, departureTime }, all
+ * optional/independent (only the keys present are touched). Lets staff fix
+ * a wrong departure airport or route (both From and To — changing `regionId`
+ * re-snapshots `toAddress` from that region's saved cargo address) after
+ * creation, plus the departure/airline details, without having to recreate
+ * the whole manifest. manifestDate is deliberately not editable here — see
+ * createManifest's comment on why it's fixed to the filing day.
+ */
+async function updateManifest(req, res, next) {
+  try {
+    const manifest = await prisma.manifest.findUnique({ where: { id: req.params.id } });
+    if (!manifest) return res.status(404).json({ error: 'Manifest not found' });
+
+    const { fromAirportCode, fromAirportName, regionId, departureDate, airlineCode, airlineName, departureTime } = req.body;
+    const data = {};
+
+    if (fromAirportCode !== undefined) {
+      if (!fromAirportCode) return res.status(400).json({ error: 'From airport is required' });
+      data.fromAirportCode = fromAirportCode;
+      data.fromAirportName = fromAirportName || null;
+    }
+    if (regionId !== undefined) {
+      const region = await prisma.manifestRegion.findUnique({ where: { id: regionId } });
+      if (!region) return res.status(400).json({ error: 'Destination airport not found' });
+      data.regionId = region.id;
+      data.toAddress = region.airportAddress;
+    }
+    if (departureDate !== undefined) {
+      if (departureDate && departureDate < todayIsoIST()) {
+        return res.status(400).json({ error: 'Departure date cannot be in the past' });
+      }
+      data.departureDate = departureDate ? new Date(departureDate) : null;
+    }
+    if (airlineCode !== undefined) {
+      data.airlineCode = airlineCode || null;
+      data.airlineName = airlineName || null;
+    }
+    if (departureTime !== undefined) data.departureTime = departureTime || null;
+
+    await prisma.manifest.update({ where: { id: manifest.id }, data });
+    const full = await recomputeAndRegenerate(manifest.id);
+    res.json({ manifest: full });
+  } catch (err) {
+    next(err);
+  }
+}
+
 function round2(n) {
   return Math.round(n * 100) / 100;
 }
