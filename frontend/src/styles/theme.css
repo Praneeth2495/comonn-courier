@@ -602,7 +602,14 @@ table.data-table tr:hover td{background:#FAFAF7;}
 .modal-overlay{position:fixed;inset:0;background:rgba(14,27,61,.55);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
 .modal-overlay.open{display:flex;}
 .modal-box{background:#fff;border-radius:18px;padding:28px;max-width:560px;width:100%;max-height:82vh;overflow-y:auto;box-shadow:0 24px 60px -20px rgba(14,27,61,.35);}
-.modal-header-row{position:sticky;top:0;background:#fff;z-index:5;}
+/* position:sticky pins this to the TOP OF THE SCROLLPORT, which sits at
+   modal-box's padding edge — not its border edge — so without the negative
+   margin/compensating padding here, scrolled content stays fully visible
+   underneath the header for the full 28px strip (and corners) that is
+   modal-box's own top/side padding, since nothing ever paints over that
+   strip. Pulling the header out to the border edge and re-padding it by
+   the same amount closes that gap on all three sides it's reachable from. */
+.modal-header-row{position:sticky;top:-28px;background:#fff;z-index:5;margin:-28px -28px 0;padding:28px 28px 0;}
 .dg-chip-row{display:flex;flex-wrap:wrap;gap:9px;}
 .dg-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px 8px 10px;border-radius:999px;background:var(--warn-bg);border:1px solid #F5D9BE;font-size:12.5px;font-weight:600;color:var(--warn);}
 .dg-chip .ic{font-size:14px;line-height:1;}
