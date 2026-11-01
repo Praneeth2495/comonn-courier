@@ -12,6 +12,14 @@ const { EUROPE_COUNTRY_CODES } = require('../constants/regions');
 // a free-form String column (not an enum/FK), so no schema change needed.
 const EUROPE_SENTINEL = 'EU';
 
+// "Today" in IST as a YYYY-MM-DD string, for comparing against the plain
+// date strings (type="date" inputs) departureDate arrives as — avoids a UTC
+// day ever reading as "yesterday" or "tomorrow" relative to India.
+function todayIsoIST() {
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  return ist.toISOString().slice(0, 10);
+}
+
 const ORDER_INCLUDE = { senderAddress: true, receiverAddress: true, items: true };
 
 function withQty(order) {
