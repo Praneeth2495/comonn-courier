@@ -35,8 +35,6 @@ export default function PartyInvoicesPanel({ direction }) {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [editingId, setEditingId] = useState(null);
-  const [sendingId, setSendingId] = useState(null);
-  const [sendMsgId, setSendMsgId] = useState(null);
 
   function load() {
     setLoading(true);
@@ -49,23 +47,6 @@ export default function PartyInvoicesPanel({ direction }) {
   function search(e) {
     e.preventDefault();
     load();
-  }
-
-  // Quick-send straight from the row — mirrors InvoiceDetailModal's own
-  // "Send to email" button, just reachable without opening it first, since
-  // sending a pay slip the moment a salary payment is recorded is the
-  // common case this came from.
-  async function quickSend(id) {
-    setSendingId(id);
-    setSendMsgId(null);
-    try {
-      await client.post(`/admin/party-invoices/${id}/send`);
-      setSendMsgId(id);
-    } catch (err) {
-      alert(err.response?.data?.error || 'Could not send this invoice.');
-    } finally {
-      setSendingId(null);
-    }
   }
 
   return (
