@@ -417,7 +417,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
                 </button>
               )}
               <button type="button" className="btn btn-outline btn-sm" disabled={!invoice.email || sending} onClick={sendEmail} title={!invoice.email ? 'No email on file' : ''}>
-                {sending ? 'Sending…' : '✉️ Send to email'}
+                {sending ? 'Sending…' : `✉️ ${sendButtonLabel(invoice)}`}
               </button>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => downloadBlob(`/admin/party-invoices/${invoiceId}/download`, `${invoice.invoiceNumber}.pdf`)}>
                 ⬇ Download invoice
