@@ -541,6 +541,7 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState(null);
   const [showAddOrders, setShowAddOrders] = useState(false);
+  const [editingDetails, setEditingDetails] = useState(false);
   const [error, setError] = useState('');
   const [detailOrder, setDetailOrder] = useState(null);
 
@@ -549,6 +550,12 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
     client.get(`/admin/manifests/${manifestId}`).then(({ data }) => { setManifest(data.manifest); setLoading(false); }).catch(() => setLoading(false));
   }
   useEffect(load, [manifestId]);
+
+  function onDetailsSaved(updated) {
+    setManifest(updated);
+    setEditingDetails(false);
+    onChanged();
+  }
 
   async function openDetail(id) {
     const { data } = await client.get(`/orders/${id}`);
