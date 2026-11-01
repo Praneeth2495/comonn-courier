@@ -464,13 +464,21 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
 
           <div className="grid-2">
             <div className="field">
-              <label>Manifest date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-              <input className="input" type="date" required value={manifestDate} onChange={(e) => setManifestDate(e.target.value)} />
+              <label>Departure date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+              <input className="input" type="date" required min={todayIso()} value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
             </div>
             <div className="field">
-              <label>Departure date <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-              <input className="input" type="date" required value={departureDate} onChange={(e) => setDepartureDate(e.target.value)} />
+              <label>Departure time</label>
+              <input className="input" type="time" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} />
             </div>
+          </div>
+
+          <div className="field">
+            <label>Airline</label>
+            <select className="select" value={airlineCode} onChange={(e) => setAirlineCode(e.target.value)}>
+              <option value="">Optional — airline</option>
+              {AIRLINES.map((a) => <option key={a.code} value={a.code}>{a.code} — {a.name}</option>)}
+            </select>
           </div>
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
