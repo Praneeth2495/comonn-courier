@@ -553,6 +553,7 @@ module.exports = {
   createManifest,
   listManifests,
   getManifest,
+  updateManifest,
   addOrdersToManifest,
   removeOrderFromManifest,
   downloadManifest,
