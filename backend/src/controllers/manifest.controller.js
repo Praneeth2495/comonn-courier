@@ -135,6 +135,13 @@ async function findOrCreateRegion(airportCode, countryCode, fallbackAddress) {
   });
 }
 
+/** Regenerates the PDF sheet for an already-loaded manifest (with its hub/region/orders included) and persists the new pdfFileUrl. Split out from recomputeAndRegenerate below so a details-only edit (updateManifest) can refresh the PDF without also re-deriving order totals that didn't change. */
+async function regeneratePdf(manifest) {
+  const { fileName } = await generateManifestPdf(manifest);
+  await prisma.manifest.update({ where: { id: manifest.id }, data: { pdfFileUrl: fileName } });
+  return { ...manifest, pdfFileUrl: fileName };
+}
+
 /** Recomputes and persists orderCount/totalQty/totalWeightKg from the manifest's current orders, then regenerates the PDF sheet. Called after every create/add/remove so the numbers and PDF never drift from the real linked orders. */
 async function recomputeAndRegenerate(manifestId) {
   const manifest = await prisma.manifest.findUnique({
@@ -148,9 +155,7 @@ async function recomputeAndRegenerate(manifestId) {
     data: { orderCount: manifest.orders.length, totalQty, totalWeightKg },
     include: { hub: true, region: true, orders: { include: ORDER_INCLUDE } },
   });
-  const { fileName } = await generateManifestPdf(updated);
-  await prisma.manifest.update({ where: { id: manifestId }, data: { pdfFileUrl: fileName } });
-  return { ...updated, pdfFileUrl: fileName };
+  return regeneratePdf(updated);
 }
 
 /**
