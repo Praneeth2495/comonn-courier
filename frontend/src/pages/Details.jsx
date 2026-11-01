@@ -179,7 +179,7 @@ function DetailsForm() {
     const base = emptyAddress(quoteInput?.destinationCountryCode || '');
     if (quoteInput?.destinationPostcode) base.postcode = quoteInput.destinationPostcode;
     if (quoteInput?.destinationEircode) base.eircode = quoteInput.destinationEircode;
-    if (quoteInput?.destinationSuburb) base.city = quoteInput.destinationSuburb;
+    if (quoteInput?.destinationSuburb && !UNRELIABLE_SUBURB_COUNTRIES.includes(quoteInput?.destinationCountryCode)) base.city = quoteInput.destinationSuburb;
     if (quoteInput?.destinationState) base.state = normalizeRegionValue(quoteInput.destinationCountryCode, quoteInput.destinationState);
     return base;
   });
