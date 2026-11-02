@@ -457,6 +457,15 @@ async function saveManifestCosts(req, res, next) {
             costRate: numValue,
             manifestId: manifest.id,
             createdById: req.user.id,
+            // Pinned to the manifest's own creation date, not whenever the
+            // cost sheet happens to actually get filled in (often days
+            // later) — same "attribute to the period the thing belongs to,
+            // not the period it was entered in" fix as the Salary quick-add
+            // form's createdAt. Accounts Overview buckets PAYABLE rows by
+            // createdAt, so without this a manifest created on the last day
+            // of a month has its operating cost land in the FOLLOWING
+            // month's P&L just because staff costed it a day or two late.
+            createdAt: manifest.createdAt,
           },
         });
       }
