@@ -747,7 +747,11 @@ function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
             return (
               <tr key={e.id} style={{ background: inv?.overdue ? 'var(--danger-bg)' : undefined }}>
                 <td>{e.fullName}<span style={{ color: 'var(--slate-light)' }}> · {e.email}</span></td>
-                <td>{inv ? `₹${Number(inv.totalAmount).toFixed(2)}` : '—'}</td>
+                <td>
+                  {inv ? `₹${Number(inv.totalAmount).toFixed(2)}` : e.salaryAmount != null ? (
+                    <span style={{ color: 'var(--slate-light)' }} title="Configured in Onboarding — not yet paid">₹{Number(e.salaryAmount).toFixed(2)}</span>
+                  ) : '—'}
+                </td>
                 <td>{inv ? formatDateShort(inv.dueDate) : '—'}</td>
                 <td>{inv ? statusPill(inv) : <span className="pill pill-navy">Not paid yet</span>}</td>
                 <td>
