@@ -93,7 +93,7 @@ function StaffDirectory() {
 
   function load() {
     setStaff(null);
-    client.get('/admin/employees', { params: { q: q || undefined } }).then(({ data }) => setStaff(data.employees)).catch(() => setStaff([]));
+    client.get('/admin/employees', { params: { q: q || undefined, excludeInvited: 1 } }).then(({ data }) => setStaff(data.employees)).catch(() => setStaff([]));
   }
   useEffect(load, []);
 
