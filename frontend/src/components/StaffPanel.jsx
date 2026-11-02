@@ -110,30 +110,38 @@ function StaffDirectory() {
 
       {staff === null ? (
         <LoadingLogo />
+      ) : staff.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', textAlign: 'center', padding: '24px 0' }}>No staff match this search.</p>
       ) : (
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead><tr><th>Name</th><th>Role</th><th>Designation</th><th>Hub</th><th>Phone</th><th>Status</th></tr></thead>
-            <tbody>
-              {staff.map((s) => (
-                <tr key={s.id}>
-                  <td><button className="t-oid" onClick={() => setSelectedId(s.id)}>{s.fullName}</button></td>
-                  <td>{ROLE_LABEL[s.role] || s.role}</td>
-                  <td>{s.profile?.designation || '—'}</td>
-                  <td>{s.profile?.hub?.name || '—'}</td>
-                  <td className="mono">{s.phone || '—'}</td>
-                  <td>
-                    {!s.isActive ? <span className="pill pill-danger">Inactive</span>
-                      : s.profile?.status ? <span className={`pill ${STATUS_PILL[s.profile.status]}`}>{STATUS_LABEL[s.profile.status]}</span>
-                      : <span className="pill pill-navy">—</span>}
-                  </td>
-                </tr>
-              ))}
-              {staff.length === 0 && (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No staff match this search.</td></tr>
-              )}
-            </tbody>
-          </table>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {groupByHubName(staff, (s) => s.profile?.hub?.name).map(([hubName, hubStaff]) => (
+            <div key={hubName} className="card" style={{ padding: '18px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <h3 style={{ fontSize: 14, color: 'var(--navy)' }}>{hubName}</h3>
+                <span className="pill pill-cobalt">{hubStaff.length} employee{hubStaff.length === 1 ? '' : 's'}</span>
+              </div>
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Name</th><th>Role</th><th>Designation</th><th>Phone</th><th>Status</th></tr></thead>
+                  <tbody>
+                    {hubStaff.map((s) => (
+                      <tr key={s.id}>
+                        <td><button className="t-oid" onClick={() => setSelectedId(s.id)}>{s.fullName}</button></td>
+                        <td>{ROLE_LABEL[s.role] || s.role}</td>
+                        <td>{s.profile?.designation || '—'}</td>
+                        <td className="mono">{s.phone || '—'}</td>
+                        <td>
+                          {!s.isActive ? <span className="pill pill-danger">Inactive</span>
+                            : s.profile?.status ? <span className={`pill ${STATUS_PILL[s.profile.status]}`}>{STATUS_LABEL[s.profile.status]}</span>
+                            : <span className="pill pill-navy">—</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
