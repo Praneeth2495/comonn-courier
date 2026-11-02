@@ -15,6 +15,23 @@ function leaveDays(start, end) {
   return Math.round((new Date(end) - new Date(start)) / 86400000) + 1;
 }
 
+// Same grouping convention as PartyInvoicesPanel.jsx's SalaryPanel —
+// alphabetical by hub name, "Unassigned" always last rather than sorted in
+// with real hub names.
+function groupByHubName(items, hubNameOf) {
+  const groups = new Map();
+  for (const item of items) {
+    const key = hubNameOf(item) || 'Unassigned';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  return [...groups.entries()].sort(([a], [b]) => {
+    if (a === 'Unassigned') return 1;
+    if (b === 'Unassigned') return -1;
+    return a.localeCompare(b);
+  });
+}
+
 /**
  * Staff page: "Directory" (read-focused list + detail, with the leave/
  * sick-call log — the one thing neither Onboarding nor Users has),
