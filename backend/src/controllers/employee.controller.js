@@ -96,15 +96,21 @@ function toEmployeeResponse(user) {
 const EMPLOYEE_INCLUDE = { employeeProfile: { include: { approvedBy: { select: { fullName: true } }, hub: { select: { name: true } } } } };
 
 /**
- * GET /api/admin/employees?q=... — every STAFF/DRIVER account with its
- * onboarding profile, if any. `q` (same shape as the Customers search —
- * see customer.controller.js) filters by name/email/phone, case-
- * insensitive substring, server-side.
+ * GET /api/admin/employees?q=&excludeInvited=1 — every STAFF/DRIVER account
+ * with its onboarding profile, if any. `q` (same shape as the Customers
+ * search — see customer.controller.js) filters by name/email/phone, case-
+ * insensitive substring, server-side. `excludeInvited` drops anyone still
+ * sitting at the bare INVITED status (link sent, nothing filled in yet) —
+ * the Staff → Directory tab passes this so a just-invited employee only
+ * shows up in Onboarding until they've actually submitted their details;
+ * Onboarding itself omits the flag since it needs to manage every stage,
+ * invited included.
  */
 async function listEmployees(req, res, next) {
   try {
-    const { q } = req.query;
+    const { q, excludeInvited } = req.query;
     const where = { role: { in: ['STAFF', 'DRIVER'] } };
+    if (excludeInvited) where.employeeProfile = { detailsSubmittedAt: { not: null } };
     if (q && q.trim()) {
       const term = q.trim();
       where.OR = [
