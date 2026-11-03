@@ -110,14 +110,28 @@ async function listEmployees(req, res, next) {
   try {
     const { q, excludeInvited } = req.query;
     const where = { role: { in: ['STAFF', 'DRIVER'] } };
-    if (excludeInvited) where.employeeProfile = { detailsSubmittedAt: { not: null } };
+    // "INVITED" (to exclude) means a profile exists but neither
+    // approvedAt nor detailsSubmittedAt is set yet — checking only
+    // detailsSubmittedAt would also hide an admin-direct-created employee
+    // (createEmployee approves immediately but never sets
+    // detailsSubmittedAt, since that field is only ever written by the
+    // self-submission link flow) even though they're fully APPROVED.
+    const notInvited = [
+      { employeeProfile: null },
+      { employeeProfile: { approvedAt: { not: null } } },
+      { employeeProfile: { detailsSubmittedAt: { not: null } } },
+    ];
     if (q && q.trim()) {
       const term = q.trim();
-      where.OR = [
+      const searchOr = [
         { fullName: { contains: term, mode: 'insensitive' } },
         { email: { contains: term, mode: 'insensitive' } },
         { phone: { contains: term, mode: 'insensitive' } },
       ];
+      if (excludeInvited) where.AND = [{ OR: notInvited }, { OR: searchOr }];
+      else where.OR = searchOr;
+    } else if (excludeInvited) {
+      where.OR = notInvited;
     }
     const users = await prisma.user.findMany({
       where,
