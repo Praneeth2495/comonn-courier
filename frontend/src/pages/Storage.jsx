@@ -6,7 +6,8 @@ import LoadingLogo from '../components/LoadingLogo';
 import BackToTop from '../components/BackToTop';
 import { razorpayAvailable, openRazorpayCheckout } from '../utils/razorpayCheckout';
 
-const DAY_PRESETS = [7, 30, 90];
+const DAY_PRESETS = [1, 7, 30];
+const RECOMMENDED_DAYS = 7;
 
 const HOW_IT_WORKS = [
   ['1', 'Reserve a box', 'Pick a size and how many days you need it for, and pay online in minutes.'],
