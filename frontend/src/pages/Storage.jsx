@@ -181,7 +181,7 @@ export default function Storage() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 18, paddingTop: 18, borderTop: '1px solid var(--line-2)' }}>
                 <div>
-                  <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{days} days at ₹{Number(selectedSize.monthlyRate).toFixed(0)}/month</p>
+                  <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{days} days at ₹{(Number(selectedSize.monthlyRate) / 30).toFixed(2)}/day</p>
                   <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--navy)' }}>₹{amount.toFixed(2)}</p>
                 </div>
               </div>
