@@ -29,6 +29,15 @@ input,select,textarea{font-family:inherit;}
 .site-header{background:#fff;position:sticky;top:0;z-index:40;}
 .site-header::after{content:"";display:block;height:3px;width:100%;background:linear-gradient(90deg, transparent 0%, var(--coral) 15%, var(--coral) 85%, transparent 100%);}
 .site-header .row{max-width:1240px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
+/* justify-content:space-between alone only guarantees equal GAPS around
+   .nav-links, not that it sits at the row's true horizontal center — since
+   .brand (logo) and .nav-actions (login/register or account menu) are
+   rarely the same width, that visibly skews the nav links off-center.
+   Giving both ends equal flex-grow makes them absorb the leftover space
+   symmetrically instead, which pins .nav-links to the real center
+   regardless of how wide the logo or the account controls happen to be. */
+.site-header .row > .brand{flex:1;}
+.site-header .row > .nav-actions{flex:1;justify-content:flex-end;}
 .brand{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .logo-img{height:30px;width:auto;max-width:100%;display:block;}
 .logo-img.lg{height:36px;}
