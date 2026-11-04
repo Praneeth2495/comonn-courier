@@ -216,15 +216,10 @@ table.data-table tr:hover td{background:#FAFAF7;}
 /* hero */
 .hero{background:linear-gradient(180deg,var(--navy) 0%, var(--navy-2) 100%);position:relative;overflow:hidden;}
 .hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 15% 20%, rgba(255,255,255,.05) 0, transparent 40%), radial-gradient(circle at 85% 80%, rgba(255,90,54,.12) 0, transparent 45%);pointer-events:none;}
-.hero-row{max-width:1240px;margin:0 auto;padding:64px 32px 88px;display:grid;grid-template-columns:1fr 500px;gap:56px;align-items:start;position:relative;}
+.hero-row{max-width:1240px;margin:0 auto;padding:64px 32px 88px;display:grid;grid-template-columns:1fr 460px;gap:56px;align-items:start;position:relative;}
 .hero-copy .eyebrow{color:#FF9478;}
 .hero-copy h1{color:#fff;font-size:46px;line-height:1.1;font-weight:700;}
 .hero-copy h1 .hl{color:var(--coral);}
-/* The form's default .card shadow is tuned for a light page background and
-   all but disappears against the hero's dark navy gradient — this gives it
-   its own warm glow (plus a brighter ambient shadow) so it reads as the
-   focal point of the hero instead of just another panel sitting on it. */
-.hero-row .instant-booking-form{box-shadow:0 24px 60px -16px rgba(0,0,0,.5), 0 0 0 1px rgba(255,90,54,.22), 0 0 48px -12px rgba(255,90,54,.35);}
 .hero-copy .lead{color:#B9C1DE;margin-top:16px;max-width:440px;}
 .trust-row{display:flex;gap:22px;margin-top:32px;flex-wrap:wrap;}
 .trust-item{display:flex;align-items:center;gap:9px;}
