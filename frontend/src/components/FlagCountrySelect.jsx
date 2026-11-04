@@ -13,7 +13,7 @@ import CountryFlag from './CountryFlag';
 // a normal child — this field always sits inside .input-group, which has
 // overflow:hidden for its own rounded-corner divider look, so a normal
 // absolutely-positioned child would be invisibly clipped there.
-export default function FlagCountrySelect({ value, options, onChange, disabled }) {
+export default function FlagCountrySelect({ value, options, onChange, disabled, hideArrow }) {
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const ref = useRef(null);
