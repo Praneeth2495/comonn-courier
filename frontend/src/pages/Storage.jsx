@@ -150,7 +150,7 @@ export default function Storage() {
                 >
                   <h3 style={{ fontSize: 16, marginBottom: 4 }}>{size.name}</h3>
                   {size.description && <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 10 }}>{size.description}</p>}
-                  <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--navy)' }}>₹{Number(size.monthlyRate).toFixed(0)}<span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--slate)' }}> /month</span></p>
+                  <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--navy)' }}>₹{(Number(size.monthlyRate) / 30).toFixed(2)}<span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--slate)' }}> /day</span></p>
                   <p style={{ fontSize: 12, color: soldOut ? 'var(--danger)' : 'var(--slate-light)', marginTop: 8 }}>
                     {soldOut ? 'Sold out' : `${size.availableCount} available`}
                   </p>
