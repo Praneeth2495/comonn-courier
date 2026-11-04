@@ -353,7 +353,7 @@ export default function Home() {
       <div className="hero">
         <div className="hero-row">
           <div className="hero-copy">
-            <h1>Connecting <span className="hl">INDIAN</span> roots.</h1>
+            <h1>Connecting <span className="hl">Indian</span> roots.</h1>
             <WorldOpsMap />
           </div>
 
