@@ -36,7 +36,7 @@ export default function Storage() {
   const whySectionRef = useRef(null);
   const [sizes, setSizes] = useState(null);
   const [selectedSizeId, setSelectedSizeId] = useState(null);
-  const [days, setDays] = useState(30);
+  const [days, setDays] = useState(RECOMMENDED_DAYS);
   const [customDays, setCustomDays] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
