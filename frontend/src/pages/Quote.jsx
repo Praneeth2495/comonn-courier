@@ -516,7 +516,7 @@ export default function Quote() {
             <div className="field" style={{ position: 'relative' }}>
               <label>Origin</label>
               <div className="input-group" style={{ position: 'relative' }}>
-                <FlagCountrySelect value="IN" options={['IN']} disabled />
+                <FlagCountrySelect value="IN" options={['IN']} disabled hideArrow />
                 <input
                   placeholder="Pickup pincode"
                   value={originFocused || !originPicked ? originPostcode : formatPostcodeSuggestion(originPostcode, originPicked.suburb, originPicked.state)}
