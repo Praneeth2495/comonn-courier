@@ -60,7 +60,7 @@ export default function FlagCountrySelect({ value, options, onChange, disabled, 
   return (
     <div
       ref={ref}
-      className="flag"
+      className={`flag${hideArrow ? ' flag-no-arrow' : ''}`}
       // Width itself lives in the .input-group .flag CSS rule (not here)
       // specifically so the mobile breakpoint can widen it further — at
       // that size the same rule bumps this box's font-size up to 16px
