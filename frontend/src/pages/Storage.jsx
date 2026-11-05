@@ -165,16 +165,16 @@ export default function Storage() {
           {selectedSize && (
             <div className="card" style={{ padding: 22, marginTop: 24 }}>
               <h4 style={{ fontSize: 14, marginBottom: 12 }}>How many days?</h4>
-              <div className="chip-filter-row">
+              <div className="chip-filter-row" style={{ alignItems: 'center' }}>
                 {DAY_PRESETS.map((d) => (
-                  <Fragment key={d}>
+                  <div key={d} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                     <div className={`chip-filter ${!customDays && days === d ? 'active' : ''}`} onClick={() => pickDays(d)}>
                       {d} {d === 1 ? 'Day' : 'days'}
                     </div>
                     {d === RECOMMENDED_DAYS && (
-                      <span style={{ fontSize: 11, color: 'var(--slate-light)', marginLeft: -4 }}>Recommended</span>
+                      <span style={{ fontSize: 10.5, color: 'var(--slate-light)' }}>Recommended</span>
                     )}
-                  </Fragment>
+                  </div>
                 ))}
                 <input
                   className="input"
