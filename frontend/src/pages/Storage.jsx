@@ -167,9 +167,14 @@ export default function Storage() {
               <h4 style={{ fontSize: 14, marginBottom: 12 }}>How many days?</h4>
               <div className="chip-filter-row">
                 {DAY_PRESETS.map((d) => (
-                  <div key={d} className={`chip-filter ${!customDays && days === d ? 'active' : ''}`} onClick={() => pickDays(d)}>
-                    {d} {d === 1 ? 'Day' : 'days'}{d === RECOMMENDED_DAYS ? ' (recommended)' : ''}
-                  </div>
+                  <Fragment key={d}>
+                    <div className={`chip-filter ${!customDays && days === d ? 'active' : ''}`} onClick={() => pickDays(d)}>
+                      {d} {d === 1 ? 'Day' : 'days'}
+                    </div>
+                    {d === RECOMMENDED_DAYS && (
+                      <span style={{ fontSize: 11, color: 'var(--slate-light)', marginLeft: -4 }}>Recommended</span>
+                    )}
+                  </Fragment>
                 ))}
                 <input
                   className="input"
