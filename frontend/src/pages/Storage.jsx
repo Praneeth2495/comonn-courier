@@ -168,7 +168,11 @@ export default function Storage() {
               <div className="chip-filter-row" style={{ alignItems: 'center' }}>
                 {DAY_PRESETS.map((d) => (
                   <div key={d} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                    <div className={`chip-filter ${!customDays && days === d ? 'active' : ''}`} onClick={() => pickDays(d)}>
+                    <div
+                      className={`chip-filter ${!customDays && days === d ? 'active' : ''}`}
+                      style={{ minWidth: 90, justifyContent: 'center' }}
+                      onClick={() => pickDays(d)}
+                    >
                       {d} {d === 1 ? 'Day' : 'days'}
                     </div>
                     {d === RECOMMENDED_DAYS && (
