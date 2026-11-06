@@ -247,7 +247,7 @@ function formatAddress(addr) {
   // Ireland: print the full Eircode (pinpoints one building) instead of
   // just the 3-character routing key stored in postcode, when we have it.
   const postcodeForLabel = addr.eircode || addr.postcode;
-  const cityStatePostcode = [addr.city, addr.state].filter(Boolean).join(', ') + (postcodeForLabel ? ` ${postcodeForLabel}` : '');
+  const cityStatePostcode = [addr.city, abbreviateInState(addr.state)].filter(Boolean).join(', ') + (postcodeForLabel ? ` ${postcodeForLabel}` : '');
   return [
     addr.businessName,
     addr.contactName,
