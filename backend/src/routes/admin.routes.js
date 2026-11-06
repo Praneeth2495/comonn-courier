@@ -17,6 +17,8 @@ router.get('/accounts/overview', requirePage('accounts'), admin.accountsOverview
 // cards/surcharges (viewable broadly, editable only by ADMIN).
 router.get('/addon-pricing', admin.listAddonPricing);
 router.post('/addon-pricing', requireRole('ADMIN'), admin.updateAddonPricing);
+router.get('/warranty-tiers', admin.listWarrantyTiers);
+router.post('/warranty-tiers', requireRole('ADMIN'), admin.updateWarrantyTier);
 
 // Used by the Orders page's pickup-assignment picker (ADMIN bypasses
 // requirePage; a STAFF/ACCOUNTS user without 'orders' toggled never sees
