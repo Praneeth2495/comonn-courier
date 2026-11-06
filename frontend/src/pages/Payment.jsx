@@ -31,15 +31,14 @@ function computeAmountPaidAndBalance(order) {
   return { amountPaid, balance };
 }
 
-const WARRANTY_TIERS = [
-  { coverage: 10000, price: 0, label: '₹10,000 cover — Free' },
-  { coverage: 25000, price: 300, label: '₹25,000 cover — ₹300' },
-  { coverage: 50000, price: 550, label: '₹50,000 cover — ₹550' },
-  { coverage: 75000, price: 800, label: '₹75,000 cover — ₹800' },
-  { coverage: 100000, price: 1050, label: '₹1,00,000 cover — ₹1,050' },
-  { coverage: 125000, price: 1300, label: '₹1,25,000 cover — ₹1,300' },
-  { coverage: 150000, price: 1500, label: '₹1,50,000 cover — ₹1,500' },
-];
+// Label built client-side from the live {coverage, price} pairs fetched
+// from /quote/warranty-tiers — same "₹25,000 cover — ₹300" / "— Free"
+// format as before, just no longer a hardcoded list (see WarrantyTier in
+// schema.prisma — admin-editable from Service Fees now).
+function warrantyTierLabel(coverage, price) {
+  const coverStr = `₹${coverage.toLocaleString('en-IN')} cover`;
+  return price === 0 ? `${coverStr} — Free` : `${coverStr} — ₹${price.toLocaleString('en-IN')}`;
+}
 
 const DG_ITEMS = [
   ['🔋', 'Spare batteries'], ['🧪', 'Flammable liquids'], ['💨', 'Gases'], ['⚠️', 'Corrosives'],
