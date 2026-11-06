@@ -1442,4 +1442,6 @@ module.exports = {
   setUserRole,
   listAddonPricing,
   updateAddonPricing,
+  listWarrantyTiers,
+  updateWarrantyTier,
 };
