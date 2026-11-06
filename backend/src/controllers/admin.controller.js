@@ -157,7 +157,11 @@ async function staffOverview(req, res, next) {
  * GET /api/admin/dashboard/regions — one row per distinct state/region
  * pair currently assigned to at least one staff member (the operationally
  * relevant set, not every region in the postcode database — most of which
- * no staff covers).
+ * no staff covers). `totals` stays scoped to the page's from/to range as
+ * before (the dedicated Region tab's own table); `ordersToday` is a
+ * separate, always-"today" count (same fixed window staff/riders use via
+ * activityWindows, independent of from/to) — just for the Overview KPI
+ * tile's "regions with orders today" ratio.
  */
 async function computeRegionBreakdown(from, to) {
   const assignments = await prisma.staffRegionAssignment.findMany({
@@ -173,12 +177,16 @@ async function computeRegionBreakdown(from, to) {
   }
   distinctRegions.sort((a, b) => a.state.localeCompare(b.state) || (a.region || '').localeCompare(b.region || ''));
 
+  const todayWindow = activityWindows().today;
   return Promise.all(
     distinctRegions.map(async (r) => {
       const [originFilter] = await resolveOriginFilters([r]);
       const where = buildDashboardWhere(from, to, { senderAddress: originFilter });
-      const totals = await computeOrderTotals(where);
-      return { region: r, totals };
+      const [totals, ordersToday] = await Promise.all([
+        computeOrderTotals(where),
+        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress: originFilter, createdAt: todayWindow } }),
+      ]);
+      return { region: r, totals, ordersToday };
     })
   );
 }
