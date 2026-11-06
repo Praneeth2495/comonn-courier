@@ -930,7 +930,8 @@ async function updateAddons(req, res, next) {
 
     const rows = [];
     if (warrantyCoverage !== undefined && warrantyCoverage !== null) {
-      const tier = WARRANTY_TIERS.find((t) => t.coverage === Number(warrantyCoverage));
+      const warrantyTiers = await getWarrantyTiers();
+      const tier = warrantyTiers.find((t) => t.coverage === Number(warrantyCoverage));
       if (!tier) return res.status(400).json({ error: 'Unknown warranty tier' });
       rows.push({ orderId: order.id, code: 'WARRANTY', label: warrantyLabel(tier.coverage), quantity: 1, unitPrice: tier.price, amount: tier.price });
     }
