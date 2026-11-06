@@ -264,9 +264,9 @@ async function createManifest(req, res, next) {
     // no single status it would be correct to force onto all of them here
     // — 'Manifested' is just a descriptive placeholder until staff pick a
     // real one via the batch's own "Update status" action.
-    const orderIds = full.orders.map((o) => o.id);
-    const labels = orderIds.length
-      ? await prisma.label.findMany({ where: { orderId: { in: orderIds } }, select: { orderId: true, barcodeValue: true } })
+    const manifestOrderIds = full.orders.map((o) => o.id);
+    const labels = manifestOrderIds.length
+      ? await prisma.label.findMany({ where: { orderId: { in: manifestOrderIds } }, select: { orderId: true, barcodeValue: true } })
       : [];
     const labelByOrder = new Map(labels.map((l) => [l.orderId, l.barcodeValue]));
     await prisma.scanBatch.create({
