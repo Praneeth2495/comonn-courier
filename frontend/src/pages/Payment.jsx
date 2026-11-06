@@ -77,6 +77,7 @@ export default function Payment() {
   const [appliedWarrantyCoverage, setAppliedWarrantyCoverage] = useState(10000);
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [addonPricing, setAddonPricing] = useState({});
+  const [warrantyTiers, setWarrantyTiers] = useState([]);
   const [pickupDate, setPickupDate] = useState(pickupDates[0]);
 
   useEffect(() => {
@@ -85,6 +86,7 @@ export default function Payment() {
       for (const a of data.addons) map[a.code] = a;
       setAddonPricing(map);
     }).catch(() => {});
+    client.get('/quote/warranty-tiers').then(({ data }) => setWarrantyTiers(data.tiers)).catch(() => {});
   }, []);
 
   const [otpEmail, setOtpEmail] = useState('');
