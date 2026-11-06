@@ -1265,6 +1265,19 @@ model AddonPricing {
   updatedAt DateTime @updatedAt
 }
 
+// The transit warranty's fixed coverage brackets (₹10,000 free, up to
+// ₹1,50,000) — same "admin-editable price, live source of truth" role as
+// AddonPricing above, just keyed by coverage amount instead of a code since
+// that's what's actually fixed/structural here (the bracket amounts aren't
+// meant to be added/removed from the admin UI, only their price). Was a
+// hardcoded array in addonCatalog.js before this; same not-retroactive
+// guarantee applies — OrderAddon snapshots price/label at selection time.
+model WarrantyTier {
+  coverage  Int      @id // ₹ cover amount, e.g. 10000, 150000
+  price     Decimal  @db.Decimal(10, 2)
+  updatedAt DateTime @updatedAt
+}
+
 model PromoCode {
   id             String    @id @default(uuid())
   code           String    @unique
