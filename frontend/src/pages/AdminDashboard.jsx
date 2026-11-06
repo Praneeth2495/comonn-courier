@@ -123,7 +123,7 @@ function Overview() {
   const [fromDate, setFromDate] = useState(isoDate(monthStart(now)));
   const [toDate, setToDate] = useState(isoDate(now));
   const [kpis, setKpis] = useState(null);
-  const [dayWiseRange, setDayWiseRange] = useState('4weeks');
+  const [dayWiseRange, setDayWiseRange] = useState('currentWeek');
   const [expandedKpi, setExpandedKpi] = useState(null);
   // ADMIN always sees both breakdown tabs; a STAFF/ACCOUNTS viewer only
   // sees whichever of 'staff'/'region' they're individually granted via
