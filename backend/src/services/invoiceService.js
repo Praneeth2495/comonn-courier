@@ -10,7 +10,8 @@ function formatAddress(addr) {
   // Ireland: show the full Eircode (pinpoints one building) instead of just
   // the 3-character routing key stored in postcode, when we have it.
   const postcodeForInvoice = addr.eircode || addr.postcode;
-  return [addr.contactName, addr.line1, addr.line2, `${addr.city}${addr.state ? ', ' + addr.state : ''} ${postcodeForInvoice}`, getCountryName(addr.countryCode)]
+  const state = abbreviateInState(addr.state);
+  return [addr.contactName, addr.line1, addr.line2, `${addr.city}${state ? ', ' + state : ''} ${postcodeForInvoice}`, getCountryName(addr.countryCode)]
     .filter(Boolean)
     .map(sanitizePdfText)
     .join('\n');
