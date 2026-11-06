@@ -30,4 +30,16 @@ function expandInState(value) {
   return IN_STATE_NAMES[value] || value;
 }
 
-module.exports = { EUROPE_COUNTRY_CODES, IN_STATE_NAMES, expandInState };
+// Reverse of expandInState — for PRINTED/DISPLAYED text only (labels,
+// invoices, manifest sheets, consignment notes). Never used for storage,
+// filtering, or comparison — Address.state itself stays a full name in the
+// DB; this only shortens it at render time, right where it's formatted
+// into on-screen/on-paper text. Pass-through for anything not a recognized
+// full India state name (already a code, or any other country's own
+// state/region), so it's safe to apply unconditionally.
+const IN_STATE_CODES_BY_NAME = Object.fromEntries(Object.entries(IN_STATE_NAMES).map(([code, name]) => [name, code]));
+function abbreviateInState(value) {
+  return (value && IN_STATE_CODES_BY_NAME[value]) || value;
+}
+
+module.exports = { EUROPE_COUNTRY_CODES, IN_STATE_NAMES, expandInState, abbreviateInState };
