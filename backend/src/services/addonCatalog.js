@@ -1,14 +1,12 @@
 const { prisma } = require('../config/db');
 
-const WARRANTY_TIERS = [
-  { coverage: 10000, price: 0 },
-  { coverage: 25000, price: 300 },
-  { coverage: 50000, price: 550 },
-  { coverage: 75000, price: 800 },
-  { coverage: 100000, price: 1050 },
-  { coverage: 125000, price: 1300 },
-  { coverage: 150000, price: 1500 },
-];
+// Live, admin-editable coverage brackets (Overview page > Service fees) —
+// see WarrantyTier in schema.prisma. Was a hardcoded array here before;
+// now DB-backed so admin edits apply immediately without a deploy.
+async function getWarrantyTiers() {
+  const rows = await prisma.warrantyTier.findMany({ orderBy: { coverage: 'asc' } });
+  return rows.map((r) => ({ coverage: r.coverage, price: Number(r.price) }));
+}
 
 // Live, admin-editable fees (Overview page > Service fees) for the three
 // flat add-ons — see AddonPricing in schema.prisma. Shaped back into the
