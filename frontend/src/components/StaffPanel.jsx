@@ -121,7 +121,21 @@ function StaffDirectory() {
                 <span className="pill pill-cobalt">{hubStaff.length} employee{hubStaff.length === 1 ? '' : 's'}</span>
               </div>
               <div className="table-wrap">
-                <table className="data-table">
+                {/* Each hub group is its own separate <table>, so without a
+                    shared fixed layout, column widths auto-size per-table
+                    off that hub's own content — a hub with longer names/
+                    designations ends up with visibly different column
+                    widths than the next one down the page. table-layout:
+                    fixed + a shared colgroup keeps every hub's columns
+                    identical regardless of its own content. */}
+                <table className="data-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+                  <colgroup>
+                    <col style={{ width: '26%' }} />
+                    <col style={{ width: '12%' }} />
+                    <col style={{ width: '26%' }} />
+                    <col style={{ width: '18%' }} />
+                    <col style={{ width: '18%' }} />
+                  </colgroup>
                   <thead><tr><th>Name</th><th>Role</th><th>Designation</th><th>Phone</th><th>Status</th></tr></thead>
                   <tbody>
                     {hubStaff.map((s) => (
