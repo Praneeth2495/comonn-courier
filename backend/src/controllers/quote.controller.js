@@ -329,4 +329,4 @@ async function emailQuote(req, res, next) {
   }
 }
 
-module.exports = { getInstantQuote, listCountries, listServices, listAddonPricing, postcodeSuggestions, emailQuote };
+module.exports = { getInstantQuote, listCountries, listServices, listAddonPricing, listWarrantyTiers, postcodeSuggestions, emailQuote };
