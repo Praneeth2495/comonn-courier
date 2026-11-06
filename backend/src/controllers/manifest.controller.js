@@ -255,6 +255,36 @@ async function createManifest(req, res, next) {
       })),
     });
 
+    // Same "saved batch" record Batch Scan's "Create batch & update" flow
+    // produces (see batch.controller.js's createBatch) — lets staff bulk
+    // re-apply a status to every order in this manifest later from the
+    // Scan page's Saved batches list, without re-scanning each one.
+    // Deliberately doesn't call applyStatusToItems: a manifest can bag
+    // orders sitting at several different real statuses at once, so there's
+    // no single status it would be correct to force onto all of them here
+    // — 'Manifested' is just a descriptive placeholder until staff pick a
+    // real one via the batch's own "Update status" action.
+    const orderIds = full.orders.map((o) => o.id);
+    const labels = orderIds.length
+      ? await prisma.label.findMany({ where: { orderId: { in: orderIds } }, select: { orderId: true, barcodeValue: true } })
+      : [];
+    const labelByOrder = new Map(labels.map((l) => [l.orderId, l.barcodeValue]));
+    await prisma.scanBatch.create({
+      data: {
+        name: `Manifest ${manifest.manifestNumber}`,
+        status: 'Manifested',
+        createdById: req.user.id,
+        items: {
+          create: full.orders.map((o) => ({
+            barcodeValue: labelByOrder.get(o.id) || o.trackingNumber || o.orderNumber,
+            matched: true,
+            orderId: o.id,
+            orderNumber: o.orderNumber,
+          })),
+        },
+      },
+    });
+
     res.status(201).json({ manifest: full });
   } catch (err) {
     if (err.status) return res.status(err.status).json({ error: err.message });
