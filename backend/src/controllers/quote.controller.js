@@ -201,6 +201,20 @@ async function listAddonPricing(req, res, next) {
   }
 }
 
+/**
+ * GET /api/quote/warranty-tiers — public, for the Payment page's transit
+ * warranty dropdown to show the live, admin-set coverage/price brackets
+ * instead of a hardcoded list.
+ */
+async function listWarrantyTiers(req, res, next) {
+  try {
+    const rows = await prisma.warrantyTier.findMany({ orderBy: { coverage: 'asc' } });
+    res.json({ tiers: rows.map((r) => ({ coverage: r.coverage, price: Number(r.price) })) });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** GET /api/quote/services */
 async function listServices(req, res, next) {
   try {
