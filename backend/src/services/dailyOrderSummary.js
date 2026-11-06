@@ -48,7 +48,7 @@ async function computeDailySummary() {
   // "Not collected by 9pm today" — this job fires at 21:00 IST, so any active
   // pickup order whose scheduled date is today-or-earlier (IST) and still
   // hasn't been picked up counts as overdue. Reuses the same IST day-boundary
-  // (lte) as totalToday/collectedToday above, rather than the server
+  // (lte) as totalToday above, rather than the server
   // process's ambient local timezone.
   const overdueToday = activePickupOrders.filter((o) => {
     const parsed = parsePickupDate(o.pickupDate, now);
