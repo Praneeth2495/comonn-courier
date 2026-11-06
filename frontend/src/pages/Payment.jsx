@@ -743,7 +743,7 @@ export default function Payment() {
 
   const totalBoxQty = order.items?.reduce((sum, it) => sum + it.quantity, 0) || 1;
   const addonAmount = (code) => order.addons?.find((a) => a.code === code)?.amount;
-  const selectedWarrantyPrice = WARRANTY_TIERS.find((t) => t.coverage === warrantyCoverage)?.price || 0;
+  const selectedWarrantyPrice = warrantyTiers.find((t) => t.coverage === warrantyCoverage)?.price || 0;
   const canPay = dgAcknowledged && otpVerified;
   const pricingPending = Boolean(order.pricingPending);
   // What's actually left to charge via Razorpay once the opt-in wallet
