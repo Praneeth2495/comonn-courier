@@ -4,6 +4,7 @@ const PDFDocument = require('pdfkit');
 const { getCountryName } = require('../utils/countryNames');
 const { sanitizePdfText } = require('../utils/pdfText');
 const { STORAGE_DIR, LOGO_PATH, ensureStorageDir, money, drawLine: line, drawWatermark } = require('../utils/pdfHelpers');
+const { abbreviateInState } = require('../constants/regions');
 
 function formatAddress(addr) {
   // Ireland: show the full Eircode (pinpoints one building) instead of just
