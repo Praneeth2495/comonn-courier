@@ -99,7 +99,7 @@ export default function AdminDashboard() {
         {tab === 'rates' && hasPage('rates') && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
         {tab === 'merchants' && isAdmin && <MerchantsPanel />}
-        {tab === 'fees' && isAdmin && <AddonFeesCard />}
+        {tab === 'fees' && isAdmin && <ServiceFeesPanel />}
         {tab === 'customsclients' && hasPage('customsclients') && <CustomsClientsPanel />}
         {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
         {tab === 'riders' && hasPage('orders') && <RidersPanel />}
