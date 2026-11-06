@@ -224,9 +224,8 @@ function AddonFeesCard() {
   }
 
   return (
-    <div>
-      <h1 className="h-lg" style={{ marginBottom: 16 }}>Service Fees</h1>
-      <div className="card" style={{ padding: 20 }}>
+    <div className="card" style={{ padding: 20 }}>
+      <h3 style={{ fontSize: 15, marginBottom: 4 }}>Add-on fees</h3>
       <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>
         Flat add-on fees charged at checkout. Changes apply to new bookings only.
       </p>
@@ -268,6 +267,104 @@ function AddonFeesCard() {
         </div>
       )}
       {error && <div className="error-text" style={{ marginTop: 10 }}>{error}</div>}
+    </div>
+  );
+}
+
+// Same price-only-editable pattern as AddonFeesCard just above, keyed by
+// `coverage` (the bracket's own identity) instead of a code — see
+// WarrantyTier in schema.prisma.
+function WarrantyTiersCard() {
+  const [tiers, setTiers] = useState(null);
+  const [editingCoverage, setEditingCoverage] = useState(null);
+  const [editPrice, setEditPrice] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    client.get('/admin/warranty-tiers').then(({ data }) => setTiers(data.tiers));
+  }, []);
+
+  function startEdit(tier) {
+    setEditingCoverage(tier.coverage);
+    setEditPrice(String(tier.price));
+    setError('');
+  }
+
+  function toggleFree(e) {
+    setEditPrice(e.target.checked ? '0' : '');
+  }
+
+  async function save(coverage) {
+    const price = Number(editPrice);
+    if (!Number.isFinite(price) || price < 0) { setError('Enter a valid price.'); return; }
+    setSaving(true);
+    try {
+      const { data } = await client.post('/admin/warranty-tiers', { coverage, price });
+      setTiers((prev) => prev.map((t) => (t.coverage === coverage ? data.tier : t)));
+      setEditingCoverage(null);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="card" style={{ padding: 20 }}>
+      <h3 style={{ fontSize: 15, marginBottom: 4 }}>Transit warranty tiers</h3>
+      <p style={{ fontSize: 12, color: 'var(--slate-light)', marginBottom: 14 }}>
+        What a customer pays at checkout for each coverage bracket. Coverage amounts themselves aren't editable here, only the price. Changes apply to new bookings only.
+      </p>
+      {!tiers ? <LoadingLogo /> : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead><tr><th>Coverage</th><th>Price</th><th></th></tr></thead>
+            <tbody>
+              {tiers.map((t) => (
+                <tr key={t.coverage}>
+                  <td>₹{t.coverage.toLocaleString('en-IN')}</td>
+                  <td>
+                    {editingCoverage === t.coverage ? (
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <span style={{ color: 'var(--slate-light)' }}>₹</span>
+                        <input className="input" type="number" min="0" step="0.01" style={{ width: 100, padding: '6px 8px' }} value={editPrice} onChange={(e) => setEditPrice(e.target.value)} autoFocus />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>
+                          <input type="checkbox" checked={Number(editPrice) === 0} onChange={toggleFree} />
+                          Free
+                        </label>
+                        <button className="btn btn-primary btn-sm" disabled={saving} onClick={() => save(t.coverage)}>{saving ? 'Saving…' : 'Save'}</button>
+                        <button className="btn btn-outline btn-sm" onClick={() => { setEditingCoverage(null); setError(''); }}>Cancel</button>
+                      </div>
+                    ) : (
+                      <span style={{ fontWeight: 700, color: Number(t.price) === 0 ? 'var(--success)' : 'var(--ink)' }}>
+                        {Number(t.price) === 0 ? 'Free' : `₹${Number(t.price).toFixed(2)}`}
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    {editingCoverage !== t.coverage && (
+                      <button className="btn btn-outline btn-sm" onClick={() => startEdit(t)}>Edit</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {error && <div className="error-text" style={{ marginTop: 10 }}>{error}</div>}
+    </div>
+  );
+}
+
+function ServiceFeesPanel() {
+  return (
+    <div>
+      <h1 className="h-lg" style={{ marginBottom: 16 }}>Service Fees</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <AddonFeesCard />
+        <WarrantyTiersCard />
       </div>
     </div>
   );
