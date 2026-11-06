@@ -11,14 +11,25 @@ const BarcodeCameraScanner = lazy(() => import('./BarcodeCameraScanner'));
 
 const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
+/**
+ * Redesigned from the original IDLE screen that forced a choice between
+ * "Scan" / "Create batch" / "Barcode locations" before you could even start
+ * scanning — scanning is now always the first thing on screen (no mode
+ * picker), and "save this as a reusable named batch" is just an optional
+ * checkbox at the status step instead of a whole separate upfront flow.
+ * Saved batches moved to their own tab, out of the way of someone who just
+ * wants to scan and apply a status.
+ */
 export default function BatchScanPanel() {
   const { user } = useAuth();
   const canManageLocations = user?.role === 'ADMIN' || user?.role === 'STAFF';
 
+  const [subTab, setSubTab] = useState('scan'); // 'scan' | 'batches'
+
   const [batches, setBatches] = useState([]);
   const [loadingBatches, setLoadingBatches] = useState(true);
-  const [mode, setMode] = useState(null); // 'CREATE' | 'STATUS'
-  const [phase, setPhase] = useState('IDLE'); // IDLE | NAME | SCANNING | FINISH | DONE
+  const [phase, setPhase] = useState('SCANNING'); // SCANNING | FINISH | DONE
+  const [saveAsBatch, setSaveAsBatch] = useState(false);
   const [batchName, setBatchName] = useState('');
   const [codes, setCodes] = useState([]);
   const [scanInput, setScanInput] = useState('');
@@ -42,7 +53,7 @@ export default function BatchScanPanel() {
 
   // Scanning a location's barcode from the saved-batches table to
   // re-apply that location's status, without going through the full
-  // create/scan flow above.
+  // scan flow above.
   const [scanningBatchId, setScanningBatchId] = useState(null);
   const [batchScanLastCode, setBatchScanLastCode] = useState(null);
 
@@ -117,9 +128,11 @@ export default function BatchScanPanel() {
     }
   }
 
+  // Back to a blank scan box, ready to go again — never back to a mode
+  // picker, scanning is always the default state of this tab.
   function reset() {
-    setMode(null);
-    setPhase('IDLE');
+    setPhase('SCANNING');
+    setSaveAsBatch(false);
     setBatchName('');
     setCodes([]);
     setScanInput('');
@@ -129,24 +142,6 @@ export default function BatchScanPanel() {
     setLastLocationScanned(null);
     setLocationNotes([]);
     setPreview({});
-  }
-
-  function startCreateBatch() {
-    reset();
-    setMode('CREATE');
-    setPhase('NAME');
-  }
-
-  function startUpdateStatus() {
-    reset();
-    setMode('STATUS');
-    setPhase('SCANNING');
-  }
-
-  function confirmName(e) {
-    e.preventDefault();
-    if (!batchName.trim()) return;
-    setPhase('SCANNING');
   }
 
   // Shared by both the keyboard/physical-scanner input and the camera
@@ -189,10 +184,14 @@ export default function BatchScanPanel() {
 
   async function applyBatch() {
     if (!chosenStatus) return;
+    if (saveAsBatch && !batchName.trim()) {
+      setError('Name this batch first.');
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
-      if (mode === 'CREATE') {
+      if (saveAsBatch) {
         const { data } = await client.post('/batches', { name: batchName, barcodeValues: codes, status: chosenStatus, locationNotes });
         setResult({ updatedCount: data.updatedCount, items: data.batch.items });
         loadBatches();
@@ -229,8 +228,8 @@ export default function BatchScanPanel() {
   }
 
   // Only location barcodes make sense here — a saved batch's status is one
-  // string applied to every item in it, unlike the create/scan flow which
-  // resolves individual shipment barcodes into batch items. Guards against
+  // string applied to every item in it, unlike the scan flow which resolves
+  // individual shipment barcodes into batch items. Guards against
   // re-alerting on the same unmatched code while the camera keeps scanning.
   function handleBatchStatusScan(code) {
     if (!scanningBatchId || !code || code === batchScanLastCode) return;
@@ -270,173 +269,176 @@ export default function BatchScanPanel() {
     <div>
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Batch Scan</h1>
 
-      {phase === 'IDLE' && (
-        <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
-          <button className="btn btn-primary" style={{ padding: '14px 24px' }} onClick={startUpdateStatus}>🔄 Scan</button>
-          <button className="btn btn-outline" style={{ padding: '14px 24px' }} onClick={startCreateBatch}>📦 Create batch</button>
-          {canManageLocations && (
-            <button className="btn btn-outline" style={{ padding: '14px 24px' }} onClick={() => setShowLocations(true)}>📍 Barcode locations</button>
-          )}
-        </div>
-      )}
+      <div className="dash-tabs" style={{ marginBottom: 16 }}>
+        <button className={`dash-tab ${subTab === 'scan' ? 'active' : ''}`} onClick={() => setSubTab('scan')}>Scan</button>
+        <button className={`dash-tab ${subTab === 'batches' ? 'active' : ''}`} onClick={() => setSubTab('batches')}>Saved batches</button>
+      </div>
 
-      {phase === 'NAME' && (
-        <div className="card" style={{ padding: 24, maxWidth: 420, marginBottom: 24 }}>
-          <h4 style={{ marginBottom: 12 }}>Name this batch</h4>
-          <form onSubmit={confirmName}>
-            <input className="input" placeholder="e.g. Evening pickup run" autoFocus required value={batchName} onChange={(e) => setBatchName(e.target.value)} />
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button type="button" className="btn btn-outline" onClick={reset}>Cancel</button>
-              <button className="btn btn-primary">Start scanning →</button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {phase === 'SCANNING' && (
-        <div className="card" style={{ padding: 24, marginBottom: 24 }}>
-          {mode === 'CREATE' && <h4 style={{ marginBottom: 4 }}>Batch: {batchName}</h4>}
-          <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>Scan each label's barcode (physical scanner, camera, or type the code and press Enter).</p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              className="input"
-              placeholder="Scan or type barcode…"
-              autoFocus
-              style={{ flex: 1 }}
-              value={scanInput}
-              onChange={(e) => setScanInput(e.target.value)}
-              onKeyDown={handleScanKeyDown}
-            />
-            <button type="button" className="btn btn-outline" style={{ flex: 'none' }} onClick={() => setShowCamera(true)}>📷 Camera</button>
-          </div>
-          {lastLocationScanned && (
-            <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 10 }}>
-              📍 Location scanned: <b>{lastLocationScanned.name}</b> — status will be set to <b>{lastLocationScanned.label}</b>
-            </p>
-          )}
-          {locationNotes.length > 0 && (
-            <p style={{ fontSize: 12, color: 'var(--slate)', marginTop: 6 }}>
-              Will also be logged as a comment on each order below: {locationNotes.map((l) => `${l.name} (${l.label})`).join('; ')}
-            </p>
-          )}
-          <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{codes.length} scanned</p>
-          {codes.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, maxHeight: 220, overflowY: 'auto' }}>
-              {codes.map((c, i) => {
-                const p = preview[c];
-                const checked = p !== undefined;
-                const pillClass = !checked ? 'pill-navy' : p.matched ? 'pill-success' : 'pill-danger';
-                return (
-                  <span key={i} className={`pill ${pillClass}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <span>
-                      {c}
-                      {checked && (p.matched
-                        ? <> → {p.orderNumber}{p.destination ? ` · ${p.destination}` : ''}</>
-                        : <> — not matched</>)}
-                    </span>
-                    <button type="button" onClick={() => removeCode(i)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 700, padding: 0 }}>✕</button>
-                  </span>
-                );
-              })}
-            </div>
-          )}
-          {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
-          <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-            <button type="button" className="btn btn-outline" onClick={reset}>Cancel</button>
-            <button type="button" className="btn btn-primary" onClick={finishScanning}>Finish scanning →</button>
-          </div>
-        </div>
-      )}
-
-      {phase === 'FINISH' && (
-        <div className="card" style={{ padding: 24, maxWidth: 420, marginBottom: 24 }}>
-          <h4 style={{ marginBottom: 4 }}>{mode === 'CREATE' ? `Batch: ${batchName}` : 'Scan'}</h4>
-          <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>{codes.length} label{codes.length === 1 ? '' : 's'} scanned.</p>
-          <div className="field">
-            <label>New status</label>
-            <select className="select" value={chosenStatus} onChange={(e) => setChosenStatus(e.target.value)}>
-              <option value="">Select status…</option>
-              {chosenStatus && !ORDER_STATUSES.includes(chosenStatus) && <option value={chosenStatus}>{chosenStatus} (from scanned location)</option>}
-              {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
-            </select>
-          </div>
-          {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
-          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-            <button type="button" className="btn btn-outline" onClick={() => setPhase('SCANNING')}>← Back</button>
-            <button type="button" className="btn btn-primary" disabled={!chosenStatus || submitting} onClick={applyBatch}>
-              {submitting ? 'Applying…' : mode === 'CREATE' ? 'Apply & save batch' : 'Apply status'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {phase === 'DONE' && result && (
-        <div className="card" style={{ padding: 24, maxWidth: 480, marginBottom: 24 }}>
-          <h4 style={{ marginBottom: 8, color: 'var(--success)' }}>✓ Done</h4>
-          <p style={{ fontSize: 13.5, marginBottom: 10 }}>
-            {result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{statusLabel(chosenStatus)}</b>.
-          </p>
-          {locationNotes.length > 0 && (
-            <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 10 }}>
-              Also logged as a comment on each order — view it via that order's Comments in the Orders tab.
-            </p>
-          )}
-          {notMatched.length > 0 && (
-            <p style={{ fontSize: 12.5, color: 'var(--danger)' }}>
-              {notMatched.length} code{notMatched.length === 1 ? '' : 's'} didn't match any label: {notMatched.map((i) => i.barcodeValue).join(', ')}
-            </p>
-          )}
-          <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={reset}>Done</button>
-        </div>
-      )}
-
-      <h3 className="h-md" style={{ marginBottom: 12 }}>Saved batches</h3>
-      {loadingBatches ? <LoadingLogo /> : (
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead><tr><th>Name</th><th>Status applied</th><th>Items</th><th>Created by</th><th>Date</th><th></th></tr></thead>
-            <tbody>
-              {batches.map((b) => (
-                <tr key={b.id}>
-                  <td>{b.name}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                      <select
-                        className="select"
-                        style={{ padding: '6px 8px', fontSize: 12.5 }}
-                        value={b.status}
-                        disabled={changingId === b.id}
-                        onChange={(e) => changeBatchStatus(b.id, e.target.value)}
-                      >
-                        {!ORDER_STATUSES.includes(b.status) && <option value={b.status}>{b.status}</option>}
-                        {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
-                      </select>
-                      <button
-                        type="button"
-                        className="btn btn-outline btn-sm"
-                        title="Scan a barcode location to set its status"
-                        disabled={changingId === b.id}
-                        onClick={() => openBatchStatusScan(b.id)}
-                      >
-                        📷
-                      </button>
-                    </div>
-                  </td>
-                  <td>{b._count.items}</td>
-                  <td>{b.createdBy?.fullName || '—'}</td>
-                  <td>{formatDateShort(b.createdAt)}</td>
-                  <td style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-outline btn-sm" disabled={loadingView} onClick={() => viewBatch(b.id)}>View</button>
-                    <button className="btn btn-outline btn-sm" onClick={() => deleteBatch(b.id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-              {batches.length === 0 && (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No saved batches yet.</td></tr>
+      {subTab === 'scan' && (
+        <>
+          {phase === 'SCANNING' && (
+            <div className="card" style={{ padding: 24, marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
+                <p className="lead" style={{ fontSize: 13, margin: 0 }}>Scan each label's barcode (physical scanner, camera, or type the code and press Enter).</p>
+                {canManageLocations && (
+                  <button type="button" className="btn btn-outline btn-sm" style={{ flex: 'none' }} onClick={() => setShowLocations(true)}>📍 Barcode locations</button>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <input
+                  className="input"
+                  placeholder="Scan or type barcode…"
+                  autoFocus
+                  style={{ flex: 1 }}
+                  value={scanInput}
+                  onChange={(e) => setScanInput(e.target.value)}
+                  onKeyDown={handleScanKeyDown}
+                />
+                <button type="button" className="btn btn-outline" style={{ flex: 'none' }} onClick={() => setShowCamera(true)}>📷 Camera</button>
+              </div>
+              {lastLocationScanned && (
+                <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 10 }}>
+                  📍 Location scanned: <b>{lastLocationScanned.name}</b> — status will be set to <b>{lastLocationScanned.label}</b>
+                </p>
               )}
-            </tbody>
-          </table>
-        </div>
+              {locationNotes.length > 0 && (
+                <p style={{ fontSize: 12, color: 'var(--slate)', marginTop: 6 }}>
+                  Will also be logged as a comment on each order below: {locationNotes.map((l) => `${l.name} (${l.label})`).join('; ')}
+                </p>
+              )}
+              <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{codes.length} scanned</p>
+              {codes.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, maxHeight: 220, overflowY: 'auto' }}>
+                  {codes.map((c, i) => {
+                    const p = preview[c];
+                    const checked = p !== undefined;
+                    const pillClass = !checked ? 'pill-navy' : p.matched ? 'pill-success' : 'pill-danger';
+                    return (
+                      <span key={i} className={`pill ${pillClass}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <span>
+                          {c}
+                          {checked && (p.matched
+                            ? <> → {p.orderNumber}{p.destination ? ` · ${p.destination}` : ''}</>
+                            : <> — not matched</>)}
+                        </span>
+                        <button type="button" onClick={() => removeCode(i)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 700, padding: 0 }}>✕</button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                <button type="button" className="btn btn-primary" onClick={finishScanning}>Finish scanning →</button>
+              </div>
+            </div>
+          )}
+
+          {phase === 'FINISH' && (
+            <div className="card" style={{ padding: 24, maxWidth: 440, marginBottom: 24 }}>
+              <h4 style={{ marginBottom: 4 }}>Apply status</h4>
+              <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>{codes.length} label{codes.length === 1 ? '' : 's'} scanned.</p>
+              <div className="field">
+                <label>New status</label>
+                <select className="select" value={chosenStatus} onChange={(e) => setChosenStatus(e.target.value)}>
+                  <option value="">Select status…</option>
+                  {chosenStatus && !ORDER_STATUSES.includes(chosenStatus) && <option value={chosenStatus}>{chosenStatus} (from scanned location)</option>}
+                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
+                </select>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginTop: 14, cursor: 'pointer' }}>
+                <input type="checkbox" checked={saveAsBatch} onChange={(e) => setSaveAsBatch(e.target.checked)} />
+                Save this as a reusable named batch
+              </label>
+              <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 2, marginLeft: 24 }}>
+                Lets you come back later and re-apply a new status to the same group of orders without re-scanning — see the Saved batches tab.
+              </p>
+              {saveAsBatch && (
+                <div className="field" style={{ marginTop: 10 }}>
+                  <label>Batch name</label>
+                  <input className="input" placeholder="e.g. Evening pickup run" autoFocus value={batchName} onChange={(e) => setBatchName(e.target.value)} />
+                </div>
+              )}
+              {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
+              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                <button type="button" className="btn btn-outline" onClick={() => setPhase('SCANNING')}>← Back</button>
+                <button type="button" className="btn btn-primary" disabled={!chosenStatus || submitting} onClick={applyBatch}>
+                  {submitting ? 'Applying…' : saveAsBatch ? 'Apply & save batch' : 'Apply status'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {phase === 'DONE' && result && (
+            <div className="card" style={{ padding: 24, maxWidth: 480, marginBottom: 24 }}>
+              <h4 style={{ marginBottom: 8, color: 'var(--success)' }}>✓ Done</h4>
+              <p style={{ fontSize: 13.5, marginBottom: 10 }}>
+                {result.updatedCount} order{result.updatedCount === 1 ? '' : 's'} updated to <b>{statusLabel(chosenStatus)}</b>.
+              </p>
+              {locationNotes.length > 0 && (
+                <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 10 }}>
+                  Also logged as a comment on each order — view it via that order's Comments in the Orders tab.
+                </p>
+              )}
+              {notMatched.length > 0 && (
+                <p style={{ fontSize: 12.5, color: 'var(--danger)' }}>
+                  {notMatched.length} code{notMatched.length === 1 ? '' : 's'} didn't match any label: {notMatched.map((i) => i.barcodeValue).join(', ')}
+                </p>
+              )}
+              <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={reset}>Scan more</button>
+            </div>
+          )}
+        </>
+      )}
+
+      {subTab === 'batches' && (
+        loadingBatches ? <LoadingLogo /> : (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead><tr><th>Name</th><th>Status applied</th><th>Items</th><th>Created by</th><th>Date</th><th></th></tr></thead>
+              <tbody>
+                {batches.map((b) => (
+                  <tr key={b.id}>
+                    <td>{b.name}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <select
+                          className="select"
+                          style={{ padding: '6px 8px', fontSize: 12.5 }}
+                          value={b.status}
+                          disabled={changingId === b.id}
+                          onChange={(e) => changeBatchStatus(b.id, e.target.value)}
+                        >
+                          {!ORDER_STATUSES.includes(b.status) && <option value={b.status}>{b.status}</option>}
+                          {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
+                        </select>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          title="Scan a barcode location to set its status"
+                          disabled={changingId === b.id}
+                          onClick={() => openBatchStatusScan(b.id)}
+                        >
+                          📷
+                        </button>
+                      </div>
+                    </td>
+                    <td>{b._count.items}</td>
+                    <td>{b.createdBy?.fullName || '—'}</td>
+                    <td>{formatDateShort(b.createdAt)}</td>
+                    <td style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-outline btn-sm" disabled={loadingView} onClick={() => viewBatch(b.id)}>View</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => deleteBatch(b.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+                {batches.length === 0 && (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No saved batches yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
 
       <div className={`modal-overlay ${viewingBatch ? 'open' : ''}`} onClick={() => setViewingBatch(null)}>
