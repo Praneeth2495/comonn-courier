@@ -40,7 +40,11 @@ function formatCityCountry(city, countryCode) {
 //    with {3} and is being processed." + a dynamic "View order" button URL
 //    (tracking link suffix as a 4th, trailing param).
 //  - order_picked_up: "Hi {1}, your order {2} has been shipped and is on
-//    the way." No button.
+//    the way." Trailing param below is a tracking-link button URL suffix,
+//    same shape as order_confirmed/order_out_for_delivery — but the
+//    template itself still needs a "Track order" button ADDED (and
+//    re-approved) in the Gupshup console before this param does anything;
+//    until then WhatsApp just ignores the extra value.
 //  - order_out_for_delivery: "Your order {1} is out for delivery! It should
 //    arrive by {2}." + a dynamic "Track order" button URL (tracking link
 //    suffix as a 3rd, trailing param). No name placeholder — we don't yet
@@ -54,6 +58,7 @@ function buildParams(templateName, { contactName, trackingNumber }) {
     case UPDATE_TEMPLATES.OUT_FOR_DELIVERY:
       return [trackingNumber, 'within 24 hours', trackingNumber];
     case UPDATE_TEMPLATES.PICKED_UP:
+      return [name, trackingNumber, trackingNumber];
     default:
       return [name, trackingNumber];
   }
