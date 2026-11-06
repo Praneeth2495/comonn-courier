@@ -22,7 +22,7 @@ function drawWatermark(doc) {
 
 function formatAddress(a) {
   if (!a) return '—';
-  return [a.businessName, a.street, a.suburb, a.city, a.state, a.pin, getCountryName(a.countryCode)]
+  return [a.businessName, a.street, a.suburb, a.city, abbreviateInState(a.state), a.pin, getCountryName(a.countryCode)]
     .filter(Boolean).map(sanitizePdfText).join(', ');
 }
 
