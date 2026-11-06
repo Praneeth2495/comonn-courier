@@ -528,13 +528,14 @@ function ActivityKpiBody({ description, emptyLabel, rows, footer }) {
           <table className="data-table">
             <thead><tr><th>Name</th><th>Today</th><th>Last 7 days</th><th>Current month</th></tr></thead>
             <tbody>
+              {/* Green row = has at least one today, same "ready" highlight convention AirportWeightKpiBody uses. */}
               {rows.map((r) => (
-                <tr key={r.id}>
+                <tr key={r.id} style={r.today > 0 ? { background: 'var(--success-bg)' } : undefined}>
                   <td>
                     {r.name}
                     <div style={{ fontSize: 11, color: 'var(--slate-light)' }}>{r.sub}</div>
                   </td>
-                  <td>{r.today}</td>
+                  <td style={r.today > 0 ? { color: 'var(--success)', fontWeight: 700 } : undefined}>{r.today}</td>
                   <td>{r.last7Days}</td>
                   <td>{r.currentMonth}</td>
                 </tr>
