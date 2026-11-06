@@ -1222,6 +1222,36 @@ async function updateAddonPricing(req, res, next) {
   }
 }
 
+/** GET /api/admin/warranty-tiers — the 7 transit warranty coverage brackets, for the Service Fees page's editable list. */
+async function listWarrantyTiers(req, res, next) {
+  try {
+    const tiers = await prisma.warrantyTier.findMany({ orderBy: { coverage: 'asc' } });
+    res.json({ tiers });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/admin/warranty-tiers — ADMIN only. Only `price` is editable
+ * here (coverage is the bracket's own identity, not a fee) — never
+ * retroactive, same as AddonPricing: each OrderAddon snapshots its own
+ * price/label at selection time (see updateAddons, order.controller.js).
+ */
+async function updateWarrantyTier(req, res, next) {
+  try {
+    const { coverage, price } = req.body;
+    const coverageNum = Number(coverage);
+    if (!Number.isFinite(coverageNum)) return res.status(400).json({ error: 'coverage is required' });
+    const priceNum = Number(price);
+    if (!Number.isFinite(priceNum) || priceNum < 0) return res.status(400).json({ error: 'price must be a non-negative number' });
+    const tier = await prisma.warrantyTier.update({ where: { coverage: coverageNum }, data: { price: priceNum } });
+    res.json({ tier });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ---------------- Users ----------------
 async function listUsers(req, res, next) {
   try {
