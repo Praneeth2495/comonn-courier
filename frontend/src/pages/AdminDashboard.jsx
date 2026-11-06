@@ -601,8 +601,9 @@ function KpiTile({ icon, title, headline, subLabel, accentBg, accent, onClick })
 function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpandedKpi }) {
   const dayWiseTotal = kpis.dayOfWeek.reduce((sum, d) => sum + d.count, 0);
   const airportsReady = kpis.airports.filter((a) => a.readyForManifest).length;
-  const staffToday = kpis.staffActivity.reduce((sum, r) => sum + r.today, 0);
-  const ridersToday = kpis.riderActivity.reduce((sum, r) => sum + r.today, 0);
+  const staffWithOrdersToday = kpis.staffActivity.filter((r) => r.today > 0).length;
+  const ridersWithOrdersToday = kpis.riderActivity.filter((r) => r.today > 0).length;
+  const regionsWithOrdersToday = kpis.regions ? kpis.regions.filter((r) => r.ordersToday > 0).length : 0;
   const accountsToday = kpis.accountsActivity.rows.reduce((sum, r) => sum + r.today, 0);
   const overdueTotal = kpis.accountsActivity.overdueInvoices.payable + kpis.accountsActivity.overdueInvoices.receivable;
 
