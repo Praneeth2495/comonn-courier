@@ -84,6 +84,18 @@ export function normalizeRegionValue(countryCode, value) {
   return options[value.trim().toUpperCase()] || value;
 }
 
+// Reverse of IN_STATES — for PRINTED/DISPLAYED text only (address
+// summaries, tables, chips). Never used for storage, filtering, form
+// values, or comparison — Address.state itself stays a full name; this
+// only shortens it at render time, right where it's shown. Pass-through
+// for anything not a recognized full India state name (already a code,
+// another country's own state/region, free text), so it's safe to apply
+// unconditionally to any state value that reaches the screen.
+const IN_STATE_CODES_BY_NAME = Object.fromEntries(Object.entries(IN_STATES).map(([code, name]) => [name, code]));
+export function abbreviateInState(value) {
+  return (value && IN_STATE_CODES_BY_NAME[value]) || value;
+}
+
 // Per-country config for the receiver/sender address form's "State" field —
 // hidden entirely for countries with no meaningful equivalent, a dropdown
 // of full names for CA/US, a plain free-text field for GB labeled "County"
