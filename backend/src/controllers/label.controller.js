@@ -201,7 +201,7 @@ function addressBlockHtml(addr) {
   const lines = [
     addr.line1,
     addr.line2,
-    `${addr.city || ''}${addr.state ? ', ' + addr.state : ''} ${addr.postcode || ''}`.trim(),
+    `${addr.city || ''}${addr.state ? ', ' + abbreviateInState(addr.state) : ''} ${addr.postcode || ''}`.trim(),
     getCountryName(addr.countryCode),
   ].filter(Boolean);
   return `
