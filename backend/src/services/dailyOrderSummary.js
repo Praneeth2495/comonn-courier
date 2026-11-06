@@ -21,8 +21,9 @@ const ACTIVE_PICKUP_STATUSES = ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', '
  * Three end-of-day ops numbers for the admin WhatsApp summary:
  *  - totalToday: orders placed today (any status) — same "Total orders"
  *    definition the Overview stat card already uses (computeOrderTotals).
- *  - collectedToday: orders physically picked up by the courier today
- *    (pickedUpAt, not payment-collected — see pickedUpAt on Order).
+ *  - totalPickedUp: orders physically picked up by the courier, all-time
+ *    (pickedUpAt set, not payment-collected — see pickedUpAt on Order) —
+ *    not scoped to today, a running cumulative total.
  *  - overdueToday: active pickup orders not collected by 9pm (IST) today —
  *    scheduled pickupDate is today-or-earlier (IST) and still hasn't been
  *    picked up. This job runs at 21:00 IST, so "today" pickups still
@@ -35,9 +36,9 @@ async function computeDailySummary() {
   const { gte, lte } = todayIstWindow();
   const now = new Date();
 
-  const [totalToday, collectedToday, activePickupOrders] = await Promise.all([
+  const [totalToday, totalPickedUp, activePickupOrders] = await Promise.all([
     prisma.order.count({ where: { createdAt: { gte, lte } } }),
-    prisma.order.count({ where: { pickedUpAt: { gte, lte } } }),
+    prisma.order.count({ where: { pickedUpAt: { not: null } } }),
     prisma.order.findMany({
       where: { status: { in: ACTIVE_PICKUP_STATUSES } },
       select: { pickupDate: true },
