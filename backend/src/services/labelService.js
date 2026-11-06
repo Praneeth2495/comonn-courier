@@ -5,6 +5,7 @@ const bwipjs = require('bwip-js');
 const { getCountryName } = require('../utils/countryNames');
 const { sanitizePdfText } = require('../utils/pdfText');
 const { STORAGE_DIR, LOGO_PATH, ensureStorageDir, drawWatermark: drawWatermarkAt } = require('../utils/pdfHelpers');
+const { abbreviateInState } = require('../constants/regions');
 
 // Same recipe as invoiceService.js's drawWatermark — the icon-only mark
 // (not the full logo+text, illegible at this scale), faint, centered,
