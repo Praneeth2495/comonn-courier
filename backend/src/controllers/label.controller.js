@@ -6,6 +6,7 @@ const { generateInvoicePdf } = require('../services/invoiceService');
 const { sendEmail } = require('../services/emailService');
 const { ensureCustomerAccount } = require('../services/accountProvisioning');
 const { getCountryName } = require('../utils/countryNames');
+const { abbreviateInState } = require('../constants/regions');
 
 function siteUrl(pathname) {
   const base = (process.env.CLIENT_ORIGIN || 'https://www.comonn.in').split(',')[0].trim();
