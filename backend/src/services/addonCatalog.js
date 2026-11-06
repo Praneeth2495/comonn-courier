@@ -24,4 +24,4 @@ function warrantyLabel(coverage) {
   return `Transit warranty — ₹${coverage.toLocaleString('en-IN')} cover`;
 }
 
-module.exports = { WARRANTY_TIERS, getFlatAddons, warrantyLabel };
+module.exports = { getWarrantyTiers, getFlatAddons, warrantyLabel };
