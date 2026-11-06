@@ -796,7 +796,7 @@ export default function Payment() {
                   <div className="txt">
                     <h4>Transit warranty</h4>
                     <select className="select addon-select" value={warrantyCoverage} onChange={(e) => changeWarranty(Number(e.target.value))}>
-                      {WARRANTY_TIERS.map((t) => <option key={t.coverage} value={t.coverage}>{t.label}</option>)}
+                      {warrantyTiers.map((t) => <option key={t.coverage} value={t.coverage}>{warrantyTierLabel(t.coverage, t.price)}</option>)}
                     </select>
                   </div>
                   <div className="right">
