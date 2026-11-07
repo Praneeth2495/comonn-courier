@@ -19,13 +19,8 @@ import SetPassword from './pages/SetPassword';
 import OnboardingDetails from './pages/OnboardingDetails';
 import Services from './pages/Services';
 import About from './pages/About';
-import Quote from './pages/Quote';
-import Details from './pages/Details';
-import Payment from './pages/Payment';
 import PaymentByLink from './pages/PaymentByLink';
-import Labels from './pages/Labels';
 import Track from './pages/Track';
-import Storage from './pages/Storage';
 import UserDashboard from './pages/UserDashboard';
 import Wallet from './pages/Wallet';
 import MyBox from './pages/MyBox';
@@ -36,6 +31,16 @@ import MyBox from './pages/MyBox';
 // the public homepage — neither role ever needs them on first paint.
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const DriverDashboard = lazy(() => import('./pages/DriverDashboard'));
+
+// Lazy-loaded: the booking-flow pages (Quote/Details/Payment, each 700+
+// lines) and Storage/Labels were previously all bundled into the main
+// chunk a first-time visitor downloads just to see the homepage — none of
+// these are needed until that visitor actually clicks into a flow.
+const Quote = lazy(() => import('./pages/Quote'));
+const Details = lazy(() => import('./pages/Details'));
+const Payment = lazy(() => import('./pages/Payment'));
+const Storage = lazy(() => import('./pages/Storage'));
+const Labels = lazy(() => import('./pages/Labels'));
 
 function PageLoadingFallback() {
   return <div className="wrap section-narrow" style={{ textAlign: 'center', paddingTop: 60 }}><LoadingLogo /></div>;
