@@ -40,6 +40,11 @@ const Details = lazy(() => import('./pages/Details'));
 const Payment = lazy(() => import('./pages/Payment'));
 const Storage = lazy(() => import('./pages/Storage'));
 const Labels = lazy(() => import('./pages/Labels'));
+// PaymentByLink statically imports Payment itself to reuse it — keeping
+// PaymentByLink eager would pull Payment back into the main chunk despite
+// the lazy() above, since Rollup follows every static import reachable
+// from an eagerly-loaded module.
+const PaymentByLink = lazy(() => import('./pages/PaymentByLink'));
 
 function PageLoadingFallback() {
   return <div className="wrap section-narrow" style={{ textAlign: 'center', paddingTop: 60 }}><LoadingLogo /></div>;
