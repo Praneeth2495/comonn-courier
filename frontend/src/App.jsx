@@ -123,7 +123,7 @@ export default function App() {
             <Route path="/quote" element={withLayoutLazy(<Quote />)} />
             <Route path="/details" element={withLayoutLazy(<Details />)} />
             <Route path="/payment" element={withLayoutLazy(<Payment />)} />
-            <Route path="/pay/:orderId" element={withLayout(<PaymentByLink />)} />
+            <Route path="/pay/:orderId" element={withLayoutLazy(<PaymentByLink />)} />
             <Route path="/labels" element={withLayoutLazy(<Labels />)} />
             <Route path="/track" element={withLayout(<Track />)} />
             <Route path="/storage" element={withLayoutLazy(<Storage />)} />
