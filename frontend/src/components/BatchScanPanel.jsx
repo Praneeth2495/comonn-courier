@@ -280,12 +280,7 @@ export default function BatchScanPanel() {
         <>
           {phase === 'SCANNING' && (
             <div className="card" style={{ padding: 24, marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
-                <p className="lead" style={{ fontSize: 13, margin: 0 }}>Scan each label's barcode (physical scanner, camera, or type the code and press Enter).</p>
-                {canManageLocations && (
-                  <button type="button" className="btn btn-outline btn-sm" style={{ flex: 'none' }} onClick={() => setShowLocations(true)}>📍 Barcode locations</button>
-                )}
-              </div>
+              <p className="lead" style={{ fontSize: 13, margin: 0 }}>Scan each label's barcode (physical scanner, camera, or type the code and press Enter).</p>
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <input
                   className="input"
