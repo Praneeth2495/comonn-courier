@@ -6,7 +6,7 @@ import { downloadBlob } from '../utils/downloadBlob';
 import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
 import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 import { EUROPE_COUNTRY_CODES } from '../utils/regions';
-import { normalizeRegionValue } from '../utils/regionNames';
+import { normalizeRegionValue, abbreviateInState } from '../utils/regionNames';
 
 const EUROPE_SENTINEL = 'EU';
 
