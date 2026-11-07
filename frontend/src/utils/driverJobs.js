@@ -2,6 +2,8 @@
 // admin/staff read-only view into a rider's jobs) — both describe the exact
 // same pickup-job lifecycle, so the labels/logic must stay identical
 // between the two views.
+import { abbreviateInState } from './regionNames';
+
 export const STATUS_LABEL = {
   PICKUP_CONFIRMED: 'Pickup Confirmed',
   PAID: 'Paid',
