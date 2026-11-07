@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
+import { abbreviateInState } from '../utils/regionNames';
 
 const emptyAddressForm = { contactName: '', phone: '', email: '', instructions: '', line1: '', line2: '', city: '', state: '', postcode: '', countryCode: '', isDefault: false };
 
