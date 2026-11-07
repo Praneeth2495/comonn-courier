@@ -91,7 +91,7 @@ export default function SavedAddresses() {
             {a.isDefault && <div className="tag">Default</div>}
             <p style={{ fontWeight: 600, fontSize: 14 }}>{a.contactName}</p>
             <p style={{ fontSize: 13, color: 'var(--slate)' }}>
-              {a.line1}{a.line2 ? `, ${a.line2}` : ''}, {a.city}{a.state ? `, ${a.state}` : ''} {a.postcode}, {a.countryCode}
+              {a.line1}{a.line2 ? `, ${a.line2}` : ''}, {a.city}{a.state ? `, ${abbreviateInState(a.state)}` : ''} {a.postcode}, {a.countryCode}
             </p>
             <p style={{ fontSize: 13, color: 'var(--slate)' }}>{a.phone}{a.email ? ` · ${a.email}` : ''}</p>
           </div>
