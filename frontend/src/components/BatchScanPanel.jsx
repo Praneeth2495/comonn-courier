@@ -471,59 +471,51 @@ export default function BatchScanPanel() {
         )}
       </div>
 
-      <div className={`modal-overlay ${showLocations ? 'open' : ''}`} onClick={() => setShowLocations(false)}>
-        {showLocations && (
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <div>
-                <h3 style={{ fontSize: 17 }}>Barcode locations</h3>
-                <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>
-                  Scanning a location during Batch Scan sets its label as the new status on every matched order, and
-                  logs the same text as a comment (with who scanned it and when).
-                </p>
-              </div>
-              <button onClick={() => setShowLocations(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
-            </div>
+      {subTab === 'locations' && canManageLocations && (
+        <div className="card" style={{ padding: 24 }}>
+          <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>
+            Scanning a location during Batch Scan sets its label as the new status on every matched order, and
+            logs the same text as a comment (with who scanned it and when).
+          </p>
 
-            <form onSubmit={addLocation} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, alignItems: 'end' }}>
-                <div className="field">
-                  <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-                  <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
-                </div>
-                <div className="field">
-                  <label>Label <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-                  <input className="input" placeholder="e.g. Sorted at Hub A" required value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
-                </div>
-                <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
+          <form onSubmit={addLocation} style={{ marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, alignItems: 'end' }}>
+              <div className="field">
+                <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+                <input className="input" placeholder="e.g. Van 3" required value={locForm.name} onChange={(e) => setLocForm({ ...locForm, name: e.target.value })} />
               </div>
-            </form>
-            {locError && <div className="error-text" style={{ marginBottom: 12 }}>{locError}</div>}
-
-            <div style={{ maxHeight: 360, overflowY: 'auto' }}>
-              <table className="data-table">
-                <thead><tr><th>Name</th><th>Barcode</th><th>Label / Status</th><th></th></tr></thead>
-                <tbody>
-                  {locations.map((l) => (
-                    <tr key={l.id}>
-                      <td>{l.name}</td>
-                      <td className="mono">{l.barcodeValue}</td>
-                      <td><i>{l.label}</i></td>
-                      <td style={{ display: 'flex', gap: 6 }}>
-                        <button className="btn btn-outline btn-sm" onClick={() => printLocation(l.id, l.name)}>🖨️ Print label</button>
-                        <button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button>
-                      </td>
-                    </tr>
-                  ))}
-                  {locations.length === 0 && (
-                    <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No barcode locations yet.</td></tr>
-                  )}
-                </tbody>
-              </table>
+              <div className="field">
+                <label>Label <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+                <input className="input" placeholder="e.g. Sorted at Hub A" required value={locForm.label} onChange={(e) => setLocForm({ ...locForm, label: e.target.value })} />
+              </div>
+              <button className="btn btn-primary btn-sm" disabled={addingLoc}>{addingLoc ? 'Adding…' : 'Add'}</button>
             </div>
+          </form>
+          {locError && <div className="error-text" style={{ marginBottom: 12 }}>{locError}</div>}
+
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead><tr><th>Name</th><th>Barcode</th><th>Label / Status</th><th></th></tr></thead>
+              <tbody>
+                {locations.map((l) => (
+                  <tr key={l.id}>
+                    <td>{l.name}</td>
+                    <td className="mono">{l.barcodeValue}</td>
+                    <td><i>{l.label}</i></td>
+                    <td style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-outline btn-sm" onClick={() => printLocation(l.id, l.name)}>🖨️ Print label</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => deleteLocation(l.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+                {locations.length === 0 && (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No barcode locations yet.</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <Suspense fallback={null}>
         {showCamera && (
