@@ -116,13 +116,13 @@ export default function App() {
             <Route path="/onboarding-details" element={withLayout(<OnboardingDetails />)} />
             <Route path="/services" element={withLayout(<Services />)} />
             <Route path="/about" element={withLayout(<About />)} />
-            <Route path="/quote" element={withLayout(<Quote />)} />
-            <Route path="/details" element={withLayout(<Details />)} />
-            <Route path="/payment" element={withLayout(<Payment />)} />
+            <Route path="/quote" element={withLayoutLazy(<Quote />)} />
+            <Route path="/details" element={withLayoutLazy(<Details />)} />
+            <Route path="/payment" element={withLayoutLazy(<Payment />)} />
             <Route path="/pay/:orderId" element={withLayout(<PaymentByLink />)} />
-            <Route path="/labels" element={withLayout(<Labels />)} />
+            <Route path="/labels" element={withLayoutLazy(<Labels />)} />
             <Route path="/track" element={withLayout(<Track />)} />
-            <Route path="/storage" element={withLayout(<Storage />)} />
+            <Route path="/storage" element={withLayoutLazy(<Storage />)} />
 
             <Route
               path="/dashboard"
