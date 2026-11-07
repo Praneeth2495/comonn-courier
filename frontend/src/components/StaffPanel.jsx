@@ -223,7 +223,7 @@ function StaffDetailModal({ employeeId, onClose }) {
               <div className="detail-row"><span className="k">Hub</span><span className="v">{p.hub?.name || '—'}</span></div>
               <div className="detail-row"><span className="k">Date of joining</span><span className="v">{p.dateOfJoining ? fmtDate(p.dateOfJoining) : '—'}</span></div>
               <div className="detail-row"><span className="k">Salary</span><span className="v">{p.salaryAmount != null ? `₹${Number(p.salaryAmount).toFixed(2)}` : '—'}</span></div>
-              <div className="detail-row"><span className="k">Address</span><span className="v">{[p.addressLine1, p.city, p.state, p.postcode].filter(Boolean).join(', ') || '—'}</span></div>
+              <div className="detail-row"><span className="k">Address</span><span className="v">{[p.addressLine1, p.city, abbreviateInState(p.state), p.postcode].filter(Boolean).join(', ') || '—'}</span></div>
               <div className="detail-row"><span className="k">Emergency contact</span><span className="v">{p.emergencyContactName ? `${p.emergencyContactName} (${p.emergencyContactRelation || '—'}) · ${p.emergencyContactPhone || '—'}` : '—'}</span></div>
             </div>
 
