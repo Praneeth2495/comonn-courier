@@ -271,6 +271,9 @@ export default function BatchScanPanel() {
       <div className="dash-tabs" style={{ marginBottom: 16 }}>
         <button className={`dash-tab ${subTab === 'scan' ? 'active' : ''}`} onClick={() => setSubTab('scan')}>Scan</button>
         <button className={`dash-tab ${subTab === 'batches' ? 'active' : ''}`} onClick={() => setSubTab('batches')}>Saved batches</button>
+        {canManageLocations && (
+          <button className={`dash-tab ${subTab === 'locations' ? 'active' : ''}`} onClick={() => setSubTab('locations')}>Barcode locations</button>
+        )}
       </div>
 
       {subTab === 'scan' && (
