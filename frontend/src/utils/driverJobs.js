@@ -22,7 +22,7 @@ export const ACTIVE_STATUSES = ['PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED'];
 
 export function formatAddress(a) {
   if (!a) return '—';
-  return `${a.line1}${a.line2 ? `, ${a.line2}` : ''}, ${a.city}${a.state ? `, ${a.state}` : ''} ${a.postcode}, ${a.countryCode}`;
+  return `${a.line1}${a.line2 ? `, ${a.line2}` : ''}, ${a.city}${a.state ? `, ${abbreviateInState(a.state)}` : ''} ${a.postcode}, ${a.countryCode}`;
 }
 
 // Couriers operate in IST — comparing dates in UTC (toISOString()) would
