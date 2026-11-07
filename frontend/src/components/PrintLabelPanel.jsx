@@ -581,7 +581,7 @@ function CreateLabelModal({ onClose, onCreated }) {
 
 function addressSummaryLine(addr) {
   if (!addr) return '—';
-  return [addr.businessName, addr.street, addr.suburb, addr.city, addr.state, addr.pin, addr.countryCode].filter(Boolean).join(', ');
+  return [addr.businessName, addr.street, addr.suburb, addr.city, abbreviateInState(addr.state), addr.pin, addr.countryCode].filter(Boolean).join(', ');
 }
 
 // The history view's "Edit" action — reopens a batch's already-saved
