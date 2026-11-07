@@ -24,7 +24,7 @@ export default function BatchScanPanel() {
   const { user } = useAuth();
   const canManageLocations = user?.role === 'ADMIN' || user?.role === 'STAFF';
 
-  const [subTab, setSubTab] = useState('scan'); // 'scan' | 'batches'
+  const [subTab, setSubTab] = useState('scan'); // 'scan' | 'batches' | 'locations'
 
   const [batches, setBatches] = useState([]);
   const [loadingBatches, setLoadingBatches] = useState(true);
