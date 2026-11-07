@@ -44,7 +44,6 @@ export default function BatchScanPanel() {
   const [locations, setLocations] = useState([]);
   const [lastLocationScanned, setLastLocationScanned] = useState(null);
   const [locationNotes, setLocationNotes] = useState([]);
-  const [showLocations, setShowLocations] = useState(false);
   const [locForm, setLocForm] = useState({ name: '', label: '' });
   const [addingLoc, setAddingLoc] = useState(false);
   const [locError, setLocError] = useState('');
