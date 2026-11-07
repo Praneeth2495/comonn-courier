@@ -100,17 +100,19 @@ export default function AdminDashboard() {
         {tab === 'orders' && <OrdersPanel />}
         {tab === 'accounts' && hasPage('accounts') && <AccountsPanel />}
         {tab === 'inventory' && <InventoryPanel />}
-        {tab === 'batchscan' && hasPage('batchscan') && <BatchScanPanel />}
-        {tab === 'printlabel' && hasPage('printlabel') && <PrintLabelPanel />}
         {tab === 'rates' && hasPage('rates') && <RatesPanel />}
         {tab === 'users' && isAdmin && <UsersPanel />}
-        {tab === 'merchants' && isAdmin && <MerchantsPanel />}
         {tab === 'fees' && isAdmin && <ServiceFeesPanel />}
-        {tab === 'customsclients' && hasPage('customsclients') && <CustomsClientsPanel />}
-        {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
-        {tab === 'riders' && hasPage('orders') && <RidersPanel />}
-        {tab === 'customers' && hasPage('customers') && <CustomersPanel />}
-        {tab === 'staff' && <StaffPanel canViewDirectory={hasPage('staff')} canViewOnboarding={hasPage('onboarding')} isAdmin={isAdmin} />}
+        <Suspense fallback={<LoadingLogo />}>
+          {tab === 'batchscan' && hasPage('batchscan') && <BatchScanPanel />}
+          {tab === 'printlabel' && hasPage('printlabel') && <PrintLabelPanel />}
+          {tab === 'merchants' && isAdmin && <MerchantsPanel />}
+          {tab === 'customsclients' && hasPage('customsclients') && <CustomsClientsPanel />}
+          {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
+          {tab === 'riders' && hasPage('orders') && <RidersPanel />}
+          {tab === 'customers' && hasPage('customers') && <CustomersPanel />}
+          {tab === 'staff' && <StaffPanel canViewDirectory={hasPage('staff')} canViewOnboarding={hasPage('onboarding')} isAdmin={isAdmin} />}
+        </Suspense>
       </main>
     </div>
   );
