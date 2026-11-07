@@ -1,24 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import { useBooking } from '../api/BookingContext';
-import BatchScanPanel from '../components/BatchScanPanel';
-import MerchantsPanel from '../components/MerchantsPanel';
-import PartyInvoicesPanel, { SalaryPanel } from '../components/PartyInvoicesPanel';
-import CustomsClientsPanel from '../components/CustomsClientsPanel';
-import AssetsPanel from '../components/AssetsPanel';
-import StorageAdminPanel from '../components/StorageAdminPanel';
-import RidersPanel from '../components/RidersPanel';
-import CustomersPanel from '../components/CustomersPanel';
-import StaffPanel from '../components/StaffPanel';
-import PrintLabelPanel from '../components/PrintLabelPanel';
-import ManifestPanel from '../components/ManifestPanel';
 import LoadingLogo from '../components/LoadingLogo';
 import { OrderDetailModal, OrderCommentsModal } from '../components/OrderDetailModal';
 import logoFooter from '../assets/logo-footer.png';
 import { formatDateShort } from '../utils/dateFormat';
 import { statusLabel } from '../utils/orderStatus';
+
+// Lazy-loaded: each only ever renders behind its own sidebar tab (one tab
+// active at a time), so an admin who never opens, say, Manifest or Party
+// Invoices never downloads that code — previously all 11 were bundled
+// into AdminDashboard's own chunk regardless of which tabs got used.
+const BatchScanPanel = lazy(() => import('../components/BatchScanPanel'));
+const MerchantsPanel = lazy(() => import('../components/MerchantsPanel'));
+const PartyInvoicesPanel = lazy(() => import('../components/PartyInvoicesPanel'));
+const SalaryPanel = lazy(() => import('../components/PartyInvoicesPanel').then((m) => ({ default: m.SalaryPanel })));
+const CustomsClientsPanel = lazy(() => import('../components/CustomsClientsPanel'));
+const AssetsPanel = lazy(() => import('../components/AssetsPanel'));
+const StorageAdminPanel = lazy(() => import('../components/StorageAdminPanel'));
+const RidersPanel = lazy(() => import('../components/RidersPanel'));
+const CustomersPanel = lazy(() => import('../components/CustomersPanel'));
+const StaffPanel = lazy(() => import('../components/StaffPanel'));
+const PrintLabelPanel = lazy(() => import('../components/PrintLabelPanel'));
+const ManifestPanel = lazy(() => import('../components/ManifestPanel'));
 
 export default function AdminDashboard() {
   // Read the starting tab from the URL (?tab=orders) rather than always
