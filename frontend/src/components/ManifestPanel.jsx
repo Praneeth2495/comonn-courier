@@ -316,7 +316,7 @@ function BuildManifest() {
                 <div className="chip-filter active">🇮🇳 India</div>
                 {originStates.map((s) => (
                   <div key={s} className={`chip-filter ${selectedOriginStates.includes(s) ? 'active' : ''}`} onClick={() => toggleOriginState(s)}>
-                    {s === UNSPECIFIED_STATE ? 'Unspecified' : s}
+                    {s === UNSPECIFIED_STATE ? 'Unspecified' : abbreviateInState(s)}
                   </div>
                 ))}
               </div>
