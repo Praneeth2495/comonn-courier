@@ -239,7 +239,17 @@ function AddonFeesCard() {
       </p>
       {!addons ? <LoadingLogo /> : (
         <div className="table-wrap">
-          <table className="data-table">
+          {/* Fixed layout + a colgroup shared with WarrantyTiersCard's own
+              table below — without it, each table auto-sizes its first
+              column off its own content ("Heavy-duty cardboard" vs
+              "₹50,000"), so the two "Price" headers land at different x
+              offsets when the cards are stacked. */}
+          <table className="data-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+            <colgroup>
+              <col style={{ width: '55%' }} />
+              <col style={{ width: '30%' }} />
+              <col style={{ width: '15%' }} />
+            </colgroup>
             <thead><tr><th>Add-on</th><th>Price</th><th></th></tr></thead>
             <tbody>
               {addons.map((a) => (
