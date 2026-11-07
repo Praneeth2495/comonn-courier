@@ -3,6 +3,7 @@ import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
+import { abbreviateInState } from '../utils/regionNames';
 
 const LABEL_ELIGIBLE_STATUSES = ['PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
