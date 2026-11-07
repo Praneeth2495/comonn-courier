@@ -19,7 +19,6 @@ import SetPassword from './pages/SetPassword';
 import OnboardingDetails from './pages/OnboardingDetails';
 import Services from './pages/Services';
 import About from './pages/About';
-import PaymentByLink from './pages/PaymentByLink';
 import Track from './pages/Track';
 import UserDashboard from './pages/UserDashboard';
 import Wallet from './pages/Wallet';
