@@ -336,7 +336,15 @@ function WarrantyTiersCard() {
       </p>
       {!tiers ? <LoadingLogo /> : (
         <div className="table-wrap">
-          <table className="data-table">
+          {/* Same fixed layout + colgroup as AddonFeesCard's table above —
+              keeps both cards' "Price" column aligned at the same x offset
+              regardless of each table's own content width. */}
+          <table className="data-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+            <colgroup>
+              <col style={{ width: '55%' }} />
+              <col style={{ width: '30%' }} />
+              <col style={{ width: '15%' }} />
+            </colgroup>
             <thead><tr><th>Coverage</th><th>Price</th><th></th></tr></thead>
             <tbody>
               {tiers.map((t) => (
