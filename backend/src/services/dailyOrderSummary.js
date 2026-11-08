@@ -59,7 +59,7 @@ async function computeDailySummary() {
     return !!parsed && parsed <= lte;
   }).length;
 
-  return { totalToday, totalPickedUp, overdueToday };
+  return { totalToday, collectedToday, overdueToday };
 }
 
 async function sendDailySummaryWhatsApp() {
