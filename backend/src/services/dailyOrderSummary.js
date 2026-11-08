@@ -78,12 +78,12 @@ async function sendDailySummaryWhatsApp() {
     throw err;
   }
 
-  const { totalToday, totalPickedUp, overdueToday } = await computeDailySummary();
+  const { totalToday, collectedToday, overdueToday } = await computeDailySummary();
   try {
     await sendTemplateMessage({
       to,
       templateName: 'admin_daily_summary',
-      params: [iso, String(totalToday), String(totalPickedUp), String(overdueToday)],
+      params: [iso, String(totalToday), String(collectedToday), String(overdueToday)],
     });
   } catch (err) {
     console.error('dailyOrderSummary WhatsApp send failed:', err.message);
