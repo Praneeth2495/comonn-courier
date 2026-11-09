@@ -167,13 +167,18 @@ async function computeRegionBreakdown(from, to) {
   const assignments = await prisma.staffRegionAssignment.findMany({
     select: { state: true, region: true },
   });
+  // Expand before deduping/keying — an old raw-code row ("AP") and a
+  // newer already-expanded one ("Andhra Pradesh") are the same real state
+  // and must collapse into one row here, or this table (and the Region
+  // Overview KPI built from it) shows the same state twice.
   const seen = new Set();
   const distinctRegions = [];
   for (const a of assignments) {
-    const key = `${a.state}|${a.region || ''}`;
+    const state = expandInState(a.state);
+    const key = `${state}|${a.region || ''}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    distinctRegions.push({ state: a.state, region: a.region });
+    distinctRegions.push({ state, region: a.region });
   }
   distinctRegions.sort((a, b) => a.state.localeCompare(b.state) || (a.region || '').localeCompare(b.region || ''));
 
