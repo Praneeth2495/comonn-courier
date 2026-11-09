@@ -1357,7 +1357,7 @@ async function getDriverDashboard(req, res, next) {
 
 async function setUserRole(req, res, next) {
   try {
-    const { role, isActive, driverRegion, allowedPages, allowedOrderTabs, allowedAccountsTabs, allowedOverviewTabs, allowedPrintLabelTabs } = req.body;
+    const { role, isActive, driverRegion, allowedPages, allowedOrderTabs, allowedAccountsTabs, allowedOverviewTabs, allowedPrintLabelTabs, allowedBatchScanTabs } = req.body;
 
     // Each of these grants a different page/sub-tab set (see
     // constants/pages.js) but validates identically: undefined is allowed
@@ -1369,6 +1369,7 @@ async function setUserRole(req, res, next) {
       ['allowedAccountsTabs', allowedAccountsTabs, ACCOUNTS_TAB_KEYS, 'accounts tab keys'],
       ['allowedOverviewTabs', allowedOverviewTabs, OVERVIEW_TAB_KEYS, 'overview tab keys'],
       ['allowedPrintLabelTabs', allowedPrintLabelTabs, PRINTLABEL_TAB_KEYS, 'print label tab keys'],
+      ['allowedBatchScanTabs', allowedBatchScanTabs, BATCHSCAN_TAB_KEYS, 'scan tab keys'],
     ];
     for (const [field, value, validKeys, description] of TAB_FIELD_VALIDATIONS) {
       if (value !== undefined && (!Array.isArray(value) || value.some((k) => !validKeys.includes(k)))) {
