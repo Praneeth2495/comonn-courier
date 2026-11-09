@@ -1057,15 +1057,26 @@ async function setStaffRegionAssignments(req, res, next) {
     const user = await prisma.user.findUnique({ where: { id: req.params.userId } });
     if (!user || user.role !== 'STAFF') return res.status(404).json({ error: 'Staff account not found' });
 
+    // Always persist the expanded full name — the picker's own state list is
+    // always expanded (see listPickupOrigins), so saving a raw code here
+    // would silently desync from it (an older raw-code row never matches the
+    // picker's expanded checkbox, so it can never be cleanly unchecked/
+    // replaced again). Dedupe by (state, region) too, in case the client
+    // still had both a stale raw-code row and its expanded replacement
+    // selected at once from before this normalization existed.
+    const seen = new Set();
+    const normalized = [];
+    for (const a of assignments) {
+      const state = expandInState(a.state);
+      const key = `${state}|${a.region || ''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      normalized.push({ userId: req.params.userId, state, region: a.region || null });
+    }
+
     await prisma.$transaction([
       prisma.staffRegionAssignment.deleteMany({ where: { userId: req.params.userId } }),
-      ...(assignments.length
-        ? [
-            prisma.staffRegionAssignment.createMany({
-              data: assignments.map((a) => ({ userId: req.params.userId, state: a.state, region: a.region || null })),
-            }),
-          ]
-        : []),
+      ...(normalized.length ? [prisma.staffRegionAssignment.createMany({ data: normalized })] : []),
     ]);
 
     const regions = await prisma.staffRegionAssignment.findMany({
