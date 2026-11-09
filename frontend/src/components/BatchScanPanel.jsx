@@ -282,14 +282,14 @@ export default function BatchScanPanel() {
       <h1 className="h-lg" style={{ marginBottom: 16 }}>Batch Scan</h1>
 
       <div className="dash-tabs" style={{ marginBottom: 16 }}>
-        <button className={`dash-tab ${subTab === 'scan' ? 'active' : ''}`} onClick={() => setSubTab('scan')}>Scan</button>
-        <button className={`dash-tab ${subTab === 'batches' ? 'active' : ''}`} onClick={() => setSubTab('batches')}>Saved batches</button>
-        {canManageLocations && (
+        {canSeeTab('scan') && <button className={`dash-tab ${subTab === 'scan' ? 'active' : ''}`} onClick={() => setSubTab('scan')}>Scan</button>}
+        {canSeeTab('batches') && <button className={`dash-tab ${subTab === 'batches' ? 'active' : ''}`} onClick={() => setSubTab('batches')}>Saved batches</button>}
+        {canSeeLocationsTab && (
           <button className={`dash-tab ${subTab === 'locations' ? 'active' : ''}`} onClick={() => setSubTab('locations')}>Barcode locations</button>
         )}
       </div>
 
-      {subTab === 'scan' && (
+      {subTab === 'scan' && canSeeTab('scan') && (
         <>
           {phase === 'SCANNING' && (
             <div className="card" style={{ padding: 24, marginBottom: 24 }}>
