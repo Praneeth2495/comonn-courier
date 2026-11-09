@@ -89,6 +89,16 @@ const PRINTLABEL_TAB_LABELS = {
   manual: 'Manual Label',
 };
 
+// Sub-tabs inside the Scan page — same "empty = no restriction" rule as
+// ORDER_TAB_KEYS. "locations" additionally requires ADMIN/STAFF role (see
+// BatchScanPanel.jsx's canManageLocations) even when granted here.
+const BATCHSCAN_TAB_KEYS = ['scan', 'batches', 'locations'];
+const BATCHSCAN_TAB_LABELS = {
+  scan: 'Scan',
+  batches: 'Saved batches',
+  locations: 'Barcode locations',
+};
+
 module.exports = {
   PAGE_KEYS,
   PAGE_LABELS,
