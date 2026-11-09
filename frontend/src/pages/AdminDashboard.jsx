@@ -627,18 +627,20 @@ function KpiTile({ icon, title, headline, subLabel, accentBg, accent, onClick })
 function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpandedKpi }) {
   const dayWiseTotal = kpis.dayOfWeek.reduce((sum, d) => sum + d.count, 0);
   const airportsReady = kpis.airports.filter((a) => a.readyForManifest).length;
-  const staffWithOrdersToday = kpis.staffActivity.filter((r) => r.today > 0).length;
-  const ridersWithOrdersToday = kpis.riderActivity.filter((r) => r.today > 0).length;
   const regionsWithOrdersToday = kpis.regions ? kpis.regions.filter((r) => r.ordersToday > 0).length : 0;
-  const accountsToday = kpis.accountsActivity.rows.reduce((sum, r) => sum + r.today, 0);
-  const overdueTotal = kpis.accountsActivity.overdueInvoices.payable + kpis.accountsActivity.overdueInvoices.receivable;
 
+  // Each of these three is null, not just empty, when this account hasn't
+  // been individually granted that Summary tile (see allowedOverviewTabs/
+  // OVERVIEW_TAB_KEYS) — every other staff/rider/accounts person's name
+  // and activity would otherwise be visible to anyone who can reach
+  // Overview at all, which is why these are gated like the deeper Staff/
+  // Region overview tabs rather than always-on like dayOfWeek/airports.
   const tiles = [
     { key: 'dayOfWeek', icon: '📅', title: 'Orders by day of week', headline: dayWiseTotal, subLabel: DAY_WISE_RANGE_OPTIONS.find(([k]) => k === dayWiseRange)?.[1], accentBg: '#EAF0FF', accent: 'var(--cobalt)' },
     { key: 'airports', icon: '✈️', title: 'Airport weight', headline: `${airportsReady}/${kpis.airports.length}`, subLabel: 'ready to manifest', accentBg: '#FFEDE7', accent: 'var(--coral)' },
-    { key: 'staff', icon: '🧑‍💼', title: 'Staff', headline: `${staffWithOrdersToday}/${kpis.staffActivity.length}`, subLabel: 'have orders today', accentBg: 'var(--success-bg)', accent: 'var(--success)' },
-    { key: 'riders', icon: '🏍️', title: 'Riders', headline: `${ridersWithOrdersToday}/${kpis.riderActivity.length}`, subLabel: 'have orders today', accentBg: 'var(--warn-bg)', accent: 'var(--warn)' },
-    { key: 'accounts', icon: '💰', title: 'Accounts', headline: accountsToday, subLabel: `reconciled today · ${overdueTotal} overdue`, accentBg: 'var(--danger-bg)', accent: 'var(--danger)' },
+    ...(kpis.staffActivity ? [{ key: 'staff', icon: '🧑‍💼', title: 'Staff', headline: `${kpis.staffActivity.filter((r) => r.today > 0).length}/${kpis.staffActivity.length}`, subLabel: 'have orders today', accentBg: 'var(--success-bg)', accent: 'var(--success)' }] : []),
+    ...(kpis.riderActivity ? [{ key: 'riders', icon: '🏍️', title: 'Riders', headline: `${kpis.riderActivity.filter((r) => r.today > 0).length}/${kpis.riderActivity.length}`, subLabel: 'have orders today', accentBg: 'var(--warn-bg)', accent: 'var(--warn)' }] : []),
+    ...(kpis.accountsActivity ? [{ key: 'accounts', icon: '💰', title: 'Accounts', headline: kpis.accountsActivity.rows.reduce((sum, r) => sum + r.today, 0), subLabel: `reconciled today · ${kpis.accountsActivity.overdueInvoices.payable + kpis.accountsActivity.overdueInvoices.receivable} overdue`, accentBg: 'var(--danger-bg)', accent: 'var(--danger)' }] : []),
     ...(kpis.regions ? [{ key: 'regions', icon: '🗺️', title: 'Regions', headline: `${regionsWithOrdersToday}/${kpis.regions.length}`, subLabel: 'have orders today', accentBg: '#ECEEF6', accent: 'var(--navy)' }] : []),
   ];
 
