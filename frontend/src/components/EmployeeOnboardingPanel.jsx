@@ -84,6 +84,16 @@ export default function EmployeeOnboardingPanel() {
                           {resendingId === e.id ? '…' : 'Resend link'}
                         </button>
                       )}
+                      {e.profile?.status === 'APPROVED' && (
+                        <button
+                          className="btn btn-outline btn-sm"
+                          title="Email this employee a link to edit or add to their onboarding details"
+                          disabled={resendingId === e.id}
+                          onClick={() => resendInvite(e.id)}
+                        >
+                          {resendingId === e.id ? '…' : 'Send edit-details link'}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
