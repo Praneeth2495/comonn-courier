@@ -2524,6 +2524,7 @@ function UsersPanel() {
   const [editingAccountsTabAccess, setEditingAccountsTabAccess] = useState(null); // { id, fullName, allowedAccountsTabs }
   const [editingOverviewTabAccess, setEditingOverviewTabAccess] = useState(null); // { id, fullName, allowedOverviewTabs }
   const [editingPrintLabelTabAccess, setEditingPrintLabelTabAccess] = useState(null); // { id, fullName, allowedPrintLabelTabs }
+  const [editingBatchScanTabAccess, setEditingBatchScanTabAccess] = useState(null); // { id, fullName, allowedBatchScanTabs }
 
   function load() {
     client.get('/admin/users').then(({ data }) => setUsers(data.users));
