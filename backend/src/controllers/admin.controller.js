@@ -1025,7 +1025,14 @@ async function listStaffRegionAssignments(req, res, next) {
         id: s.id,
         fullName: s.fullName,
         email: s.email,
-        regions: s.regionAssignments,
+        // Expand here, not just at write time — older rows saved before this
+        // endpoint normalized on write may still hold a raw code ("AP"). Left
+        // un-expanded, those show up as if they were a different state from
+        // "Andhra Pradesh" (exact-string match against the picker's own
+        // expanded states list), both in this summary and in the
+        // StaffRegionModal's checkbox state, which is sourced from this same
+        // response.
+        regions: s.regionAssignments.map((r) => ({ ...r, state: expandInState(r.state) })),
       })),
     });
   } catch (err) {
