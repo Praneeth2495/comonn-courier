@@ -35,7 +35,19 @@ export default function OnboardingDetails() {
   useEffect(() => {
     if (!token) { setLoadError('This link is missing its token. Please use the link from your email.'); return; }
     client.get(`/onboarding-invite/${token}`)
-      .then(({ data }) => setInvite(data))
+      .then(({ data }) => {
+        setInvite(data);
+        // Pre-fill with whatever's already on file — critical for the
+        // edit-details case (an already-approved employee reusing this
+        // link): submitting writes every field, blank included, so
+        // starting from an empty form would silently wipe their real data
+        // for anything they don't happen to retype.
+        setForm((f) => ({
+          ...f,
+          phone: data.phone || '',
+          ...(data.profile ? Object.fromEntries(Object.entries(data.profile).map(([k, v]) => [k, v || ''])) : {}),
+        }));
+      })
       .catch((err) => setLoadError(err.response?.data?.error || 'This link is invalid or has expired.'));
   }, [token]);
 
