@@ -924,6 +924,7 @@ export function SalaryPanel() {
         />
       )}
       {selectedId && <InvoiceDetailModal invoiceId={selectedId} onClose={() => setSelectedId(null)} onChanged={load} />}
+      {commentingEmployee && <EmployeeSalaryCommentsModal employee={commentingEmployee} onClose={() => setCommentingEmployee(null)} />}
     </div>
   );
 }
