@@ -27,9 +27,17 @@ const BATCHSCAN_TAB_KEYS = ['scan', 'batches', 'locations'];
  */
 export default function BatchScanPanel() {
   const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const canManageLocations = user?.role === 'ADMIN' || user?.role === 'STAFF';
+  const allowedBatchScanTabs = user?.allowedBatchScanTabs || [];
+  const canSeeTab = (key) => isAdmin || allowedBatchScanTabs.length === 0 || allowedBatchScanTabs.includes(key);
+  const canSeeLocationsTab = canManageLocations && canSeeTab('locations');
 
-  const [subTab, setSubTab] = useState('scan'); // 'scan' | 'batches' | 'locations'
+  const [subTab, setSubTab] = useState(() => { // 'scan' | 'batches' | 'locations'
+    if (canSeeTab('scan')) return 'scan';
+    if (canSeeTab('batches')) return 'batches';
+    return canSeeLocationsTab ? 'locations' : 'scan';
+  });
 
   const [batches, setBatches] = useState([]);
   const [loadingBatches, setLoadingBatches] = useState(true);
