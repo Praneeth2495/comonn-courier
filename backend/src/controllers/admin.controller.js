@@ -1402,6 +1402,7 @@ async function setUserRole(req, res, next) {
         allowedAccountsTabs,
         allowedOverviewTabs,
         allowedPrintLabelTabs,
+        allowedBatchScanTabs,
       },
     });
 
