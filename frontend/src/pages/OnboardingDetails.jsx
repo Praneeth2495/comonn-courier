@@ -88,7 +88,11 @@ export default function OnboardingDetails() {
       <div className="wrap section-narrow">
         <div className="card" style={{ padding: 28, maxWidth: 480, margin: '40px auto', textAlign: 'center' }}>
           <h2 style={{ marginBottom: 10 }}>Details submitted</h2>
-          <p className="lead">Thanks — your onboarding details have been sent for review. You'll get an email to set up your password once an admin approves your account.</p>
+          {invite?.isEdit ? (
+            <p className="lead">Thanks — your updated details have been saved. Your account stays active as normal.</p>
+          ) : (
+            <p className="lead">Thanks — your onboarding details have been sent for review. You'll get an email to set up your password once an admin approves your account.</p>
+          )}
         </div>
       </div>
     );
