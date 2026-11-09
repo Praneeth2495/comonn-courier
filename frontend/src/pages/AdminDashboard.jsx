@@ -902,6 +902,14 @@ const PRINTLABEL_TAB_PERM_LABELS = {
 };
 const PRINTLABEL_TAB_PERM_KEYS = Object.keys(PRINTLABEL_TAB_PERM_LABELS);
 
+// Mirrors backend/src/constants/pages.js's BATCHSCAN_TAB_KEYS/LABELS.
+const BATCHSCAN_TAB_PERM_LABELS = {
+  scan: 'Scan',
+  batches: 'Saved batches',
+  locations: 'Barcode locations',
+};
+const BATCHSCAN_TAB_PERM_KEYS = Object.keys(BATCHSCAN_TAB_PERM_LABELS);
+
 function OrdersPanel() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
