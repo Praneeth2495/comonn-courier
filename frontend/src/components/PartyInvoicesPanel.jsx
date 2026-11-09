@@ -817,7 +817,7 @@ function groupByHubName(items, hubNameOf) {
   });
 }
 
-function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
+function RosterTable({ employees, invoiceForEmail, onView, onPay, onComment }) {
   return (
     <div className="table-wrap">
       <table className="data-table">
@@ -835,12 +835,13 @@ function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
                 </td>
                 <td>{inv ? formatDateShort(inv.dueDate) : '—'}</td>
                 <td>{inv ? statusPill(inv) : <span className="pill pill-navy">Not paid yet</span>}</td>
-                <td>
+                <td style={{ display: 'flex', gap: 6 }}>
                   {inv ? (
                     <button className="btn btn-outline btn-sm" onClick={() => onView(inv.id)}>View</button>
                   ) : (
                     <button className="btn btn-primary btn-sm" onClick={() => onPay(e)}>Record payment</button>
                   )}
+                  <button className="btn btn-outline btn-sm" title="Comments" onClick={() => onComment(e)}>💬</button>
                 </td>
               </tr>
             );
