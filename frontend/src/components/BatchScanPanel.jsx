@@ -484,7 +484,7 @@ export default function BatchScanPanel() {
         )}
       </div>
 
-      {subTab === 'locations' && canManageLocations && (
+      {subTab === 'locations' && canSeeLocationsTab && (
         <div className="card" style={{ padding: 24 }}>
           <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>
             Scanning a location during Batch Scan sets its label as the new status on every matched order, and
