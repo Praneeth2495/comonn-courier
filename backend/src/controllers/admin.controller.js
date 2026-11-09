@@ -1431,7 +1431,11 @@ async function setUserRole(req, res, next) {
           distinct: ['state'],
           select: { state: true },
         });
-        const states = rows.map((r) => r.state).filter(Boolean);
+        // PostcodeSuggestion.state is a raw code ("TG") — expand before
+        // writing, same as every other StaffRegionAssignment write path, so
+        // this doesn't keep seeding fresh raw-code rows that silently
+        // desync from the (always-expanded) picker's own state list.
+        const states = [...new Set(rows.map((r) => r.state).filter(Boolean).map(expandInState))];
         if (states.length) {
           await prisma.staffRegionAssignment.createMany({
             data: states.map((state) => ({ userId: user.id, state, region: null })),
