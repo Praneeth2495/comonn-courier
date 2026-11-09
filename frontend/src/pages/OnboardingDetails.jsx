@@ -109,9 +109,11 @@ export default function OnboardingDetails() {
   return (
     <div className="wrap section-narrow">
       <div className="card" style={{ padding: 28, maxWidth: 640, margin: '32px auto' }}>
-        <h2 style={{ marginBottom: 4 }}>Welcome to Comonn, {invite.fullName}</h2>
+        <h2 style={{ marginBottom: 4 }}>{invite.isEdit ? `Update your details, ${invite.fullName}` : `Welcome to Comonn, ${invite.fullName}`}</h2>
         <p className="lead" style={{ marginBottom: 20 }}>
-          Please fill in the rest of your onboarding details below. An admin will review and approve before your login is activated.
+          {invite.isEdit
+            ? 'Review and update anything below, then submit — your account stays active throughout.'
+            : 'Please fill in the rest of your onboarding details below. An admin will review and approve before your login is activated.'}
         </p>
 
         <div className="detail-section">
