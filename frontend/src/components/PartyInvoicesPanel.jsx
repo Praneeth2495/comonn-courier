@@ -858,6 +858,7 @@ export function SalaryPanel() {
   const [loading, setLoading] = useState(true);
   const [payingEmployee, setPayingEmployee] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [commentingEmployee, setCommentingEmployee] = useState(null);
   const [search, setSearch] = useState('');
 
   function load() {
