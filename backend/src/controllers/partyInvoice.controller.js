@@ -277,6 +277,7 @@ async function createSalaryPayment(req, res, next) {
         invoiceNumber,
         partyName: employee.fullName,
         businessName: employee.email,
+        email: employee.email,
         description: monthLabel ? `Salary — ${monthLabel}` : 'Salary payment',
         amount: amountNum,
         gstPercent: 0,
