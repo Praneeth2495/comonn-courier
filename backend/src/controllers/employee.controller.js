@@ -36,6 +36,7 @@ async function sendOnboardingInviteEmail(user, rawToken, isEdit = false) {
   try {
     await sendEmail({
       to: user.email,
+      from: 'Comonn Accounts <accounts@comonn.in>',
       subject: isEdit ? 'Update your Comonn details' : 'Complete your Comonn onboarding details',
       html: isEdit ? `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
