@@ -2882,6 +2882,19 @@ function UsersPanel() {
           onClose={() => setEditingPrintLabelTabAccess(null)}
         />
       )}
+
+      {editingBatchScanTabAccess && (
+        <AccessEditorModal
+          title={`Scan tabs for ${editingBatchScanTabAccess.fullName}`}
+          description="Leave nothing checked for no restriction (every tab visible, same as today). Check specific tabs to limit this account to only those within the Scan page. Barcode locations also requires ADMIN/STAFF role regardless of this setting."
+          optionKeys={BATCHSCAN_TAB_PERM_KEYS}
+          optionLabels={BATCHSCAN_TAB_PERM_LABELS}
+          currentSelected={editingBatchScanTabAccess.allowedBatchScanTabs}
+          saveLabel="Save scan tab access"
+          onSave={(allowedBatchScanTabs) => savePermission(editingBatchScanTabAccess.id, { allowedBatchScanTabs }, () => setEditingBatchScanTabAccess(null))}
+          onClose={() => setEditingBatchScanTabAccess(null)}
+        />
+      )}
     </div>
   );
 }
