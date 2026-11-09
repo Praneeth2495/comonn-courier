@@ -470,6 +470,87 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
   );
 }
 
+// Ongoing per-employee comment thread on the Salary tab — separate from
+// InvoiceDetailModal's per-invoice thread above, since an employee not yet
+// paid this month has no invoice to open. Reachable for every employee
+// row regardless of payment status (see RosterTable).
+function EmployeeSalaryCommentsModal({ employee, onClose }) {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [body, setBody] = useState('');
+  const [posting, setPosting] = useState(false);
+  const [error, setError] = useState('');
+
+  function loadComments() {
+    setLoading(true);
+    client.get(`/admin/party-invoices/employees/${employee.id}/salary-comments`).then(({ data }) => { setComments(data.comments); setLoading(false); }).catch(() => setLoading(false));
+  }
+  useEffect(loadComments, [employee.id]);
+
+  async function submitComment(e) {
+    e.preventDefault();
+    if (!body.trim()) return;
+    setPosting(true);
+    setError('');
+    try {
+      const { data } = await client.post(`/admin/party-invoices/employees/${employee.id}/salary-comments`, { body });
+      setComments((prev) => [...prev, data.comment]);
+      setBody('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not add comment.');
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <h3 style={{ fontSize: 17 }}>Salary comments</h3>
+            <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{employee.fullName}{employee.email ? ` · ${employee.email}` : ''}</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+
+        {loading ? (
+          <LoadingLogo size={30} />
+        ) : comments.length === 0 ? (
+          <p className="lead" style={{ fontSize: 13 }}>No comments yet.</p>
+        ) : (
+          <div style={{ maxHeight: 320, overflowY: 'auto', marginBottom: 14 }}>
+            {comments.map((c) => (
+              <div className="comment-item" key={c.id}>
+                <div className="meta">
+                  <span className="author">{c.author?.fullName || c.author?.email || 'Unknown'}</span>
+                  <span>{formatDateTime(c.createdAt)}</span>
+                </div>
+                <p className="body">{c.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <form onSubmit={submitComment} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', borderTop: '1px solid var(--line-2)', paddingTop: 14 }}>
+          <textarea
+            className="input"
+            placeholder="e.g. who paid, or any other note…"
+            rows={2}
+            style={{ resize: 'vertical', flex: 1 }}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+          <button className="btn btn-primary btn-sm" disabled={!body.trim() || posting} style={{ flex: 'none' }}>
+            {posting ? '…' : 'Add comment'}
+          </button>
+        </form>
+        {error && <div className="error-text" style={{ marginTop: 8 }}>{error}</div>}
+      </div>
+    </div>
+  );
+}
+
 function toDateInputValue(iso) {
   return iso ? new Date(iso).toISOString().slice(0, 10) : '';
 }
