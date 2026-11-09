@@ -357,15 +357,22 @@ async function inviteEmployee(req, res, next) {
   }
 }
 
-/** POST /api/admin/employees/:id/resend-invite — a fresh link, e.g. the first one expired or was lost. */
+/**
+ * POST /api/admin/employees/:id/resend-invite — a fresh link. Two cases:
+ * the employee hasn't been approved yet (first one expired or was lost —
+ * same as before), or they're already APPROVED and active, and this just
+ * lets them go back in and edit/add to their on-file details (e.g. a
+ * missed ID proof, updated bank account) without touching their account's
+ * active status at all — submitting through the link only updates
+ * EmployeeProfile fields, it never re-triggers approval.
+ */
 async function resendOnboardingInvite(req, res, next) {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.params.id }, include: { employeeProfile: true } });
     if (!user || !user.employeeProfile) return res.status(404).json({ error: 'Employee not found' });
-    if (user.employeeProfile.approvedAt) return res.status(409).json({ error: 'This employee is already approved' });
 
     const rawToken = await issueOnboardingToken(user.id);
-    await sendOnboardingInviteEmail(user, rawToken);
+    await sendOnboardingInviteEmail(user, rawToken, !!user.employeeProfile.approvedAt);
     res.json({ ok: true });
   } catch (err) {
     next(err);
