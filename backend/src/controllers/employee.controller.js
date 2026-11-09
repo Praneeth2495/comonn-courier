@@ -66,6 +66,7 @@ async function sendWelcomeEmail(user) {
   try {
     await sendEmail({
       to: user.email,
+      from: 'Comonn Accounts <accounts@comonn.in>',
       subject: 'Welcome to Comonn — set up your account',
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
