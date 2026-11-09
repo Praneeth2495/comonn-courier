@@ -910,7 +910,7 @@ export function SalaryPanel() {
           {groups.map(([hubName, groupEmployees]) => (
             <div key={hubName} className="card" style={{ padding: '18px 20px' }}>
               <h3 style={{ fontSize: 14, color: 'var(--navy)', marginBottom: 12 }}>{hubName}</h3>
-              <RosterTable employees={groupEmployees} invoiceForEmail={invoiceForEmail} onView={setSelectedId} onPay={setPayingEmployee} />
+              <RosterTable employees={groupEmployees} invoiceForEmail={invoiceForEmail} onView={setSelectedId} onPay={setPayingEmployee} onComment={setCommentingEmployee} />
             </div>
           ))}
         </div>
