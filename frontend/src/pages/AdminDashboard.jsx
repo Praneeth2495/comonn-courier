@@ -674,20 +674,20 @@ function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpa
               </>
             )}
             {expandedKpi === 'airports' && <AirportWeightKpiBody rows={kpis.airports} />}
-            {expandedKpi === 'staff' && (
+            {expandedKpi === 'staff' && kpis.staffActivity && (
               <ActivityKpiBody
                 emptyLabel="No staff accounts yet."
                 rows={kpis.staffActivity.map((r) => ({ id: r.staff.id, name: r.staff.fullName, sub: r.staff.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
               />
             )}
-            {expandedKpi === 'riders' && (
+            {expandedKpi === 'riders' && kpis.riderActivity && (
               <ActivityKpiBody
                 emptyLabel="No rider accounts yet."
                 description="Orders picked up"
                 rows={kpis.riderActivity.map((r) => ({ id: r.rider.id, name: r.rider.fullName, sub: r.rider.email, today: r.today, last7Days: r.last7Days, currentMonth: r.currentMonth }))}
               />
             )}
-            {expandedKpi === 'accounts' && (
+            {expandedKpi === 'accounts' && kpis.accountsActivity && (
               <ActivityKpiBody
                 emptyLabel="No accounts role yet."
                 description="Payments reconciled (marked paid + balance top-ups)"
