@@ -489,12 +489,28 @@ async function getOnboardingInvite(req, res, next) {
     }
     const user = await prisma.user.findUnique({ where: { id: record.userId }, include: { employeeProfile: true } });
     if (!user) return res.status(404).json({ error: 'Account not found' });
+    const p = user.employeeProfile;
+    // isEdit (already APPROVED, reusing this link to update on-file
+    // details — see resendOnboardingInvite) vs a genuinely blank
+    // first-time form: the frontend needs both to know which copy to show
+    // AND to pre-fill the form with existing values, since submitting
+    // writes every one of these fields (blank -> null), which would
+    // silently wipe an approved employee's real data if the form started
+    // empty instead of pre-filled.
     res.json({
       fullName: user.fullName,
       email: user.email,
+      phone: user.phone,
       role: user.role,
-      designation: user.employeeProfile?.designation || null,
-      department: user.employeeProfile?.department || null,
+      designation: p?.designation || null,
+      department: p?.department || null,
+      isEdit: !!p?.approvedAt,
+      profile: p ? {
+        addressLine1: p.addressLine1, addressLine2: p.addressLine2, city: p.city, state: p.state, postcode: p.postcode,
+        emergencyContactName: p.emergencyContactName, emergencyContactRelation: p.emergencyContactRelation, emergencyContactPhone: p.emergencyContactPhone,
+        idProofType: p.idProofType, idProofNumber: p.idProofNumber, idProofType2: p.idProofType2, idProofNumber2: p.idProofNumber2,
+        bankAccountName: p.bankAccountName, bankAccountNumber: p.bankAccountNumber, bankIfsc: p.bankIfsc, bankName: p.bankName,
+      } : null,
     });
   } catch (err) {
     next(err);
