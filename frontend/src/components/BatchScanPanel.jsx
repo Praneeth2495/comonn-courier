@@ -11,6 +11,11 @@ const BarcodeCameraScanner = lazy(() => import('./BarcodeCameraScanner'));
 
 const ORDER_STATUSES = ['UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
+// Mirrors backend/src/constants/pages.js's BATCHSCAN_TAB_KEYS. Empty
+// allowedBatchScanTabs = no restriction (every tab visible), same
+// "open by default" convention as allowedOrderTabs/allowedPrintLabelTabs.
+const BATCHSCAN_TAB_KEYS = ['scan', 'batches', 'locations'];
+
 /**
  * Redesigned from the original IDLE screen that forced a choice between
  * "Scan" / "Create batch" / "Barcode locations" before you could even start
