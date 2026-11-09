@@ -71,14 +71,25 @@ const ACCOUNTS_TAB_LABELS = {
   salary: 'Salary',
 };
 
-// Sub-tabs inside the (always-visible) Overview page. Unlike
-// ORDER_TAB_KEYS/ACCOUNTS_TAB_KEYS, empty means CLOSED — neither tab
-// visible, just the always-visible Summary — since this replaces the old
-// canViewOverviewBreakdown boolean, which was also closed-by-default.
-const OVERVIEW_TAB_KEYS = ['staff', 'region'];
+// Sub-tabs inside the (always-visible) Overview page, PLUS three of the
+// always-visible Summary tab's own KPI tiles — staffActivity/riderActivity/
+// accountsActivity each show every staff/rider/accounts user's name and
+// individual order-activity counts (not just the viewer's own), so they're
+// gated the same way as the deeper Staff/Region overview tabs rather than
+// being unconditionally visible to every STAFF account. dayOfWeek/airports
+// stay always-visible — they show aggregate operational numbers already
+// scoped to the viewer's own assigned regions, not other people's
+// individual activity, so there's nothing to scope further. Unlike
+// ORDER_TAB_KEYS/ACCOUNTS_TAB_KEYS, empty means CLOSED — none of these six
+// visible — since this replaces the old canViewOverviewBreakdown boolean,
+// which was also closed-by-default.
+const OVERVIEW_TAB_KEYS = ['staff', 'region', 'staffActivity', 'riderActivity', 'accountsActivity'];
 const OVERVIEW_TAB_LABELS = {
   staff: 'Staff overview',
   region: 'Region overview',
+  staffActivity: 'Summary: Staff activity tile',
+  riderActivity: 'Summary: Rider activity tile',
+  accountsActivity: 'Summary: Accounts activity tile',
 };
 
 // Sub-tabs inside the Print Label page — same "empty = no restriction"
