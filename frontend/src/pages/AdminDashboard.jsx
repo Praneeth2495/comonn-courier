@@ -894,6 +894,9 @@ const ACCOUNTS_TAB_PERM_KEYS = Object.keys(ACCOUNTS_TAB_PERM_LABELS);
 const OVERVIEW_TAB_PERM_LABELS = {
   staff: 'Staff overview',
   region: 'Region overview',
+  staffActivity: 'Summary: Staff activity tile',
+  riderActivity: 'Summary: Rider activity tile',
+  accountsActivity: 'Summary: Accounts activity tile',
 };
 const OVERVIEW_TAB_PERM_KEYS = Object.keys(OVERVIEW_TAB_PERM_LABELS);
 
