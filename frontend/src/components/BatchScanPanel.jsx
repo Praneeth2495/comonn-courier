@@ -401,7 +401,7 @@ export default function BatchScanPanel() {
         </>
       )}
 
-      {subTab === 'batches' && (
+      {subTab === 'batches' && canSeeTab('batches') && (
         loadingBatches ? <LoadingLogo /> : (
           <div className="table-wrap">
             <table className="data-table">
