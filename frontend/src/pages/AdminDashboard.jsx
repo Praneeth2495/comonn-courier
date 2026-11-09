@@ -2743,6 +2743,20 @@ function UsersPanel() {
                     <span style={{ color: 'var(--slate-light)' }}>—</span>
                   )}
                 </td>
+                <td>
+                  {u.role === 'STAFF' || u.role === 'ACCOUNTS' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {(u.allowedBatchScanTabs || []).length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>All tabs</span>
+                      ) : (
+                        (u.allowedBatchScanTabs || []).map((key) => <span key={key} className="pill pill-cobalt" style={{ fontSize: 11 }}>{BATCHSCAN_TAB_PERM_LABELS[key] || key}</span>)
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => setEditingBatchScanTabAccess({ id: u.id, fullName: u.fullName, allowedBatchScanTabs: u.allowedBatchScanTabs || [] })}>Edit</button>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--slate-light)' }}>—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {internalUsers.length === 0 && (
