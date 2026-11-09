@@ -26,12 +26,25 @@ function onboardingInviteUrl(rawToken) {
   return `${base}/onboarding-details?token=${rawToken}`;
 }
 
-async function sendOnboardingInviteEmail(user, rawToken) {
+// isEdit: true when this is going to an employee who's already APPROVED
+// and active (see resendOnboardingInvite) — their account already works,
+// this link just lets them update their on-file details, not "join" or
+// wait on a first-time approval. Always false for inviteEmployee/a fresh
+// INVITED or SUBMITTED-but-unapproved resend, which are genuinely still
+// first-time onboarding.
+async function sendOnboardingInviteEmail(user, rawToken, isEdit = false) {
   try {
     await sendEmail({
       to: user.email,
-      subject: 'Complete your Comonn onboarding details',
-      html: `
+      subject: isEdit ? 'Update your Comonn details' : 'Complete your Comonn onboarding details',
+      html: isEdit ? `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
+          <h2 style="color:#0E1B3D;margin-bottom:8px;">Hi ${user.fullName},</h2>
+          <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">An admin has asked you to review and update your onboarding details — address, ID proof, and/or bank details — using the link below.</p>
+          <p style="margin:22px 0;"><a href="${onboardingInviteUrl(rawToken)}" style="background:#FF5A36;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Update my details →</a></p>
+          <p style="font-size:12px;color:#8A93A6;">This link expires in 7 days. Your account stays active throughout — submitting just saves your changes.</p>
+        </div>
+      ` : `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#171C2C;">
           <h2 style="color:#0E1B3D;margin-bottom:8px;">Welcome to Comonn, ${user.fullName}!</h2>
           <p style="font-size:13.5px;color:#5B6478;line-height:1.6;">You've been invited to join as ${user.role === 'DRIVER' ? 'a rider' : 'a staff member'}. Please fill in your onboarding details — address, ID proof, and bank details — using the link below.</p>
