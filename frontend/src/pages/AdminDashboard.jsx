@@ -2613,7 +2613,7 @@ function UsersPanel() {
       {subTab === 'internal' && (
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Rider region</th><th>Delivery zones</th><th>Pickup states/regions</th><th>Overview tabs</th><th>Page access</th><th>Order tabs</th><th>Accounts tabs</th><th>Print Label tabs</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Rider region</th><th>Delivery zones</th><th>Pickup states/regions</th><th>Overview tabs</th><th>Page access</th><th>Order tabs</th><th>Accounts tabs</th><th>Print Label tabs</th><th>Scan tabs</th></tr></thead>
           <tbody>
             {internalUsers.map((u) => (
               <tr key={u.id}>
