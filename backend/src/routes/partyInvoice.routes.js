@@ -14,6 +14,8 @@ const {
   listStaffForSalary,
   listEmployeesForSalaryRoster,
   createSalaryPayment,
+  listSalaryComments,
+  addSalaryComment,
 } = require('../controllers/partyInvoice.controller');
 
 // Receivable/Payable invoices are part of the Accounts tab — ADMIN always,
