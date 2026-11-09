@@ -424,15 +424,20 @@ async function dashboardKpis(req, res, next) {
       scopeWhere.senderAddress = { OR: await resolveOriginFilters(assignments) };
     }
 
-    const [dayOfWeek, airports, staffActivity, riderActivity, accountsActivity, canSeeRegions] = await Promise.all([
+    const [dayOfWeek, airports, canSeeStaffActivity, canSeeRiderActivity, canSeeAccountsActivity, canSeeRegions] = await Promise.all([
       dayOfWeekBreakdown(scopeWhere, dayWiseRange),
       airportWeightBreakdown(req),
-      staffActivityBreakdown(),
-      riderActivityBreakdown(),
-      accountsActivityBreakdown(),
+      hasOverviewTabAccess(req, 'staffActivity'),
+      hasOverviewTabAccess(req, 'riderActivity'),
+      hasOverviewTabAccess(req, 'accountsActivity'),
       hasOverviewTabAccess(req, 'region'),
     ]);
-    const regions = canSeeRegions ? await computeRegionBreakdown(from, to) : null;
+    const [staffActivity, riderActivity, accountsActivity, regions] = await Promise.all([
+      canSeeStaffActivity ? staffActivityBreakdown() : null,
+      canSeeRiderActivity ? riderActivityBreakdown() : null,
+      canSeeAccountsActivity ? accountsActivityBreakdown() : null,
+      canSeeRegions ? computeRegionBreakdown(from, to) : null,
+    ]);
 
     res.json({ dayOfWeek, airports, staffActivity, riderActivity, accountsActivity, regions });
   } catch (err) {
