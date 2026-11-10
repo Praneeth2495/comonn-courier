@@ -353,10 +353,10 @@ async function sendInvoiceEmail(req, res, next) {
     const label = documentLabel(invoice);
     await sendEmail({
       to: invoice.email,
-      // Salary invoices go to employees and should read as coming from
-      // Accounts, not the generic quotes@ sender every other party invoice
-      // (customer/vendor Receivable/Payable) uses.
-      from: invoice.category === 'SALARY' ? 'Comonn Accounts <accounts@comonn.in>' : undefined,
+      // Every party invoice (Salary to employees, and Receivable/Payable
+      // to customers/vendors) is an Accounts-issued document, so all of
+      // them send from Accounts rather than the generic quotes@ sender.
+      from: 'Comonn Accounts <accounts@comonn.in>',
       subject: `${label} ${invoice.invoiceNumber} from Comonn International Courier`,
       html: `<p>Hi ${invoice.partyName},</p><p>Please find attached ${label.toLowerCase()} <b>${invoice.invoiceNumber}</b> for <b>Rs. ${Number(invoice.totalAmount).toFixed(2)}</b>, due ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}.</p><p>${invoice.description}</p>`,
       attachments,
