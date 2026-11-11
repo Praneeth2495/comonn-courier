@@ -9,12 +9,11 @@ const { drawWatermark, LOGO_PATH } = require('../utils/pdfHelpers');
 // others are short, fixed-shape values.
 const COLUMNS = [
   { key: 'Order ID', width: 65 },
-  { key: 'Sender Full Details & Address', width: 230 },
-  { key: 'Receiver Full Details & Address', width: 230 },
+  { key: 'Sender Full Details & Address', width: 256 },
+  { key: 'Receiver Full Details & Address', width: 256 },
   { key: 'Pickup Date', width: 65 },
   { key: 'Status', width: 90 },
   { key: 'Weight (kg)', width: 50, align: 'right' },
-  { key: 'Total', width: 52, align: 'right' },
 ];
 
 /**
