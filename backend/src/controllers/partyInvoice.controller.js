@@ -408,21 +408,6 @@ const { listComments: listInvoiceComments, addComment: addInvoiceComment } = mak
   notFoundError: 'Invoice not found',
 });
 
-/**
- * GET/POST /api/admin/party-invoices/employees/:id/salary-comments — an
- * ongoing per-employee thread, separate from the per-invoice one above.
- * An employee not yet paid this month has no PartyInvoice to attach a
- * PartyInvoiceComment to, but the Salary roster (SalaryPanel.jsx) shows
- * every active employee every month regardless of payment status, so this
- * lets staff leave notes on any of them at any time.
- */
-const { listComments: listSalaryComments, addComment: addSalaryComment } = makeCommentHandlers({
-  commentModel: 'employeeSalaryComment',
-  parentModel: 'user',
-  fkField: 'employeeId',
-  notFoundError: 'Employee not found',
-});
-
 module.exports = {
   listInvoices,
   createInvoice,
@@ -437,6 +422,4 @@ module.exports = {
   listStaffForSalary,
   listEmployeesForSalaryRoster,
   createSalaryPayment,
-  listSalaryComments,
-  addSalaryComment,
 };
