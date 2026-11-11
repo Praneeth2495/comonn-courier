@@ -373,12 +373,29 @@ function formatFullAddress(addr) {
 
 async function exportOrders(req, res, next) {
   try {
+    const format = req.query.format === 'pdf' ? 'pdf' : 'xlsx';
     const where = await buildOrdersWhere(req);
     const orders = await prisma.order.findMany({
       where,
       include: { senderAddress: true, receiverAddress: true, items: true },
       orderBy: { createdAt: 'desc' },
     });
+
+    if (format === 'pdf') {
+      // Money/weight rendered as display strings here (PDFKit's Helvetica
+      // has no ₹ glyph — see pdfHelpers.money) — the .xlsx branch below
+      // keeps them as real Numbers instead, for spreadsheet math.
+      const pdfRows = orders.map((o) => ({
+        'Order ID': o.orderNumber,
+        'Sender Full Details & Address': formatFullAddress(o.senderAddress),
+        'Receiver Full Details & Address': formatFullAddress(o.receiverAddress),
+        'Pickup Date': o.pickupDate || '',
+        'Status': o.status.replace(/_/g, ' '),
+        'Weight (kg)': o.chargeableWeightKg ? Number(o.chargeableWeightKg).toFixed(2) : '',
+        'Total': money(o.grandTotal || 0),
+      }));
+      return generateOrdersPdf(pdfRows, res);
+    }
 
     const rows = orders.map((o) => ({
       'Order ID': o.orderNumber,
