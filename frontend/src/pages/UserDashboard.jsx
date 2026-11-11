@@ -44,7 +44,7 @@ export default function UserDashboard() {
       ensureLabelsForPaidOrders(data.orders);
     }).finally(() => setLoading(false));
   }
-  useEffect(loadOrders, [tab]);
+  useEffect(loadOrders, [tab, debouncedQ]);
 
   // A paid order only gets its label/invoice generated once the customer
   // lands on the post-payment Labels page — if they never do (closed the
