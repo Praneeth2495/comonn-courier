@@ -736,7 +736,7 @@ function groupByHubName(items, hubNameOf) {
   });
 }
 
-function RosterTable({ employees, invoiceForEmail, onView, onPay, onComment }) {
+function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
   return (
     <div className="table-wrap">
       <table className="data-table">
