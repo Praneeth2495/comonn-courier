@@ -471,6 +471,12 @@ table.data-table tr:hover td{background:#FAFAF7;}
   .auth-side .quote,.auth-stats{display:none;}
   .auth-card,.center-card{padding:26px 20px;}
   .card-top-stripe{margin:-26px -20px 24px;width:calc(100% + 40px);}
+  /* On true mobile (unlike the wider 641-1000px tablet range just above),
+     the "Welcome back" panel is already trimmed to a single small pill —
+     compact enough to put back in its natural, greeting-first position
+     above the form without pushing it below the fold. */
+  .auth-card{order:2;}
+  .auth-side{order:1;}
 }
 
 /* ============================================================
