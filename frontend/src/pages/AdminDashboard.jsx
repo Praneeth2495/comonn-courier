@@ -2084,12 +2084,14 @@ function AccountsPanel() {
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
+  useEffect(() => { setPage(1); }, [debouncedQ]);
+
   useEffect(() => {
     load();
     const interval = setInterval(() => load(true), 30 * 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, fromDate, toDate]);
+  }, [page, pageSize, fromDate, toDate, debouncedQ]);
 
   function changePageSize(size) {
     setPageSize(size);
