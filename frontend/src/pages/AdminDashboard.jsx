@@ -753,11 +753,14 @@ const PAYMENT_STATUS_LABEL = {
 // (leads for follow-up). PENDING_PAYMENT is now narrower — a pickup-booking
 // order staff have already priced and pushed to real payment — tracked
 // alongside the rest of the pickup pipeline rather than Unconfirmed.
+// CANCELLED lives here too, same reasoning — once cancelled, an order isn't
+// part of any live pipeline anymore, so it only ever shows up here, never
+// mixed into Bookings/Pickup/Delivery/Manifest.
 const ORDER_TABS = [
   ['bookings', 'Bookings', null, 'all'],
   ['pickup', 'Pickup orders', ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
   ['delivery', 'Delivery orders', ['ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY']],
-  ['unconfirmed', 'Unconfirmed orders', ['UNFINISHED']],
+  ['unconfirmed', 'Unconfirmed orders', ['UNFINISHED', 'CANCELLED']],
   ['manifest', 'Manifest'],
 ];
 
