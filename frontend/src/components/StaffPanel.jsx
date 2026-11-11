@@ -91,13 +91,14 @@ function AttendanceTab({ isAdmin }) {
 function StaffDirectory() {
   const [staff, setStaff] = useState(null);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [selectedId, setSelectedId] = useState(null);
 
   function load() {
     setStaff(null);
     client.get('/admin/employees', { params: { q: q || undefined, excludeInvited: 1 } }).then(({ data }) => setStaff(data.employees)).catch(() => setStaff([]));
   }
-  useEffect(load, []);
+  useEffect(load, [debouncedQ]);
 
   function search(e) {
     e.preventDefault();
