@@ -359,7 +359,7 @@ async function listOrders(req, res, next) {
 // several columns.
 function formatFullAddress(addr) {
   if (!addr) return '';
-  const contact = [addr.contactName, addr.phone, addr.email].filter(Boolean).join(', ');
+  const contact = [addr.contactName, addr.phone].filter(Boolean).join(', ');
   const postcode = addr.eircode || addr.postcode;
   // Only abbreviate an India state (sender is always India; a receiver's
   // own state, when set, belongs to whatever country they're in, so this
