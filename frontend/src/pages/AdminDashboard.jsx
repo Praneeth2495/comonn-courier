@@ -1963,21 +1963,21 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
             const f = form[cat.key] || { mode: cat.defaultMode, value: '' };
             const amount = amountFor(cat.key);
             return (
-              <div key={cat.key} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <div style={{ width: 150, flex: 'none', fontSize: 13, fontWeight: 600 }}>{cat.label}</div>
+              <div key={cat.key} className="cost-row" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <div className="cost-row-label" style={{ width: 150, flex: 'none', fontSize: 13, fontWeight: 600 }}>{cat.label}</div>
                 <input
-                  className="input" type="number" min="0" step="0.01"
+                  className="input cost-row-input" type="number" min="0" step="0.01"
                   placeholder={cat.defaultValue ? undefined : 'INR'}
                   value={f.value}
                   onChange={(e) => updateField(cat.key, { value: e.target.value })}
                   style={{ flex: '1 1 100px', minWidth: 90 }}
                 />
-                <select className="select" value={f.mode} onChange={(e) => updateField(cat.key, { mode: e.target.value })} style={{ width: 120, flex: 'none' }}>
+                <select className="select cost-row-select" value={f.mode} onChange={(e) => updateField(cat.key, { mode: e.target.value })} style={{ width: 120, flex: 'none' }}>
                   <option value="FLAT">₹ flat</option>
                   <option value="PER_KG">₹ / kg</option>
                   <option value="PERCENT">% of revenue</option>
                 </select>
-                <div className="num" style={{ width: 120, flex: 'none', textAlign: 'right', fontSize: 12.5, color: 'var(--slate)' }}>
+                <div className="num cost-row-amount" style={{ width: 120, flex: 'none', textAlign: 'right', fontSize: 12.5, color: 'var(--slate)' }}>
                   = ₹{amount.toFixed(2)}
                   {cat.key === 'AIRLINE' && weightKg > 0 && <div style={{ fontSize: 10.5, color: 'var(--slate-light)' }}>₹{airlineRatePerKg.toFixed(2)}/kg</div>}
                 </div>
