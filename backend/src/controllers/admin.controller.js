@@ -281,9 +281,11 @@ async function airportWeightBreakdown(req) {
   // live snapshot of everything currently sitting unmanifested, not a
   // booked-within-window figure (an order from last month that's still
   // unmanifested is exactly the kind of thing this KPI exists to surface).
-  // Mirrors manifest.controller.js's listEligibleOrders/listAvailableAirports,
-  // which are never date-scoped either.
-  const where = await buildOrdersWhere({ ...req, query: { ...req.query, from: undefined, to: undefined, notStatus: PAYABLE_STATUSES.join(',') } });
+  // Mirrors manifest.controller.js's listEligibleOrders/listAvailableAirports
+  // (including excluding CANCELLED alongside PAYABLE_STATUSES — see that
+  // file's MANIFEST_EXCLUDED_STATUSES comment), which are never date-scoped
+  // either.
+  const where = await buildOrdersWhere({ ...req, query: { ...req.query, from: undefined, to: undefined, notStatus: [...PAYABLE_STATUSES, 'CANCELLED'].join(',') } });
   where.manifestId = null;
   where.airportCode = { not: null };
 
