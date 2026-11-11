@@ -1057,9 +1057,10 @@ function OrdersPanel() {
     };
     if (tabDef[2]) params.status = tabDef[2].join(',');
     else if (tabDef[3] === 'hasUser') params.hasUser = 'true';
-    else if (tabDef[3] === 'all') params.notStatus = 'UNFINISHED';
+    else if (tabDef[3] === 'all') params.notStatus = 'UNFINISHED,CANCELLED';
     // 'all' mode (Bookings tab): every booking except UNFINISHED (leads that
-    // never even reached payment) — those only ever show under Unconfirmed.
+    // never even reached payment) and CANCELLED — those only ever show
+    // under Unconfirmed.
 
     client.get('/orders', { params }).then(({ data }) => {
       if (seq !== seqRef.current) return; // a newer request superseded this one
@@ -1091,7 +1092,7 @@ function OrdersPanel() {
       airportCode: tab === 'delivery' && deliveryCountry && deliverySelectedAirportCodes.length > 0 ? deliverySelectedAirportCodes.join(',') : undefined,
     };
     if (tabDef[2]) params.status = tabDef[2].join(',');
-    else if (tabDef[3] === 'all') params.notStatus = 'UNFINISHED';
+    else if (tabDef[3] === 'all') params.notStatus = 'UNFINISHED,CANCELLED';
 
     setExporting(true);
     try {
