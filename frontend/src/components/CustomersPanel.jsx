@@ -3,6 +3,7 @@ import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { formatDateShort as fmtDate } from '../utils/dateFormat';
 import { statusLabel } from '../utils/orderStatus';
+import { useDebouncedValue } from '../utils/useDebouncedValue';
 
 const WALLET_TXN_LABEL = {
   REFERRAL_REWARD: 'Referral reward',
