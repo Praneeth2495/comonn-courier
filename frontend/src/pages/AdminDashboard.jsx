@@ -959,6 +959,7 @@ function OrdersPanel() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [loading, setLoading] = useState(true);
   const [detailOrder, setDetailOrder] = useState(null);
   const [commentOrder, setCommentOrder] = useState(null);
