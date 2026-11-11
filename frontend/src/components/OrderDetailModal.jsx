@@ -196,73 +196,32 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         </div>
 
-        {canViewTracking && (
         <div className="detail-section">
-          <div className="oda-section-head"><span className="icon">🚚</span><h4>Tracking</h4></div>
-
-          {(carrierName || carrierTrackingNumber || canManageTracking) && (
-            <div style={{ marginBottom: 14 }}>
-              {canManageTracking ? (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <input
-                    className="input"
-                    style={{ maxWidth: 200 }}
-                    placeholder="Last-mile carrier (e.g. Aramex)"
-                    value={carrierName}
-                    onChange={(e) => { setCarrierName(e.target.value); setCarrierSaved(false); }}
-                  />
-                  <input
-                    className="input"
-                    style={{ maxWidth: 200 }}
-                    placeholder="Carrier tracking number"
-                    value={carrierTrackingNumber}
-                    onChange={(e) => { setCarrierTrackingNumber(e.target.value); setCarrierSaved(false); }}
-                  />
-                  <button className="btn btn-outline btn-sm" disabled={savingCarrier} onClick={saveCarrier}>
-                    {savingCarrier ? 'Saving…' : 'Save'}
-                  </button>
-                  {carrierSaved && <span style={{ fontSize: 12, color: 'var(--success)' }}>Saved</span>}
-                </div>
-              ) : (
-                (carrierName || carrierTrackingNumber) && (
-                  <p style={{ fontSize: 13 }}>
-                    With <b>{carrierName || 'third-party courier'}</b>{carrierTrackingNumber ? ` — tracking # ${carrierTrackingNumber}` : ''}
-                  </p>
-                )
-              )}
+          <div className="oda-section-head"><span className="icon">📤</span><h4>Sender details</h4></div>
+          <div className="detail-grid">
+            <div className="detail-row"><span className="k">Name</span><span className="v">{order.senderAddress?.contactName}</span></div>
+            <div className="detail-row"><span className="k">Phone</span><span className="v">{order.senderAddress?.phone}</span></div>
+            <div className="detail-row"><span className="k">Email</span><span className="v">{order.senderAddress?.email || '—'}</span></div>
+            <div className="detail-row" style={{ gridColumn: '1/-1' }}>
+              <span className="k">Address</span>
+              <span className="v">{order.senderAddress?.line1}{order.senderAddress?.line2 ? `, ${order.senderAddress.line2}` : ''}, {order.senderAddress?.city}{order.senderAddress?.state ? `, ${abbreviateInState(order.senderAddress.state)}` : ''} {order.senderAddress?.postcode}, {order.senderAddress?.countryCode}</span>
             </div>
-          )}
-
-          {trackingEvents.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: canManageTracking ? 14 : 0 }}>
-              {trackingEvents.map((ev, i) => (
-                <div key={ev.id || i} style={{ fontSize: 12.5, borderLeft: '2px solid var(--line-2)', paddingLeft: 10 }}>
-                  <b>{statusLabel(ev.status)}</b>
-                  <span style={{ color: 'var(--slate-light)', marginLeft: 6 }}>
-                    {new Date(ev.occurredAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
-                    {ev.location ? ` · ${ev.location}` : ''}
-                  </span>
-                  {ev.note && <div style={{ color: 'var(--slate)', marginTop: 1 }}>{ev.note}</div>}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: canManageTracking ? 14 : 0 }}>No tracking events yet.</p>
-          )}
-
-          {canManageTracking && (
-            <form onSubmit={addTrackingUpdate} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', borderTop: '1px solid var(--line-2)', paddingTop: 12 }}>
-              <select className="select" style={{ maxWidth: 150 }} value={updateStatus} onChange={(e) => setUpdateStatus(e.target.value)}>
-                {TRACKING_UPDATE_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
-              </select>
-              <input className="input" style={{ maxWidth: 150 }} placeholder="Location (optional)" value={updateLocation} onChange={(e) => setUpdateLocation(e.target.value)} />
-              <input className="input" style={{ flex: 1, minWidth: 150 }} placeholder="Note (optional)" value={updateNote} onChange={(e) => setUpdateNote(e.target.value)} />
-              <button className="btn btn-primary btn-sm" disabled={addingUpdate}>{addingUpdate ? 'Adding…' : 'Add update'}</button>
-              {addUpdateError && <div className="error-text" style={{ width: '100%' }}>{addUpdateError}</div>}
-            </form>
-          )}
+          </div>
         </div>
-        )}
+
+        <div className="detail-section">
+          <div className="oda-section-head"><span className="icon">📥</span><h4>Receiver details</h4></div>
+          <div className="detail-grid">
+            <div className="detail-row"><span className="k">Name</span><span className="v">{order.receiverAddress?.contactName}</span></div>
+            <div className="detail-row"><span className="k">Phone</span><span className="v">{order.receiverAddress?.phone}</span></div>
+            <div className="detail-row"><span className="k">Email</span><span className="v">{order.receiverAddress?.email || '—'}</span></div>
+            <div className="detail-row"><span className="k">Delivery instructions</span><span className="v">{order.receiverAddress?.instructions || '—'}</span></div>
+            <div className="detail-row" style={{ gridColumn: '1/-1' }}>
+              <span className="k">Address</span>
+              <span className="v">{order.receiverAddress?.line1}{order.receiverAddress?.line2 ? `, ${order.receiverAddress.line2}` : ''}, {order.receiverAddress?.city}{order.receiverAddress?.state ? `, ${order.receiverAddress.state}` : ''} {order.receiverAddress?.eircode || order.receiverAddress?.postcode}, {order.receiverAddress?.countryCode}</span>
+            </div>
+          </div>
+        </div>
 
         <div className="detail-section">
           <div className="oda-section-head"><span className="icon">📦</span><h4>Shipment</h4></div>
