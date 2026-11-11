@@ -278,7 +278,7 @@ function BookingsTable() {
                   <select
                     className="select"
                     style={{
-                      fontSize: 12, padding: '4px 8px', width: 'auto',
+                      fontSize: 12, padding: '4px 32px 4px 8px', width: 'auto',
                       background: b.status === 'ACTIVE' ? 'var(--success-bg)' : b.status === 'EXPIRED' ? 'var(--danger-bg)' : undefined,
                       color: b.status === 'ACTIVE' ? 'var(--success)' : b.status === 'EXPIRED' ? 'var(--danger)' : undefined,
                     }}
