@@ -414,7 +414,7 @@ export default function BatchScanPanel() {
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <select
                           className="select"
-                          style={{ padding: '6px 8px', fontSize: 12.5 }}
+                          style={{ padding: '6px 32px 6px 8px', fontSize: 12.5 }}
                           value={b.status}
                           disabled={changingId === b.id}
                           onChange={(e) => changeBatchStatus(b.id, e.target.value)}
