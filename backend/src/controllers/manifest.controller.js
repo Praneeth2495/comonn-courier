@@ -38,9 +38,10 @@ function withQty(order) {
 /**
  * GET /api/admin/manifests/eligible-orders?countryCode=&airportCode= —
  * orders that can be added to a manifest: not already in a (different)
- * manifest, and confirmed (excludes PAYABLE_STATUSES, i.e. unpaid/
- * unconfirmed orders) — everything else, including pickup bookings, is
- * included per the "straight from order placement" requirement.
+ * manifest, and confirmed (excludes MANIFEST_EXCLUDED_STATUSES, i.e.
+ * unpaid/unconfirmed/cancelled orders) — everything else, including
+ * pickup bookings, is included per the "straight from order placement"
+ * requirement.
  * countryCode is always required and may be comma-separated to combine
  * several destination countries into one manifest — allowed only when
  * every one of them is in EUROPE_COUNTRY_CODES (every other country still
@@ -66,7 +67,7 @@ async function listEligibleOrders(req, res, next) {
       return res.status(400).json({ error: 'Multiple destination countries can only be combined into one manifest when every one of them is in Europe.' });
     }
 
-    const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
+    const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: MANIFEST_EXCLUDED_STATUSES.join(',') } });
     where.manifestId = null;
     where.airportCode = { not: null };
     where.receiverAddress = { countryCode: countryCodes.length === 1 ? countryCodes[0] : { in: countryCodes } };
@@ -94,7 +95,7 @@ async function listEligibleOrders(req, res, next) {
  */
 async function listAvailableAirports(req, res, next) {
   try {
-    const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: PAYABLE_STATUSES.join(',') } });
+    const where = await buildOrdersWhere({ ...req, query: { ...req.query, notStatus: MANIFEST_EXCLUDED_STATUSES.join(',') } });
     where.manifestId = null;
     where.airportCode = { not: null };
 
@@ -232,7 +233,7 @@ async function createManifest(req, res, next) {
         where: {
           id: { in: orderIds },
           manifestId: null,
-          status: { notIn: PAYABLE_STATUSES },
+          status: { notIn: MANIFEST_EXCLUDED_STATUSES },
           // Matches the real country set validated above (countryCodes),
           // not the stored `countryCode` field — that's "EU" for a
           // combined-Europe manifest, not a real ISO code to filter by.
@@ -554,7 +555,7 @@ async function addOrdersToManifest(req, res, next) {
       where: {
         id: { in: orderIds },
         manifestId: null,
-        status: { notIn: PAYABLE_STATUSES },
+        status: { notIn: MANIFEST_EXCLUDED_STATUSES },
         receiverAddress: { countryCode: { in: allowedCountryCodes } },
       },
       data: { manifestId: req.params.id },
