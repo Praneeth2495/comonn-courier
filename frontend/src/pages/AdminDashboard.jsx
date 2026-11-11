@@ -10,6 +10,7 @@ import { formatDateShort } from '../utils/dateFormat';
 import { statusLabel } from '../utils/orderStatus';
 import { downloadBlob } from '../utils/downloadBlob';
 import { useDebouncedValue } from '../utils/useDebouncedValue';
+import { useClickOutside } from '../utils/useClickOutside';
 
 // Lazy-loaded: each only ever renders behind its own sidebar tab (one tab
 // active at a time), so an admin who never opens, say, Manifest or Party
