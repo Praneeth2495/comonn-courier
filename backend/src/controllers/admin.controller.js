@@ -22,14 +22,15 @@ const { expandInState } = require('../constants/regions');
 // uses, for the same reason.
 const UNPAID_STATUSES = ['DRAFT', 'UNFINISHED', 'PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'CANCELLED'];
 
-// UNFINISHED (a quote+details started but payment never reached) never
-// shows up outside the dedicated Unconfirmed-orders tab anywhere else in
-// the admin panel (Bookings/Pickup/Manifest/Delivery/Accounts all exclude
-// it the same way) — Overview and its breakdown tabs follow the same rule.
+// UNFINISHED (a quote+details started but payment never reached) and
+// CANCELLED (cancelled by the customer) never show up outside the
+// dedicated Unconfirmed-orders tab anywhere else in the admin panel
+// (Bookings/Pickup/Manifest/Delivery/Accounts all exclude both the same
+// way) — Overview and its breakdown tabs follow the same rule.
 // `extraWhere` layers on a scope (a single staff's region assignments, or
 // one specific region) on top of the shared date-range filter.
 function buildDashboardWhere(from, to, extraWhere = {}) {
-  const where = { status: { not: 'UNFINISHED' }, ...extraWhere };
+  const where = { status: { notIn: ['UNFINISHED', 'CANCELLED'] }, ...extraWhere };
   if (from || to) {
     where.createdAt = {};
     if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000Z`);
