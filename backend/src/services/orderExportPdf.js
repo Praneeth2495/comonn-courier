@@ -1,6 +1,7 @@
+const fs = require('fs');
 const PDFDocument = require('pdfkit');
 const { sanitizePdfText } = require('../utils/pdfText');
-const { drawWatermark } = require('../utils/pdfHelpers');
+const { drawWatermark, LOGO_PATH } = require('../utils/pdfHelpers');
 
 // Landscape A4 (~842x595pt at 72dpi) with 30pt margins — 782pt usable
 // width, split across these 7 columns. Sender/Receiver get the lion's
