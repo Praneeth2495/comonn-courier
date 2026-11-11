@@ -41,7 +41,11 @@ function generateOrdersPdf(rows, res) {
     doc.rect(left, y, totalWidth, 20).fill('#F0F0F0');
     doc.fillColor('black');
     for (const col of COLUMNS) {
-      doc.text(col.key, cx + 4, y + rowPadding, { width: col.width - 8, align: col.align || 'left' });
+      // Always centered, regardless of the column's own body-cell
+      // alignment — Weight's label ("Weight (kg)") was wrapping to two
+      // lines under its right-aligned body alignment and reading as
+      // off-center; headers read better centered either way.
+      doc.text(col.key, cx + 4, y + rowPadding, { width: col.width - 8, align: 'center' });
       cx += col.width;
     }
     cx = left;
@@ -53,15 +57,21 @@ function generateOrdersPdf(rows, res) {
     return y + 20;
   }
 
-  drawWatermark(doc, 260);
-  // Logo top-left + title right-aligned in the same row — same layout
-  // loadSheetPdf.js uses for its own landscape header.
   const usableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-  if (fs.existsSync(LOGO_PATH)) {
-    doc.image(LOGO_PATH, left, top, { width: 90 });
+
+  // Logo top-left + title right-aligned in the same row — same layout
+  // loadSheetPdf.js uses for its own landscape header. Repeated on every
+  // page (not just the first), same as the header band below it.
+  function drawPageHeader() {
+    drawWatermark(doc, 260);
+    if (fs.existsSync(LOGO_PATH)) {
+      doc.image(LOGO_PATH, left, top, { width: 90 });
+    }
+    doc.font('Helvetica-Bold').fontSize(16).text('Orders', left, top + 2, { width: usableWidth, align: 'right' });
+    return drawHeaderBand(top + 36);
   }
-  doc.font('Helvetica-Bold').fontSize(16).text('Orders', left, top + 2, { width: usableWidth, align: 'right' });
-  let y = drawHeaderBand(top + 36);
+
+  let y = drawPageHeader();
 
   doc.font('Helvetica').fontSize(8);
   for (const row of rows) {
@@ -78,8 +88,7 @@ function generateOrdersPdf(rows, res) {
 
     if (y + rowHeight > pageBottom) {
       doc.addPage({ size: 'A4', layout: 'landscape', margin: 30 });
-      drawWatermark(doc, 260);
-      y = drawHeaderBand(top);
+      y = drawPageHeader();
       doc.font('Helvetica').fontSize(8);
     }
 
