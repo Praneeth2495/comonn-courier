@@ -190,7 +190,7 @@ async function computeRegionBreakdown(from, to) {
       const where = buildDashboardWhere(from, to, { senderAddress: originFilter });
       const [totals, ordersToday] = await Promise.all([
         computeOrderTotals(where),
-        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress: originFilter, createdAt: todayWindow } }),
+        prisma.order.count({ where: { status: { notIn: ['UNFINISHED', 'CANCELLED'] }, senderAddress: originFilter, createdAt: todayWindow } }),
       ]);
       return { region: r, totals, ordersToday };
     })
@@ -260,7 +260,7 @@ function dayWiseWindow(rangeKey) {
 }
 
 async function dayOfWeekBreakdown(scopeWhere, rangeKey) {
-  const where = { ...scopeWhere, status: { not: 'UNFINISHED' }, createdAt: dayWiseWindow(rangeKey) };
+  const where = { ...scopeWhere, status: { notIn: ['UNFINISHED', 'CANCELLED'] }, createdAt: dayWiseWindow(rangeKey) };
   const orders = await prisma.order.findMany({ where, select: { createdAt: true } });
   const counts = Object.fromEntries(WEEKDAYS.map((d) => [d, 0]));
   for (const o of orders) counts[WEEKDAY_FORMATTER.format(o.createdAt)]++;
@@ -320,7 +320,8 @@ async function airportWeightBreakdown(req) {
 
 // One row per STAFF account — same region-scoped order ownership
 // staffOverview uses, just counted across three fixed rolling windows
-// instead of one admin-chosen date range.
+// instead of one admin-chosen date range. Excludes UNFINISHED/CANCELLED
+// same as everywhere else — neither is a real, active order.
 async function staffActivityBreakdown() {
   const windows = activityWindows();
   const staff = await prisma.user.findMany({ where: { role: 'STAFF' }, select: { id: true, fullName: true, email: true }, orderBy: { fullName: 'asc' } });
@@ -330,9 +331,9 @@ async function staffActivityBreakdown() {
       const assignments = await prisma.staffRegionAssignment.findMany({ where: { userId: s.id }, select: { state: true, region: true } });
       const senderAddress = { OR: assignments.length ? await resolveOriginFilters(assignments) : [] };
       const [today, last7Days, currentMonth] = await Promise.all([
-        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress, createdAt: windows.today } }),
-        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress, createdAt: windows.last7Days } }),
-        prisma.order.count({ where: { status: { not: 'UNFINISHED' }, senderAddress, createdAt: windows.currentMonth } }),
+        prisma.order.count({ where: { status: { notIn: ['UNFINISHED', 'CANCELLED'] }, senderAddress, createdAt: windows.today } }),
+        prisma.order.count({ where: { status: { notIn: ['UNFINISHED', 'CANCELLED'] }, senderAddress, createdAt: windows.last7Days } }),
+        prisma.order.count({ where: { status: { notIn: ['UNFINISHED', 'CANCELLED'] }, senderAddress, createdAt: windows.currentMonth } }),
       ]);
       return { staff: s, today, last7Days, currentMonth };
     })
