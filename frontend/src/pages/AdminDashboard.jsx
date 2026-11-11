@@ -1085,13 +1085,18 @@ function OrdersPanel() {
   }, [tab, page, pageSize, originState, originRegion, deliveryCountry, deliverySelectedAirportCodes.join(','), debouncedQ]);
 
   const [exporting, setExporting] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef(null);
+  useClickOutside(exportMenuRef, () => setExportMenuOpen(false));
 
   // Same filter params load() sends, minus page/pageSize — the export
   // always covers every order matching the current tab/search/filter
   // combination, not just whatever page happens to be on screen.
-  async function exportToExcel() {
+  async function runExport(format) {
+    setExportMenuOpen(false);
     const tabDef = ORDER_TABS.find(([key]) => key === tab);
     const params = {
+      format,
       q: q || undefined,
       scope: tab === 'pickup' ? 'pickup' : undefined,
       originState: tab === 'pickup' ? originState || undefined : undefined,
@@ -1105,7 +1110,8 @@ function OrdersPanel() {
     setExporting(true);
     try {
       const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined)).toString();
-      await downloadBlob(`/orders/export?${qs}`, `orders-${tab}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      const ext = format === 'pdf' ? 'pdf' : 'xlsx';
+      await downloadBlob(`/orders/export?${qs}`, `orders-${tab}-${new Date().toISOString().slice(0, 10)}.${ext}`);
     } finally {
       setExporting(false);
     }
