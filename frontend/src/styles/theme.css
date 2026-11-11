@@ -125,6 +125,17 @@ input,select,textarea{font-family:inherit;}
    doesn't sit jammed in the corner. */
 .select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--slate-light) 50%),linear-gradient(135deg,var(--slate-light) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px;}
 .input::placeholder{color:#AAB1C4;}
+/* Manifest's operating-cost rows (ManifestCostModal in AdminDashboard.jsx)
+   — label/input/mode-select/amount sit in one row with fixed widths on
+   desktop; those fixed widths don't fit a phone screen, so flex-wrap just
+   breaks the row apart in a confusing order. Stack each row's fields
+   vertically instead below this width — !important because every field's
+   width/flex is also set inline (for the desktop layout), which otherwise
+   always wins over a plain class rule regardless of media query. */
+@media(max-width:640px){
+  .cost-row{flex-direction:column!important;align-items:stretch!important;}
+  .cost-row-label,.cost-row-input,.cost-row-select,.cost-row-amount{width:100%!important;flex:none!important;}
+}
 .grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
 .form-stack{display:flex;flex-direction:column;gap:16px;}
