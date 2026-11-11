@@ -31,6 +31,7 @@ const otpLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5 });
 router.post('/', optionalAuth, createOrder);
 
 router.get('/', requireAuth, listOrders);
+router.get('/export', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), exportOrders);
 router.get('/summary', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('accounts'), getOrdersSummary);
 router.get('/delivery-airports', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), listDeliveryAirports);
 router.get('/:id', requireAuth, getOrder);
