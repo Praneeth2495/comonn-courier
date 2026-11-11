@@ -392,7 +392,6 @@ async function exportOrders(req, res, next) {
         'Pickup Date': o.pickupDate || '',
         'Status': o.status.replace(/_/g, ' '),
         'Weight (kg)': o.chargeableWeightKg ? Number(o.chargeableWeightKg).toFixed(2) : '',
-        'Total': money(o.grandTotal || 0),
       }));
       return generateOrdersPdf(pdfRows, res);
     }
