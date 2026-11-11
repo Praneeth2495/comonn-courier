@@ -1320,9 +1320,17 @@ function OrdersPanel() {
           🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
         </form>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <button type="button" className="btn btn-outline btn-sm" style={{ fontSize: 13, padding: '4px 8px' }} disabled={exporting} onClick={exportToExcel}>
-            {exporting ? 'Exporting…' : '⬇ Export to Excel'}
-          </button>
+          <div ref={exportMenuRef} style={{ position: 'relative' }}>
+            <button type="button" className="btn btn-outline btn-sm" style={{ fontSize: 13, padding: '4px 8px' }} disabled={exporting} onClick={() => setExportMenuOpen((v) => !v)}>
+              {exporting ? 'Exporting…' : '⬇ Export ▾'}
+            </button>
+            {exportMenuOpen && (
+              <div className="card" style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, padding: 6, minWidth: 140, zIndex: 50 }}>
+                <button type="button" className="acct-menu-item" onClick={() => runExport('xlsx')}>Excel (.xlsx)</button>
+                <button type="button" className="acct-menu-item" onClick={() => runExport('pdf')}>PDF</button>
+              </div>
+            )}
+          </div>
           <select className="select" style={{ fontSize: 13, padding: '4px 32px 4px 8px', width: 'auto' }} value={pageSize} onChange={(e) => changePageSize(Number(e.target.value))}>
             <option value={25}>25 / page</option>
             <option value={50}>50 / page</option>
