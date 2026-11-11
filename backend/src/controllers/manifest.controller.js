@@ -12,6 +12,14 @@ const { EUROPE_COUNTRY_CODES } = require('../constants/regions');
 // a free-form String column (not an enum/FK), so no schema change needed.
 const EUROPE_SENTINEL = 'EU';
 
+// Manifest-specific: PAYABLE_STATUSES (unpaid/unconfirmed) plus CANCELLED
+// — a cancelled order is never eligible either, but CANCELLED isn't part
+// of PAYABLE_STATUSES itself (that constant means "can still be paid",
+// which a cancelled order explicitly can't), so it's layered on here
+// rather than widening PAYABLE_STATUSES' own meaning for its many other
+// (payment-gating) call sites in order.controller.js/payment.controller.js.
+const MANIFEST_EXCLUDED_STATUSES = [...PAYABLE_STATUSES, 'CANCELLED'];
+
 // "Today" in IST as a YYYY-MM-DD string, for comparing against the plain
 // date strings (type="date" inputs) departureDate arrives as — avoids a UTC
 // day ever reading as "yesterday" or "tomorrow" relative to India.
