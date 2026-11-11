@@ -2062,7 +2062,7 @@ function AccountsPanel() {
   function load(silent) {
     if (!silent) setLoading(true);
     const seq = ++seqRef.current;
-    const params = { q: q || undefined, page, pageSize, from: fromDate || undefined, to: toDate || undefined, notStatus: 'UNFINISHED', withProfitLoss: 1 };
+    const params = { q: q || undefined, page, pageSize, from: fromDate || undefined, to: toDate || undefined, notStatus: 'UNFINISHED,CANCELLED', withProfitLoss: 1 };
     Promise.all([
       client.get('/orders', { params }),
       client.get('/orders/summary', { params }),
