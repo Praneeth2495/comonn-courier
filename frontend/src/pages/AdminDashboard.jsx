@@ -1308,7 +1308,7 @@ function OrdersPanel() {
           <button type="button" className="btn btn-outline btn-sm" style={{ fontSize: 13, padding: '4px 8px' }} disabled={exporting} onClick={exportToExcel}>
             {exporting ? 'Exporting…' : '⬇ Export to Excel'}
           </button>
-          <select className="select" style={{ fontSize: 13, padding: '4px 8px', width: 'auto' }} value={pageSize} onChange={(e) => changePageSize(Number(e.target.value))}>
+          <select className="select" style={{ fontSize: 13, padding: '4px 32px 4px 8px', width: 'auto' }} value={pageSize} onChange={(e) => changePageSize(Number(e.target.value))}>
             <option value={25}>25 / page</option>
             <option value={50}>50 / page</option>
             <option value={100}>100 / page</option>
@@ -2135,7 +2135,7 @@ function AccountsPanel() {
               🔍<input placeholder="Search order ID, city…" value={q} onChange={(e) => setQ(e.target.value)} />
             </form>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <select className="select" style={{ fontSize: 13, padding: '4px 8px', width: 'auto' }} value={pageSize} onChange={(e) => changePageSize(Number(e.target.value))}>
+              <select className="select" style={{ fontSize: 13, padding: '4px 32px 4px 8px', width: 'auto' }} value={pageSize} onChange={(e) => changePageSize(Number(e.target.value))}>
                 <option value={20}>20 / page</option>
                 <option value={50}>50 / page</option>
                 <option value={100}>100 / page</option>
