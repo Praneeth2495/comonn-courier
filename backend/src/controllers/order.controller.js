@@ -352,31 +352,39 @@ async function listOrders(req, res, next) {
  * on screen — reuses buildOrdersWhere so this is exactly in sync with
  * whatever a tab/search/filter combination shows.
  */
+// contactName + phone/email + the full postal address, all in one cell —
+// matches the column the Orders export asks for ("Sender/Receiver full
+// details & address"), rather than splitting name/phone/address across
+// several columns.
+function formatFullAddress(addr) {
+  if (!addr) return '';
+  const contact = [addr.contactName, addr.phone, addr.email].filter(Boolean).join(', ');
+  const postcode = addr.eircode || addr.postcode;
+  // Only abbreviate an India state (sender is always India; a receiver's
+  // own state, when set, belongs to whatever country they're in, so this
+  // is a safe no-op pass-through for anything that isn't a recognized
+  // full India state name).
+  const line = [addr.line1, addr.line2, addr.city, abbreviateInState(addr.state), postcode].filter(Boolean).join(', ');
+  return [contact, `${line}, ${getCountryName(addr.countryCode)}`].filter(Boolean).join(' — ');
+}
+
 async function exportOrders(req, res, next) {
   try {
     const where = await buildOrdersWhere(req);
     const orders = await prisma.order.findMany({
       where,
-      include: { senderAddress: true, receiverAddress: true, service: true, items: true },
+      include: { senderAddress: true, receiverAddress: true, items: true },
       orderBy: { createdAt: 'desc' },
     });
 
     const rows = orders.map((o) => ({
       'Order ID': o.orderNumber,
-      'Status': o.status.replace(/_/g, ' '),
-      'Created': o.createdAt.toISOString().slice(0, 10),
+      'Sender Full Details & Address': formatFullAddress(o.senderAddress),
+      'Receiver Full Details & Address': formatFullAddress(o.receiverAddress),
       'Pickup Date': o.pickupDate || '',
-      'Sender': o.senderAddress?.contactName || '',
-      'Sender City': o.senderAddress?.city || '',
-      'Sender Country': o.senderAddress?.countryCode || '',
-      'Receiver': o.receiverAddress?.contactName || '',
-      'Receiver City': o.receiverAddress?.city || '',
-      'Receiver Country': o.receiverAddress?.countryCode || '',
-      'Service': o.service?.name || '',
-      'Qty': (o.items || []).reduce((sum, it) => sum + it.quantity, 0),
+      'Status': o.status.replace(/_/g, ' '),
       'Weight (kg)': o.chargeableWeightKg ? Number(o.chargeableWeightKg) : '',
       'Total': Number(o.grandTotal || 0),
-      'Currency': o.currency,
     }));
 
     const workbook = XLSX.utils.book_new();
