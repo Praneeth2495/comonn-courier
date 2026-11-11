@@ -55,8 +55,14 @@ function generateOrdersPdf(rows, res) {
   }
 
   drawWatermark(doc, 260);
-  doc.font('Helvetica-Bold').fontSize(14).text('Orders', left, top);
-  let y = drawHeaderBand(top + 22);
+  // Logo top-left + title right-aligned in the same row — same layout
+  // loadSheetPdf.js uses for its own landscape header.
+  const usableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  if (fs.existsSync(LOGO_PATH)) {
+    doc.image(LOGO_PATH, left, top, { width: 90 });
+  }
+  doc.font('Helvetica-Bold').fontSize(16).text('Orders', left, top + 2, { width: usableWidth, align: 'right' });
+  let y = drawHeaderBand(top + 36);
 
   doc.font('Helvetica').fontSize(8);
   for (const row of rows) {
