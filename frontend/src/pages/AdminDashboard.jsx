@@ -1070,6 +1070,12 @@ function OrdersPanel() {
       setLoading(false);
     }).catch(() => { if (seq === seqRef.current) setLoading(false); });
   }
+  // A new search term starting mid-list should jump back to page 1, same
+  // as pressing Enter already does (see search() below) — otherwise a
+  // search typed while on page 3 could land on an empty page if the new
+  // result set is shorter.
+  useEffect(() => { setPage(1); }, [debouncedQ]);
+
   useEffect(() => {
     load();
     const interval = setInterval(() => load(true), 30 * 1000);
