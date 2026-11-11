@@ -22,13 +22,14 @@ const WALLET_TXN_LABEL = {
 export default function CustomersPanel() {
   const [customers, setCustomers] = useState(null);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [selectedId, setSelectedId] = useState(null);
 
   function load() {
     setCustomers(null);
     client.get('/admin/customers', { params: { q: q || undefined } }).then(({ data }) => setCustomers(data.customers)).catch(() => setCustomers([]));
   }
-  useEffect(load, []);
+  useEffect(load, [debouncedQ]);
 
   function search(e) {
     e.preventDefault();
