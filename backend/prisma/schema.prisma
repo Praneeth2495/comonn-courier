@@ -523,26 +523,6 @@ model PartyInvoiceComment {
   @@index([invoiceId])
 }
 
-// Same shape/purpose as PartyInvoiceComment, but scoped to the EMPLOYEE
-// (the Salary tab's roster, see SalaryPanel.jsx) rather than to one
-// month's PartyInvoice — an employee who hasn't been paid yet this month
-// has no salary PartyInvoice to attach a PartyInvoiceComment to, but staff
-// still need somewhere to leave notes ("awaiting approval", "pay via bank
-// this month") before that payment is recorded. Deliberately a separate,
-// ongoing thread rather than trying to retrofit PartyInvoiceComment's
-// required invoiceId to be optional.
-model EmployeeSalaryComment {
-  id         String   @id @default(uuid())
-  employeeId String
-  employee   User     @relation("EmployeeSalaryCommentEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
-  authorId   String
-  author     User     @relation("EmployeeSalaryCommentAuthor", fields: [authorId], references: [id])
-  body       String
-  createdAt  DateTime @default(now())
-
-  @@index([employeeId])
-}
-
 // A standalone contact directory for customs-clearance clients — no
 // linkage to Order/shipments requested, just a searchable list.
 model CustomsClient {
