@@ -87,7 +87,7 @@ async function listEligibleOrders(req, res, next) {
  * GET /api/admin/manifests/available-airports — the country/airport chips
  * for the Build Manifest tab: one entry per distinct (destination country,
  * airportCode) pair currently found among manifest-eligible orders (not
- * already in a manifest, not unpaid/unconfirmed), with a live count. Reuses
+ * already in a manifest, not unpaid/unconfirmed/cancelled), with a live count. Reuses
  * buildOrdersWhere so STAFF only see airports covering their assigned
  * zones. Grouping is done in JS rather than a DB groupBy since it needs the
  * receiver's countryCode, which lives on the related Address, not Order
