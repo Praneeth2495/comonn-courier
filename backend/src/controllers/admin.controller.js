@@ -44,7 +44,13 @@ function buildDashboardWhere(from, to, extraWhere = {}) {
 // already scoped down to.
 async function computeOrderTotals(where) {
   const [totalOrders, pendingPayment, paid, inTransit, delivered, revenueAgg] = await Promise.all([
-    prisma.order.count({ where }),
+    // UNFINISHED is an abandoned quote that never even reached payment —
+    // a lead, not a real order — so it's excluded here same as every other
+    // count below (paid/delivered/revenueAgg already exclude it via
+    // UNPAID_STATUSES). Without this, every "Total orders" figure this
+    // function feeds (Overview Summary, Region/Staff overview, Accounts)
+    // would count abandoned carts as real bookings.
+    prisma.order.count({ where: { ...where, status: { not: 'UNFINISHED' } } }),
     prisma.order.count({ where: { ...where, status: 'PENDING_PAYMENT' } }),
     prisma.order.count({ where: { ...where, status: { notIn: UNPAID_STATUSES } } }),
     prisma.order.count({ where: { ...where, status: { in: ['PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY'] } } }),
