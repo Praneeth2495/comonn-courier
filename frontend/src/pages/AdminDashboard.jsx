@@ -2044,7 +2044,7 @@ function AccountsPanel() {
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(50);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
