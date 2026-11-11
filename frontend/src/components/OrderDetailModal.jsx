@@ -264,35 +264,8 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         )}
 
-        <div className="detail-section">
-          <div className="oda-section-head"><span className="icon">📥</span><h4>Receiver details</h4></div>
-          <div className="detail-grid">
-            <div className="detail-row"><span className="k">Name</span><span className="v">{order.receiverAddress?.contactName}</span></div>
-            <div className="detail-row"><span className="k">Phone</span><span className="v">{order.receiverAddress?.phone}</span></div>
-            <div className="detail-row"><span className="k">Email</span><span className="v">{order.receiverAddress?.email || '—'}</span></div>
-            <div className="detail-row"><span className="k">Delivery instructions</span><span className="v">{order.receiverAddress?.instructions || '—'}</span></div>
-            <div className="detail-row" style={{ gridColumn: '1/-1' }}>
-              <span className="k">Address</span>
-              <span className="v">{order.receiverAddress?.line1}{order.receiverAddress?.line2 ? `, ${order.receiverAddress.line2}` : ''}, {order.receiverAddress?.city}{order.receiverAddress?.state ? `, ${order.receiverAddress.state}` : ''} {order.receiverAddress?.eircode || order.receiverAddress?.postcode}, {order.receiverAddress?.countryCode}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="detail-section" style={{ marginBottom: (hasDocuments || canViewComments) ? 20 : 0 }}>
-          <div className="oda-section-head"><span className="icon">📤</span><h4>Sender details</h4></div>
-          <div className="detail-grid">
-            <div className="detail-row"><span className="k">Name</span><span className="v">{order.senderAddress?.contactName}</span></div>
-            <div className="detail-row"><span className="k">Phone</span><span className="v">{order.senderAddress?.phone}</span></div>
-            <div className="detail-row"><span className="k">Email</span><span className="v">{order.senderAddress?.email || '—'}</span></div>
-            <div className="detail-row" style={{ gridColumn: '1/-1' }}>
-              <span className="k">Address</span>
-              <span className="v">{order.senderAddress?.line1}{order.senderAddress?.line2 ? `, ${order.senderAddress.line2}` : ''}, {order.senderAddress?.city}{order.senderAddress?.state ? `, ${abbreviateInState(order.senderAddress.state)}` : ''} {order.senderAddress?.postcode}, {order.senderAddress?.countryCode}</span>
-            </div>
-          </div>
-        </div>
-
         {hasDocuments && (
-          <div className="detail-section" style={{ marginBottom: canViewComments ? 20 : 0 }}>
+          <div className="detail-section">
             <div className="oda-section-head"><span className="icon">🏷️</span><h4>Documents</h4></div>
             {labels.length > 0 && (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
