@@ -760,7 +760,6 @@ function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
                   ) : (
                     <button className="btn btn-primary btn-sm" onClick={() => onPay(e)}>Record payment</button>
                   )}
-                  <button className="btn btn-outline btn-sm" title="Comments" onClick={() => onComment(e)}>💬</button>
                 </td>
               </tr>
             );
