@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
+import { useDebouncedValue } from '../utils/useDebouncedValue';
 
 export default function CustomsClientsPanel() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [showCreate, setShowCreate] = useState(false);
 
   function load() {
@@ -15,7 +17,7 @@ export default function CustomsClientsPanel() {
       .then(({ data }) => { setClients(data.clients); setLoading(false); })
       .catch(() => setLoading(false));
   }
-  useEffect(load, []);
+  useEffect(load, [debouncedQ]);
 
   function search(e) {
     e.preventDefault();
