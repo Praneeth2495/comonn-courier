@@ -344,6 +344,54 @@ async function listOrders(req, res, next) {
 }
 
 /**
+ * GET /api/orders/export — downloads an .xlsx of every order matching the
+ * current tab's filters (same query params listOrders accepts — status/
+ * notStatus/zoneCode/q/from/to/originState/originRegion/scope/
+ * destinationCountryCode/airportCode), NOT just whatever page happens to be
+ * on screen — reuses buildOrdersWhere so this is exactly in sync with
+ * whatever a tab/search/filter combination shows.
+ */
+async function exportOrders(req, res, next) {
+  try {
+    const where = await buildOrdersWhere(req);
+    const orders = await prisma.order.findMany({
+      where,
+      include: { senderAddress: true, receiverAddress: true, service: true, items: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const rows = orders.map((o) => ({
+      'Order ID': o.orderNumber,
+      'Status': o.status.replace(/_/g, ' '),
+      'Created': o.createdAt.toISOString().slice(0, 10),
+      'Pickup Date': o.pickupDate || '',
+      'Sender': o.senderAddress?.contactName || '',
+      'Sender City': o.senderAddress?.city || '',
+      'Sender Country': o.senderAddress?.countryCode || '',
+      'Receiver': o.receiverAddress?.contactName || '',
+      'Receiver City': o.receiverAddress?.city || '',
+      'Receiver Country': o.receiverAddress?.countryCode || '',
+      'Service': o.service?.name || '',
+      'Qty': (o.items || []).reduce((sum, it) => sum + it.quantity, 0),
+      'Weight (kg)': o.chargeableWeightKg ? Number(o.chargeableWeightKg) : '',
+      'Total': Number(o.grandTotal || 0),
+      'Currency': o.currency,
+    }));
+
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Orders');
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="orders-${new Date().toISOString().slice(0, 10)}.xlsx"`);
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * Mutates `orders` in place, adding `profitLoss` (₹, or null when the order
  * isn't manifested/costed yet so there's nothing to allocate against).
  */
