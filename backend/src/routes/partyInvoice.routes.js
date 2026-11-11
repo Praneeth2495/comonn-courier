@@ -27,8 +27,6 @@ router.post('/', createInvoice);
 router.get('/staff', listStaffForSalary);
 router.get('/employees-roster', listEmployeesForSalaryRoster);
 router.post('/salary', createSalaryPayment);
-router.get('/employees/:id/salary-comments', listSalaryComments);
-router.post('/employees/:id/salary-comments', addSalaryComment);
 router.get('/:id', getInvoice);
 router.patch('/:id', updateInvoice);
 router.patch('/:id/status', updateInvoiceStatus);
