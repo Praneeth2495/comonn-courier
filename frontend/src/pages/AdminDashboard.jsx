@@ -2054,6 +2054,7 @@ function AccountsPanel() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
   const [detailOrder, setDetailOrder] = useState(null);
