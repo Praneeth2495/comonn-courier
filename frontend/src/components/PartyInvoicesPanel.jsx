@@ -42,6 +42,7 @@ export default function PartyInvoicesPanel({ direction }) {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -52,7 +53,7 @@ export default function PartyInvoicesPanel({ direction }) {
       .then(({ data }) => { setInvoices(data.invoices); setLoading(false); })
       .catch(() => setLoading(false));
   }
-  useEffect(load, [direction]);
+  useEffect(load, [direction, debouncedQ]);
 
   function search(e) {
     e.preventDefault();
