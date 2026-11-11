@@ -28,6 +28,7 @@ export default function UserDashboard() {
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebouncedValue(q);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const labelRequestedRef = useRef(new Set());
