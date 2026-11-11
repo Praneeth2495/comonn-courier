@@ -291,7 +291,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         )}
 
         {canViewWhatsapp && order.whatsappMessages?.length > 0 && (
-          <div className="detail-section" style={{ marginBottom: canViewComments ? 20 : 0 }}>
+          <div className="detail-section">
             <div className="oda-section-head"><span className="icon">📲</span><h4>WhatsApp notifications</h4></div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {order.whatsappMessages.map((m) => (
