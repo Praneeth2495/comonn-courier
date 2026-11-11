@@ -1071,6 +1071,33 @@ function OrdersPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, page, pageSize, originState, originRegion, deliveryCountry, deliverySelectedAirportCodes.join(',')]);
 
+  const [exporting, setExporting] = useState(false);
+
+  // Same filter params load() sends, minus page/pageSize — the export
+  // always covers every order matching the current tab/search/filter
+  // combination, not just whatever page happens to be on screen.
+  async function exportToExcel() {
+    const tabDef = ORDER_TABS.find(([key]) => key === tab);
+    const params = {
+      q: q || undefined,
+      scope: tab === 'pickup' ? 'pickup' : undefined,
+      originState: tab === 'pickup' ? originState || undefined : undefined,
+      originRegion: tab === 'pickup' ? originRegion || undefined : undefined,
+      destinationCountryCode: tab === 'delivery' ? deliveryCountry || undefined : undefined,
+      airportCode: tab === 'delivery' && deliveryCountry && deliverySelectedAirportCodes.length > 0 ? deliverySelectedAirportCodes.join(',') : undefined,
+    };
+    if (tabDef[2]) params.status = tabDef[2].join(',');
+    else if (tabDef[3] === 'all') params.notStatus = 'UNFINISHED';
+
+    setExporting(true);
+    try {
+      const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined)).toString();
+      await downloadBlob(`/orders/export?${qs}`, `orders-${tab}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function changePageSize(size) {
     setPageSize(size);
     setPage(1);
