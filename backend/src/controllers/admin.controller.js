@@ -688,7 +688,7 @@ async function computeBranchCosts(branchKey, sets, window, onRow) {
         const branchWeight = m.orders.reduce((sum, o) => (branchOfAddress(o.senderAddress, sets) === branchKey ? sum + Number(o.chargeableWeightKg) : sum), 0);
         share = amount * (branchWeight / totalWeight);
       }
-    } else if (row.hubId && row.hub?.name === BRANCH_HUB_NAMES[branchKey]) {
+    } else if (row.hubId && row.hub?.name === branchKey) {
       share = amount;
     }
     if (share <= 0) continue;
