@@ -1374,11 +1374,26 @@ function OrdersPanel() {
       {tab === 'pickup' && selectedIds.length > 0 && (
         <div className="card" style={{ padding: 14, marginBottom: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{selectedIds.length} selected</span>
-          <select className="select" style={{ maxWidth: 220 }} value={assignDriverId} onChange={(e) => setAssignDriverId(e.target.value)}>
+          <select className="select" style={{ maxWidth: 220 }} value={assignDriverId} onChange={(e) => { setAssignDriverId(e.target.value); setCustomDriverName(''); }}>
             <option value="">Choose a rider…</option>
             {drivers.map((d) => <option key={d.id} value={d.id}>{d.fullName}{d.driverRegion ? ` (${d.driverRegion})` : ''}</option>)}
+            <option value={CUSTOM_DRIVER_VALUE}>Custom…</option>
           </select>
-          <button className="btn btn-primary btn-sm" disabled={!assignDriverId || assigning} onClick={sendToDriver}>
+          {assignDriverId === CUSTOM_DRIVER_VALUE && (
+            <input
+              className="input"
+              style={{ maxWidth: 200 }}
+              placeholder="Rider name"
+              value={customDriverName}
+              onChange={(e) => setCustomDriverName(e.target.value)}
+              autoFocus
+            />
+          )}
+          <button
+            className="btn btn-primary btn-sm"
+            disabled={(assignDriverId === CUSTOM_DRIVER_VALUE ? !customDriverName.trim() : !assignDriverId) || assigning}
+            onClick={sendToDriver}
+          >
             {assigning ? 'Sending…' : 'Send to rider'}
           </button>
           {drivers.length === 0 && <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>No rider accounts yet — create one from Users (set role to Rider).</span>}
