@@ -1325,14 +1325,33 @@ async function listUsers(req, res, next) {
   }
 }
 
-/** GET /api/admin/drivers — ADMIN & STAFF: active driver accounts, for the pickup job assignment dropdown */
+/**
+ * GET /api/admin/drivers — ADMIN & STAFF: active driver accounts, for the
+ * pickup job assignment dropdown. A STAFF member whose own pickup-region
+ * access resolves to exactly one hub (see staffBranchKey — e.g. given
+ * access to only HYD) only sees that hub's own riders here; everyone else
+ * (ADMIN, or a STAFF member spanning several hubs) sees every active rider.
+ */
 async function listDrivers(req, res, next) {
   try {
-    const drivers = await prisma.user.findMany({
+    let drivers = await prisma.user.findMany({
       where: { role: 'DRIVER', isActive: true },
       select: { id: true, fullName: true, email: true, phone: true, driverRegion: true },
       orderBy: { fullName: 'asc' },
     });
+
+    if (req.user.role === 'STAFF') {
+      const assignments = await prisma.staffRegionAssignment.findMany({
+        where: { userId: req.user.id },
+        select: { state: true, region: true },
+      });
+      const branchKey = staffBranchKey(assignments);
+      if (branchKey) {
+        const wanted = new Set([branchKey, BRANCH_HUB_NAMES[branchKey]].map((v) => v.toUpperCase()));
+        drivers = drivers.filter((d) => d.driverRegion && wanted.has(d.driverRegion.trim().toUpperCase()));
+      }
+    }
+
     res.json({ drivers });
   } catch (err) {
     next(err);
