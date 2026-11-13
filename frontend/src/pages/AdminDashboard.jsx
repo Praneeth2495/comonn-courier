@@ -903,7 +903,7 @@ const ACCOUNTS_TAB_PERM_KEYS = Object.keys(ACCOUNTS_TAB_PERM_LABELS);
 // Mirrors backend/src/constants/pages.js's OVERVIEW_TAB_KEYS/LABELS.
 const OVERVIEW_TAB_PERM_LABELS = {
   staff: 'Staff overview',
-  region: 'Region overview',
+  region: 'Hub overview',
   staffActivity: 'Summary: Staff activity tile',
   riderActivity: 'Summary: Rider activity tile',
   accountsActivity: 'Summary: Accounts activity tile',
