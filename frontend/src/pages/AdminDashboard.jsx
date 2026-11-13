@@ -644,7 +644,7 @@ function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpa
     ...(kpis.staffActivity ? [{ key: 'staff', icon: '🧑‍💼', title: 'Staff', headline: `${kpis.staffActivity.filter((r) => r.today > 0).length}/${kpis.staffActivity.length}`, subLabel: 'have orders today', accentBg: 'var(--success-bg)', accent: 'var(--success)' }] : []),
     ...(kpis.riderActivity ? [{ key: 'riders', icon: '🏍️', title: 'Riders', headline: `${kpis.riderActivity.filter((r) => r.today > 0).length}/${kpis.riderActivity.length}`, subLabel: 'have orders today', accentBg: 'var(--warn-bg)', accent: 'var(--warn)' }] : []),
     ...(kpis.accountsActivity ? [{ key: 'accounts', icon: '💰', title: 'Accounts', headline: kpis.accountsActivity.rows.reduce((sum, r) => sum + r.today, 0), subLabel: `reconciled today · ${kpis.accountsActivity.overdueInvoices.payable + kpis.accountsActivity.overdueInvoices.receivable} overdue`, accentBg: 'var(--danger-bg)', accent: 'var(--danger)' }] : []),
-    ...(kpis.regions ? [{ key: 'regions', icon: '🗺️', title: 'Regions', headline: `${regionsWithOrdersToday}/${kpis.regions.length}`, subLabel: 'have orders today', accentBg: '#ECEEF6', accent: 'var(--navy)' }] : []),
+    ...(kpis.regions ? [{ key: 'regions', icon: '🗺️', title: 'Hubs', headline: `${regionsWithOrdersToday}/${kpis.regions.length}`, subLabel: 'have orders today', accentBg: '#ECEEF6', accent: 'var(--navy)' }] : []),
   ];
 
   const titleByKey = Object.fromEntries(tiles.map((t) => [t.key, t.title]));
