@@ -701,11 +701,12 @@ async function computeBranchCosts(branchKey, sets, window, onRow) {
 }
 
 /**
- * GET /api/admin/accounts/overview?range=today|yesterday|thisWeek|currentMonth|threeMonths|sixMonths|year&branch=HYD|VIJAYAWADA|VIZAG
+ * GET /api/admin/accounts/overview?range=today|yesterday|thisWeek|currentMonth|threeMonths|sixMonths|year&branch=<any active Hub name>
  * Powers the Accounts page's Overview tab — gross/net revenue, operating
  * cost, and profit for the selected window, bucketed for the trend chart,
- * plus a revenue-by-channel split and a point-in-time AR/AP snapshot.
- * `branch` omitted (or unrecognized) means Total — no filtering.
+ * plus a revenue-by-channel/destination/hub split and a point-in-time
+ * AR/AP snapshot. `branch` omitted (or unrecognized) means Total — no
+ * filtering.
  */
 async function accountsOverview(req, res, next) {
   try {
