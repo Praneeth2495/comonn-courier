@@ -758,6 +758,10 @@ const PAYMENT_STATUS_LABEL = {
 // CANCELLED lives here too, same reasoning — once cancelled, an order isn't
 // part of any live pipeline anymore, so it only ever shows up here, never
 // mixed into Bookings/Pickup/Delivery/Manifest.
+
+// Sentinel for the "send to rider" dropdown's "Custom" option — never
+// collides with a real driver id (those are UUIDs).
+const CUSTOM_DRIVER_VALUE = '__custom__';
 const ORDER_TABS = [
   ['bookings', 'Bookings', null, 'all'],
   ['pickup', 'Pickup orders', ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', 'LABEL_GENERATED', 'PICKED_UP']],
