@@ -1629,7 +1629,7 @@ function AccountsOverviewPanel() {
       <div className="acct-ov-head">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <select className="select" style={{ width: 160 }} value={branch} onChange={(e) => setBranch(e.target.value)}>
-            {BRANCH_OPTIONS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
+            {branchOptions.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
           </select>
           <div className="range-pills">
             {ACCOUNTS_RANGE_OPTIONS.map(([key, label]) => (
