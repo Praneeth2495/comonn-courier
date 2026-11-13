@@ -1729,26 +1729,28 @@ function AccountsOverviewPanel() {
         </div>
       </div>
 
-      <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
-        <div className="panel-head-row">
-          <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Revenue by destination</h3>
-          <span className="badge-chip badge-live">Live</span>
+      <div className="two-col-panels">
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div className="panel-head-row">
+            <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Revenue by destination</h3>
+            <span className="badge-chip badge-live">Live</span>
+          </div>
+          {!data.revenueByDestination?.length ? (
+            <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No orders in this window yet.</p>
+          ) : (() => {
+            const destTotal = data.revenueByDestination.reduce((sum, c) => sum + c.amount, 0) || 1;
+            return data.revenueByDestination.map((c) => (
+              <div className="chbar-row" key={c.countryCode}>
+                <div className="chbar-nm">{c.country}</div>
+                <div className="chbar-track"><div className="chbar-fill" style={{ width: `${(c.amount / destTotal) * 100}%`, background: 'var(--navy)' }} /></div>
+                <div className="chbar-pct num">{fmtShort(c.amount)} · {((c.amount / destTotal) * 100).toFixed(0)}%</div>
+              </div>
+            ));
+          })()}
         </div>
-        {!data.revenueByDestination?.length ? (
-          <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No orders in this window yet.</p>
-        ) : (() => {
-          const destTotal = data.revenueByDestination.reduce((sum, c) => sum + c.amount, 0) || 1;
-          return data.revenueByDestination.map((c) => (
-            <div className="chbar-row" key={c.countryCode}>
-              <div className="chbar-nm">{c.country}</div>
-              <div className="chbar-track"><div className="chbar-fill" style={{ width: `${(c.amount / destTotal) * 100}%`, background: 'var(--navy)' }} /></div>
-              <div className="chbar-pct num">{fmtShort(c.amount)} · {((c.amount / destTotal) * 100).toFixed(0)}%</div>
-            </div>
-          ));
-        })()}
-      </div>
 
-      <ManifestCostsPanel />
+        <ManifestCostsPanel />
+      </div>
 
       <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
         <div className="panel-head-row">
