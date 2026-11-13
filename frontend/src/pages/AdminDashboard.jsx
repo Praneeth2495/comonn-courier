@@ -1563,6 +1563,14 @@ function AccountsOverviewPanel() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hover, setHover] = useState(null); // { x, y, label, gross, cost, net, profit }
+  const [branchOptions, setBranchOptions] = useState([TOTAL_BRANCH_OPTION]);
+
+  useEffect(() => {
+    client.get('/admin/hubs').then(({ data }) => {
+      const active = data.hubs.filter((h) => h.isActive).map((h) => ({ key: h.name, label: h.name }));
+      setBranchOptions([TOTAL_BRANCH_OPTION, ...active]);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (MOCK_ACCOUNTS) {
