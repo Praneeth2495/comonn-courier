@@ -1340,8 +1340,9 @@ async function listUsers(req, res, next) {
  * GET /api/admin/drivers — ADMIN & STAFF: active driver accounts, for the
  * pickup job assignment dropdown. A STAFF member whose own pickup-region
  * access resolves to exactly one hub (see staffBranchKey — e.g. given
- * access to only HYD) only sees that hub's own riders here; everyone else
- * (ADMIN, or a STAFF member spanning several hubs) sees every active rider.
+ * access to only the "Hyderabad" region) only sees that hub's own riders
+ * here; everyone else (ADMIN, or a STAFF member spanning several hubs)
+ * sees every active rider.
  */
 async function listDrivers(req, res, next) {
   try {
