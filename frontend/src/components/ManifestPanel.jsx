@@ -533,7 +533,7 @@ function ManifestHistory() {
           <tbody>
             {manifests.map((m) => (
               <tr key={m.id}>
-                <td className="mono">{m.manifestNumber}</td>
+                <td className="mono"><button className="t-oid" onClick={() => setViewingId(m.id)}>{m.manifestNumber}</button></td>
                 <td>{m.fromAirportName || m.fromAirportCode || '—'}</td>
                 <td>{m.region?.name || countryLabel(m.countryCode, [])}</td>
                 <td>{formatDateTime(m.createdAt)}</td>
