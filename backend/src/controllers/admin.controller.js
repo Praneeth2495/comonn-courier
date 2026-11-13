@@ -867,6 +867,9 @@ async function accountsOverview(req, res, next) {
         b2b: round2(totals.b2bGross),
         c2c: round2(totals.c2cGross),
       },
+      revenueByDestination: [...revenueByDestination.entries()]
+        .map(([countryCode, amount]) => ({ countryCode, country: countryCode === 'UNKNOWN' ? 'Unknown' : getCountryName(countryCode), amount: round2(amount) }))
+        .sort((a, b) => b.amount - a.amount),
       outstanding: {
         receivable: {
           total: round2(Number(receivablePartyAgg._sum.totalAmount || 0) + Number(merchantUnpaidAgg._sum.totalAmount || 0)),
