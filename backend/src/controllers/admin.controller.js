@@ -644,6 +644,26 @@ function branchOfAddress(addr, sets) {
   return null;
 }
 
+// Same three rules as branchOfAddress, evaluated against a STAFF member's
+// own StaffRegionAssignment rows instead of an order's sender address —
+// for the Pickup orders "send to rider" dropdown, which only narrows to
+// one hub's own riders (driverRegion) when this resolves to EXACTLY one
+// hub. Multiple hubs, or none at all (an unmapped district, or no
+// assignments), returns null — "no single hub to filter by", so the
+// dropdown falls back to showing every active rider, same as ADMIN always
+// sees. StaffRegionAssignment never carries a postcode (unlike a real
+// Address), so Vijayawada/Vizag can only resolve when the assignment's
+// own `region` happens to be named exactly after that district.
+function staffBranchKey(assignments) {
+  const keys = new Set();
+  for (const a of assignments) {
+    if (a.state === 'Telangana') keys.add('HYD');
+    else if (a.state === 'Andhra Pradesh' && a.region === 'Krishna') keys.add('VIJAYAWADA');
+    else if (a.state === 'Andhra Pradesh' && a.region === 'Visakhapatnam') keys.add('VIZAG');
+  }
+  return keys.size === 1 ? [...keys][0] : null;
+}
+
 /**
  * Branch-scoped operating cost for one window. A manifest-linked
  * PartyInvoice splits its amount across branches by each of the
