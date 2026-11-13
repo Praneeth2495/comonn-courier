@@ -3162,7 +3162,7 @@ function StaffRegionModal({ staff, states, regionsByState, currentAssignments, o
                   )}
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, cursor: 'pointer', flex: 1, padding: '6px 0' }}>
                     <input type="checkbox" checked={wholeState} onChange={() => toggleWholeState(state)} />
-                    {state} <span style={{ color: 'var(--slate-light)', fontSize: 11.5 }}>(all regions)</span>
+                    {state} <span style={{ color: 'var(--slate-light)', fontSize: 11.5 }}>(all hubs)</span>
                   </label>
                 </div>
                 {isOpen && regions.length > 0 && (
