@@ -3139,7 +3139,7 @@ function StaffRegionModal({ staff, states, regionsByState, currentAssignments, o
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
-          This staff account will only see and filter Pickup orders from the origin states/regions checked below. Check a state for every pickup in it, or expand it (▸) to pick specific regions instead.
+          This staff account will only see and filter Pickup orders from the origin states/hubs checked below. Check a state for every pickup in it, or expand it (▸) to pick specific hubs instead.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 360, overflowY: 'auto' }}>
           {states.map((state) => {
