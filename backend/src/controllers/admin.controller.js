@@ -862,6 +862,12 @@ async function accountsOverview(req, res, next) {
       revenueByDestination: [...revenueByDestination.entries()]
         .map(([countryCode, amount]) => ({ countryCode, country: countryCode === 'UNKNOWN' ? 'Unknown' : getCountryName(countryCode), amount: round2(amount) }))
         .sort((a, b) => b.amount - a.amount),
+      // Orders whose sender postcode has no mapped region (branchOfAddress
+      // returns null) aren't included — same as how they're already
+      // excluded from any specific branch filter's own totals.
+      revenueByHub: [...revenueByHub.entries()]
+        .map(([hub, amount]) => ({ hub, amount: round2(amount) }))
+        .sort((a, b) => b.amount - a.amount),
       outstanding: {
         receivable: {
           total: round2(Number(receivablePartyAgg._sum.totalAmount || 0) + Number(merchantUnpaidAgg._sum.totalAmount || 0)),
