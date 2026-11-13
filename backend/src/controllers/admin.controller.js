@@ -1358,8 +1358,7 @@ async function listDrivers(req, res, next) {
       });
       const branchKey = staffBranchKey(assignments);
       if (branchKey) {
-        const wanted = new Set([branchKey, BRANCH_HUB_NAMES[branchKey]].map((v) => v.toUpperCase()));
-        drivers = drivers.filter((d) => d.driverRegion && wanted.has(d.driverRegion.trim().toUpperCase()));
+        drivers = drivers.filter((d) => d.driverRegion && d.driverRegion.trim().toUpperCase() === branchKey.toUpperCase());
       }
     }
 
