@@ -781,13 +781,13 @@ async function accountsOverview(req, res, next) {
     let prevHubCost = 0;
     const costByCategory = new Map(); // category (or 'UNCATEGORIZED') -> ₹
     if (branchKey) {
-      const curr = await computeBranchCosts(branchKey, branchSets, window, (row, share) => {
+      const curr = await computeBranchCosts(branchKey, regionMap, window, (row, share) => {
         const { key, label } = accountsBucketFor(row.createdAt, granularity);
         getBucket(key, label).cost += share;
       });
       costTotal = curr.total;
       for (const [k, v] of curr.byCategory) costByCategory.set(k, v);
-      const prev = await computeBranchCosts(branchKey, branchSets, prevWindow, null);
+      const prev = await computeBranchCosts(branchKey, regionMap, prevWindow, null);
       prevCostTotal = prev.total;
       prevHubCost = prev.byCategory.get('HUB') || 0;
     } else {
