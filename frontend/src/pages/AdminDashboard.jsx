@@ -166,7 +166,7 @@ function Overview() {
         <div className="dash-tabs" style={{ marginBottom: 16 }}>
           <button className={`dash-tab ${subTab === 'summary' ? 'active' : ''}`} onClick={() => setSubTab('summary')}>Summary</button>
           {canSeeStaffTab && <button className={`dash-tab ${subTab === 'staff' ? 'active' : ''}`} onClick={() => setSubTab('staff')}>Staff overview</button>}
-          {canSeeRegionTab && <button className={`dash-tab ${subTab === 'region' ? 'active' : ''}`} onClick={() => setSubTab('region')}>Region overview</button>}
+          {canSeeRegionTab && <button className={`dash-tab ${subTab === 'region' ? 'active' : ''}`} onClick={() => setSubTab('region')}>Hub overview</button>}
         </div>
       )}
 
