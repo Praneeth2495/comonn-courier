@@ -308,8 +308,8 @@ async function createManifest(req, res, next) {
  * the manifest autosuggest) relies on. `month` scopes by createdAt (the
  * date the manifest itself was created, per the Accounts Overview request
  * this came from — not manifestDate/departureDate). `hubName` is an exact,
- * case-sensitive match against Hub.name — see BRANCH_HUB_NAMES in
- * admin.controller.js for why that's the chosen key, not a separate id.
+ * case-sensitive match against Hub.name — same key admin.controller.js's
+ * branch-cost/revenue-by-hub logic uses, not a separate id.
  */
 async function listManifests(req, res, next) {
   try {
