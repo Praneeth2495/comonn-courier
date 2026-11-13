@@ -470,7 +470,7 @@ function RegionOverviewTable({ fromDate, toDate }) {
   return (
     <div className="table-wrap">
       <table className="data-table">
-        <thead><tr><th>Region</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
+        <thead><tr><th>Hub</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
         <tbody>
           {rows.map((r, i) => (
             <tr key={i}>
@@ -483,7 +483,7 @@ function RegionOverviewTable({ fromDate, toDate }) {
             </tr>
           ))}
           {rows.length === 0 && (
-            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No regions assigned to any staff yet.</td></tr>
+            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No hubs assigned to any staff yet.</td></tr>
           )}
         </tbody>
       </table>
