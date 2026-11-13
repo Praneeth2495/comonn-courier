@@ -717,14 +717,16 @@ async function accountsOverview(req, res, next) {
     // never count as revenue, regardless of how far along the shipment is.
     const revenueWhere = { status: { notIn: UNPAID_STATUSES } };
 
-    const branchKey = BRANCH_KEYS.includes(req.query.branch) ? req.query.branch : null;
-    const branchSets = branchKey ? await loadBranchPostcodeSets() : null;
-    if (branchKey) revenueWhere.senderAddress = branchSenderWhere(branchKey, branchSets);
+    // regionMap is needed regardless of whether a specific branch filter is
+    // applied — Revenue-by-hub resolves every order's own hub either way.
+    const [branchKeys, regionMap] = await Promise.all([loadBranchKeys(), loadRegionPostcodeMap()]);
+    const branchKey = branchKeys.includes(req.query.branch) ? req.query.branch : null;
+    if (branchKey) revenueWhere.senderAddress = branchSenderWhere(branchKey, regionMap);
 
     const [orders, prevOrders, receivablePartyAgg, receivableOverdueCount, payableAgg, payableOverdueCount, merchantUnpaidAgg] = await Promise.all([
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: window },
-        select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true, user: { select: { company: true } }, receiverAddress: { select: { countryCode: true } } },
+        select: { createdAt: true, grandTotal: true, discountTotal: true, taxTotal: true, merchantId: true, user: { select: { company: true } }, receiverAddress: { select: { countryCode: true } }, senderAddress: { select: { postcode: true } } },
       }),
       prisma.order.findMany({
         where: { ...revenueWhere, createdAt: prevWindow },
