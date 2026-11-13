@@ -3184,7 +3184,7 @@ function StaffRegionModal({ staff, states, regionsByState, currentAssignments, o
           {states.length === 0 && <span style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No pickup states available yet.</span>}
         </div>
         <button className="btn btn-primary block" style={{ marginTop: 20, padding: 12 }} disabled={saving} onClick={save}>
-          {saving ? 'Saving…' : 'Save states/regions'}
+          {saving ? 'Saving…' : 'Save states/hubs'}
         </button>
       </div>
     </div>
