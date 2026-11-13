@@ -1519,14 +1519,10 @@ const ACCOUNTS_RANGE_OPTIONS = [
   ['sixMonths', '6 Months'],
   ['year', 'Year'],
 ];
-// Mirrors backend/src/controllers/admin.controller.js's BRANCH_SENDER_DEFS
-// / BRANCH_HUB_NAMES — 'TOTAL' means no filter.
-const BRANCH_OPTIONS = [
-  { key: 'TOTAL', label: 'Total' },
-  { key: 'HYD', label: 'HYD' },
-  { key: 'VIJAYAWADA', label: 'Vijayawada' },
-  { key: 'VIZAG', label: 'Vizag' },
-];
+// 'TOTAL' means no filter — every other option is a real, active Hub name
+// (one per India region now — see admin.controller.js's loadBranchKeys),
+// fetched fresh rather than hardcoded since the hub list isn't fixed.
+const TOTAL_BRANCH_OPTION = { key: 'TOTAL', label: 'Total' };
 
 function fmtINR(n) { return '₹' + Math.round(n || 0).toLocaleString('en-IN'); }
 function fmtShort(n) {
