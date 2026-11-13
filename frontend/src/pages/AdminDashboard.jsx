@@ -586,7 +586,7 @@ function RegionBreakdownKpi({ rows }) {
       ) : (
         <div className="table-wrap">
           <table className="data-table">
-            <thead><tr><th>Region</th><th>Orders today</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
+            <thead><tr><th>Hub</th><th>Orders today</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
             <tbody>
               {/* Green row = has at least one order today, same "ready" highlight convention AirportWeightKpiBody uses. */}
               {rows.map((r, i) => (
