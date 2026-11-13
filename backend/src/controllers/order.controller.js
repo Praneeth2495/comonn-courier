@@ -729,33 +729,45 @@ async function updateOrderCarrier(req, res, next) {
  */
 async function assignDriver(req, res, next) {
   try {
-    const { orderIds, driverId } = req.body;
+    const { orderIds, driverId, customDriverName } = req.body;
     if (!Array.isArray(orderIds) || orderIds.length === 0) {
       return res.status(400).json({ error: 'orderIds must be a non-empty array' });
     }
-    if (!driverId) return res.status(400).json({ error: 'driverId is required' });
-
-    const driver = await prisma.user.findUnique({ where: { id: driverId } });
-    if (!driver || driver.role !== 'DRIVER') {
-      return res.status(400).json({ error: 'driverId must belong to a rider account' });
+    if (!driverId && !customDriverName?.trim()) {
+      return res.status(400).json({ error: 'driverId or customDriverName is required' });
     }
 
-    await prisma.order.updateMany({
-      where: { id: { in: orderIds } },
-      data: { assignedDriverId: driverId, driverAssignedAt: new Date() },
-    });
+    let assignedLabel;
+    let data;
+    if (customDriverName?.trim()) {
+      // No real DRIVER account — just a label (a local runner, a
+      // third-party courier) staff want recorded against these orders. The
+      // order never shows up in that "rider"'s own portal or RidersPanel,
+      // since there's no account to log into or query by.
+      assignedLabel = customDriverName.trim();
+      data = { assignedDriverId: null, customDriverName: assignedLabel, driverAssignedAt: new Date() };
+    } else {
+      const driver = await prisma.user.findUnique({ where: { id: driverId } });
+      if (!driver || driver.role !== 'DRIVER') {
+        return res.status(400).json({ error: 'driverId must belong to a rider account' });
+      }
+      assignedLabel = driver.fullName;
+      data = { assignedDriverId: driverId, customDriverName: null, driverAssignedAt: new Date() };
+    }
+
+    await prisma.order.updateMany({ where: { id: { in: orderIds } }, data });
 
     await prisma.orderComment.createMany({
       data: orderIds.map((orderId) => ({
         orderId,
         authorId: req.user.id,
-        body: `Pickup job sent to rider ${driver.fullName}.`,
+        body: `Pickup job sent to rider ${assignedLabel}.`,
       })),
     });
 
     const orders = await prisma.order.findMany({
       where: { id: { in: orderIds } },
-      select: { id: true, assignedDriver: { select: { id: true, fullName: true } } },
+      select: { id: true, customDriverName: true, assignedDriver: { select: { id: true, fullName: true } } },
     });
     res.json({ orders });
   } catch (err) {
