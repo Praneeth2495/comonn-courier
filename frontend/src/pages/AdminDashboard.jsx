@@ -1749,8 +1749,27 @@ function AccountsOverviewPanel() {
           })()}
         </div>
 
-        <ManifestCostsPanel />
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div className="panel-head-row">
+            <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Revenue by hub</h3>
+            <span className="badge-chip badge-live">Live</span>
+          </div>
+          {!data.revenueByHub?.length ? (
+            <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>No orders in this window yet.</p>
+          ) : (() => {
+            const hubTotal = data.revenueByHub.reduce((sum, c) => sum + c.amount, 0) || 1;
+            return data.revenueByHub.map((c) => (
+              <div className="chbar-row" key={c.hub}>
+                <div className="chbar-nm">{c.hub}</div>
+                <div className="chbar-track"><div className="chbar-fill" style={{ width: `${(c.amount / hubTotal) * 100}%`, background: 'var(--coral)' }} /></div>
+                <div className="chbar-pct num">{fmtShort(c.amount)} · {((c.amount / hubTotal) * 100).toFixed(0)}%</div>
+              </div>
+            ));
+          })()}
+        </div>
       </div>
+
+      <ManifestCostsPanel />
 
       <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
         <div className="panel-head-row">
