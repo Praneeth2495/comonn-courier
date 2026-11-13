@@ -591,77 +591,62 @@ function classifyChannel(o) {
   return 'c2c';
 }
 
-// ---------------- Accounts Overview → branch filter ----------------
-// Starting point for a 3-hub rollout (HYD/Vijayawada/Vizag) — the user
-// confirmed HYD covers the whole of Telangana for now, Vijayawada and
-// Vizag are scoped to their own district (Krishna/Visakhapatnam) within
-// Andhra Pradesh, and every other AP district is unmapped until the
-// regions get split up further later. An order from an unmapped
-// district only ever shows under "Total", never under a specific branch.
-const BRANCH_KEYS = ['HYD', 'VIJAYAWADA', 'VIZAG'];
-// Direct hub tag (salary, or any other manifest-less PAYABLE) — relies on
-// the Hub being named exactly this, case-sensitively, when it's created
-// on the Hubs admin page. If hub naming drifts from this, that entry's
-// branch cost will silently show ₹0 rather than erroring.
-const BRANCH_HUB_NAMES = { HYD: 'HYD', VIJAYAWADA: 'Vijayawada', VIZAG: 'Vizag' };
+// ---------------- Accounts Overview → branch (Hub) filter ----------------
+// Each real India region (PostcodeSuggestion.region — a district, e.g.
+// "Krishna", "Hyderabad") now has its own real Hub record with the exact
+// same name, created when the old 3-hub (HYD/Vijayawada/Vizag) rollout was
+// replaced by one real Hub per region. A branch/hub key is just that
+// region name — no separate code-to-name mapping needed anymore (the old
+// BRANCH_HUB_NAMES indirection existed only because the 3 original hubs
+// weren't named after their region).
 
-// Fetched once per request (not per branch) — both the revenue sender
-// filter and the per-order cost-allocation split below read off the same
-// two postcode sets.
-async function loadBranchPostcodeSets() {
-  const [krishnaRows, vizagRows] = await Promise.all([
-    prisma.postcodeSuggestion.findMany({ where: { countryCode: 'IN', region: 'Krishna' }, select: { postcode: true } }),
-    prisma.postcodeSuggestion.findMany({ where: { countryCode: 'IN', region: 'Visakhapatnam' }, select: { postcode: true } }),
-  ]);
-  return { krishna: new Set(krishnaRows.map((r) => r.postcode)), vizag: new Set(vizagRows.map((r) => r.postcode)) };
+// Fetched once per request (not per branch) — the revenue sender filter,
+// the per-order cost-allocation split, and the Revenue-by-hub breakdown
+// all read off this same postcode -> region map.
+async function loadRegionPostcodeMap() {
+  const rows = await prisma.postcodeSuggestion.findMany({
+    where: { countryCode: 'IN', region: { not: null } },
+    select: { postcode: true, region: true },
+  });
+  return new Map(rows.map((r) => [r.postcode, r.region]));
 }
 
-// Address.state stores the expanded full state name ("Telangana", "Andhra
-// Pradesh"), never the 2-letter code — see frontend's normalizeRegionValue
-// (utils/regionNames.js), which every address-entry path (postcode-suggestion
-// pick, quote-origin prefill) runs through before it ever reaches form state
-// or the order-creation payload. Comparing against 'TG'/'AP' here looked
-// right (that's what PostcodeSuggestion.state itself holds) but silently
-// matched zero real orders.
-function branchSenderWhere(branchKey, sets) {
-  if (branchKey === 'HYD') return { state: 'Telangana' };
-  if (branchKey === 'VIJAYAWADA') return { state: 'Andhra Pradesh', postcode: { in: [...sets.krishna] } };
-  if (branchKey === 'VIZAG') return { state: 'Andhra Pradesh', postcode: { in: [...sets.vizag] } };
-  return null;
+// Every region actually in use, as the valid ?branch= values for the
+// Accounts Overview filter — read from the live Hub table rather than a
+// hardcoded list, since a Hub now exists per region.
+async function loadBranchKeys() {
+  const hubs = await prisma.hub.findMany({ where: { isActive: true }, select: { name: true } });
+  return hubs.map((h) => h.name);
 }
 
-// The branch an individual order's sender resolves to — same three rules
-// as branchSenderWhere, just evaluated against one address instead of
+function branchSenderWhere(branchKey, regionMap) {
+  const postcodes = [...regionMap.entries()].filter(([, region]) => region === branchKey).map(([postcode]) => postcode);
+  return { postcode: { in: postcodes } };
+}
+
+// The branch/hub an individual order's sender resolves to — same postcode
+// lookup as branchSenderWhere, evaluated against one address instead of
 // turned into a Prisma filter. This is what the per-order cost split
-// below uses — operating costs aren't tagged with a branch directly
-// (except manifest-less entries like salary, via PartyInvoice.hubId);
-// a manifest-linked cost's branch is computed live from whichever orders
-// are actually in that manifest.
-function branchOfAddress(addr, sets) {
+// below (and Revenue-by-hub) uses — operating costs aren't tagged with a
+// hub directly (except manifest-less entries like salary, via
+// PartyInvoice.hubId); a manifest-linked cost's hub is computed live from
+// whichever orders are actually in that manifest.
+function branchOfAddress(addr, regionMap) {
   if (!addr) return null;
-  if (addr.state === 'Telangana') return 'HYD';
-  if (addr.state === 'Andhra Pradesh' && sets.krishna.has(addr.postcode)) return 'VIJAYAWADA';
-  if (addr.state === 'Andhra Pradesh' && sets.vizag.has(addr.postcode)) return 'VIZAG';
-  return null;
+  return regionMap.get(addr.postcode) || null;
 }
 
-// Same three rules as branchOfAddress, evaluated against a STAFF member's
-// own StaffRegionAssignment rows instead of an order's sender address —
-// for the Pickup orders "send to rider" dropdown, which only narrows to
-// one hub's own riders (driverRegion) when this resolves to EXACTLY one
-// hub. Multiple hubs, or none at all (an unmapped district, or no
-// assignments), returns null — "no single hub to filter by", so the
+// Same postcode->region resolution as branchOfAddress, evaluated against a
+// STAFF member's own StaffRegionAssignment rows instead of an order's
+// sender address — for the Pickup orders "send to rider" dropdown, which
+// only narrows to one hub's own riders (driverRegion) when this resolves
+// to EXACTLY one hub. A whole-state assignment (region: null) spans many
+// districts/hubs, not one, so it deliberately does NOT resolve here —
+// same as having multiple distinct regions, or none at all — meaning the
 // dropdown falls back to showing every active rider, same as ADMIN always
-// sees. StaffRegionAssignment never carries a postcode (unlike a real
-// Address), so Vijayawada/Vizag can only resolve when the assignment's
-// own `region` happens to be named exactly after that district.
+// sees.
 function staffBranchKey(assignments) {
-  const keys = new Set();
-  for (const a of assignments) {
-    if (a.state === 'Telangana') keys.add('HYD');
-    else if (a.state === 'Andhra Pradesh' && a.region === 'Krishna') keys.add('VIJAYAWADA');
-    else if (a.state === 'Andhra Pradesh' && a.region === 'Visakhapatnam') keys.add('VIZAG');
-  }
+  const keys = new Set(assignments.map((a) => a.region).filter(Boolean));
   return keys.size === 1 ? [...keys][0] : null;
 }
 
