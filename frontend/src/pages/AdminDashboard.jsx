@@ -417,7 +417,7 @@ function StaffOverviewTable({ fromDate, toDate }) {
   return (
     <div className="table-wrap">
       <table className="data-table">
-        <thead><tr><th>Staff</th><th>Regions</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
+        <thead><tr><th>Staff</th><th>Hubs</th><th>Total orders</th><th>Pending payment</th><th>Paid</th><th>In transit</th><th>Delivered</th></tr></thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.staff.id}>
