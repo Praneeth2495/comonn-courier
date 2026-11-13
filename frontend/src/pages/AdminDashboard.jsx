@@ -1154,14 +1154,20 @@ function OrdersPanel() {
   // driver then sees these in their own portal and marks each PICKED_UP once
   // collected in person.
   async function sendToDriver() {
-    if (!assignDriverId || selectedIds.length === 0) return;
+    const isCustom = assignDriverId === CUSTOM_DRIVER_VALUE;
+    if (isCustom ? !customDriverName.trim() : !assignDriverId) return;
+    if (selectedIds.length === 0) return;
     setAssigning(true);
     try {
-      const { data } = await client.patch('/orders/assign-driver', { orderIds: selectedIds, driverId: assignDriverId });
+      const body = isCustom
+        ? { orderIds: selectedIds, customDriverName: customDriverName.trim() }
+        : { orderIds: selectedIds, driverId: assignDriverId };
+      const { data } = await client.patch('/orders/assign-driver', body);
       const byId = Object.fromEntries(data.orders.map((o) => [o.id, o]));
-      setOrders((prev) => prev.map((o) => (byId[o.id] ? { ...o, assignedDriver: byId[o.id].assignedDriver } : o)));
+      setOrders((prev) => prev.map((o) => (byId[o.id] ? { ...o, assignedDriver: byId[o.id].assignedDriver, customDriverName: byId[o.id].customDriverName } : o)));
       setSelectedIds([]);
       setAssignDriverId('');
+      setCustomDriverName('');
     } catch (err) {
       alert(err.response?.data?.error || 'Could not send these jobs to the rider.');
     } finally {
