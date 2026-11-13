@@ -1072,6 +1072,12 @@ model Order {
   // PICKED_UP once collected in person.
   assignedDriverId String?
   assignedDriver   User?     @relation("OrderDriver", fields: [assignedDriverId], references: [id])
+  // Set instead of assignedDriverId when staff pick "Custom" in the "send
+  // to rider" dropdown — a one-off name (a local runner, a third-party
+  // courier) with no real DRIVER account, so it never appears in the
+  // driver-portal/RidersPanel job lists a real assignedDriverId does, just
+  // shown as a plain label wherever the assigned rider is displayed.
+  customDriverName String?
   driverAssignedAt DateTime?
   driverArrivedAt  DateTime? // driver marked "Arrived for pickup"
   pickedUpAt       DateTime? // driver marked "Pickup completed" (distinct from updatedAt, which later status changes would otherwise shift)
