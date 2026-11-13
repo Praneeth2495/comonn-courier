@@ -1317,7 +1317,7 @@ function OrdersPanel() {
 
       {tab === 'pickup' && originState && (pickupRegionsByState[originState] || []).length > 0 && (
         <div className="chip-filter-row">
-          <div className={`chip-filter ${!originRegion ? 'active' : ''}`} onClick={() => { setOriginRegion(''); setPage(1); }}>All Regions</div>
+          <div className={`chip-filter ${!originRegion ? 'active' : ''}`} onClick={() => { setOriginRegion(''); setPage(1); }}>All Hubs</div>
           {pickupRegionsByState[originState].map((r) => (
             <div key={r} className={`chip-filter ${originRegion === r ? 'active' : ''}`} onClick={() => { setOriginRegion(r); setPage(1); }}>
               {r}
