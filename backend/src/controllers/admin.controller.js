@@ -758,6 +758,8 @@ async function accountsOverview(req, res, next) {
       return buckets.get(key);
     };
 
+    const revenueByDestination = new Map(); // destination countryCode -> gross ₹
+
     const totals = { gross: 0, discount: 0, net: 0, b2cGross: 0, b2bGross: 0, c2cGross: 0 };
     for (const o of orders) {
       const { gross, net, discount } = splitOrderRevenue(o);
@@ -765,6 +767,12 @@ async function accountsOverview(req, res, next) {
       totals.discount += discount;
       totals.net += net;
       totals[`${classifyChannel(o)}Gross`] += gross;
+
+      // Same gross figure the channel (B2C/B2B/C2C) breakdown above uses —
+      // "Revenue by destination" is the same total sliced a different way,
+      // not a second, differently-defined revenue number.
+      const countryCode = o.receiverAddress?.countryCode || 'UNKNOWN';
+      revenueByDestination.set(countryCode, (revenueByDestination.get(countryCode) || 0) + gross);
 
       const { key, label } = accountsBucketFor(o.createdAt, granularity);
       const b = getBucket(key, label);
