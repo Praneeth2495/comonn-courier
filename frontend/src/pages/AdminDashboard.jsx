@@ -582,7 +582,7 @@ function RegionBreakdownKpi({ rows }) {
   return (
     <div>
       {rows.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No regions assigned to any staff yet.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No hubs assigned to any staff yet.</p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
