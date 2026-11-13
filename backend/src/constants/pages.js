@@ -86,7 +86,7 @@ const ACCOUNTS_TAB_LABELS = {
 const OVERVIEW_TAB_KEYS = ['staff', 'region', 'staffActivity', 'riderActivity', 'accountsActivity'];
 const OVERVIEW_TAB_LABELS = {
   staff: 'Staff overview',
-  region: 'Region overview',
+  region: 'Hub overview',
   staffActivity: 'Summary: Staff activity tile',
   riderActivity: 'Summary: Rider activity tile',
   accountsActivity: 'Summary: Accounts activity tile',
