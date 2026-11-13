@@ -969,6 +969,7 @@ function OrdersPanel() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [assignDriverId, setAssignDriverId] = useState('');
+  const [customDriverName, setCustomDriverName] = useState('');
   const [assigning, setAssigning] = useState(false);
   // Pickup tab only: clicking a due-date bucket chip (Overdue/Today/Future)
   // narrows the table to just that bucket; clicking the same one again
