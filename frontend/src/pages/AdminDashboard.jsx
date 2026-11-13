@@ -1852,7 +1852,7 @@ function ManifestCostsPanel() {
   useEffect(load, [month]);
 
   return (
-    <div className="card" style={{ padding: '20px 22px' }}>
+    <div className="card" style={{ padding: '20px 22px', marginTop: 16 }}>
       <div className="panel-head-row">
         <h3 style={{ fontSize: 15, color: 'var(--navy)' }}>Manifests — operating cost sheet</h3>
         <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>Click a manifest to enter airline, customs, hub &amp; other costs</span>
