@@ -741,7 +741,20 @@ function groupByHubName(items, hubNameOf) {
 function RosterTable({ employees, invoiceForEmail, onView, onPay }) {
   return (
     <div className="table-wrap">
-      <table className="data-table">
+      {/* Each hub group is its own separate <table> (see SalaryPanel's
+          groups.map), so without a shared fixed layout, column widths
+          auto-size per-hub off that hub's own content — same misalignment
+          StaffPanel's hub tables had, fixed the same way: table-layout:
+          fixed + a shared colgroup keeps every hub's columns identical
+          regardless of its own content. */}
+      <table className="data-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+        <colgroup>
+          <col style={{ width: '35%' }} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '15%' }} />
+          <col style={{ width: '15%' }} />
+          <col style={{ width: '15%' }} />
+        </colgroup>
         <thead><tr><th>Name</th><th>Amount</th><th>Due date</th><th>Status</th><th></th></tr></thead>
         <tbody>
           {employees.map((e) => {
