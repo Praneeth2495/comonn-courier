@@ -2974,7 +2974,7 @@ function UsersPanel() {
       {editingOverviewTabAccess && (
         <AccessEditorModal
           title={`Overview tabs for ${editingOverviewTabAccess.fullName}`}
-          description="Summary's Orders-by-day-of-week and Airport weight tiles are always visible. Everything else here is off by default — check specific items to grant the Staff/Region overview tabs, and/or the Summary tiles that show every staff/rider/accounts person's individual activity (not just this account's own)."
+          description="Summary's Orders-by-day-of-week and Airport weight tiles are always visible. Everything else here is off by default — check specific items to grant the Staff/Hub overview tabs, and/or the Summary tiles that show every staff/rider/accounts person's individual activity (not just this account's own)."
           optionKeys={OVERVIEW_TAB_PERM_KEYS}
           optionLabels={OVERVIEW_TAB_PERM_LABELS}
           currentSelected={editingOverviewTabAccess.allowedOverviewTabs}
