@@ -214,6 +214,7 @@ export default function Home() {
     setDestinationPicked(null);
     setDestinationSuggestions([]);
     setDestinationSuggestLoading(false);
+    setDestinationPostcodeNotFound(false);
     clearTimeout(destinationDebounceRef.current);
   }
 
@@ -221,6 +222,7 @@ export default function Home() {
     const v = sanitizePostcode(raw, destinationCountryCode);
     setDestinationPostcode(v);
     setDestinationPicked(null);
+    setDestinationPostcodeNotFound(false);
     clearTimeout(destinationDebounceRef.current);
     if (!isReadyForSuggestions(v, destinationCountryCode) || !destinationCountryCode) {
       setDestinationSuggestions([]);
@@ -230,7 +232,10 @@ export default function Home() {
     setDestinationSuggestLoading(true);
     destinationDebounceRef.current = setTimeout(() => {
       client.get('/quote/postcode-suggestions', { params: { postcode: v, countryCode: destinationCountryCode } })
-        .then(({ data }) => setDestinationSuggestions(data.suggestions))
+        .then(({ data }) => {
+          setDestinationSuggestions(data.suggestions);
+          setDestinationPostcodeNotFound(data.suggestions.length === 0);
+        })
         .catch(() => setDestinationSuggestions([]))
         .finally(() => setDestinationSuggestLoading(false));
     }, 400);
@@ -243,6 +248,7 @@ export default function Home() {
     if (destinationCountryCode !== 'IE') setDestinationPostcode(s.postcode);
     setDestinationPicked(s);
     setDestinationSuggestions([]);
+    setDestinationPostcodeNotFound(false);
   }
 
   // Home's instant-booking box is a teaser for the Book page's full form —
