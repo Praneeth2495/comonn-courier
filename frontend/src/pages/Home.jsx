@@ -153,6 +153,9 @@ export default function Home() {
   const [destinationPostcode, setDestinationPostcode] = useState('');
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [destinationSuggestLoading, setDestinationSuggestLoading] = useState(false);
+  // Set once a full postcode was actually looked up and came back with
+  // zero matches in the Suggestion List data — same idea as originPostcodeNotFound.
+  const [destinationPostcodeNotFound, setDestinationPostcodeNotFound] = useState(false);
   const [destinationPicked, setDestinationPicked] = useState(null);
   const [destinationFocused, setDestinationFocused] = useState(false);
   const destinationDebounceRef = useRef(null);
