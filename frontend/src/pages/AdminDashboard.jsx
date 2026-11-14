@@ -1432,7 +1432,13 @@ function OrdersPanel() {
             <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''} ${weightUnconfirmed ? 'weight-unconfirmed' : o.__overdue ? 'overdue' : tab === 'pickup' && o.status === 'PICKED_UP' ? 'picked-up' : ''}`} key={o.id}>
               {tab === 'pickup' && (
                 <div>
-                  <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggleSelect(o.id)} />
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(o.id)}
+                    disabled={!!(o.assignedDriver || o.customDriverName)}
+                    title={o.assignedDriver || o.customDriverName ? 'Remove the current rider before reassigning' : undefined}
+                    onChange={() => toggleSelect(o.id)}
+                  />
                 </div>
               )}
               <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
