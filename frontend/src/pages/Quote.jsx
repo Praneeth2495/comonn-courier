@@ -293,6 +293,7 @@ export default function Quote() {
     setDestinationPicked(null);
     setDestinationSuggestions([]);
     setDestinationSuggestLoading(false);
+    setDestinationPostcodeNotFound(false);
     clearTimeout(destinationDebounceRef.current);
   }
 
@@ -300,6 +301,7 @@ export default function Quote() {
     const v = sanitizePostcode(raw, destinationCountryCode);
     setDestinationPostcode(v);
     setDestinationPicked(null);
+    setDestinationPostcodeNotFound(false);
     clearTimeout(destinationDebounceRef.current);
     if (!isReadyForSuggestions(v, destinationCountryCode) || !destinationCountryCode) {
       setDestinationSuggestions([]);
@@ -309,7 +311,10 @@ export default function Quote() {
     setDestinationSuggestLoading(true);
     destinationDebounceRef.current = setTimeout(() => {
       client.get('/quote/postcode-suggestions', { params: { postcode: v, countryCode: destinationCountryCode } })
-        .then(({ data }) => setDestinationSuggestions(data.suggestions))
+        .then(({ data }) => {
+          setDestinationSuggestions(data.suggestions);
+          setDestinationPostcodeNotFound(data.suggestions.length === 0);
+        })
         .catch(() => setDestinationSuggestions([]))
         .finally(() => setDestinationSuggestLoading(false));
     }, 400);
@@ -322,6 +327,7 @@ export default function Quote() {
     if (destinationCountryCode !== 'IE') setDestinationPostcode(s.postcode);
     setDestinationPicked(s);
     setDestinationSuggestions([]);
+    setDestinationPostcodeNotFound(false);
   }
 
   // Ireland: send the matched routing key for pricing/zone/airport
