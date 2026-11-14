@@ -1276,6 +1276,7 @@ module.exports = {
   updateOrderStatus,
   updateOrderCarrier,
   assignDriver,
+  removeDriver,
   cancelOrder,
   listOrderComments,
   addOrderComment,
