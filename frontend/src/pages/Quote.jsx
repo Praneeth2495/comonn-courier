@@ -89,14 +89,18 @@ export default function Quote() {
   // rather than BookingContext (a fresh page load has none yet) — it wins
   // over whatever's already in context.
   const [resumeInput] = useState(parseResumeParam);
-  const quoteInput = resumeInput || contextQuoteInput;
   // A completed (paid/labeled) order left over in context from a previous,
   // already-finished booking must NOT bleed into a new one — only an
   // order still actually in progress (or one staff are deliberately
-  // editing) should carry forward to prefill Details.jsx. Otherwise a
-  // guest starting a second booking in the same tab sees the previous
-  // customer's name/address auto-filled, which looks like a data leak.
-  const carryOverOrder = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || isStaffUser) ? bookingOrder : null;
+  // editing) should carry forward to prefill this page's own
+  // origin/destination/weight fields AND Details.jsx's address fields.
+  // Otherwise a guest who already placed and paid for an order still sees
+  // that old quote pre-filled here on their next visit to Book, and a
+  // second guest in the same tab sees the previous customer's name/
+  // address auto-filled, which looks like a data leak.
+  const orderStillInProgress = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || isStaffUser);
+  const quoteInput = resumeInput || (orderStillInProgress || !bookingOrder ? contextQuoteInput : null);
+  const carryOverOrder = orderStillInProgress ? bookingOrder : null;
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || 'AU');
   // Ireland: quoteInput.destinationPostcode carries the matched routing key
