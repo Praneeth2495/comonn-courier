@@ -595,7 +595,11 @@ export default function Quote() {
                 </div>
               )}
               {destinationCountryCode && (
-                <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>{getPostcodeRule(destinationCountryCode).hint}</p>
+                destinationPostcodeNotFound ? (
+                  <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 6 }}>Postcode issue, please contact +919108038783.</p>
+                ) : (
+                  <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>{getPostcodeRule(destinationCountryCode).hint}</p>
+                )
               )}
             </div>
           </div>
