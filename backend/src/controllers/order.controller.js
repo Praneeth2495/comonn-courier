@@ -775,6 +775,47 @@ async function assignDriver(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/orders/remove-driver
+ * ADMIN/STAFF: clears an order's rider assignment so it can be sent to a
+ * different driver — assignDriver is deliberately NOT a reassign-in-place,
+ * so the UI calls this first and only then lets the order be picked again.
+ */
+async function removeDriver(req, res, next) {
+  try {
+    const { orderIds } = req.body;
+    if (!Array.isArray(orderIds) || orderIds.length === 0) {
+      return res.status(400).json({ error: 'orderIds must be a non-empty array' });
+    }
+
+    const existing = await prisma.order.findMany({
+      where: { id: { in: orderIds } },
+      select: { id: true, customDriverName: true, assignedDriver: { select: { fullName: true } } },
+    });
+
+    await prisma.order.updateMany({
+      where: { id: { in: orderIds } },
+      data: { assignedDriverId: null, customDriverName: null, driverAssignedAt: null },
+    });
+
+    await prisma.orderComment.createMany({
+      data: existing.map((o) => ({
+        orderId: o.id,
+        authorId: req.user.id,
+        body: `Removed from rider ${o.assignedDriver?.fullName || o.customDriverName || 'assignment'}.`,
+      })),
+    });
+
+    const orders = await prisma.order.findMany({
+      where: { id: { in: orderIds } },
+      select: { id: true, customDriverName: true, assignedDriver: { select: { id: true, fullName: true } } },
+    });
+    res.json({ orders });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** POST /api/orders/:id/cancel */
 async function cancelOrder(req, res, next) {
   try {
