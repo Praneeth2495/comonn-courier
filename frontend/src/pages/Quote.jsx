@@ -113,6 +113,9 @@ export default function Quote() {
   );
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [destinationSuggestLoading, setDestinationSuggestLoading] = useState(false);
+  // Set once a full postcode was actually looked up and came back with
+  // zero matches in the Suggestion List data — same idea as originPostcodeNotFound.
+  const [destinationPostcodeNotFound, setDestinationPostcodeNotFound] = useState(false);
   const [destinationPicked, setDestinationPicked] = useState(
     quoteInput?.destinationSuburb
       ? { postcode: quoteInput.destinationPostcode, suburb: quoteInput.destinationSuburb, state: quoteInput.destinationState }
