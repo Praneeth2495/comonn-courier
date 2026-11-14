@@ -165,7 +165,7 @@ export default function Storage() {
           {selectedSize && (
             <div className="card" style={{ padding: 22, marginTop: 24 }}>
               <h4 style={{ fontSize: 14, marginBottom: 12 }}>How many days?</h4>
-              <div className="chip-filter-row" style={{ alignItems: 'center' }}>
+              <div className="chip-filter-row" style={{ alignItems: 'flex-start' }}>
                 {DAY_PRESETS.map((d) => (
                   <div key={d} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                     <div
@@ -175,14 +175,14 @@ export default function Storage() {
                     >
                       {d} {d === 1 ? 'Day' : 'days'}
                     </div>
-                    {d === RECOMMENDED_DAYS && (
-                      <span style={{ fontSize: 10.5, color: 'var(--slate-light)' }}>Recommended</span>
-                    )}
+                    <span style={{ fontSize: 10.5, color: d === RECOMMENDED_DAYS ? 'var(--slate-light)' : 'transparent' }}>
+                      Recommended
+                    </span>
                   </div>
                 ))}
                 <input
                   className="input"
-                  style={{ maxWidth: 140 }}
+                  style={{ maxWidth: 140, alignSelf: 'flex-start' }}
                   type="number"
                   min="1"
                   placeholder="Custom days"
