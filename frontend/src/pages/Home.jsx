@@ -273,6 +273,11 @@ export default function Home() {
       return;
     }
 
+    if (destinationPostcodeNotFound) {
+      setError('Postcode issue, please contact +919108038783.');
+      return;
+    }
+
     if (destinationCountryCode === 'IE' && destinationPostcode.replace(/\s+/g, '').length < 7) {
       setError('Please enter your full 7-character Eircode.');
       return;
