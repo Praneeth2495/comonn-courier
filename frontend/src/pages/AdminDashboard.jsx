@@ -1482,9 +1482,23 @@ function OrdersPanel() {
               {tab === 'pickup' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {o.assignedDriver ? (
-                    <span className="pill pill-cobalt" style={{ fontSize: 11 }}>{o.assignedDriver.fullName}{o.assignedDriver.driverRegion ? ` (${o.assignedDriver.driverRegion})` : ''}</span>
+                    <span
+                      className="pill pill-cobalt"
+                      style={{ fontSize: 11, cursor: 'pointer' }}
+                      title="Click to remove this rider"
+                      onClick={() => removeDriverFromOrder(o)}
+                    >
+                      {o.assignedDriver.fullName}{o.assignedDriver.driverRegion ? ` (${o.assignedDriver.driverRegion})` : ''}
+                    </span>
                   ) : o.customDriverName ? (
-                    <span className="pill pill-cobalt" style={{ fontSize: 11 }}>{o.customDriverName}</span>
+                    <span
+                      className="pill pill-cobalt"
+                      style={{ fontSize: 11, cursor: 'pointer' }}
+                      title="Click to remove this rider"
+                      onClick={() => removeDriverFromOrder(o)}
+                    >
+                      {o.customDriverName}
+                    </span>
                   ) : (
                     <span style={{ color: 'var(--slate-light)', fontSize: 12 }}>Unassigned</span>
                   )}
