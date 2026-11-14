@@ -24,7 +24,7 @@ export default function Login() {
           ? '/admin'
           : user.role === 'DRIVER'
           ? '/driver'
-          : '/dashboard'
+          : '/'
       );
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
