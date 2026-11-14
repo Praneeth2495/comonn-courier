@@ -43,6 +43,7 @@ router.post('/:id/cancel', requireAuth, cancelOrder);
 router.patch('/:id/status', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), updateOrderStatus);
 router.patch('/:id/carrier', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders', 'accounts'), updateOrderCarrier);
 router.patch('/assign-driver', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), assignDriver);
+router.patch('/remove-driver', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders'), removeDriver);
 router.get('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders', 'accounts'), listOrderComments);
 router.post('/:id/comments', requireAuth, requireRole('ADMIN', 'STAFF', 'ACCOUNTS'), requirePage('orders', 'accounts'), addOrderComment);
 
