@@ -1179,6 +1179,21 @@ function OrdersPanel() {
     }
   }
 
+  // Clears a single order's rider assignment — required before it can be
+  // picked for reassignment, since the "assign to driver" checkbox is
+  // disabled for already-assigned orders (see the pickup-tab row render).
+  async function removeDriverFromOrder(order) {
+    const name = order.assignedDriver?.fullName || order.customDriverName;
+    if (!confirm(`Remove ${name} from this order?`)) return;
+    try {
+      const { data } = await client.patch('/orders/remove-driver', { orderIds: [order.id] });
+      const byId = Object.fromEntries(data.orders.map((o) => [o.id, o]));
+      setOrders((prev) => prev.map((o) => (byId[o.id] ? { ...o, assignedDriver: byId[o.id].assignedDriver, customDriverName: byId[o.id].customDriverName } : o)));
+    } catch (err) {
+      alert(err.response?.data?.error || 'Could not remove this rider.');
+    }
+  }
+
   // Sends the existing order back through the Quote/Details/Payment flow,
   // pre-filled, so staff can edit service/items/addresses and see the
   // re-priced total (with any due/credit balance) on the Payment page.
