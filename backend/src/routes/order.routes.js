@@ -11,6 +11,7 @@ const {
   updateOrderStatus,
   updateOrderCarrier,
   assignDriver,
+  removeDriver,
   cancelOrder,
   listOrderComments,
   addOrderComment,
