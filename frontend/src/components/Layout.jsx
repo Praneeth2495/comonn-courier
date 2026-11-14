@@ -128,14 +128,14 @@ function MobileNavMenu({ links }) {
 }
 
 // Where "Dashboard" in the header should go for a logged-in user, by role.
-// A CUSTOMER gets three separate links instead of one generic "Dashboard"
-// — Wallet, Orders (Active/History), and My Box are each their own page —
-// every other role still gets the single "Dashboard" link into their own
-// dashboard.
+// A CUSTOMER gets two separate links instead of one generic "Dashboard"
+// — Orders (Active/History) and My Box are each their own page — every
+// other role still gets the single "Dashboard" link into their own
+// dashboard. Wallet lives in the profile-icon dropdown instead (AccountMenu).
 function dashboardLinks(role) {
   if (role === 'ADMIN' || role === 'STAFF' || role === 'ACCOUNTS') return [['/admin', 'Dashboard']];
   if (role === 'DRIVER') return [['/driver', 'Dashboard']];
-  return [['/wallet', 'Wallet'], ['/dashboard', 'Orders'], ['/my-box', 'My Box']];
+  return [['/dashboard', 'Orders'], ['/my-box', 'My Box']];
 }
 
 export function SiteHeader({ onOpenAccount }) {
