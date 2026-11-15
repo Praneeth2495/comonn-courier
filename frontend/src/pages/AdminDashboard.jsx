@@ -75,8 +75,11 @@ export default function AdminDashboard() {
     // itself is always visible — Attendance's "My attendance" clock-in/out
     // is for every internal user regardless of 'staff'/'onboarding'
     // access, same as it was as a standalone tab; which of the other two
-    // sub-tabs show up is still gated per-permission inside StaffPanel.
-    ['staff', 'Staff'],
+    // sub-tabs show up is still gated per-permission inside StaffPanel. A
+    // viewer with neither only ever sees that attendance sub-tab, so the
+    // nav label reflects that instead of implying they have real Staff
+    // access (a past source of confusion — see task notes).
+    [hasPage('staff') || hasPage('onboarding') ? 'staff' : 'staff', hasPage('staff') || hasPage('onboarding') ? 'Staff' : 'Clock in/out'],
   ];
 
   function selectTab(key) {
