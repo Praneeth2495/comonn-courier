@@ -79,7 +79,7 @@ export default function AdminDashboard() {
     // viewer with neither only ever sees that attendance sub-tab, so the
     // nav label reflects that instead of implying they have real Staff
     // access (a past source of confusion — see task notes).
-    [hasPage('staff') || hasPage('onboarding') ? 'staff' : 'staff', hasPage('staff') || hasPage('onboarding') ? 'Staff' : 'Clock in/out'],
+    ['staff', hasPage('staff') || hasPage('onboarding') ? 'Staff' : 'Clock in/out'],
   ];
 
   function selectTab(key) {
