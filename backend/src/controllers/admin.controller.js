@@ -1436,19 +1436,9 @@ async function setUserRole(req, res, next) {
       }
     }
 
-    let seededAllowedPages;
-    // Same idempotent-safe "give full initial visibility, don't undo a
-    // later deliberate narrowing" pattern as the zone/region auto-assign
-    // below — a user newly promoted into STAFF/ACCOUNTS (and not already
-    // customized) starts with that role's default page set instead of a
-    // blank slate with nothing visible until an admin remembers to check
-    // boxes.
-    if (allowedPages === undefined && (role === 'STAFF' || role === 'ACCOUNTS')) {
-      const current = await prisma.user.findUnique({ where: { id: req.params.id }, select: { allowedPages: true } });
-      if (current && current.allowedPages.length === 0) {
-        seededAllowedPages = DEFAULT_ALLOWED_PAGES_BY_ROLE[role];
-      }
-    }
+    // A user newly promoted into (or created as) STAFF/ACCOUNTS starts with
+    // a blank allowedPages — nothing in the sidebar until an admin
+    // explicitly grants each page — rather than a pre-seeded default set.
 
     const user = await prisma.user.update({
       where: { id: req.params.id },
@@ -1456,7 +1446,7 @@ async function setUserRole(req, res, next) {
         role,
         isActive,
         driverRegion: driverRegion === undefined ? undefined : (driverRegion.trim() || null),
-        allowedPages: allowedPages !== undefined ? allowedPages : seededAllowedPages,
+        allowedPages,
         allowedOrderTabs,
         allowedAccountsTabs,
         allowedOverviewTabs,
