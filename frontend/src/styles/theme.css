@@ -779,6 +779,11 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
    `title` attribute each of these is paired with shows the full value as
    a native tooltip on hover. */
 .t-truncate{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Pickup tab's row checkbox when an order already has a rider — shown
+   checked + green rather than the browser's default greyed-out disabled
+   look, so "done, locked until removed" reads as a positive state rather
+   than as a broken/inactive control. */
+.checkbox-assigned{accent-color:var(--success);opacity:1;cursor:not-allowed;}
 .t-oid:hover{color:var(--coral);}
 .detail-section{margin-bottom:20px;}
 .detail-section h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:700;margin-bottom:10px;}
