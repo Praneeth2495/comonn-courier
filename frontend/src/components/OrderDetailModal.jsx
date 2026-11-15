@@ -209,7 +209,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         </div>
 
-        <div className="detail-section">
+        <div className="detail-section oda-section-receiver">
           <div className="oda-section-head"><span className="icon">📥</span><h4>Receiver details</h4></div>
           <div className="detail-grid">
             <div className="detail-row"><span className="k">Name</span><span className="v">{order.receiverAddress?.contactName}</span></div>
