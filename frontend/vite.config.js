@@ -28,6 +28,18 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Without these two, a newly-activated service worker sits in
+        // "waiting" until every open tab is closed — registerType:
+        // 'autoUpdate' alone only skips the "new version available" prompt,
+        // it doesn't make the new SW actually take over. That's why a push
+        // could take several manual refreshes before it showed up: each
+        // refresh was still being served by the OLD SW until the browser's
+        // own lifecycle finally let the new one activate. skipWaiting lets
+        // the new SW activate immediately instead of waiting for old
+        // clients to disconnect; clientsClaim lets it then take control of
+        // already-open tabs right away instead of only on their next load.
+        skipWaiting: true,
+        clientsClaim: true,
         // Orders/tracking/pricing data must never be served stale from cache
         // — only the app shell (JS/CSS/images) is precached. API calls and
         // the Razorpay checkout script always hit the network directly.
