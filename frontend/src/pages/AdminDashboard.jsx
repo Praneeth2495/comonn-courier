@@ -2586,7 +2586,7 @@ function RatesPanel() {
 
   return (
     <div>
-      <h1 className="h-lg" style={{ marginBottom: 16 }}>Zones &amp; Rate Cards</h1>
+      <h1 className="h-lg" style={{ marginBottom: 16 }}>Pricing</h1>
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>{form.id ? 'Edit rate bracket' : 'Add a rate bracket'}</h4>
