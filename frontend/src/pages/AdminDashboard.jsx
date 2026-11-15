@@ -62,7 +62,7 @@ export default function AdminDashboard() {
     ['inventory', 'Inventory'],
     ...(hasPage('batchscan') ? [['batchscan', 'Scan']] : []),
     ...(hasPage('printlabel') ? [['printlabel', 'Print Label']] : []),
-    ...(hasPage('rates') ? [['rates', 'Zones & Rates']] : []),
+    ...(hasPage('rates') ? [['rates', 'Pricing']] : []),
     ...(isAdmin ? [['users', 'Users']] : []),
     ...(isAdmin ? [['merchants', 'Merchants']] : []),
     ...(isAdmin ? [['fees', 'Service Fees']] : []),
