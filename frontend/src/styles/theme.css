@@ -26,7 +26,10 @@ input,select,textarea{font-family:inherit;}
 .airmail-edge.dark{background:repeating-linear-gradient(-45deg,var(--coral) 0 10px, var(--navy) 10px 16px, var(--cobalt) 16px 26px, var(--navy) 26px 32px);}
 
 /* header */
-.site-header{background:#fff;position:sticky;top:0;z-index:40;}
+/* #fff vs the page body's --paper (#F7F5F0) is too close a shade to read
+   as a separate bar on its own — the box-shadow line underneath (same grey
+   as --line) is what actually makes the header visually distinct. */
+.site-header{background:#fff;position:sticky;top:0;z-index:40;box-shadow:0 1px 0 var(--line);}
 .site-header::after{content:"";display:block;height:3px;width:100%;background:linear-gradient(90deg, transparent 0%, var(--coral) 15%, var(--coral) 85%, transparent 100%);}
 .site-header .row{max-width:1240px;margin:0 auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
 /* justify-content:space-between alone only guarantees equal GAPS around
