@@ -1449,10 +1449,10 @@ function OrdersPanel() {
                   />
                 </div>
               )}
-              <button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
-              <div>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
-              <div>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
-              <div>{tab === 'pickup' || tab === 'bookings' ? (o.pickupDate || '—') : (o.items?.reduce((sum, it) => sum + it.quantity, 0) ?? 1)}</div>
+              <button className="t-oid t-truncate" title={o.orderNumber} onClick={() => openDetail(o.id)}>{o.orderNumber}</button>
+              <div className="t-truncate" title={`${o.senderAddress?.city}, ${o.senderAddress?.countryCode}`}>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</div>
+              <div className="t-truncate" title={`${o.receiverAddress?.city}, ${o.receiverAddress?.countryCode}`}>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</div>
+              <div className="t-truncate">{tab === 'pickup' || tab === 'bookings' ? (o.pickupDate || '—') : (o.items?.reduce((sum, it) => sum + it.quantity, 0) ?? 1)}</div>
               <div>
                 <select
                   className={`status-badge status-dd ${STATUS_PILL[o.status] || 'pill-navy'}`}
