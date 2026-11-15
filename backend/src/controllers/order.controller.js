@@ -251,10 +251,14 @@ async function buildOrdersWhere(req) {
       select: { state: true, region: true },
     });
     andConditions.push({ senderAddress: { OR: await resolveOriginFilters(assignments) } });
-  } else if (req.user.role === 'STAFF') {
+  } else if (req.user.role === 'STAFF' && !notStatus) {
     // Admin-controlled zone visibility: STAFF only ever see orders in zones
     // they've been individually assigned, regardless of what zoneCode
     // filter is requested (a staff member with no assignments sees none).
+    // Bookings (identified by notStatus — see the 'all' mode comment on
+    // ORDER_TABS in AdminDashboard.jsx) is deliberately exempt: every
+    // booking should show there regardless of origin/destination, so a
+    // staff member doesn't need zone/region assignments just to see it.
     const assignments = await prisma.staffZoneAssignment.findMany({
       where: { userId: req.user.id },
       select: { zone: { select: { code: true } } },
