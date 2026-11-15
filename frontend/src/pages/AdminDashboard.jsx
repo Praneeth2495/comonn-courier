@@ -2796,11 +2796,11 @@ function UsersPanel() {
       {subTab === 'internal' && (
       <div className="table-wrap">
         <table className="data-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Rider region</th><th>Delivery zones</th><th>Pickup states/hubs</th><th>Overview tabs</th><th>Page access</th><th>Order tabs</th><th>Accounts tabs</th><th>Print Label tabs</th><th>Scan tabs</th></tr></thead>
+          <thead><tr><th className="sticky-col">Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Role</th><th>Rider region</th><th>Delivery zones</th><th>Pickup states/hubs</th><th>Overview tabs</th><th>Page access</th><th>Order tabs</th><th>Accounts tabs</th><th>Print Label tabs</th><th>Scan tabs</th></tr></thead>
           <tbody>
             {internalUsers.map((u) => (
               <tr key={u.id}>
-                <td>{u.fullName}</td>
+                <td className="sticky-col">{u.fullName}</td>
                 <td>{u.email}</td>
                 <td>{u.phone || '—'}</td>
                 <td>{formatDateShort(u.createdAt)}</td>
