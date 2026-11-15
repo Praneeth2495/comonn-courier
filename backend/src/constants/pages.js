@@ -42,14 +42,6 @@ const PAGE_LABELS = {
   customers: 'Customers',
 };
 
-// Used once, at migration time, to backfill existing STAFF/ACCOUNTS users
-// so the new per-user toggle doesn't silently change anyone's access on
-// the day it ships — same default breadth each role already had.
-const DEFAULT_ALLOWED_PAGES_BY_ROLE = {
-  STAFF: ['orders', 'inventory', 'batchscan', 'printlabel'],
-  ACCOUNTS: ['orders', 'accounts', 'inventory', 'onboarding', 'storage'],
-};
-
 // Sub-tabs inside the (always-visible) Orders page — separate from
 // PAGE_KEYS above, which only ever gates whole pages. An empty
 // User.allowedOrderTabs means "no restriction, show every tab" (the
