@@ -841,9 +841,12 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
 /* From/To Address hold the exact same shape of content (city, country
    code) so they're sized equally — they used to be 1.9fr/1.3fr, which
    made the two look lopsided for no reason tied to what's actually in them. */
-.t-row.orders-detailed{grid-template-columns:1.1fr 1.6fr 1.6fr .5fr 1.1fr .7fr;}
-.t-row.orders-detailed.with-actions{grid-template-columns:1.1fr 1.6fr 1.6fr .5fr 1.1fr .7fr .9fr;}
-.t-row.orders-detailed.with-driver{grid-template-columns:.35fr 1.1fr 1.6fr 1.6fr .5fr 1.1fr .7fr 1fr;}
+/* Order ID/From/To Address were taking more room than their actual
+   content needs, leaving Pickup Date too narrow — its "YYYY-MM-DD" value
+   was getting clipped by .t-truncate's ellipsis. Shifted that width over. */
+.t-row.orders-detailed{grid-template-columns:.9fr 1.5fr 1.5fr .9fr 1.1fr .7fr;}
+.t-row.orders-detailed.with-actions{grid-template-columns:.9fr 1.5fr 1.5fr .9fr 1.1fr .7fr .9fr;}
+.t-row.orders-detailed.with-driver{grid-template-columns:.35fr .9fr 1.5fr 1.5fr .9fr 1.1fr .7fr 1fr;}
 .t-row.accounts-row{grid-template-columns:1fr 1fr 1.6fr 1.2fr 1.6fr 1fr .7fr;}
 .status-dd{display:inline-flex;align-items:center;gap:4px;}
 .row-delete-btn,.row-edit-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1.5px solid var(--line);background:#fff;font-size:15px;cursor:pointer;}
