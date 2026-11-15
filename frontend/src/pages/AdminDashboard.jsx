@@ -29,6 +29,11 @@ const StaffPanel = lazy(() => import('../components/StaffPanel'));
 const PrintLabelPanel = lazy(() => import('../components/PrintLabelPanel'));
 const ManifestPanel = lazy(() => import('../components/ManifestPanel'));
 
+// Sidebar brand badge — this dashboard is shared by ADMIN/STAFF/ACCOUNTS
+// (DRIVER gets its own DriverDashboard), so the badge should say which one
+// is actually logged in rather than always "Admin".
+const SIDEBAR_ROLE_LABEL = { ADMIN: 'Admin', STAFF: 'Staff', ACCOUNTS: 'Accounts' };
+
 export default function AdminDashboard() {
   // Read the starting tab from the URL (?tab=orders) rather than always
   // defaulting to Overview — so a page refresh (or a shared/bookmarked
