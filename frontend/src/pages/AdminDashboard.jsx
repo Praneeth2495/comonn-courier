@@ -2682,7 +2682,7 @@ const PAGE_LABELS = {
   inventory: 'Inventory',
   batchscan: 'Scan',
   printlabel: 'Print Label',
-  rates: 'Zones & Rates',
+  rates: 'Pricing',
   onboarding: 'Onboarding',
   customsclients: 'Customs Client',
   storage: 'Storage',
