@@ -1417,7 +1417,7 @@ function OrdersPanel() {
             disabled={(assignDriverId === CUSTOM_DRIVER_VALUE ? !customDriverName.trim() : !assignDriverId) || assigning}
             onClick={sendToDriver}
           >
-            {assigning ? 'Sending…' : 'Send to rider'}
+            {assignDriverId === CUSTOM_DRIVER_VALUE ? (assigning ? 'Saving…' : 'Save') : (assigning ? 'Sending…' : 'Send to rider')}
           </button>
           {drivers.length === 0 && <span style={{ fontSize: 12, color: 'var(--slate-light)' }}>No rider accounts yet — create one from Users (set role to Rider).</span>}
         </div>
