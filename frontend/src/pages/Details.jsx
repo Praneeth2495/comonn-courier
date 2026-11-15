@@ -458,7 +458,7 @@ function DetailsForm() {
         </button>
 
         {savedBookings?.length > 0 && (
-          <div className="card" style={{ padding: '14px 18px 6px', marginBottom: 16, background: 'var(--paper)' }}>
+          <div className="card" style={{ padding: '14px 18px 6px', marginBottom: 16 }}>
             <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--slate-light)', fontWeight: 700, marginBottom: 10 }}>
               {savedBookings.length} other booking{savedBookings.length > 1 ? 's' : ''} saved this session
             </p>
