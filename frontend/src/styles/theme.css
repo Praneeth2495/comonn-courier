@@ -836,7 +836,7 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
    due-bucket or Storage day-selector chips sharing .chip-filter) — smaller
    and the sidebar's navy-blue instead of the shared green "active" color,
    so this filter row doesn't read as a success/confirmation state. */
-.chip-filter.loc{padding:6px 12px;font-size:12px;}
+.chip-filter.loc{padding:4px 10px;font-size:11px;gap:5px;}
 .chip-filter.loc.active{background:var(--navy);border-color:var(--navy);}
 /* From/To Address hold the exact same shape of content (city, country
    code) so they're sized equally — they used to be 1.9fr/1.3fr, which
