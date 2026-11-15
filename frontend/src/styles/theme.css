@@ -774,6 +774,11 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
    its left edge (and therefore where the order number starts) drifted from
    the "Order ID" header above it. */
 .t-oid{font-family:'IBM Plex Mono';font-weight:600;color:var(--cobalt);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:13.5px;width:100%;text-align:left;}
+/* Caps a row cell to one line instead of letting long content (a far
+   city name, a long address) wrap and grow every row in the table — the
+   `title` attribute each of these is paired with shows the full value as
+   a native tooltip on hover. */
+.t-truncate{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .t-oid:hover{color:var(--coral);}
 .detail-section{margin-bottom:20px;}
 .detail-section h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:700;margin-bottom:10px;}
