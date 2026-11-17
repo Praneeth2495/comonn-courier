@@ -1387,6 +1387,30 @@ model WhatsappMessage {
   @@index([orderId])
 }
 
+// Free-text WhatsApp conversation (both directions), separate from
+// WhatsappMessage above (which stays the pre-approved-template send audit
+// log, with its own shape). orderId is nullable — unlike WhatsappMessage's
+// required one — because an inbound reply is matched to an order *after
+// the fact* by phone number, and that match can fail (new/unknown number,
+// ambiguous match, etc.); the row still needs somewhere to live, surfaced
+// in the admin WhatsApp inbox grouped by phone when unmatched.
+model WhatsappReply {
+  id                String   @id @default(uuid())
+  orderId           String?
+  order             Order?   @relation(fields: [orderId], references: [id])
+  phone             String // normalized digits — the customer's WhatsApp number
+  direction         String // "IN" | "OUT"
+  body              String
+  providerMessageId String?  @unique
+  status            String   @default("received") // IN: "received" | OUT: accepted|sent|delivered|read|failed
+  sentById          String?
+  sentBy            User?    @relation(fields: [sentById], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@index([orderId])
+  @@index([phone])
+}
+
 // ------------------------------------------------------------
 // Labels
 // ------------------------------------------------------------
