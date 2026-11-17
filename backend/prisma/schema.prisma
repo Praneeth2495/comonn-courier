@@ -1089,6 +1089,7 @@ model Order {
   trackingEvents TrackingEvent[]
   comments       OrderComment[]
   whatsappMessages WhatsappMessage[]
+  whatsappReplies  WhatsappReply[]
 
   // Air-freight manifest this order has been bagged into for a hub->airport
   // shipment — null until staff explicitly add it via the Manifest tab. An
