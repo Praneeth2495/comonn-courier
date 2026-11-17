@@ -75,14 +75,14 @@ model User {
   // dashboard, unrelated to this list). The "Users" page is deliberately
   // never toggleable here — granting it is equivalent to granting full
   // role-management control, so it stays ADMIN-only in code.
-  allowedPages             String[] @default([])
+  allowedPages            String[]  @default([])
 
   // Which Orders-page sub-tabs (bookings/pickup/delivery/unconfirmed/
   // manifest — keys from ORDER_TAB_KEYS in pages.js) this account can see.
   // Empty means no restriction (every existing STAFF/ACCOUNTS account's
   // current behavior) — admin opts a user INTO a narrower set rather than
   // everyone starting blank. Meaningless for ADMIN/DRIVER, same as above.
-  allowedOrderTabs         String[] @default([])
+  allowedOrderTabs String[] @default([])
 
   // Same per-tab pattern as allowedOrderTabs, for the Accounts page's
   // bookings/receivable/payable sub-tabs (keys from ACCOUNTS_TAB_KEYS in
@@ -90,7 +90,7 @@ model User {
   // allowedOrderTabs. The Accounts page's "Assets" sub-tab is NOT covered
   // here — it keeps using the existing separate `assets` entry in
   // allowedPages/PAGE_KEYS, unchanged.
-  allowedAccountsTabs      String[] @default([])
+  allowedAccountsTabs String[] @default([])
 
   // Same per-tab pattern, for the Overview page's "Staff overview"/"Region
   // overview" sub-tabs (keys from OVERVIEW_TAB_KEYS in pages.js). Unlike
@@ -99,64 +99,64 @@ model User {
   // canViewOverviewBreakdown boolean, which was also closed-by-default, so
   // an empty array here must keep meaning "no breakdown access" rather
   // than "no restriction".
-  allowedOverviewTabs      String[] @default([])
+  allowedOverviewTabs String[] @default([])
 
   // Same per-tab pattern as allowedOrderTabs, for the Print Label page's
   // "Scan & Print"/"Manual Label" sub-tabs (keys from PRINTLABEL_TAB_KEYS
   // in pages.js). Empty = no restriction.
-  allowedPrintLabelTabs    String[] @default([])
+  allowedPrintLabelTabs String[] @default([])
 
   // Same per-tab pattern, for the Scan page's "Scan"/"Saved batches"/
   // "Barcode locations" sub-tabs (keys from BATCHSCAN_TAB_KEYS in
   // pages.js). Empty = no restriction.
-  allowedBatchScanTabs     String[] @default([])
+  allowedBatchScanTabs String[] @default([])
 
-  addresses               Address[]
-  orders                  Order[]
-  auditLogs               AuditLog[]
-  zoneAssignments         StaffZoneAssignment[]
-  regionAssignments       StaffRegionAssignment[]
-  passwordSetTokens       PasswordSetToken[]
-  orderComments           OrderComment[]
-  sentWhatsappReplies     WhatsappReply[]
-  driverJobs              Order[]                  @relation("OrderDriver")
-  inventoryUpdates        InventoryItem[]
-  scanBatches             ScanBatch[]
-  scanLocations           ScanLocation[]
-  createdMerchants        Merchant[]
-  merchantInvoiceComments MerchantInvoiceComment[]
-  partyInvoicesCreated    PartyInvoice[]
-  partyInvoiceComments    PartyInvoiceComment[]
-  customsClientsCreated   CustomsClient[]
-  assetsCreated           Asset[]
-  attendanceLogs          AttendanceLog[]
-  manualLabelBatches      ManualLabelBatch[]
-  boxBookings             BoxBooking[]
-  boxBookingComments      BoxBookingComment[]
-  manifestsCreated        Manifest[]
-  employeeProfile         EmployeeProfile?
-  onboardingTokens        EmployeeOnboardingToken[]
-  approvedEmployeeProfiles EmployeeProfile[] @relation("EmployeeProfileApprovedBy")
-  staffLeaves             StaffLeave[] @relation("StaffLeaveOwner")
-  staffLeavesLogged       StaffLeave[] @relation("StaffLeaveCreatedBy")
+  addresses                Address[]
+  orders                   Order[]
+  auditLogs                AuditLog[]
+  zoneAssignments          StaffZoneAssignment[]
+  regionAssignments        StaffRegionAssignment[]
+  passwordSetTokens        PasswordSetToken[]
+  orderComments            OrderComment[]
+  sentWhatsappReplies      WhatsappReply[]
+  driverJobs               Order[]                   @relation("OrderDriver")
+  inventoryUpdates         InventoryItem[]
+  scanBatches              ScanBatch[]
+  scanLocations            ScanLocation[]
+  createdMerchants         Merchant[]
+  merchantInvoiceComments  MerchantInvoiceComment[]
+  partyInvoicesCreated     PartyInvoice[]
+  partyInvoiceComments     PartyInvoiceComment[]
+  customsClientsCreated    CustomsClient[]
+  assetsCreated            Asset[]
+  attendanceLogs           AttendanceLog[]
+  manualLabelBatches       ManualLabelBatch[]
+  boxBookings              BoxBooking[]
+  boxBookingComments       BoxBookingComment[]
+  manifestsCreated         Manifest[]
+  employeeProfile          EmployeeProfile?
+  onboardingTokens         EmployeeOnboardingToken[]
+  approvedEmployeeProfiles EmployeeProfile[]         @relation("EmployeeProfileApprovedBy")
+  staffLeaves              StaffLeave[]              @relation("StaffLeaveOwner")
+  staffLeavesLogged        StaffLeave[]              @relation("StaffLeaveCreatedBy")
 
   // ---- Referral + wallet (CUSTOMER-only in practice, but not role-gated
   // in the schema itself — nothing stops any account from having a code) ----
   // Shareable code (see referralService.js) — lazily generated the first
   // time it's needed (GET /api/auth/me) rather than at every signup, so
   // existing accounts pick one up on next login without a backfill.
-  referralCode          String?  @unique
+  referralCode          String?             @unique
   // Who referred THIS user, captured once at account-creation time (either
   // real registration or the guest-checkout auto-provisioned account — see
   // accountProvisioning.js) from Order.referralCodeUsed. Never changed
   // afterward — a user can only ever have been referred by one person.
   referredById          String?
-  referredBy            User?    @relation("Referrals", fields: [referredById], references: [id])
-  referrals             User[]   @relation("Referrals")
+  referredBy            User?               @relation("Referrals", fields: [referredById], references: [id])
+  referrals             User[]              @relation("Referrals")
   // Set the first (and only) time the referrer's ₹300 reward is granted for
   // THIS user — guards against paying out again on a second/third order.
-  referralRewardGranted Boolean  @default(false)
-  walletBalance         Decimal  @default(0) @db.Decimal(10, 2)
+  referralRewardGranted Boolean             @default(false)
+  walletBalance         Decimal             @default(0) @db.Decimal(10, 2)
   walletTransactions    WalletTransaction[] @relation("WalletTransactionOwner")
   walletAdjustmentsMade WalletTransaction[] @relation("WalletTransactionActor")
 
@@ -207,8 +207,8 @@ model EmployeeProfile {
 
   // Admin-assigned at onboarding (profileFieldsFromBody — never the
   // employee's own self-fill link) — which branch this hire belongs to.
-  hubId String?
-  hub   Hub?    @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  hubId        String?
+  hub          Hub?     @relation(fields: [hubId], references: [id], onDelete: SetNull)
   // Standard monthly salary set at onboarding — prefills the amount field
   // when paying this employee from the Salary tab's roster (still freely
   // editable per payment, e.g. for a raise or a one-off adjustment). Not
@@ -230,8 +230,8 @@ model EmployeeProfile {
   emergencyContactRelation String?
   emergencyContactPhone    String?
 
-  idProofType   String? // free-text label, e.g. "Aadhaar", "PAN", "Passport", "Driving Licence"
-  idProofNumber String?
+  idProofType     String? // free-text label, e.g. "Aadhaar", "PAN", "Passport", "Driving Licence"
+  idProofNumber   String?
   // Uploaded ID scan/photo — stored as bytes in the DB rather than local
   // disk, same reasoning as PartyInvoice.attachmentData: not derivable
   // from other fields, so it would be permanently lost on a Railway
@@ -495,9 +495,6 @@ model PartyInvoice {
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
 
-  @@index([direction])
-  @@index([status])
-  @@index([nextRecurrenceAt])
   // Only actually constrains rows that DO have a manifestId (the bulk
   // cost-sheet upserts) — ordinary manually-entered invoices, which never
   // set manifestId, never collide with each other over it. customLabel
@@ -507,6 +504,9 @@ model PartyInvoice {
   // duplicate fixed-category rows through) while still letting several
   // custom-labeled MISC rows coexist per manifest.
   @@unique([manifestId, category, customLabel])
+  @@index([direction])
+  @@index([status])
+  @@index([nextRecurrenceAt])
 }
 
 // Same shape/purpose as OrderComment/MerchantInvoiceComment.
@@ -546,12 +546,12 @@ model CustomsClient {
 // purchase line (not a per-unit price), so the Overview total is a plain
 // sum across all rows regardless of quantity.
 model Asset {
-  id           String   @id @default(uuid())
-  name         String
-  value        Decimal  @db.Decimal(10, 2)
-  quantity     Int      @default(1)
-  purchaseDate DateTime
-  staffName    String
+  id             String   @id @default(uuid())
+  name           String
+  value          Decimal  @db.Decimal(10, 2)
+  quantity       Int      @default(1)
+  purchaseDate   DateTime
+  staffName      String
   // Purchase invoice/receipt, optional. Stored as bytes in the DB rather
   // than local disk — same reasoning as PartyInvoice.attachmentData: not
   // derivable from other fields, so it would be permanently lost on a
@@ -559,10 +559,10 @@ model Asset {
   attachmentName String?
   attachmentMime String?
   attachmentData Bytes?
-  createdById  String
-  createdBy    User     @relation(fields: [createdById], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdById    String
+  createdBy      User     @relation(fields: [createdById], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([purchaseDate])
 }
@@ -1016,13 +1016,13 @@ model Order {
   // (grandTotal - walletAmountUsed) is what actually goes through
   // Razorpay. Debited via its own WalletTransaction(type: ORDER_PAYMENT)
   // at the same time this is set, so the two never drift apart.
-  walletAmountUsed  Decimal @default(0) @db.Decimal(10, 2)
+  walletAmountUsed   Decimal             @default(0) @db.Decimal(10, 2)
   // The referral code entered/carried at booking time (before the
   // customer necessarily has an account yet) — consumed once, when
   // accountProvisioning.js first creates the account this order belongs
   // to, to set that new User.referredById. Left as-is afterward even
   // though it's no longer actionable, as a record of what was entered.
-  referralCodeUsed String?
+  referralCodeUsed   String?
   walletTransactions WalletTransaction[]
 
   // "Not sure, book pickup": weight/dimensions unknown at booking time, so
@@ -1057,8 +1057,8 @@ model Order {
   // alongside Comonn's own timeline, since staff have to manually mirror
   // that carrier's status updates into TrackingEvent (no shared API across
   // last-mile partners yet).
-  carrierName            String?
-  carrierTrackingNumber  String?
+  carrierName           String?
+  carrierTrackingNumber String?
 
   // Set only when staff/admin flip status to PAID by hand from the order
   // detail dropdown (updateOrderStatus) — e.g. cash collected at pickup —
@@ -1083,12 +1083,12 @@ model Order {
   driverArrivedAt  DateTime? // driver marked "Arrived for pickup"
   pickedUpAt       DateTime? // driver marked "Pickup completed" (distinct from updatedAt, which later status changes would otherwise shift)
 
-  payment        Payment?
-  balancePayments BalancePayment[]
-  labels         Label[]
-  invoice        Invoice?
-  trackingEvents TrackingEvent[]
-  comments       OrderComment[]
+  payment          Payment?
+  balancePayments  BalancePayment[]
+  labels           Label[]
+  invoice          Invoice?
+  trackingEvents   TrackingEvent[]
+  comments         OrderComment[]
   whatsappMessages WhatsappMessage[]
   whatsappReplies  WhatsappReply[]
 
@@ -1154,16 +1154,16 @@ model Hub {
 // creation and recomputed on every add/remove-order edit (not derived live
 // on every read) so the generated PDF sheet and these numbers always agree.
 model Manifest {
-  id             String          @id @default(uuid())
-  manifestNumber String          @unique // "MAN1", "MAN2"... yearly-resetting
-  barcodeValue   String          @unique // scannable in Batch Scan — same value as manifestNumber today, kept separate in case that ever needs to differ
+  id              String          @id @default(uuid())
+  manifestNumber  String          @unique // "MAN1", "MAN2"... yearly-resetting
+  barcodeValue    String          @unique // scannable in Batch Scan — same value as manifestNumber today, kept separate in case that ever needs to differ
   // Optional — not used for branch cost attribution (that's computed
   // per-order, by weight share, off each order's own sender address; see
   // admin.controller.js's accountsOverview). Only still meaningful for
   // the printed manifest PDF's "From" line (falls back to
   // fromAirportName/Code below when unset — see manifestPdf.js).
-  hubId          String?
-  hub            Hub?            @relation(fields: [hubId], references: [id])
+  hubId           String?
+  hub             Hub?            @relation(fields: [hubId], references: [id])
   // Destination country every order in this manifest shares — always set,
   // even when the orders span several airports within that country (see
   // regionId below), since it's what scopes "add more orders" to the right
@@ -1172,16 +1172,16 @@ model Manifest {
   // this manifest combines several European countries — see
   // EUROPE_COUNTRY_CODES in manifest.controller.js, the one case where
   // orders for more than one destination country can share a manifest.
-  countryCode    String
+  countryCode     String
   // Only set when every order currently in the manifest resolves to the
   // exact same destination airport — a convenience link to that airport's
   // saved name/address, established once at creation and not recomputed
   // afterward. A manifest deliberately mixing several airports in the same
   // country (see order.controller.js/manifest.controller.js) simply has no
   // single region to point at; toAddress (freely editable) covers that case.
-  regionId       String?
-  region         ManifestRegion? @relation(fields: [regionId], references: [id])
-  toAddress      String // snapshot of the airport address used, editable independent of the region's saved default
+  regionId        String?
+  region          ManifestRegion? @relation(fields: [regionId], references: [id])
+  toAddress       String // snapshot of the airport address used, editable independent of the region's saved default
   // The Indian departure airport cargo actually flies out of — distinct
   // from Hub (the origin warehouse address, which isn't necessarily at an
   // airport) and from the existing destination airport fields above.
@@ -1193,12 +1193,12 @@ model Manifest {
   // value here.
   fromAirportCode String?
   fromAirportName String?
-  manifestDate   DateTime
+  manifestDate    DateTime
   // When the shipment actually flies out — separate from manifestDate (the
   // day the manifest itself was prepared/filed), since cargo doesn't always
   // depart the same day it's manifested. Nullable: existing manifests
   // created before this field existed have no value here.
-  departureDate  DateTime?
+  departureDate   DateTime?
   // All three optional. airlineCode/Name are picked from a fixed list of
   // major airlines (AIRLINES in ManifestPanel.jsx) — same "static list, not
   // a managed table" reasoning as fromAirportCode/Name above. departureTime
@@ -1208,16 +1208,16 @@ model Manifest {
   airlineCode     String?
   airlineName     String?
   departureTime   String?
-  orderCount     Int             @default(0)
-  totalQty       Int             @default(0)
-  totalWeightKg  Decimal         @default(0) @db.Decimal(10, 3)
-  pdfFileUrl     String?
-  createdById    String
-  createdBy      User            @relation(fields: [createdById], references: [id])
-  orders         Order[]
-  partyInvoices  PartyInvoice[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  orderCount      Int             @default(0)
+  totalQty        Int             @default(0)
+  totalWeightKg   Decimal         @default(0) @db.Decimal(10, 3)
+  pdfFileUrl      String?
+  createdById     String
+  createdBy       User            @relation(fields: [createdById], references: [id])
+  orders          Order[]
+  partyInvoices   PartyInvoice[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   @@index([regionId])
   @@index([countryCode])
@@ -1418,13 +1418,13 @@ model WhatsappReply {
 // gets one Label per package, each independently barcoded but linked back
 // to the same order/tracking number.
 model Label {
-  id           String   @id @default(uuid())
+  id           String            @id @default(uuid())
   // Nullable: a label created via the Print Label page's "Create Label"
   // tool (manual/ad-hoc shipment, e.g. an internal transfer with no
   // customer booking behind it) has no Order at all. Order-linked labels
   // are unaffected — orderId is still always set for those, same as before.
   orderId      String?
-  order        Order?   @relation(fields: [orderId], references: [id])
+  order        Order?            @relation(fields: [orderId], references: [id])
   packageIndex Int
   itemType     String
   fileUrl      String // path/URL to generated PDF
@@ -1435,8 +1435,8 @@ model Label {
   // durable fallback (same reasoning as PartyInvoice/Asset.attachmentData).
   // Always null for order-linked labels.
   pdfData      Bytes?
-  barcodeValue String   @unique
-  generatedAt  DateTime @default(now())
+  barcodeValue String            @unique
+  generatedAt  DateTime          @default(now())
   // Set only for a label created via the manual-label tool — links it back
   // to the single "Create Label" submission it came from (see
   // ManualLabelBatch), so the Manual Label tab's history can show every
@@ -1455,35 +1455,35 @@ model Label {
 // into a single printable file). masterFileUrl/masterPdfData are both null
 // when quantity is 1 — nothing to combine, the single Label IS the label.
 model ManualLabelBatch {
-  id              String   @id @default(uuid())
+  id                   String   @id @default(uuid())
   // The internal system-generated code (ML<day><month><seq>) — still what
   // the barcode itself encodes and what label filenames are built from, but
   // no longer shown to staff anywhere; the history view and label print
   // show `orderId` (the staff's own external reference) instead. Stays
   // @unique since it's the barcode's source of truth.
-  referenceNumber String   @unique
+  referenceNumber      String   @unique
   // Mandatory going forward (enforced in manualLabel.controller.js), but
   // nullable here since the 3 batches created before this field existed
   // have no value for it — never backfilled with a guess.
-  orderId         String?
+  orderId              String?
   // Optional staff-entered reference (e.g. a customer PO number) — printed
   // on the individual sticker labels already (as `referenceLabel`, see
   // manualLabel.controller.js) but wasn't persisted on the batch itself
   // until the consignment sheet needed to show it too.
-  refNumber       String?
+  refNumber            String?
   // Was only ever used transiently to print on the label PDF, never
   // persisted on the batch itself — needed now so the consignment/load
   // sheet (rendered later, from this row alone) can also show it.
-  service         String?
+  service              String?
   // Optional — FTL, LCL, or any staff-entered custom value. Purely
   // informational (not used in pricing or routing).
-  truckType       String?
-  fromAddress     Json
-  toAddress       Json
+  truckType            String?
+  fromAddress          Json
+  toAddress            Json
   // Total labels across every item (sum of each item's own quantity) —
   // kept as its own column for the history table's "Qty" column and other
   // quick reads that don't need to parse `items`.
-  quantity        Int
+  quantity             Int
   // One entry per distinct item type in this batch — { itemType,
   // actualWeightKg, lengthCm?, widthCm?, heightCm?, quantity }, mirroring
   // Order.items but as a single JSON blob instead of its own table, since a
@@ -1491,29 +1491,29 @@ model ManualLabelBatch {
   // individual item row. Replaced the old singular itemType/actualWeightKg/
   // lengthCm/widthCm/heightCm columns (single-item-only) — see migration
   // manual_label_items.
-  items           Json
-  instructions    String?
+  items                Json
+  instructions         String?
   // All four optional, plain date("YYYY-MM-DD")/time("HH:MM") strings (same
   // convention as Order.pickupDate / Manifest.departureTime) — shown on the
   // Consignment sheet and Load sheet when set, never on the sticker Label
   // itself, which has no use for them.
-  pickupDate      String?
-  pickupTime      String?
-  deliveryDate    String?
-  deliveryTime    String?
-  masterFileUrl   String?
-  masterPdfData   Bytes?
+  pickupDate           String?
+  pickupTime           String?
+  deliveryDate         String?
+  deliveryTime         String?
+  masterFileUrl        String?
+  masterPdfData        Bytes?
   // Whether staff have generated the consignment sheet / load sheet for
   // this batch yet (checked at creation, or added later via the Edit flow)
   // — both documents are always rendered fresh from the fields on this row
   // rather than stored, so these flags are purely what gates showing their
   // link in the UI.
-  consignmentGenerated Boolean @default(false)
-  loadSheetGenerated   Boolean @default(false)
-  createdById     String
-  createdBy       User     @relation(fields: [createdById], references: [id])
-  createdAt       DateTime @default(now())
-  labels          Label[]
+  consignmentGenerated Boolean  @default(false)
+  loadSheetGenerated   Boolean  @default(false)
+  createdById          String
+  createdBy            User     @relation(fields: [createdById], references: [id])
+  createdAt            DateTime @default(now())
+  labels               Label[]
 
   @@index([createdAt])
 }
