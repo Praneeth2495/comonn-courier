@@ -124,6 +124,7 @@ export default function AdminDashboard() {
           {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
           {tab === 'riders' && hasPage('orders') && <RidersPanel />}
           {tab === 'customers' && hasPage('customers') && <CustomersPanel />}
+          {tab === 'whatsapp' && hasPage('whatsapp') && <WhatsappInboxPanel />}
           {tab === 'staff' && <StaffPanel canViewDirectory={hasPage('staff')} canViewOnboarding={hasPage('onboarding')} isAdmin={isAdmin} />}
         </Suspense>
       </main>
