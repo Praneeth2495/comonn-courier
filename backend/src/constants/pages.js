@@ -10,19 +10,24 @@
 // *Orders is universal for viewing, but the management actions gated by
 // requirePage('orders') (status/assign-driver/comments/payment-link email)
 // do respect this list.
+// Ordered to match the admin sidebar's own top-to-bottom order (see TABS
+// in AdminDashboard.jsx), with each sub-feature permission (assets,
+// onboarding) placed right after the full page it belongs to (Accounts,
+// Staff) — kept in sync with the frontend's own PAGE_KEYS, which is what
+// actually controls the Page-access checkbox order admins see.
 const PAGE_KEYS = [
   'orders',
   'accounts',
+  'assets',
   'inventory',
   'batchscan',
   'printlabel',
   'rates',
-  'onboarding',
   'customsclients',
   'storage',
-  'assets',
   'customers',
   'whatsapp',
+  'onboarding',
 ];
 
 const PAGE_LABELS = {
