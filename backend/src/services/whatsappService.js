@@ -57,4 +57,38 @@ async function sendTemplateMessage({ to, templateName, params = [] }) {
   return { messages: [{ id: data.messageId }], status: data.status };
 }
 
-module.exports = { sendTemplateMessage };
+// Freeform session reply (staff typing back to a customer) — a different
+// Gupshup endpoint from the template send above (`/msg`, not
+// `/template/msg`) since this isn't a pre-approved template. WhatsApp only
+// allows freeform messages within 24h of the customer's last inbound
+// message; outside that window Gupshup rejects this and the real error
+// message below is what the admin inbox shows the staff member, rather
+// than silently failing — no template-picker fallback for this in v1.
+async function sendSessionMessage({ to, body }) {
+  const params = new URLSearchParams({
+    channel: 'whatsapp',
+    source: process.env.GUPSHUP_SOURCE_NUMBER,
+    destination: to,
+    'src.name': 'COMONN',
+    message: JSON.stringify({ type: 'text', text: body }),
+  });
+
+  const res = await fetch('https://api.gupshup.io/wa/api/v1/msg', {
+    method: 'POST',
+    headers: {
+      apikey: process.env.GUPSHUP_API_KEY,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params,
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.status === 'error') {
+    const err = new Error(`Gupshup API error (${res.status}): ${JSON.stringify(data)}`);
+    err.status = 502;
+    throw err;
+  }
+  return { messages: [{ id: data.messageId }], status: data.status };
+}
+
+module.exports = { sendTemplateMessage, sendSessionMessage };
