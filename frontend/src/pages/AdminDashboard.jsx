@@ -2604,9 +2604,9 @@ function RatesPanel() {
             </select>
           </div>
           <div className="field">
-            <label>From zone (optional)</label>
-            <select className="select" value={form.fromZoneId} onChange={(e) => setForm({ ...form, fromZoneId: e.target.value })}>
-              <option value="">Any</option>
+            <label>From zone <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <select className="select" required value={form.fromZoneId} onChange={(e) => setForm({ ...form, fromZoneId: e.target.value })}>
+              <option value="">—</option>
               {originZones.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
             </select>
           </div>
