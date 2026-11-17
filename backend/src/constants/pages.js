@@ -22,6 +22,7 @@ const PAGE_KEYS = [
   'storage',
   'assets',
   'customers',
+  'whatsapp',
 ];
 
 const PAGE_LABELS = {
