@@ -44,6 +44,7 @@ const manifestRegionRoutes = require('./routes/manifestRegion.routes');
 const manifestRoutes = require('./routes/manifest.routes');
 const onboardingInviteRoutes = require('./routes/onboardingInvite.routes');
 const walletRoutes = require('./routes/wallet.routes');
+const whatsappRoutes = require('./routes/whatsapp.routes');
 const { startDriverAutoUnassignJob } = require('./services/driverAutoUnassign');
 const { startAccountSetupFollowupJob } = require('./services/accountSetupFollowup');
 const { startMerchantInvoiceGenerationJob } = require('./services/merchantInvoiceGenerator');
