@@ -313,14 +313,14 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         )}
 
         {canViewComments && (
-          <div className="detail-section">
+          <div className="detail-section oda-box">
             <div className="oda-section-head"><span className="icon">💬</span><h4>Internal notes</h4></div>
             <button className="btn btn-outline btn-sm" onClick={() => setShowComments(true)}>View comments</button>
           </div>
         )}
 
         {canViewTracking && (
-        <div className="detail-section" style={{ marginBottom: 0 }}>
+        <div className="detail-section oda-box" style={{ marginBottom: 0 }}>
           <div className="oda-section-head"><span className="icon">🚚</span><h4>Tracking</h4></div>
 
           {(carrierName || carrierTrackingNumber || canManageTracking) && (
