@@ -127,4 +127,4 @@ async function handleGupshupWebhook(req, res) {
   res.sendStatus(200);
 }
 
-module.exports = { handleGupshupWebhook };
+module.exports = { handleGupshupWebhook, normalizePhone, matchOrder };
