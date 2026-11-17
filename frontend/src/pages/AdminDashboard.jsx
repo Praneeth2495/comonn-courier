@@ -1513,13 +1513,12 @@ function OrdersPanel() {
                     <span style={{ color: 'var(--slate-light)', fontSize: 12 }}>Unassigned</span>
                   )}
                   <button
-                    className="row-edit-btn"
+                    className="btn btn-outline btn-sm"
                     title="Edit order"
-                    aria-label="Edit order"
                     disabled={editingId === o.id}
                     onClick={() => editOrder(o.id)}
                   >
-                    {editingId === o.id ? '…' : '✏️'}
+                    {editingId === o.id ? '…' : 'Edit'}
                   </button>
                 </div>
               )}
