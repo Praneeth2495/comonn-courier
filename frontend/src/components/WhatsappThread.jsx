@@ -69,16 +69,24 @@ export default function WhatsappThread({ phone, orderId, messages, onSent }) {
         ))}
       </div>
 
+      {!canReply && (
+        <p className="wa-thread-window-note">
+          {lastInbound
+            ? `This conversation's 24-hour reply window closed ${formatDateTime(sessionExpiresAt)}. The customer needs to message again before you can reply.`
+            : 'Waiting for the customer to message first — a freeform reply can only be sent within 24 hours of their own message.'}
+        </p>
+      )}
       <form onSubmit={send} className="wa-thread-replybox">
         <textarea
           className="input"
-          placeholder="Type a reply…"
+          placeholder={canReply ? 'Type a reply…' : 'Reply window closed'}
           rows={2}
           style={{ resize: 'vertical', flex: 1 }}
           value={body}
+          disabled={!canReply}
           onChange={(e) => setBody(e.target.value)}
         />
-        <button className="btn btn-primary btn-sm" disabled={!body.trim() || sending} style={{ flex: 'none' }}>
+        <button className="btn btn-primary btn-sm" disabled={!canReply || !body.trim() || sending} style={{ flex: 'none' }}>
           {sending ? '…' : 'Send'}
         </button>
       </form>
