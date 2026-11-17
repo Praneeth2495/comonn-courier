@@ -118,6 +118,7 @@ app.use('/api/box-bookings', boxBookingRoutes);
 app.use('/api/admin/hubs', hubRoutes);
 app.use('/api/admin/manifest-regions', manifestRegionRoutes);
 app.use('/api/admin/manifests', manifestRoutes);
+app.use('/api/admin/whatsapp', whatsappRoutes);
 
 // Static download of generated label PDFs (also served explicitly via
 // /api/labels/:orderId/download for access-controlled downloads)
