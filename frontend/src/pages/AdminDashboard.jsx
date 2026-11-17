@@ -117,7 +117,10 @@ export default function AdminDashboard() {
         <button className="app-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close menu">✕</button>
         <div className="brand"><img className="logo-img lg" src={logoFooter} alt="Comonn" width="640" height="108" /><span style={{ fontSize: 12, fontWeight: 700, color: '#93A0C4', textTransform: 'uppercase', letterSpacing: '.06em' }}>{SIDEBAR_ROLE_LABEL[user?.role] || 'Admin'}</span></div>
         {TABS.map(([key, label]) => (
-          <button key={key} className={`app-navlink ${tab === key ? 'active' : ''}`} onClick={() => selectTab(key)}>{label}</button>
+          <button key={key} className={`app-navlink ${tab === key ? 'active' : ''}`} onClick={() => selectTab(key)}>
+            {label}
+            {key === 'whatsapp' && whatsappUnread > 0 && <span className="app-navlink-badge">{whatsappUnread}</span>}
+          </button>
         ))}
         <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,.1)' }}>
           <Link to="/" className="app-navlink">← Back to site</Link>
