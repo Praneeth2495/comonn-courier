@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
+import WhatsappThread from './WhatsappThread';
 import { formatDateShort, formatDateTime } from '../utils/dateFormat';
 import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
 import { abbreviateInState } from '../utils/regionNames';
