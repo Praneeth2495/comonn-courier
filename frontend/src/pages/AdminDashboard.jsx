@@ -24,6 +24,7 @@ const CustomsClientsPanel = lazy(() => import('../components/CustomsClientsPanel
 const AssetsPanel = lazy(() => import('../components/AssetsPanel'));
 const StorageAdminPanel = lazy(() => import('../components/StorageAdminPanel'));
 const RidersPanel = lazy(() => import('../components/RidersPanel'));
+const WhatsappInboxPanel = lazy(() => import('../components/WhatsappInboxPanel'));
 const CustomersPanel = lazy(() => import('../components/CustomersPanel'));
 const StaffPanel = lazy(() => import('../components/StaffPanel'));
 const PrintLabelPanel = lazy(() => import('../components/PrintLabelPanel'));
@@ -491,7 +492,7 @@ function RegionOverviewTable({ fromDate, toDate }) {
             </tr>
           ))}
           {rows.length === 0 && (
-            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No hubs assigned to any staff yet.</td></tr>
+            <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No hubs configured yet.</td></tr>
           )}
         </tbody>
       </table>
@@ -590,7 +591,7 @@ function RegionBreakdownKpi({ rows }) {
   return (
     <div>
       {rows.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No hubs assigned to any staff yet.</p>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No hubs configured yet.</p>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
