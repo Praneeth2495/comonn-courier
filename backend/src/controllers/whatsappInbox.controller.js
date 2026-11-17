@@ -20,12 +20,13 @@ function verifyBasicAuth(req) {
   const [reqUser, reqPass] = decoded.split(':');
   const expected = `${user}:${pass}`;
   const got = `${reqUser || ''}:${reqPass || ''}`;
-  // Lengths must match before timingSafeEqual (it throws on mismatched
-  // buffer sizes) — padding both to the same fixed length first keeps the
-  // comparison itself still constant-time regardless of the real lengths.
+  // timingSafeEqual throws on mismatched buffer lengths, which would leak
+  // length via the exception itself — padding both to one fixed size first
+  // (well beyond any realistic credential length) keeps the whole
+  // comparison constant-time regardless of the real lengths.
   const a = Buffer.from(expected.padEnd(128, '\0'));
   const b = Buffer.from(got.padEnd(128, '\0'));
-  return crypto.timingSafeEqual(a, b) && got === expected;
+  return crypto.timingSafeEqual(a, b);
 }
 
 // Gupshup's own webhook shape (NOT Meta's — see whatsapp.controller.js for
