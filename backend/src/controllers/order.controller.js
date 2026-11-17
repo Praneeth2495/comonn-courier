@@ -550,6 +550,7 @@ async function getOrder(req, res, next) {
         addons: true,
         trackingEvents: { orderBy: { occurredAt: 'asc' } },
         whatsappMessages: { orderBy: { createdAt: 'asc' } },
+        whatsappReplies: { orderBy: { createdAt: 'asc' } },
       },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
@@ -561,6 +562,7 @@ async function getOrder(req, res, next) {
     // customer — same treatment as comments (fetched via a separate
     // staff-only route, never included here at all).
     if (req.user.role === 'CUSTOMER') delete order.whatsappMessages;
+    if (req.user.role === 'CUSTOMER') delete order.whatsappReplies;
     res.json({ order });
   } catch (err) {
     next(err);
