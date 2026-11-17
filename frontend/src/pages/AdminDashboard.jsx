@@ -2678,7 +2678,7 @@ function RatesPanel() {
 // Mirrors backend/src/constants/pages.js — kept in sync manually since the
 // frontend and backend are separately deployed apps with no shared import.
 // "Users" and "Merchants" are deliberately absent (hardcoded ADMIN-only).
-const PAGE_KEYS = ['orders', 'accounts', 'inventory', 'batchscan', 'printlabel', 'rates', 'onboarding', 'customsclients', 'storage', 'assets', 'customers', 'staff'];
+const PAGE_KEYS = ['orders', 'accounts', 'inventory', 'batchscan', 'printlabel', 'rates', 'onboarding', 'customsclients', 'storage', 'assets', 'customers', 'whatsapp', 'staff'];
 const PAGE_LABELS = {
   orders: 'Orders (manage)',
   accounts: 'Accounts',
@@ -2691,6 +2691,7 @@ const PAGE_LABELS = {
   storage: 'Storage',
   assets: 'Assets',
   customers: 'Customers',
+  whatsapp: 'WhatsApp',
   staff: 'Staff',
 };
 
