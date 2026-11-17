@@ -156,37 +156,35 @@ async function staffOverview(req, res, next) {
 }
 
 /**
- * GET /api/admin/dashboard/regions — one row per distinct state/region
- * pair currently assigned to at least one staff member (the operationally
- * relevant set, not every region in the postcode database — most of which
- * no staff covers). `totals` stays scoped to the page's from/to range as
- * before (the dedicated Region tab's own table); `ordersToday` is a
- * separate, always-"today" count (same fixed window staff/riders use via
- * activityWindows, independent of from/to) — just for the Overview KPI
- * tile's "regions with orders today" ratio.
+ * GET /api/admin/dashboard/regions — one row per active Hub (every real
+ * operating region, whether or not a staff member is currently assigned to
+ * it — previously this only listed regions with at least one staff
+ * assignment, which hid most hubs). `totals` stays scoped to the page's
+ * from/to range as before (the dedicated Region tab's own table);
+ * `ordersToday` is a separate, always-"today" count (same fixed window
+ * staff/riders use via activityWindows, independent of from/to) — just for
+ * the Overview KPI tile's "hubs with orders today" ratio.
  */
 async function computeRegionBreakdown(from, to) {
-  const assignments = await prisma.staffRegionAssignment.findMany({
-    select: { state: true, region: true },
+  const hubs = await prisma.hub.findMany({ where: { isActive: true }, select: { name: true } });
+  // A Hub's name is the same region name used on PostcodeSuggestion.region
+  // (see the Hub-per-region migration note above) — one arbitrary postcode
+  // row per region is enough to read off its state, since every postcode
+  // in a given region shares the same state by construction.
+  const regionStateRows = await prisma.postcodeSuggestion.findMany({
+    where: { countryCode: 'IN', region: { not: null } },
+    select: { region: true, state: true },
+    distinct: ['region'],
   });
-  // Expand before deduping/keying — an old raw-code row ("AP") and a
-  // newer already-expanded one ("Andhra Pradesh") are the same real state
-  // and must collapse into one row here, or this table (and the Region
-  // Overview KPI built from it) shows the same state twice.
-  const seen = new Set();
-  const distinctRegions = [];
-  for (const a of assignments) {
-    const state = expandInState(a.state);
-    const key = `${state}|${a.region || ''}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    distinctRegions.push({ state, region: a.region });
-  }
-  distinctRegions.sort((a, b) => a.state.localeCompare(b.state) || (a.region || '').localeCompare(b.region || ''));
+  const stateByRegion = new Map(regionStateRows.map((row) => [row.region, expandInState(row.state)]));
+
+  const hubRegions = hubs
+    .map((h) => ({ state: stateByRegion.get(h.name) || '', region: h.name }))
+    .sort((a, b) => a.state.localeCompare(b.state) || a.region.localeCompare(b.region));
 
   const todayWindow = activityWindows().today;
   return Promise.all(
-    distinctRegions.map(async (r) => {
+    hubRegions.map(async (r) => {
       const [originFilter] = await resolveOriginFilters([r]);
       const where = buildDashboardWhere(from, to, { senderAddress: originFilter });
       const [totals, ordersToday] = await Promise.all([
