@@ -196,7 +196,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         </div>
 
-        <div className="detail-section oda-section-sender">
+        <div className="detail-section oda-box">
           <div className="oda-section-head"><span className="icon">📤</span><h4>Sender details</h4></div>
           <div className="detail-grid">
             <div className="detail-row"><span className="k">Name</span><span className="v">{order.senderAddress?.contactName}</span></div>
@@ -209,7 +209,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         </div>
 
-        <div className="detail-section oda-section-receiver">
+        <div className="detail-section oda-box">
           <div className="oda-section-head"><span className="icon">📥</span><h4>Receiver details</h4></div>
           <div className="detail-grid">
             <div className="detail-row"><span className="k">Name</span><span className="v">{order.receiverAddress?.contactName}</span></div>
@@ -223,7 +223,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           </div>
         </div>
 
-        <div className="detail-section">
+        <div className="detail-section oda-box">
           <div className="oda-section-head"><span className="icon">📦</span><h4>Shipment</h4></div>
           <div className="detail-grid">
             <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Items</span><span className="v">{itemsSummary || '—'}</span></div>
@@ -238,7 +238,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         </div>
 
         {canViewPricing && order.addons?.length > 0 && (
-          <div className="detail-section">
+          <div className="detail-section oda-box">
             <div className="oda-section-head"><span className="icon">🎁</span><h4>Add-on services</h4></div>
             <div className="detail-grid">
               {order.addons.map((a) => (
@@ -253,7 +253,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         )}
 
         {canViewPaymentRefs && (order.payment || order.balancePayments?.length > 0) && (
-          <div className="detail-section">
+          <div className="detail-section oda-box">
             <div className="oda-section-head"><span className="icon">🧾</span><h4>Payment reference</h4></div>
             <div className="detail-grid">
               {order.payment && <PaymentRefRow label="Original payment" payment={order.payment} />}
@@ -265,7 +265,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         )}
 
         {hasDocuments && (
-          <div className="detail-section">
+          <div className="detail-section oda-box">
             <div className="oda-section-head"><span className="icon">🏷️</span><h4>Documents</h4></div>
             {labels.length > 0 && (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
