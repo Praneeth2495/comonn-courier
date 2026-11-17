@@ -75,6 +75,33 @@ async function listConversations(req, res, next) {
   }
 }
 
+/**
+ * GET /api/admin/whatsapp/unread-count — how many conversations currently
+ * "need a reply" (same definition as listConversations' needsReply: the
+ * most recent message in that thread is inbound). Deliberately its own
+ * lightweight endpoint rather than reusing listConversations — this gets
+ * polled continuously from the sidebar badge regardless of which admin
+ * tab is open, so it skips the order/display-name lookups that endpoint
+ * does for every conversation.
+ */
+async function getUnreadCount(req, res, next) {
+  try {
+    const latestPerPhone = await prisma.whatsappReply.groupBy({
+      by: ['phone'],
+      _max: { createdAt: true },
+    });
+    const directions = await Promise.all(
+      latestPerPhone.map(({ phone, _max }) =>
+        prisma.whatsappReply.findFirst({ where: { phone, createdAt: _max.createdAt }, select: { direction: true } })
+      )
+    );
+    const count = directions.filter((d) => d?.direction === 'IN').length;
+    res.json({ count });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** GET /api/admin/whatsapp/conversations/:phone — full thread, oldest first. */
 async function getConversation(req, res, next) {
   try {
