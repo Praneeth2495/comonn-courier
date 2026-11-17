@@ -71,6 +71,7 @@ export default function AdminDashboard() {
     ...(hasPage('storage') ? [['storage', 'Storage']] : []),
     ...(hasPage('orders') ? [['riders', 'Riders']] : []),
     ...(hasPage('customers') ? [['customers', 'Customers']] : []),
+    ...(hasPage('whatsapp') ? [['whatsapp', 'WhatsApp']] : []),
     // Onboarding and Attendance both live inside Staff as sub-tabs now
     // (StaffPanel) rather than their own top-level nav entries. Staff
     // itself is always visible — Attendance's "My attendance" clock-in/out
