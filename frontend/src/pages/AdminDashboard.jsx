@@ -56,6 +56,22 @@ export default function AdminDashboard() {
   // role-management control.
   const hasPage = (key) => isAdmin || !!user?.allowedPages?.includes(key);
 
+  // Polled independently of which tab is open, same 30s cadence as every
+  // other admin list in this app, so the sidebar badge stays current even
+  // while looking at an unrelated page — not just while the WhatsApp tab
+  // itself is mounted.
+  const [whatsappUnread, setWhatsappUnread] = useState(0);
+  useEffect(() => {
+    if (!hasPage('whatsapp')) return;
+    function load() {
+      client.get('/admin/whatsapp/unread-count').then(({ data }) => setWhatsappUnread(data.count)).catch(() => {});
+    }
+    load();
+    const interval = setInterval(load, 30 * 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.allowedPages, isAdmin]);
+
   const TABS = [
     ['overview', 'Overview'],
     ['orders', 'Orders'],
