@@ -2678,20 +2678,26 @@ function RatesPanel() {
 // Mirrors backend/src/constants/pages.js — kept in sync manually since the
 // frontend and backend are separately deployed apps with no shared import.
 // "Users" and "Merchants" are deliberately absent (hardcoded ADMIN-only).
-const PAGE_KEYS = ['orders', 'accounts', 'inventory', 'batchscan', 'printlabel', 'rates', 'onboarding', 'customsclients', 'storage', 'assets', 'customers', 'whatsapp', 'staff'];
+// Ordered to roughly follow the sidebar's own top-to-bottom order (see
+// TABS above), with each sub-feature permission (assets, onboarding)
+// placed right after the full page it belongs to (Accounts, Staff) rather
+// than wherever it happened to land historically — was previously ordered
+// by whenever each page was added to the codebase, which read as mixed/
+// arbitrary to an admin scanning the checkbox list top to bottom.
+const PAGE_KEYS = ['orders', 'accounts', 'assets', 'inventory', 'batchscan', 'printlabel', 'rates', 'customsclients', 'storage', 'customers', 'whatsapp', 'onboarding', 'staff'];
 const PAGE_LABELS = {
   orders: 'Orders (manage)',
   accounts: 'Accounts',
+  assets: 'Assets',
   inventory: 'Inventory',
   batchscan: 'Scan',
   printlabel: 'Print Label',
   rates: 'Pricing',
-  onboarding: 'Onboarding',
   customsclients: 'Customs Client',
   storage: 'Storage',
-  assets: 'Assets',
   customers: 'Customers',
   whatsapp: 'WhatsApp',
+  onboarding: 'Onboarding',
   staff: 'Staff',
 };
 
