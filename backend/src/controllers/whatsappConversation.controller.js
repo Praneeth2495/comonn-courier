@@ -115,6 +115,15 @@ async function sendReply(req, res, next) {
     const { body, orderId } = req.body;
     if (!body?.trim()) return res.status(400).json({ error: 'body is required' });
 
+    const session = await getSessionState(phone);
+    if (!session.canReply) {
+      return res.status(403).json({
+        error: session.lastInboundAt
+          ? 'This conversation\'s 24-hour reply window has closed. The customer needs to message again before you can reply.'
+          : 'No message has been received from this number yet — a freeform reply can only be sent within 24 hours of the customer\'s own message.',
+      });
+    }
+
     try {
       const result = await sendSessionMessage({ to: phone, body: body.trim() });
       const reply = await prisma.whatsappReply.create({
