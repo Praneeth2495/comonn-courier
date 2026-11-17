@@ -104,6 +104,11 @@ async function handleStatusEvent(payload) {
 }
 
 async function handleGupshupWebhook(req, res) {
+  if (!verifyBasicAuth(req)) {
+    console.error('Gupshup webhook: Basic Auth check failed, rejecting');
+    res.set('WWW-Authenticate', 'Basic realm="gupshup-webhook"');
+    return res.status(401).send('Unauthorized');
+  }
   try {
     const event = req.body;
     if (event?.type === 'message') {
