@@ -41,6 +41,11 @@ const PAGE_LABELS = {
   // with no ability to touch staff/admin accounts or roles at all, so it's
   // safe to grant to STAFF individually.
   customers: 'Customers',
+  // Inbound WhatsApp replies + the ability to send freeform replies back —
+  // its own key rather than folded into 'orders' since reading customer
+  // conversations is a distinct, more sensitive capability than order
+  // dispatch/status management.
+  whatsapp: 'WhatsApp',
 };
 
 // Sub-tabs inside the (always-visible) Orders page — separate from
