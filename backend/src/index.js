@@ -16,6 +16,7 @@ const path = require('path');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const { handleWebhook } = require('./controllers/payment.controller');
 const { verifyWebhook: verifyWhatsappWebhook, handleWebhookEvent: handleWhatsappWebhook } = require('./controllers/whatsapp.controller');
+const { handleGupshupWebhook } = require('./controllers/whatsappInbox.controller');
 
 const authRoutes = require('./routes/auth.routes');
 const quoteRoutes = require('./routes/quote.routes');
