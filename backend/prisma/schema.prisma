@@ -118,6 +118,7 @@ model User {
   regionAssignments       StaffRegionAssignment[]
   passwordSetTokens       PasswordSetToken[]
   orderComments           OrderComment[]
+  sentWhatsappReplies     WhatsappReply[]
   driverJobs              Order[]                  @relation("OrderDriver")
   inventoryUpdates        InventoryItem[]
   scanBatches             ScanBatch[]
