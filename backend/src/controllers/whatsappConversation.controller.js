@@ -5,6 +5,24 @@ function last10(phone) {
   return String(phone || '').replace(/\D/g, '').slice(-10);
 }
 
+// WhatsApp only allows a business-initiated freeform (non-template) reply
+// within 24h of the customer's own last message — outside that window
+// Gupshup rejects the send outright. Checked here (not just left to
+// Gupshup's error) so the UI can proactively disable the reply box with an
+// explanation instead of only finding out after a failed attempt.
+const SESSION_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+async function getSessionState(phone) {
+  const lastInbound = await prisma.whatsappReply.findFirst({
+    where: { phone, direction: 'IN' },
+    orderBy: { createdAt: 'desc' },
+    select: { createdAt: true },
+  });
+  if (!lastInbound) return { lastInboundAt: null, sessionExpiresAt: null, canReply: false };
+  const sessionExpiresAt = new Date(lastInbound.createdAt.getTime() + SESSION_WINDOW_MS);
+  return { lastInboundAt: lastInbound.createdAt, sessionExpiresAt, canReply: sessionExpiresAt > new Date() };
+}
+
 // Picks whichever address on the matched order actually corresponds to
 // this phone number, for display in the inbox — the match itself (see
 // whatsappInbox.controller.js) doesn't record which side matched.
