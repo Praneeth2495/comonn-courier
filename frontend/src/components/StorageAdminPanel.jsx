@@ -158,7 +158,7 @@ function SizesAndBoxes() {
 
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h4 style={{ marginBottom: 12, color: 'var(--navy)' }}>Add a box</h4>
-        <form onSubmit={addBox} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, alignItems: 'end' }}>
+        <form onSubmit={addBox} className="storage-addbox-form" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, alignItems: 'end' }}>
           <div className="field">
             <label>Size <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <select className="select" required value={boxForm.boxSizeId} onChange={(e) => setBoxForm({ ...boxForm, boxSizeId: e.target.value })}>
