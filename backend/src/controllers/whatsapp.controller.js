@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { prisma } = require('../config/db');
+const { normalizePhone, matchOrder } = require('./whatsappInbox.controller');
 
 /**
  * GET /api/whatsapp/webhook — Meta's one-time verification handshake, run
