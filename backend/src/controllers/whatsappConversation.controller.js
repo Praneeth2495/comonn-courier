@@ -183,4 +183,4 @@ async function sendReply(req, res, next) {
   }
 }
 
-module.exports = { listConversations, getConversation, sendReply };
+module.exports = { listConversations, getConversation, sendReply, getUnreadCount };
