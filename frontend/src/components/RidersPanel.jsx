@@ -55,8 +55,8 @@ export default function RidersPanel() {
       <h1 className="h-lg" style={{ marginBottom: 4 }}>Riders</h1>
       <p className="lead" style={{ marginBottom: 16 }}>Pick a rider to see their active jobs, job history, and last known location.</p>
 
-      <div className="card date-toolbar" style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14 }}>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="card date-toolbar riders-toolbar" style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14 }}>
+        <div className="riders-toolbar-fields" style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: 12.5, color: 'var(--slate)', fontWeight: 600 }}>Rider</span>
           {drivers === null ? (
             <span style={{ fontSize: 13, color: 'var(--slate-light)' }}>Loading riders…</span>
@@ -79,7 +79,7 @@ export default function RidersPanel() {
           )}
         </div>
         {selectedId && dashboard && (
-          <div style={{ textAlign: 'right' }}>
+          <div className="riders-toolbar-count">
             <span className="lbl" style={{ display: 'block', marginBottom: 2 }}>Orders in this selection</span>
             <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--navy)' }}>{historyJobs.length}</span>
           </div>
