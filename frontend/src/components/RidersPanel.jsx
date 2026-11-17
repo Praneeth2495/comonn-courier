@@ -94,13 +94,13 @@ export default function RidersPanel() {
         <LoadingLogo />
       ) : dashboard ? (
         <>
-          <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+          <div className="card riders-header" style={{ padding: 20, marginBottom: 20 }}>
+            <div className="riders-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
               <div>
                 <h3 style={{ fontSize: 16 }}>{dashboard.driver.fullName}</h3>
                 <div style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>{dashboard.driver.email}{dashboard.driver.phone ? ` · ${dashboard.driver.phone}` : ''}</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
+              <div className="riders-header-loc">
                 <span className="lbl" style={{ display: 'block', marginBottom: 4 }}>Last known location</span>
                 {loc ? (
                   <>
