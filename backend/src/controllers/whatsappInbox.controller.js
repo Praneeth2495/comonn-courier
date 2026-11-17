@@ -23,7 +23,7 @@ function normalizePhone(raw) {
 // ("+91 86860 30346", "8686030346", ...) while Gupshup's `sender.phone` is
 // always digits-only with country code. Best-effort only — a genuinely
 // unmatched reply still gets stored, just without an orderId, and shows up
-# in the admin inbox grouped by phone instead of by order.
+// in the admin inbox grouped by phone instead of by order.
 async function matchOrder(phone) {
   const last10 = phone.slice(-10);
   if (!last10) return null;
