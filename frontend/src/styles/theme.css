@@ -197,7 +197,8 @@ input,select,textarea{font-family:inherit;}
 .app-shell{display:flex;min-height:100vh;}
 .app-sidebar{width:230px;flex:none;background:var(--navy);color:#fff;padding:20px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
 .app-sidebar .brand{color:#fff;padding:4px 8px 18px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px;flex-direction:column;align-items:flex-start;gap:6px;}
-.app-navlink{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:none;color:#C7CEE3;padding:10px 12px;border-radius:9px;font-size:13.5px;font-weight:500;margin-bottom:2px;}
+.app-navlink{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;background:transparent;border:none;color:#C7CEE3;padding:10px 12px;border-radius:9px;font-size:13.5px;font-weight:500;margin-bottom:2px;}
+.app-navlink-badge{flex:none;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--coral);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
 .app-navlink:hover{background:rgba(255,255,255,.06);color:#fff;}
 .app-navlink.active{background:var(--coral);color:#fff;}
 .app-main{flex:1;min-width:0;padding:28px 32px;}
