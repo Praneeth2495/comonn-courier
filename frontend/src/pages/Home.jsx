@@ -599,9 +599,9 @@ export default function Home() {
           <p className="lead" style={{ marginTop: 8 }}>Whatever you need to send, we've got a lane for it.</p>
         </div>
         <div className="wrap grid-3">
-          {SHIP_CATEGORIES.map(({ icon, bg, accent, title, desc, items }) => (
+          {SHIP_CATEGORIES.map(({ tag, bg, accent, title, desc, items }) => (
             <div className="card ship-card" key={title} style={{ '--ship-accent': accent }}>
-              <div className="icon-circle" style={{ background: bg }}>{icon}</div>
+              <span className="ship-desc-pill" style={{ color: accent, background: bg }}>{tag}</span>
               <h4>{title}</h4>
               <p className="ship-desc">{desc}</p>
               <div className="ship-chips">{items.map((it) => <span className="ship-chip" key={it}>{it}</span>)}</div>
