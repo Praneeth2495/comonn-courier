@@ -75,6 +75,12 @@ app.post('/api/whatsapp/webhook', express.raw({ type: 'application/json' }), han
 
 app.use(express.json({ limit: '2mb' }));
 
+// Gupshup's webhook — the actual BSP in use today (see whatsappService.js);
+// unlike the Meta/Razorpay webhooks above, Gupshup doesn't sign its
+// payloads here, so this is mounted after express.json() like any normal
+// route instead of needing the raw body.
+app.post('/api/whatsapp/gupshup-webhook', handleGupshupWebhook);
+
 // Basic rate limiting on the public quote endpoint to prevent scraping/abuse.
 // Max is env-overridable (defaults to 60, unchanged from before) so a
 // load-testing environment can raise it to observe the backend/DB's real
