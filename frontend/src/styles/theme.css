@@ -252,7 +252,13 @@ input,select,textarea{font-family:inherit;}
 .stat-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);font-weight:600;}
 .stat-card .value{font-family:'Space Grotesk';font-size:26px;font-weight:700;color:var(--navy);margin-top:6px;overflow-wrap:break-word;}
 
-table.data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;border:1px solid var(--line-2);}
+/* No overflow:hidden here (even though it would also round the table's own
+   corners) — an ancestor with overflow:hidden between a position:sticky
+   cell and its real scrolling container (.table-wrap, which already clips
+   the rounded corners via its own overflow-x:auto + border-radius) breaks
+   the sticky column entirely, which is why the Name column used to scroll
+   away instead of staying pinned. */
+table.data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;border:1px solid var(--line-2);}
 table.data-table th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);background:var(--paper);padding:12px 14px;font-weight:700;}
 table.data-table td{padding:12px 14px;font-size:13.5px;border-top:1px solid var(--line-2);color:var(--ink);}
 table.data-table tr:hover td{background:#FAFAF7;}
