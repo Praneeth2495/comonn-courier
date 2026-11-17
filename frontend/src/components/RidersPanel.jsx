@@ -159,7 +159,7 @@ function JobCard({ job }) {
           </span>
           {stage && <span className="pill pill-navy" style={{ marginTop: 6, marginLeft: 6, display: 'inline-block' }}>{stage}</span>}
         </div>
-        {job.pickupDate && <div style={{ fontSize: 13, color: 'var(--slate)', textAlign: 'right' }}>Pickup date<br /><b>{job.pickupDate}</b></div>}
+        {job.pickupDate && <div className="riders-job-pickupdate" style={{ fontSize: 13, color: 'var(--slate)' }}>Pickup date<br /><b>{job.pickupDate}</b></div>}
       </div>
 
       <div className="detail-grid">
