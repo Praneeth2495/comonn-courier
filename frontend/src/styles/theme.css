@@ -812,12 +812,12 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
 @media(max-width:520px){.oda-route{flex-direction:column;}.oda-route-arrow{width:100%;height:26px;border-left:none;border-right:none;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);}}
 .detail-row.oda-highlight{background:#FFF5F2;margin:2px -8px;padding:8px;border-radius:8px;}
 .detail-row.oda-highlight .v{color:var(--coral);font-size:15px;}
-/* Sender vs receiver — same card shape as everything else, but a light
-   tint + matching left border so the two blocks of contact/address
-   details are told apart at a glance instead of blurring together. */
-.oda-section-sender,.oda-section-receiver{padding:14px 16px;border-radius:var(--radius-md);border:1px solid var(--line-2);border-left-width:3px;}
-.oda-section-sender{background:rgba(36,81,255,.05);border-left-color:var(--cobalt);}
-.oda-section-receiver{background:var(--success-bg);border-left-color:var(--success);}
+/* Every info block (sender/receiver/shipment/add-ons/WhatsApp/tracking/
+   etc.) shares this one card shape and the same --paper tint as the
+   route box above them, instead of each section carrying its own ad-hoc
+   color — a uniform background reads as one form, not a patchwork. */
+.oda-box{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--radius-md);padding:14px 16px;}
+@media(max-width:520px){.oda-box{padding:12px;}}
 /* max-width:100% + ellipsis — a <select> sizes itself to fit its selected
    option's text regardless of its parent cell's actual width, so a long
    status like "ORIGIN CUSTOMS CLEARED" or "CANCELLED BY CUSTOMER" spilled
