@@ -10,10 +10,23 @@ import { formatDateTime } from '../utils/dateFormat';
  * conversation); `orderId` is optional and just gets attached to whatever
  * reply is sent, for the inbox's "jump to order" convenience later.
  */
+// WhatsApp only allows a business-initiated freeform reply within 24h of
+// the customer's own last message (outside that, Gupshup rejects the
+// send) — mirrors getSessionState in whatsappConversation.controller.js.
+// Computed from `messages` here rather than passed down as a prop so both
+// callers (the inbox panel and the order detail modal) get the same
+// disabled-input behavior without either having to compute it themselves;
+// the backend still enforces this independently on send.
+const SESSION_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 export default function WhatsappThread({ phone, orderId, messages, onSent }) {
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+
+  const lastInbound = messages?.filter((m) => m.direction === 'IN').slice(-1)[0];
+  const sessionExpiresAt = lastInbound ? new Date(new Date(lastInbound.createdAt).getTime() + SESSION_WINDOW_MS) : null;
+  const canReply = !!sessionExpiresAt && sessionExpiresAt > new Date();
 
   async function send(e) {
     e.preventDefault();
