@@ -869,6 +869,12 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
   .t-row.accounts-row{min-width:880px;}
   .dash-toolbar{flex-direction:column;align-items:stretch;}
   .search-box{min-width:0;}
+  /* The "Add a box" form's 3rd column is `auto`-sized for its button,
+     which on a narrow screen squeezes the two fields before it down to
+     unreadable widths instead of wrapping — force a single column and
+     let the button take the full row instead. */
+  .storage-addbox-form{grid-template-columns:1fr!important;}
+  .storage-addbox-form button{width:100%;}
 }
 
 /* ============================================================
