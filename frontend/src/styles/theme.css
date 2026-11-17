@@ -80,13 +80,14 @@ input,select,textarea{font-family:inherit;}
    screen they wrap onto their own line underneath that left block, where
    right-aligned text just floats in empty space instead of reading as
    its own row — switch both to a full-width, left-aligned block below. */
-.riders-toolbar-count,.riders-header-loc{text-align:right;}
+.riders-toolbar-count,.riders-header-loc,.riders-job-pickupdate{text-align:right;}
 @media(max-width:640px){
   .riders-toolbar{flex-direction:column;align-items:stretch;}
   .riders-toolbar-fields{flex-direction:column;align-items:flex-start;}
   .riders-toolbar-count{text-align:left;width:100%;padding-top:12px;border-top:1px solid var(--line-2);}
   .riders-header-row{flex-direction:column;}
   .riders-header-loc{text-align:left;width:100%;padding-top:12px;border-top:1px solid var(--line-2);}
+  .riders-job-pickupdate{text-align:left;width:100%;}
 }
 .nav-actions{display:flex;align-items:center;gap:10px;}
 
