@@ -90,6 +90,19 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
   const [generateError, setGenerateError] = useState('');
   const [showComments, setShowComments] = useState(false);
 
+  // Whichever number a reply would actually go to — an existing
+  // conversation's own phone if one exists (it may differ slightly in
+  // formatting from the address book), else the most recent outbound
+  // notification's recipient, else the receiver's address phone as a
+  // last resort so staff can still start a conversation with no history.
+  const [whatsappReplies, setWhatsappReplies] = useState(order.whatsappReplies || []);
+  const whatsappPhone = (
+    order.whatsappReplies?.[0]?.phone
+    || order.whatsappMessages?.[order.whatsappMessages.length - 1]?.recipientPhone
+    || order.receiverAddress?.phone
+    || ''
+  ).replace(/\D/g, '') || null;
+
   const [trackingEvents, setTrackingEvents] = useState(order.trackingEvents || []);
   const [carrierName, setCarrierName] = useState(order.carrierName || '');
   const [carrierTrackingNumber, setCarrierTrackingNumber] = useState(order.carrierTrackingNumber || '');
