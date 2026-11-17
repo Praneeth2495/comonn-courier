@@ -89,11 +89,13 @@ async function getConversation(req, res, next) {
       orderBy: { createdAt: 'desc' },
       include: { order: { select: { id: true, orderNumber: true, senderAddress: true, receiverAddress: true } } },
     });
+    const session = await getSessionState(phone);
     res.json({
       phone,
       messages,
       order: latestOrder?.order ? { id: latestOrder.order.id, orderNumber: latestOrder.order.orderNumber } : null,
       customerName: latestOrder?.order ? displayName(latestOrder.order, phone) : null,
+      ...session,
     });
   } catch (err) {
     next(err);
