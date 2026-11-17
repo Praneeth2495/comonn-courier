@@ -47,17 +47,17 @@ const HIW_STEPS = [
 
 const SHIP_CATEGORIES = [
   {
-    icon: '🧳', bg: '#EAF0FF', accent: 'var(--cobalt)', title: 'Personal Cargo',
+    tag: 'Door-to-door', bg: '#EAF0FF', accent: 'var(--cobalt)', title: 'Personal Cargo',
     desc: 'Everyday items and belongings, packed and shipped door to door.',
     items: ['Clothes & shoes', 'Sweets & pickles', 'Household goods', 'Gifts & packed foods'],
   },
   {
-    icon: '📦', bg: 'var(--warn-bg)', accent: 'var(--warn)', title: 'Commercial Cargo',
+    tag: 'B2B & bulk', bg: 'var(--warn-bg)', accent: 'var(--warn)', title: 'Commercial Cargo',
     desc: 'B2B shipments and business inventory, handled at scale.',
     items: ['Goods for resale', 'Raw materials', 'Commercial samples', 'Business equipment'],
   },
   {
-    icon: '🎪', bg: 'var(--success-bg)', accent: 'var(--success)', title: 'Project Cargo',
+    tag: 'Specialised handling', bg: 'var(--success-bg)', accent: 'var(--success)', title: 'Project Cargo',
     desc: 'Specialised equipment for events, sport and healthcare.',
     items: ['Events equipment', 'Sports equipment', 'Medical & healthcare cargo'],
   },
