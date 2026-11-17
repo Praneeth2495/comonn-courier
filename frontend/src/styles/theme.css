@@ -73,6 +73,21 @@ input,select,textarea{font-family:inherit;}
    single date field that's mostly just a filter, not a form. */
 .date-toolbar{padding:9px 14px;}
 .date-toolbar .input{max-width:142px;padding:7px 10px;font-size:13px;}
+
+/* Riders panel (staff/admin view into one rider's jobs) — the toolbar's
+   order count and the header card's last-known-location block are both
+   right-aligned stats sitting beside a left block on desktop. On a narrow
+   screen they wrap onto their own line underneath that left block, where
+   right-aligned text just floats in empty space instead of reading as
+   its own row — switch both to a full-width, left-aligned block below. */
+.riders-toolbar-count,.riders-header-loc{text-align:right;}
+@media(max-width:640px){
+  .riders-toolbar{flex-direction:column;align-items:stretch;}
+  .riders-toolbar-fields{flex-direction:column;align-items:flex-start;}
+  .riders-toolbar-count{text-align:left;width:100%;padding-top:12px;border-top:1px solid var(--line-2);}
+  .riders-header-row{flex-direction:column;}
+  .riders-header-loc{text-align:left;width:100%;padding-top:12px;border-top:1px solid var(--line-2);}
+}
 .nav-actions{display:flex;align-items:center;gap:10px;}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;border:none;transition:transform .12s,box-shadow .12s,background .12s;white-space:nowrap;}
