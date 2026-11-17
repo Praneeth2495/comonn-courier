@@ -85,11 +85,12 @@ async function handleWebhookEvent(req, res) {
     }
 
     const event = JSON.parse(req.body);
-    const statuses = (event.entry || [])
-      .flatMap((e) => e.changes || [])
-      .flatMap((c) => c.value?.statuses || []);
+    const changes = (event.entry || []).flatMap((e) => e.changes || []);
+    const statuses = changes.flatMap((c) => c.value?.statuses || []);
+    const messages = changes.flatMap((c) => c.value?.messages || []);
     await Promise.all(statuses.map(applyStatusUpdate));
-    if (statuses.length === 0) console.log('WhatsApp webhook event (no statuses):', JSON.stringify(event));
+    await Promise.all(messages.map(handleInboundTextMessage));
+    if (statuses.length === 0 && messages.length === 0) console.log('WhatsApp webhook event (no statuses/messages):', JSON.stringify(event));
   } catch (err) {
     console.error('WhatsApp webhook: failed to process event:', err.message);
   }
