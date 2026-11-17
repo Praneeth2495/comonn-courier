@@ -1472,22 +1472,20 @@ function OrdersPanel() {
               {tab === 'bookings' && (
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button
-                    className="row-edit-btn"
+                    className="btn btn-outline btn-sm"
                     title="Edit order"
-                    aria-label="Edit order"
                     disabled={editingId === o.id}
                     onClick={() => editOrder(o.id)}
                   >
-                    {editingId === o.id ? '…' : '✏️'}
+                    {editingId === o.id ? '…' : 'Edit'}
                   </button>
                   <button
-                    className="row-delete-btn"
+                    className="btn btn-outline btn-sm"
                     title="Delete booking"
-                    aria-label="Delete booking"
                     disabled={['PICKED_UP', 'ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(o.status)}
                     onClick={() => cancelBooking(o.id)}
                   >
-                    🗑
+                    Delete
                   </button>
                 </div>
               )}
