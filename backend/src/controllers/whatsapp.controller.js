@@ -43,6 +43,33 @@ async function applyStatusUpdate(status) {
   await prisma.whatsappMessage.updateMany({ where: { providerMessageId: status.id }, data });
 }
 
+// Meta's inbound-message shape: entry[].changes[].value.messages[], each
+// { from, id, type, text: { body }, ... } — this is what actually arrives
+// at this endpoint for customer replies (confirmed live 2026-11-17): the
+// WhatsApp number's inbound delivery is configured directly in Meta's own
+// dashboard, separate from Gupshup (which only fronts outbound sending —
+// see whatsappService.js), so inbound text lands here, not at the
+// Gupshup-format endpoint in whatsappInbox.controller.js. Reuses that
+// controller's phone-normalizing/order-matching so both paths produce
+// identical WhatsappReply rows.
+async function handleInboundTextMessage(message) {
+  if (message?.type !== 'text' || !message.text?.body) return;
+  const senderPhone = normalizePhone(message.from);
+  if (!senderPhone) return;
+
+  const orderId = await matchOrder(senderPhone);
+  await prisma.whatsappReply.create({
+    data: {
+      orderId,
+      phone: senderPhone,
+      direction: 'IN',
+      body: String(message.text.body).slice(0, 4000),
+      providerMessageId: message.id || null,
+      status: 'received',
+    },
+  });
+}
+
 async function handleWebhookEvent(req, res) {
   try {
     const secret = process.env.WHATSAPP_APP_SECRET;
