@@ -906,6 +906,25 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
   .wa-thread-replybox button{width:100%;}
 }
 
+/* WhatsApp inbox (WhatsappInboxPanel.jsx) — conversation list + selected
+   thread side by side, same two-pane shape as a typical chat/mail app. */
+.wa-inbox-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start;}
+.wa-inbox-list{padding:6px;max-height:70vh;overflow-y:auto;}
+.wa-inbox-row{display:block;width:100%;text-align:left;background:none;border:none;border-radius:10px;padding:10px 12px;margin-bottom:2px;cursor:pointer;}
+.wa-inbox-row:hover{background:var(--paper);}
+.wa-inbox-row.active{background:#EAF0FF;}
+.wa-inbox-row-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.wa-inbox-row-name{font-size:13.5px;font-weight:700;color:var(--navy);}
+.wa-inbox-dot{width:8px;height:8px;border-radius:50%;background:var(--coral);flex:none;}
+.wa-inbox-row-preview{font-size:12px;color:var(--slate);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wa-inbox-row-time{font-size:10.5px;color:var(--slate-light);margin-top:2px;}
+.wa-inbox-thread{padding:20px;min-height:400px;}
+.wa-inbox-thread-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line-2);}
+@media(max-width:800px){
+  .wa-inbox-layout{grid-template-columns:1fr;}
+  .wa-inbox-list{max-height:260px;}
+}
+
 @media(max-width:640px){
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .t-row.orders-detailed{min-width:820px;}
