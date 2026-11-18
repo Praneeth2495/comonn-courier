@@ -23,17 +23,27 @@ const CHUNK_ERROR_PATTERN = /Failed to fetch dynamically imported module|error l
 
 export function lazyWithReload(factory) {
   return lazy(() =>
-    factory().catch((err) => {
-      const isChunkError = CHUNK_ERROR_PATTERN.test(err?.message || '');
-      const alreadyRetried = sessionStorage.getItem('comonn_chunk_reload');
-      if (isChunkError && !alreadyRetried) {
-        sessionStorage.setItem('comonn_chunk_reload', '1');
-        window.location.reload();
-        // Never resolves — the reload is already underway, and resolving
-        // with a fake module would just let React try to render it.
-        return new Promise(() => {});
-      }
-      throw err;
-    })
+    factory()
+      // A later successful chunk load clears the guard — otherwise a tab
+      // left open across several deploys in one day would only ever get
+      // to self-heal from the FIRST stale-chunk incident, and every
+      // later one (a real, separate occurrence) would fall through to
+      // the dead-end error screen instead of also getting its one retry.
+      .then((mod) => {
+        sessionStorage.removeItem('comonn_chunk_reload');
+        return mod;
+      })
+      .catch((err) => {
+        const isChunkError = CHUNK_ERROR_PATTERN.test(err?.message || '');
+        const alreadyRetried = sessionStorage.getItem('comonn_chunk_reload');
+        if (isChunkError && !alreadyRetried) {
+          sessionStorage.setItem('comonn_chunk_reload', '1');
+          window.location.reload();
+          // Never resolves — the reload is already underway, and resolving
+          // with a fake module would just let React try to render it.
+          return new Promise(() => {});
+        }
+        throw err;
+      })
   );
 }
