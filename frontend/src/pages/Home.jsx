@@ -507,10 +507,11 @@ export default function Home() {
                         <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
                           (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => {
                             e.preventDefault();
+                            // Collapses the box only — keeps the already-
+                            // entered values so they're still carried into
+                            // the quote request on submit (same reasoning
+                            // as Quote.jsx's own "Hide dimensions" handler).
                             setShowDims(false);
-                            setLengthCm('');
-                            setWidthCm('');
-                            setHeightCm('');
                           }}>Hide dimensions</a>)
                         </p>
                       </>
