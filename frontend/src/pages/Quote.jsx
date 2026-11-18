@@ -132,13 +132,23 @@ export default function Quote() {
   );
   const [destinationFocused, setDestinationFocused] = useState(false);
   const destinationDebounceRef = useRef(null);
-  const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || '');
+  const [originPostcode, setOriginPostcode] = useState(quoteInput?.originPostcode || firstSavedSender?.postcode || '');
   const [originSuggestions, setOriginSuggestions] = useState([]);
   const [originSuggestLoading, setOriginSuggestLoading] = useState(false);
   // Set once a full 6-digit pincode was actually looked up and came back
   // with zero matches in the Suggestion List data.
   const [originPostcodeNotFound, setOriginPostcodeNotFound] = useState(false);
-  const [originPicked, setOriginPicked] = useState(quoteInput?.originSuburb ? { suburb: quoteInput.originSuburb, state: quoteInput.originState } : null);
+  const [originPicked, setOriginPicked] = useState(
+    quoteInput?.originSuburb
+      ? { suburb: quoteInput.originSuburb, state: quoteInput.originState }
+      : firstSavedSender ? { suburb: firstSavedSender.city, state: firstSavedSender.state } : null
+  );
+  // Locked (not just prefilled) once there's a first-order sender to pin
+  // to — letting the pincode itself stay editable here while Details.jsx
+  // force-locks the sender section to that first order would let the two
+  // drift apart: a price quoted for a DIFFERENT pickup postcode than the
+  // sender address the order actually gets saved with.
+  const originLockedToFirstOrder = Boolean(firstSavedSender);
   const [originFocused, setOriginFocused] = useState(false);
   const originDebounceRef = useRef(null);
   const [items, setItems] = useState(() => hydrateItems(quoteInput, isCorrectingExistingOrder));
