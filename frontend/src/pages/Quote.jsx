@@ -490,6 +490,17 @@ export default function Quote() {
     await fetchQuotes(parsedItems);
   }
 
+  // "Edit" on a saved booking from this list — same simple swap Details.jsx
+  // itself uses for the "nothing currently in progress" case (loadBookingForEdit):
+  // this page never holds anything worth guarding against losing the way
+  // Details.jsx's two full address forms do, so there's no confirm prompt
+  // here, just a direct switch straight to editing that order's details.
+  function editSavedBooking(booking) {
+    removeSavedBooking(booking.id);
+    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking) });
+    navigate('/details');
+  }
+
   function continueToDetails() {
     if (!selected) return;
     const parsedItems = buildItemsPayload();
