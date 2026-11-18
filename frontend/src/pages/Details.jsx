@@ -165,7 +165,6 @@ function DetailsForm() {
   // requested booking instead of just bouncing to /quote. Null means the
   // modal is there for the plain "New booking" flow instead.
   const [pendingEditTarget, setPendingEditTarget] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     if (user) client.get('/addresses').then(({ data }) => setSavedAddresses(data.addresses)).catch(() => {});
