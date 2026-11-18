@@ -653,7 +653,7 @@ function DetailsForm() {
   );
 }
 
-function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved, lockedFields = [], hideCityStatePlaceholder = false }) {
+function AddressFields({ value, onChange, instructionsLabel, autoFillNote, savedAddresses = [], onSelectSaved, lockedFields = [], hideCityStatePlaceholder = false, hideSavedAddressPicker = false }) {
   const [pinSuggestions, setPinSuggestions] = useState([]);
   const debounceRef = useRef(null);
   const phoneMeta = getPhoneMeta(value.dialCode);
