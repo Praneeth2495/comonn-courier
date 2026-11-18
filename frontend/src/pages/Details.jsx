@@ -11,6 +11,7 @@ import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
 import { getRegionFieldConfig, normalizeRegionValue } from '../utils/regionNames';
 import { getStoredReferralCode } from '../utils/referral';
 import { formatPostcodeSuggestion } from '../utils/addressDisplay';
+import { quoteInputFromOrder, selectedQuoteFromOrder } from '../utils/orderToQuote';
 
 const emptyAddress = (countryCode) => ({
   contactName: '',
