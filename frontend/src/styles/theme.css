@@ -138,6 +138,19 @@ input,select,textarea{font-family:inherit;}
 .field .hint{font-size:11.5px;color:var(--slate-light);}
 .input,.select{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:11px 13px;font-size:14px;color:var(--ink);width:100%;outline:none;transition:border-color .12s,box-shadow .12s;}
 .input:focus,.select:focus{border-color:var(--cobalt);box-shadow:0 0 0 4px rgba(36,81,255,.1);}
+/* Details.jsx's booking form suppresses native HTML5 validation UI
+   (noValidate) so a "Book now" click with empty required fields doesn't
+   show the browser's own invalid-field bubble and default blue focus
+   ring — this reproduces just the visual cue (red, not blue) off the same
+   :invalid pseudo-class the browser already tracks live as each field is
+   filled in, gated by .validate-shown so nothing turns red until a submit
+   has actually been attempted. .input-group (the phone field) has no
+   border of its own — the wrapping div does — hence the :has() variant. */
+.validate-shown .input:invalid,.validate-shown .select:invalid{border-color:var(--danger);}
+.validate-shown .input:invalid:focus,.validate-shown .select:invalid:focus{box-shadow:0 0 0 4px rgba(194,43,43,.12);}
+.validate-shown .input-group:has(input:invalid){border-color:var(--danger);}
+.mandatory-note{font-size:12.5px;color:var(--danger);font-weight:600;margin-bottom:14px;}
+.mandatory-note b{margin-right:2px;}
 /* Native <select> arrows render flush against the box's own edge with no
    breathing room — same custom double-triangle arrow already used for
    .input-group .flag, just with extra padding-right reserved so the arrow
