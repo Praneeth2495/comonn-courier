@@ -76,7 +76,7 @@ function hydrateItems(quoteInput, isCorrectingExistingOrder) {
 export default function Quote() {
   const { user } = useAuth();
   const isStaffUser = ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role);
-  const { quoteInput: contextQuoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking } = useBooking();
+  const { quoteInput: contextQuoteInput, selectedQuote, order: bookingOrder, savedBookings, setBooking, removeSavedBooking } = useBooking();
   // Staff/admin get the full discrete 1-25 kg weight dropdown ONLY while
   // actually correcting a real, already-placed order (bookingOrder.id set —
   // see AdminDashboard.jsx's "Edit order", the only place that passes a
