@@ -768,7 +768,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
       <div className="grid-2" style={{ marginTop: 14 }}>
         {value.countryCode !== 'IE' && (
           <div className="field" style={{ maxWidth: 220, position: 'relative' }}>
-            <label>{value.countryCode === 'DE' ? 'PLZ' : 'Pin code'}</label>
+            <label>{value.countryCode === 'DE' ? 'PLZ' : 'Pin code'} <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input className="input" required disabled={isLocked('postcode')} value={value.postcode} onChange={(e) => handlePostcodeChange(e.target.value)} />
             {pinSuggestions.length > 0 && (
               <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
