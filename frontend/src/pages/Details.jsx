@@ -187,6 +187,10 @@ function DetailsForm() {
   const [declaredValue, setDeclaredValue] = useState(isEditingExisting && bookingOrder.declaredValue ? String(bookingOrder.declaredValue) : '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Gates the red invalid-field styling below — off until a "Book now"
+  // click first fails validation, so a fresh page load doesn't show every
+  // required field as red before the customer has even started typing.
+  const [showValidation, setShowValidation] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [showNewBookingConfirm, setShowNewBookingConfirm] = useState(false);
   // Set only when "Edit" was clicked on a saved booking while the current
