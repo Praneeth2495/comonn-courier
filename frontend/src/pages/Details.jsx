@@ -326,8 +326,26 @@ function DetailsForm() {
     return isEditingExisting ? { ...data.order, amountPaid: data.amountPaid, balance: data.balance } : data.order;
   }
 
-  async function submit(e) {
+  // The form has noValidate (see below) so this runs the equivalent check
+  // manually instead of letting the browser's own constraint-validation UI
+  // handle it — that native bubble + the default blue :focus ring is what
+  // used to show here; this reproduces the "jump to the first missing
+  // field" behavior but with our own red styling (driven by
+  // .validate-shown below, which flips on the same :invalid fields the
+  // browser was already tracking) and a plain-language note instead.
+  function submit(e) {
     e.preventDefault();
+    if (!e.target.checkValidity()) {
+      setShowValidation(true);
+      const firstInvalid = e.target.querySelector(':invalid');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    doSubmit();
+  }
+
+  async function doSubmit() {
     setError('');
     setLoading(true);
     try {
