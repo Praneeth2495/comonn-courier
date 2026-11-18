@@ -568,23 +568,6 @@ function DetailsForm() {
         </div>
       )}
 
-      {deleteTarget && (
-        <div className="modal-overlay open" onClick={() => setDeleteTarget(null)}>
-          <div className="modal-box" style={{ maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-              <h3>Delete {deleteTarget.orderNumber}?</h3>
-              <button onClick={() => setDeleteTarget(null)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
-            </div>
-            <p className="lead" style={{ fontSize: 13.5, marginBottom: 22 }}>
-              This removes it from this session's bookings and it won't be included in payment. This can't be undone.
-            </p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setDeleteTarget(null)}>Cancel</button>
-              <button type="button" className="btn btn-primary" style={{ flex: 1, background: 'var(--danger)' }} onClick={confirmDeleteSavedBooking}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
