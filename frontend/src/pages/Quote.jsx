@@ -554,6 +554,8 @@ export default function Quote() {
     <div>
       <div id="stepper-quote"><Stepper activeKey="quote" /></div>
       <div className="section" style={{ paddingTop: 20, maxWidth: 820, margin: '0 auto' }}>
+        <SavedBookingsList savedBookings={savedBookings} onEdit={editSavedBooking} removeSavedBooking={removeSavedBooking} loading={loading} />
+
         <form className="card instant-booking-form" style={{ marginBottom: 28, overflow: 'hidden' }} onSubmit={submitQuote}>
           <div className="ib-body" style={{ padding: 28 }}>
           <div className="ib-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
