@@ -618,18 +618,17 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
       <div className="grid-2">
         <div className="field">
           <label>Name <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-          <input className="input" placeholder="Enter full name" required disabled={isLocked('contactName')} value={value.contactName} onChange={(e) => onChange('contactName', e.target.value)} />
+          <input className="input" placeholder="Enter full name" required value={value.contactName} onChange={(e) => onChange('contactName', e.target.value)} />
         </div>
         <div className="field">
           <label>Phone <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <div className="input-group">
-            <select className="flag" disabled={isLocked('phoneNumber')} value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
+            <select className="flag" value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
               {PHONE_OPTIONS.map((p) => <option key={p.code} value={p.code}>{p.flag} {p.dial}</option>)}
             </select>
             <input
               placeholder={`${phoneMeta.digits} digit number`}
               required
-              disabled={isLocked('phoneNumber')}
               value={value.phoneNumber}
               onChange={(e) => handlePhoneChange(e.target.value)}
               maxLength={phoneMeta.digits}
@@ -645,17 +644,17 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         </div>
         <div className="field">
           <label>{instructionsLabel}</label>
-          <input className="input" placeholder="Optional" disabled={isLocked('instructions')} value={value.instructions} onChange={(e) => onChange('instructions', e.target.value)} />
+          <input className="input" placeholder="Optional" value={value.instructions} onChange={(e) => onChange('instructions', e.target.value)} />
         </div>
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
         <div className="field">
           <label>Address Line 1 <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
-          <input className="input" placeholder="House / street" required disabled={isLocked('line1')} value={value.line1} onChange={(e) => onChange('line1', e.target.value)} />
+          <input className="input" placeholder="House / street" required value={value.line1} onChange={(e) => onChange('line1', e.target.value)} />
         </div>
         <div className="field">
           <label>Address Line 2</label>
-          <input className="input" placeholder="Apartment, suite (optional)" disabled={isLocked('line2')} value={value.line2} onChange={(e) => onChange('line2', e.target.value)} />
+          <input className="input" placeholder="Apartment, suite (optional)" value={value.line2} onChange={(e) => onChange('line2', e.target.value)} />
         </div>
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
