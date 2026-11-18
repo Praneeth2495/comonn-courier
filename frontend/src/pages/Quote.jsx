@@ -551,7 +551,6 @@ export default function Quote() {
                 <FlagCountrySelect value="IN" options={['IN']} disabled hideArrow />
                 <input
                   placeholder="Pickup pincode"
-                  disabled={originLockedToFirstOrder}
                   value={originFocused || !originPicked ? originPostcode : formatPostcodeSuggestion(originPostcode, originPicked.suburb, originPicked.state)}
                   onChange={(e) => handleOriginPostcodeChange(e.target.value)}
                   onFocus={() => setOriginFocused(true)}
@@ -563,7 +562,7 @@ export default function Quote() {
                   </div>
                 )}
               </div>
-              {!originLockedToFirstOrder && originSuggestions.length > 0 && (
+              {originSuggestions.length > 0 && (
                 <div className="card" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, padding: 6, maxHeight: 220, overflowY: 'auto', zIndex: 20 }}>
                   {originSuggestions.map((s, i) => (
                     <button type="button" key={i} className="acct-menu-item" onClick={() => pickOriginSuggestion(s)}>
@@ -572,9 +571,7 @@ export default function Quote() {
                   ))}
                 </div>
               )}
-              {originLockedToFirstOrder ? (
-                <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>Locked to your first order's pickup address for this session.</p>
-              ) : originPostcodeNotFound ? (
+              {originPostcodeNotFound ? (
                 <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 6 }}>Postcode issue, please contact +919108038783.</p>
               ) : (
                 <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 6 }}>{getPostcodeRule('IN').hint}</p>
