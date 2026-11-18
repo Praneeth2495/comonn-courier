@@ -415,18 +415,6 @@ function DetailsForm() {
     }
   }
 
-  // Only removes it from this session's saved list — the order itself
-  // stays on the server as an abandoned PENDING_PAYMENT/UNFINISHED record,
-  // same as any booking a customer simply never returns to. There's no
-  // customer-facing "delete order" endpoint, and adding one is a bigger
-  // change than this button calls for. Gated behind its own confirm
-  // modal (deleteTarget) rather than acting immediately — see the request
-  // this came from.
-  function confirmDeleteSavedBooking() {
-    if (deleteTarget) removeSavedBooking(deleteTarget.id);
-    setDeleteTarget(null);
-  }
-
   return (
     <div>
       <div id="stepper-details"><Stepper activeKey="details" /></div>
