@@ -946,8 +946,11 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
 /* ============================================================
    Redesign additions — User dashboard (My Account)
    ============================================================ */
-.acct-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:26px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.acct-tab{padding:12px 20px;font-size:14px;font-weight:700;color:var(--slate);border-bottom:2.5px solid transparent;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;white-space:nowrap;flex:none;}
+/* Same white-card treatment as .dash-tabs above (the admin side's
+   equivalent tab bar) — was previously bare on the page's own --paper
+   body color, reading as part of the empty page rather than a header. */
+.acct-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line-2);border-radius:var(--radius-md);box-shadow:var(--shadow-card);padding:0 12px;margin-bottom:26px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.acct-tab{padding:14px 16px;font-size:14px;font-weight:700;color:var(--slate);border-bottom:2.5px solid transparent;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;white-space:nowrap;flex:none;}
 .acct-tab.active{color:var(--navy);border-bottom-color:var(--coral);}
 .order-card{padding:22px 24px;margin-bottom:16px;}
 .order-card-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
