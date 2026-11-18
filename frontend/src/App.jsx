@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 // /react (not /next) — this is a Vite React SPA, not a Next.js app; the
 // /next entry point pulls in Next-specific router hooks that don't exist
@@ -10,6 +10,7 @@ import { PublicLayout } from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingLogo from './components/LoadingLogo';
 import { captureReferralCodeFromUrl } from './utils/referral';
+import { lazyWithReload as lazy } from './utils/lazyWithReload';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
