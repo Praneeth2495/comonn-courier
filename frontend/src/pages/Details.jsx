@@ -795,7 +795,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
             postcode-style field every other country gets. */}
         {value.countryCode === 'IE' && (
           <div className="field" style={{ maxWidth: 220 }}>
-            <label>Eircode</label>
+            <label>Eircode <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
             <input
               className="input"
               required
