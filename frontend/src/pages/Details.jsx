@@ -57,7 +57,7 @@ function isAddressFilled(addr) {
 // saved booking's own Order record — used when editing a booking that was
 // already set aside via "New booking", since BookingContext only ever
 // kept the raw order for those, not the original quote-flow objects.
-function quoteInputFromOrder(order) {
+export function quoteInputFromOrder(order) {
   return {
     pricingPending: order.pricingPending,
     items: (order.items || []).map((it) => ({ itemType: it.itemType, actualWeightKg: Number(it.actualWeightKg), quantity: it.quantity })),
