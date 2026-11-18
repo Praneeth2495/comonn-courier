@@ -507,7 +507,8 @@ function DetailsForm() {
           </div>
         )}
 
-        <form className="details-form" onSubmit={submit}>
+        <form className={`details-form ${showValidation ? 'validate-shown' : ''}`} onSubmit={submit} noValidate>
+          {showValidation && <p className="mandatory-note"><b>*</b> Mandatory fields to be filled</p>}
           <div className="card summary-card">
             <div className="summary-top"><h3>Booking summary</h3></div>
             <div className="addr-grid">
