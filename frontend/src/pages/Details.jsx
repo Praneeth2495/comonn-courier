@@ -432,33 +432,7 @@ function DetailsForm() {
           ← Back
         </button>
 
-        {savedBookings?.length > 0 && (
-          <div className="card" style={{ padding: '14px 18px 6px', marginBottom: 16 }}>
-            <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--slate-light)', fontWeight: 700, marginBottom: 10 }}>
-              {savedBookings.length} other booking{savedBookings.length > 1 ? 's' : ''} saved this session
-            </p>
-            {savedBookings.map((b) => (
-              <div
-                key={b.id}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: '1px solid var(--line-2)', flexWrap: 'wrap' }}
-              >
-                <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)', fontFamily: "'IBM Plex Mono', monospace" }}>{b.orderNumber}</div>
-                  <div style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {b.senderAddress?.city} → {b.receiverAddress?.city}, {getCountryName(b.receiverAddress?.countryCode)}
-                  </div>
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', flex: 'none' }}>
-                  {b.pricingPending ? 'Priced at pickup' : `₹${Number(b.grandTotal).toFixed(2)}`}
-                </div>
-                <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-                  <button type="button" className="btn btn-outline btn-sm" disabled={loading} onClick={() => editSavedBooking(b)}>Edit</button>
-                  <button type="button" className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }} disabled={loading} onClick={() => setDeleteTarget(b)}>Delete</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <SavedBookingsList savedBookings={savedBookings} onEdit={editSavedBooking} removeSavedBooking={removeSavedBooking} loading={loading} />
 
         <form className={`details-form ${showValidation ? 'validate-shown' : ''}`} onSubmit={submit} noValidate>
           {showValidation && <p className="mandatory-note"><b>*</b> Mandatory fields to be filled</p>}
