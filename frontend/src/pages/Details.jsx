@@ -687,7 +687,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
 
   return (
     <>
-      {savedAddresses.length > 0 && (
+      {!hideSavedAddressPicker && savedAddresses.length > 0 && (
         <div className="field" style={{ marginBottom: 14 }}>
           <label>Use a saved address</label>
           <select className="select" defaultValue="" onChange={(e) => { if (e.target.value) onSelectSaved(e.target.value); e.target.value = ''; }}>
