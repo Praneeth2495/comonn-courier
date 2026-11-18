@@ -103,15 +103,6 @@ export default function Quote() {
   const orderStillInProgress = bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || isStaffUser);
   const quoteInput = resumeInput || (orderStillInProgress || !bookingOrder ? contextQuoteInput : null);
   const carryOverOrder = orderStillInProgress ? bookingOrder : null;
-  // "Add New Order" on the Details page saves the current booking (into
-  // savedBookings) and clears quoteInput/order to start the next one from
-  // scratch — but every parcel in that same session almost always ships
-  // from the same place, so there's no reason to make the customer
-  // re-enter (or risk mistyping a different) pickup pincode each time.
-  // Only kicks in on a genuinely fresh start (no resume link, no order
-  // already in progress) — once that's true, this IS the signal that
-  // we're on order #2+ of a multi-order session.
-  const firstSavedSender = !resumeInput && !orderStillInProgress ? savedBookings?.[0]?.senderAddress : null;
   const [countries, setCountries] = useState([]);
   const [destinationCountryCode, setDestinationCountryCode] = useState(quoteInput?.destinationCountryCode || 'AU');
   // Ireland: quoteInput.destinationPostcode carries the matched routing key
