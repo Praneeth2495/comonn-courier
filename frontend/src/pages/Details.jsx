@@ -120,56 +120,22 @@ function DetailsForm() {
   // the previous customer's name/address auto-filled in these fields.
   const isEditingExisting = Boolean(bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role)));
   const norm = (s) => (s || '').trim().toLowerCase();
-  // Same pickup pincode as a booking already saved this session ("New
-  // booking") almost always means the same sender is shipping again — see
-  // the sender useState below for what gets carried over, and the email
-  // field's lockedFields entry further down for why email specifically
-  // also gets locked once this matches (request: a second+ order's sender
-  // email shouldn't need re-typing or be editable, unlike the other
-  // contact fields which stay editable in case a different person is
-  // dropping this particular parcel off).
-  const matchedSenderBooking = !isEditingExisting && quoteInput?.originPostcode
-    ? savedBookings?.find((b) => norm(b.senderAddress?.postcode) === norm(quoteInput.originPostcode))
-    : null;
-  // Sender email specifically locks to the FIRST saved booking's email for
-  // every order after it in the session, regardless of whether this
-  // particular order's pickup postcode happens to match (unlike
-  // matchedSenderBooking's full prefill above, which only reuses the rest
-  // of the sender's details when the pickup location is literally the
-  // same) — same sender account placing several orders from different
-  // pickup points should still never need to retype or be able to change
-  // the email after the first one.
-  const firstSenderEmail = !isEditingExisting
-    ? savedBookings?.find((b) => b.senderAddress?.email)?.senderAddress?.email || null
-    : null;
+  // Once "Add New Order" has saved at least one booking this session,
+  // every order after it ships from the exact same sender — the Quote
+  // page's own origin field is locked to this same address (see
+  // Quote.jsx's originLockedToFirstOrder) so there's no way for the two to
+  // drift apart, which is what lets this be a full, unconditional lock
+  // instead of the old postcode-match-dependent partial one.
+  const firstSavedSender = !isEditingExisting ? savedBookings?.[0]?.senderAddress : null;
   const [sender, setSender] = useState(() => {
     if (isEditingExisting) return fromSavedAddress(bookingOrder.senderAddress);
+    if (firstSavedSender) return fromSavedAddress(firstSavedSender);
     // Pre-fill from the pickup pincode entered on the Quote page's Origin
     // field, if the customer picked a suggestion there.
     const base = emptyAddress('IN');
     if (quoteInput?.originPostcode) base.postcode = quoteInput.originPostcode;
     if (quoteInput?.originSuburb) base.city = quoteInput.originSuburb;
     if (quoteInput?.originState) base.state = normalizeRegionValue('IN', quoteInput.originState);
-
-    // Carry over just the contact details (name, phone, email, address,
-    // instructions) so they don't have to retype them. Postcode/city/
-    // state/country stay driven by this booking's own quoted origin above
-    // (not the matched booking's) since that's what pricing was actually
-    // calculated against.
-    if (matchedSenderBooking?.senderAddress) {
-      const matchedSender = fromSavedAddress(matchedSenderBooking.senderAddress);
-      return {
-        ...base,
-        contactName: matchedSender.contactName,
-        dialCode: matchedSender.dialCode,
-        phoneNumber: matchedSender.phoneNumber,
-        email: matchedSender.email,
-        instructions: matchedSender.instructions,
-        line1: matchedSender.line1,
-        line2: matchedSender.line2,
-      };
-    }
-    if (firstSenderEmail) return { ...base, email: firstSenderEmail };
     return base;
   });
   const [receiver, setReceiver] = useState(() => {
