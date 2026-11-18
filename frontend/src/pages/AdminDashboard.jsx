@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
@@ -11,6 +11,7 @@ import { statusLabel } from '../utils/orderStatus';
 import { downloadBlob } from '../utils/downloadBlob';
 import { useDebouncedValue } from '../utils/useDebouncedValue';
 import { useClickOutside } from '../utils/useClickOutside';
+import { lazyWithReload as lazy } from '../utils/lazyWithReload';
 
 // Lazy-loaded: each only ever renders behind its own sidebar tab (one tab
 // active at a time), so an admin who never opens, say, Manifest or Party
