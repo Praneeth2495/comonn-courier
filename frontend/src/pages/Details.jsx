@@ -617,7 +617,15 @@ function DetailsForm() {
                 : "This booking's receiver/sender details aren't filled in yet. Continue filling them in, or cancel this booking to start a new one."}
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={discardAndStartNew}>{pendingEditTarget ? 'Discard & edit that one' : 'Cancel'}</button>
+              {/* Was labeled "Cancel" — which reads as "abort this,
+                  nothing happens" in every other dialog, but this button
+                  is actually the destructive one (wipes the in-progress
+                  booking via discardAndStartNew). The non-destructive
+                  "close this dialog, keep what I've entered" action is the
+                  ✕ / backdrop click / "Continue to add details" button
+                  below, not this one — renamed so the label matches what
+                  it actually does. */}
+              <button type="button" className="btn btn-outline" style={{ flex: 1, color: 'var(--danger)', borderColor: 'var(--danger-bg)' }} onClick={discardAndStartNew}>{pendingEditTarget ? 'Discard & edit that one' : 'Discard & start new'}</button>
               <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={() => { setShowNewBookingConfirm(false); setPendingEditTarget(null); }}>Continue to add details</button>
             </div>
           </div>
