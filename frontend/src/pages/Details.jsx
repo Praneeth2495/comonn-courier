@@ -72,7 +72,7 @@ export function quoteInputFromOrder(order) {
     destinationCountryName: getCountryName(order.receiverAddress?.countryCode),
   };
 }
-function selectedQuoteFromOrder(order) {
+export function selectedQuoteFromOrder(order) {
   if (order.pricingPending) return null;
   return {
     service: { code: order.service?.code, name: order.service?.name },
