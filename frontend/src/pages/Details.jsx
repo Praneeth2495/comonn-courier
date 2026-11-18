@@ -734,7 +734,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
       </div>
       <div className="grid-2" style={{ marginTop: 14 }}>
         <div className="field" style={{ gridColumn: regionConfig.hidden ? '1 / -1' : undefined }}>
-          <label>City / Town</label>
+          <label>City / Town <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <input
             className="input"
             placeholder={hideCityStatePlaceholder ? '' : 'Hyderabad'}
