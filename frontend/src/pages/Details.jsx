@@ -514,23 +514,14 @@ function DetailsForm() {
               value={sender}
               onChange={updateSender}
               instructionsLabel="Instructions"
-              autoFillNote={
-                firstSavedSender
-                  ? "Locked to your first order's sender for this session — go back to the Book page to change it"
-                  : senderLocked ? "Locked to your quote's pickup postcode — go back to the Book page to change it" : "Country auto-filled from your quote's origin"
-              }
+              autoFillNote={senderLocked ? "Locked to your quote's pickup postcode — go back to the Book page to change it" : "Country auto-filled from your quote's origin"}
               savedAddresses={senderSavedAddresses}
               onSelectSaved={(id) => {
                 const a = savedAddresses.find((s) => s.id === id);
                 if (!a) return;
                 setSender((prev) => ({ ...fromSavedAddress(a), postcode: prev.postcode, city: prev.city, state: prev.state, countryCode: prev.countryCode }));
               }}
-              hideSavedAddressPicker={Boolean(firstSavedSender)}
-              lockedFields={
-                firstSavedSender
-                  ? ['postcode', 'city', 'state', 'countryCode', 'contactName', 'phoneNumber', 'email', 'instructions', 'line1', 'line2']
-                  : senderLocked ? ['postcode', 'city', 'state', 'countryCode'] : []
-              }
+              lockedFields={senderLocked ? ['postcode', 'city', 'state', 'countryCode', ...((matchedSenderBooking || firstSenderEmail) ? ['email'] : [])] : []}
             />
           </div>
 
