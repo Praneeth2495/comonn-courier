@@ -678,10 +678,15 @@ export default function Quote() {
                       <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 8 }}>
                         (<a href="#" style={{ color: 'var(--cobalt)', fontWeight: 700 }} onClick={(e) => {
                           e.preventDefault();
+                          // Collapses the box only — doesn't clear
+                          // lengthCm/widthCm/heightCm. Those values still
+                          // get sent for pricing/booking either way (see
+                          // buildItemsPayload, which doesn't check
+                          // showDims), so wiping them here used to change
+                          // pricingSignature and silently invalidate an
+                          // already-fetched quote even though nothing
+                          // pricing-relevant actually changed.
                           updateItem(idx, 'showDims', false);
-                          updateItem(idx, 'lengthCm', '');
-                          updateItem(idx, 'widthCm', '');
-                          updateItem(idx, 'heightCm', '');
                         }}>Hide dimensions</a>)
                       </p>
                     </>
