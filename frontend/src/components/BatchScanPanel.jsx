@@ -1,4 +1,5 @@
-import { useEffect, lazy, Suspense, useState } from 'react';
+import { useEffect, Suspense, useState } from 'react';
+import { lazyWithReload as lazy } from '../utils/lazyWithReload';
 import client from '../api/client';
 import { useAuth } from '../api/AuthContext';
 import LoadingLogo from './LoadingLogo';
