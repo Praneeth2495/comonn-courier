@@ -335,7 +335,19 @@ export default function Home() {
     if (originPostcode && destinationCountryCode && destinationPostcode && hasWeight) {
       quoteInput.autoFetch = true;
     }
-    if (hasData) setBooking({ quoteInput });
+    // Submitting the homepage box always means "start a new booking" — it's
+    // never how a customer resumes one already in progress (that only
+    // happens via My Account's "Continue booking" or an emailed quote's
+    // resume link, neither of which goes through here). Without this, a
+    // still-UNFINISHED order left over from an earlier, unrelated visit
+    // (abandoned before payment) silently carried forward — Quote.jsx's
+    // "is there an order still in progress" check only looks at its
+    // status, not whether it has anything to do with what's being entered
+    // now — so Details.jsx ended up pre-filling yesterday's saved sender/
+    // receiver addresses underneath today's completely different quote.
+    const patch = { selectedQuote: null, order: null };
+    if (hasData) patch.quoteInput = quoteInput;
+    setBooking(patch);
     navigate('/quote');
   }
 
