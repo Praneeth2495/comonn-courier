@@ -4,6 +4,7 @@ import client from '../api/client';
 import { useBooking } from '../api/BookingContext';
 import { useAuth } from '../api/AuthContext';
 import Stepper from '../components/Stepper';
+import SavedBookingsList from '../components/SavedBookingsList';
 import { COUNTRY_NAMES, getCountryName } from '../utils/countryNames';
 import { PHONE_OPTIONS, getPhoneMeta } from '../utils/phoneCodes';
 import { getPostcodeRule, sanitizePostcode } from '../utils/postcodeRules';
