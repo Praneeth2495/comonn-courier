@@ -35,6 +35,21 @@ async function resolveBarcodes(barcodeValues) {
   }
   unresolved = unresolved.filter((code) => !byManifestCode.has(code));
 
+  // Same expand-into-every-order trick as a Manifest barcode above, for a
+  // LoadSheet's own barcode (hub-to-hub transfer — see loadSheet.controller.js).
+  const loadSheets = unresolved.length > 0
+    ? await prisma.loadSheet.findMany({
+        where: { OR: [{ loadSheetNumber: { in: unresolved } }, { barcodeValue: { in: unresolved } }] },
+        include: { orders: { select: { id: true, orderNumber: true } } },
+      })
+    : [];
+  const byLoadSheetCode = new Map();
+  for (const loadSheet of loadSheets) {
+    if (unresolved.includes(loadSheet.loadSheetNumber)) byLoadSheetCode.set(loadSheet.loadSheetNumber, loadSheet);
+    if (unresolved.includes(loadSheet.barcodeValue)) byLoadSheetCode.set(loadSheet.barcodeValue, loadSheet);
+  }
+  unresolved = unresolved.filter((code) => !byLoadSheetCode.has(code));
+
   const byOrderCode = new Map();
   if (unresolved.length > 0) {
     const orders = await prisma.order.findMany({
