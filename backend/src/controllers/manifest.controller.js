@@ -36,6 +36,13 @@ function withQty(order) {
   return { ...order, qty };
 }
 
+// hubName: the same postcode -> region resolution Accounts Overview uses
+// (see services/hubResolution.js) — resolved per-order here for the Build
+// Manifest table's Hub column, rather than stored directly on Order.
+function withHubName(order, regionMap) {
+  return { ...order, hubName: branchOfAddress(order.senderAddress, regionMap) };
+}
+
 /**
  * GET /api/admin/manifests/eligible-orders?countryCode=&airportCode= —
  * orders that can be added to a manifest: not already in a (different)
