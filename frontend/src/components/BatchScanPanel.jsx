@@ -516,7 +516,11 @@ export default function BatchScanPanel() {
           {phase === 'FINISH' && (
             <div className="card" style={{ padding: 24, maxWidth: 440, marginBottom: 24 }}>
               <h4 style={{ marginBottom: 4 }}>Apply status</h4>
-              <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>{codes.length} label{codes.length === 1 ? '' : 's'} scanned.</p>
+              <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>
+                {scanMode === 'loadsheet'
+                  ? <>{lsConfirmedIds.length} order{lsConfirmedIds.length === 1 ? '' : 's'} confirmed off {loadSheet?.loadSheetNumber}.</>
+                  : <>{codes.length} label{codes.length === 1 ? '' : 's'} scanned.</>}
+              </p>
               <div className="field">
                 <label>New status</label>
                 <select className="select" value={chosenStatus} onChange={(e) => setChosenStatus(e.target.value)}>
@@ -525,24 +529,33 @@ export default function BatchScanPanel() {
                   {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
                 </select>
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginTop: 14, cursor: 'pointer' }}>
-                <input type="checkbox" checked={saveAsBatch} onChange={(e) => setSaveAsBatch(e.target.checked)} />
-                Save this as a reusable named batch
-              </label>
-              <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 2, marginLeft: 24 }}>
-                Lets you come back later and re-apply a new status to the same group of orders without re-scanning — see the Saved batches tab.
-              </p>
-              {saveAsBatch && (
-                <div className="field" style={{ marginTop: 10 }}>
-                  <label>Batch name</label>
-                  <input className="input" placeholder="e.g. Evening pickup run" autoFocus value={batchName} onChange={(e) => setBatchName(e.target.value)} />
-                </div>
+              {scanMode !== 'loadsheet' && (
+                <>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginTop: 14, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={saveAsBatch} onChange={(e) => setSaveAsBatch(e.target.checked)} />
+                    Save this as a reusable named batch
+                  </label>
+                  <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 2, marginLeft: 24 }}>
+                    Lets you come back later and re-apply a new status to the same group of orders without re-scanning — see the Saved batches tab.
+                  </p>
+                  {saveAsBatch && (
+                    <div className="field" style={{ marginTop: 10 }}>
+                      <label>Batch name</label>
+                      <input className="input" placeholder="e.g. Evening pickup run" autoFocus value={batchName} onChange={(e) => setBatchName(e.target.value)} />
+                    </div>
+                  )}
+                </>
+              )}
+              {scanMode === 'loadsheet' && (
+                <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 10 }}>
+                  {loadSheet?.loadSheetNumber} is already in Saved batches — its status can be changed again from there without re-scanning.
+                </p>
               )}
               {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
               <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
                 <button type="button" className="btn btn-outline" onClick={() => setPhase('SCANNING')}>← Back</button>
                 <button type="button" className="btn btn-primary" disabled={!chosenStatus || submitting} onClick={applyBatch}>
-                  {submitting ? 'Applying…' : saveAsBatch ? 'Apply & save batch' : 'Apply status'}
+                  {submitting ? 'Applying…' : saveAsBatch && scanMode !== 'loadsheet' ? 'Apply & save batch' : 'Apply status'}
                 </button>
               </div>
             </div>
