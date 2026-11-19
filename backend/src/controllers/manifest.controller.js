@@ -84,8 +84,11 @@ async function listEligibleOrders(req, res, next) {
       if (codes.length) where.airportCode = { in: codes };
     }
 
-    const orders = await prisma.order.findMany({ where, include: ORDER_INCLUDE, orderBy: { createdAt: 'desc' } });
-    res.json({ orders: orders.map(withQty) });
+    const [orders, regionMap] = await Promise.all([
+      prisma.order.findMany({ where, include: ORDER_INCLUDE, orderBy: { createdAt: 'desc' } }),
+      loadRegionPostcodeMap(),
+    ]);
+    res.json({ orders: orders.map((o) => withHubName(withQty(o), regionMap)) });
   } catch (err) {
     next(err);
   }
