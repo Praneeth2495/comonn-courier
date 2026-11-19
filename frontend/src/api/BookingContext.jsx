@@ -71,7 +71,7 @@ export function BookingProvider({ children }) {
 
   function clearBooking() {
     sessionStorage.removeItem('comonn_booking');
-    setBookingState({ quoteInput: null, selectedQuote: null, order: null, savedBookings: [] });
+    setBookingState({ quoteInput: null, selectedQuote: null, order: null, bookedAt: null, savedBookings: [] });
   }
 
   // Sets aside the current order as "saved, still needs payment" and clears
