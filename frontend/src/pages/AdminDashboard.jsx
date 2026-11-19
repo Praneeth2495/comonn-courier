@@ -918,6 +918,7 @@ const ORDER_TAB_PERM_LABELS = {
   delivery: 'Delivery orders',
   unconfirmed: 'Unconfirmed orders',
   manifest: 'Manifest',
+  loadsheet: 'Loadsheet',
 };
 const ORDER_TAB_PERM_KEYS = Object.keys(ORDER_TAB_PERM_LABELS);
 
