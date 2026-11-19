@@ -42,6 +42,7 @@ const boxBookingRoutes = require('./routes/boxBooking.routes');
 const hubRoutes = require('./routes/hub.routes');
 const manifestRegionRoutes = require('./routes/manifestRegion.routes');
 const manifestRoutes = require('./routes/manifest.routes');
+const loadSheetRoutes = require('./routes/loadSheet.routes');
 const onboardingInviteRoutes = require('./routes/onboardingInvite.routes');
 const walletRoutes = require('./routes/wallet.routes');
 const whatsappRoutes = require('./routes/whatsapp.routes');
