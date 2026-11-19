@@ -1104,6 +1104,13 @@ model Order {
   manifestId String?
   manifest   Manifest? @relation(fields: [manifestId], references: [id])
 
+  // Hub-to-hub transfer load sheet this order has been added to — null
+  // until staff explicitly add it via the Pickup orders tab or the
+  // Loadsheet tab's "Add orders". An order belongs to at most one load
+  // sheet at a time, same "claim" pattern as manifestId above.
+  loadSheetId String?
+  loadSheet   LoadSheet? @relation(fields: [loadSheetId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1113,6 +1120,7 @@ model Order {
   @@index([merchantId])
   @@index([merchantInvoiceId])
   @@index([manifestId])
+  @@index([loadSheetId])
   @@index([airportCode])
 }
 
