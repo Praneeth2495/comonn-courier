@@ -134,7 +134,7 @@ model User {
   boxBookings              BoxBooking[]
   boxBookingComments       BoxBookingComment[]
   manifestsCreated         Manifest[]
-  loadSheetsCreated        LoadSheet[]       @relation("LoadSheetCreatedBy")
+  loadSheetsCreated        LoadSheet[]               @relation("LoadSheetCreatedBy")
   loadSheetComments        LoadSheetComment[]
   employeeProfile          EmployeeProfile?
   onboardingTokens         EmployeeOnboardingToken[]
@@ -1175,34 +1175,34 @@ model Hub {
 // every add/remove-order edit, not derived live on every read, so the PDF
 // sheet and these numbers never drift apart.
 model LoadSheet {
-  id              String   @id @default(uuid())
-  loadSheetNumber String   @unique // "LS1", "LS2"... yearly-resetting, same convention as Manifest.manifestNumber
+  id              String             @id @default(uuid())
+  loadSheetNumber String             @unique // "LS1", "LS2"... yearly-resetting, same convention as Manifest.manifestNumber
   // Scannable in Batch Scan — same convention as Manifest.barcodeValue:
   // scanning it expands into every order currently on this load sheet (see
   // resolveBarcodes in batch.controller.js), and a matching ScanBatch row is
   // auto-created/kept in sync so "Saved batches" can re-apply a status to
   // the whole load sheet without re-scanning (see loadSheet.controller.js).
-  barcodeValue    String   @unique
+  barcodeValue    String             @unique
   fromHubId       String
-  fromHub         Hub      @relation("LoadSheetFromHub", fields: [fromHubId], references: [id])
+  fromHub         Hub                @relation("LoadSheetFromHub", fields: [fromHubId], references: [id])
   toHubId         String
-  toHub           Hub      @relation("LoadSheetToHub", fields: [toHubId], references: [id])
+  toHub           Hub                @relation("LoadSheetToHub", fields: [toHubId], references: [id])
   // Who/what is physically carrying this load sheet (a rider name, vehicle,
   // or transport mode) — free text, staff-entered, required.
   transferBy      String
   reference       String?
   contactName     String?
   contactMobile   String?
-  orderCount      Int      @default(0)
-  totalQty        Int      @default(0)
-  totalWeightKg   Decimal  @default(0) @db.Decimal(10, 3)
+  orderCount      Int                @default(0)
+  totalQty        Int                @default(0)
+  totalWeightKg   Decimal            @default(0) @db.Decimal(10, 3)
   pdfFileUrl      String?
   createdById     String
-  createdBy       User     @relation("LoadSheetCreatedBy", fields: [createdById], references: [id])
+  createdBy       User               @relation("LoadSheetCreatedBy", fields: [createdById], references: [id])
   orders          Order[]
   comments        LoadSheetComment[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
   @@index([fromHubId])
   @@index([toHubId])
