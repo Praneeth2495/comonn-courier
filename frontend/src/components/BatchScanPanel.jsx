@@ -256,6 +256,22 @@ export default function BatchScanPanel() {
     setCodes((prev) => [...prev, code]);
   }
 
+  // Scoped to the FINISH step — only a location barcode makes sense here
+  // (same reasoning as handleBatchStatusScan for a saved batch's status),
+  // since the shipment labels were already scanned on the step before.
+  function handleFinishLocationScan(code) {
+    if (!code) return;
+    const loc = locations.find((l) => l.barcodeValue === code);
+    if (!loc) {
+      setError(`"${code}" doesn't match any saved location. Scan a location's barcode (see Barcode locations).`);
+      return;
+    }
+    setError('');
+    setChosenStatus(loc.label);
+    setLocationNotes((prev) => [...prev, { name: loc.name, label: loc.label }]);
+    setLastLocationScanned(loc);
+  }
+
   function handleScanKeyDown(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
