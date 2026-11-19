@@ -71,11 +71,21 @@ async function markPickedUp(req, res, next) {
       return res.status(409).json({ error: `Order can no longer be marked picked up (status: ${order.status})` });
     }
 
+    // Unassign the rider the moment it's picked up — the Pickup orders
+    // tab's checklist disables/pre-checks any order with an
+    // assignedDriver/customDriverName still set (see AdminDashboard.jsx),
+    // which otherwise blocked staff from selecting a just-picked-up order
+    // to put on a Load Sheet. pickedUpAt (the historical fact of when it
+    // was collected) and the rider's own job history are untouched — only
+    // the live "who's currently assigned" pointer is cleared.
     const updated = await prisma.order.update({
       where: { id: order.id },
       data: {
         status: 'PICKED_UP',
         pickedUpAt: new Date(),
+        assignedDriverId: null,
+        customDriverName: null,
+        driverAssignedAt: null,
         trackingEvents: { create: { status: 'PICKED_UP', note: 'Picked up by rider' } },
       },
     });
