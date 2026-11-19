@@ -64,6 +64,21 @@ export default function BatchScanPanel() {
   const [showCamera, setShowCamera] = useState(false);
   const [preview, setPreview] = useState({}); // barcodeValue -> { matched, orderNumber, destination }
 
+  // 'labels' = default flow above (scan each shipment label, accumulate a
+  // flat list). 'loadsheet' = scan one Load Sheet's own barcode first (see
+  // loadSheetPanel's barcodeValue), which loads its full order list shown
+  // grey/pending, then individually scan each order's own label to confirm
+  // it — once done, the same FINISH/status-select step applies, just
+  // submitted against /admin/loadsheets/:id/apply-status instead of /batches.
+  const [scanMode, setScanMode] = useState('labels');
+  const [lsInput, setLsInput] = useState('');
+  const [lsLoading, setLsLoading] = useState(false);
+  const [lsError, setLsError] = useState('');
+  const [loadSheet, setLoadSheet] = useState(null); // { id, loadSheetNumber, fromHub, toHub, orders: [{ id, orderNumber, receiver, matchCodes, qty }] }
+  const [lsConfirmedIds, setLsConfirmedIds] = useState([]);
+  const [lsOrderInput, setLsOrderInput] = useState('');
+  const [showLsCamera, setShowLsCamera] = useState(false);
+
   // Scanning a location's barcode from the saved-batches table to
   // re-apply that location's status, without going through the full
   // scan flow above.
