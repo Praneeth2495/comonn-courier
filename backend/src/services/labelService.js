@@ -60,7 +60,7 @@ const LABEL_PAGE_SIZE = { size: [288, 432], margin: 16 }; // 4in x 6in @72dpi
 // `width`-only option scales proportionally but doesn't report the result.
 const LOGO_ASPECT_RATIO = 313 / 1852;
 
-async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, barcodeValue, hideShipmentTracking = false, hideBarcodeText = false, numberLabel = null, referenceLabel = null }) {
+async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, barcodeValue, hideBarcodeText = false, numberLabel = null, referenceLabel = null }) {
   const [barcodePng, qrPng] = await Promise.all([renderBarcode(barcodeValue), renderQrCode(barcodeValue)]);
 
   drawWatermark(doc);
