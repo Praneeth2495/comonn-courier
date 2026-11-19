@@ -165,9 +165,6 @@ async function drawLabelPage(doc, order, { packageIndex, totalPackages, item, ba
   if (!hideBarcodeText) {
     doc.font('Helvetica-Bold').fontSize(12).text(barcodeValue, contentLeft, doc.y, { width: contentWidth, align: 'center' });
   }
-  if (!hideShipmentTracking && totalPackages > 1) {
-    doc.font('Helvetica').fontSize(8).text(`Shipment tracking: ${order.trackingNumber}`, contentLeft, doc.y, { width: contentWidth, align: 'center' });
-  }
   // Manual label's mandatory user-entered Order ID and optional Reference
   // number (external references the staff typed in, unrelated to the
   // internal ML-prefixed reference number the barcode itself encodes) —
