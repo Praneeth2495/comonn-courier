@@ -365,7 +365,7 @@ function DetailsForm() {
   // savedBookings since it's "active" again, not "saved".
   function loadBookingForEdit(booking) {
     removeSavedBooking(booking.id);
-    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking) });
+    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking), bookedAt: Date.now() });
   }
 
   // "Cancel" in the confirm popup — discard the current booking's
