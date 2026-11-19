@@ -30,6 +30,7 @@ const CustomersPanel = lazy(() => import('../components/CustomersPanel'));
 const StaffPanel = lazy(() => import('../components/StaffPanel'));
 const PrintLabelPanel = lazy(() => import('../components/PrintLabelPanel'));
 const ManifestPanel = lazy(() => import('../components/ManifestPanel'));
+const LoadSheetPanel = lazy(() => import('../components/LoadSheetPanel'));
 
 // Sidebar brand badge — this dashboard is shared by ADMIN/STAFF/ACCOUNTS
 // (DRIVER gets its own DriverDashboard), so the badge should say which one
