@@ -45,7 +45,7 @@ async function computeDailySummary() {
   const now = new Date();
 
   const [totalToday, collectedToday, activePickupOrders] = await Promise.all([
-    prisma.order.count({ where: { createdAt: { gte, lte } } }),
+    prisma.order.count({ where: { createdAt: { gte, lte }, status: { notIn: ['UNFINISHED', 'CANCELLED'] } } }),
     prisma.order.count({ where: { pickedUpAt: { gte, lte } } }),
     prisma.order.findMany({
       where: { status: { in: ACTIVE_PICKUP_STATUSES } },
