@@ -297,4 +297,4 @@ async function deleteBatch(req, res, next) {
   }
 }
 
-module.exports = { previewResolve, applyStatus, createBatch, updateBatchStatus, listBatches, getBatch, deleteBatch };
+module.exports = { previewResolve, applyStatus, createBatch, updateBatchStatus, listBatches, getBatch, deleteBatch, applyStatusToItems };
