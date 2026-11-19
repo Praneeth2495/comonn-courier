@@ -275,6 +275,20 @@ export default function BatchScanPanel() {
 
   async function applyBatch() {
     if (!chosenStatus) return;
+    if (scanMode === 'loadsheet') {
+      setSubmitting(true);
+      setError('');
+      try {
+        const { data } = await client.post(`/admin/loadsheets/${loadSheet.id}/apply-status`, { status: chosenStatus, orderIds: lsConfirmedIds });
+        setResult({ updatedCount: data.updatedCount, items: [] });
+        setPhase('DONE');
+      } catch (err) {
+        setError(err.response?.data?.error || 'Could not apply this update.');
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
     if (saveAsBatch && !batchName.trim()) {
       setError('Name this batch first.');
       return;
