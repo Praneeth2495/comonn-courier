@@ -79,6 +79,11 @@ export default function BatchScanPanel() {
   const [lsOrderInput, setLsOrderInput] = useState('');
   const [showLsCamera, setShowLsCamera] = useState(false);
 
+  // Camera option on the FINISH ("Apply status") step itself — lets staff
+  // scan a barcode location's own barcode to pick the status right there,
+  // without having to back up to the scanning step first.
+  const [showFinishCamera, setShowFinishCamera] = useState(false);
+
   // Scanning a location's barcode from the saved-batches table to
   // re-apply that location's status, without going through the full
   // scan flow above.
