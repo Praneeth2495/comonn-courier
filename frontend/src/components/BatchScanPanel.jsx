@@ -386,8 +386,8 @@ export default function BatchScanPanel() {
         <>
           {phase === 'SCANNING' && (
             <div className="dash-tabs" style={{ marginBottom: 16, maxWidth: 360 }}>
-              <button className={`dash-tab ${scanMode === 'labels' ? 'active' : ''}`} onClick={() => { setScanMode('labels'); reset(); }}>Scan labels</button>
-              <button className={`dash-tab ${scanMode === 'loadsheet' ? 'active' : ''}`} onClick={() => { setScanMode('loadsheet'); reset(); setScanMode('loadsheet'); }}>Scan a Load Sheet</button>
+              <button className={`dash-tab ${scanMode === 'labels' ? 'active' : ''}`} onClick={() => { reset(); setScanMode('labels'); }}>Scan labels</button>
+              <button className={`dash-tab ${scanMode === 'loadsheet' ? 'active' : ''}`} onClick={() => { reset(); setScanMode('loadsheet'); }}>Scan a Load Sheet</button>
             </div>
           )}
 
