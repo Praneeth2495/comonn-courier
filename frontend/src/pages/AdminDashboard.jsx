@@ -1028,6 +1028,9 @@ function OrdersPanel() {
     if (tab === 'pickup' && drivers.length === 0) {
       client.get('/admin/drivers').then(({ data }) => setDrivers(data.drivers)).catch(() => {});
     }
+    if (tab === 'pickup' && hubs.length === 0) {
+      client.get('/admin/hubs').then(({ data }) => setHubs(data.hubs)).catch(() => {});
+    }
     if (tab === 'pickup' && pickupStates.length === 0) {
       client.get('/admin/pickup-origins').then(({ data }) => {
         setPickupStates(data.states);
