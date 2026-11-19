@@ -754,6 +754,9 @@ export default function BatchScanPanel() {
             onClose={() => setShowLsCamera(false)}
           />
         )}
+        {showFinishCamera && (
+          <BarcodeCameraScanner onScan={handleFinishLocationScan} onClose={() => setShowFinishCamera(false)} />
+        )}
       </Suspense>
     </div>
   );
