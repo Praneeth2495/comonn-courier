@@ -6,6 +6,7 @@ const { MANIFEST_COST_CATEGORIES, PARTY_INVOICE_CATEGORY_LABELS } = require('../
 const { generateManifestPdf, STORAGE_DIR } = require('../services/manifestPdf');
 const { PAYABLE_STATUSES, buildOrdersWhere } = require('./order.controller');
 const { EUROPE_COUNTRY_CODES } = require('../constants/regions');
+const { loadRegionPostcodeMap, branchOfAddress } = require('../services/hubResolution');
 
 // Sentinel stored in Manifest.countryCode when a manifest combines several
 // European countries — a real ISO code never collides with this, and it's
