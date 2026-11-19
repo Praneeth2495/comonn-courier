@@ -352,12 +352,16 @@ function BuildManifest() {
 
           {selectedAirportCodes.length > 0 && (
             <>
+              <form className="search-box" style={{ marginBottom: 14, maxWidth: 360 }} onSubmit={(e) => e.preventDefault()}>
+                🔍<input placeholder="Search order #, address…" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              </form>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: visibleOrders.length > 0 ? 'pointer' : 'default' }}>
-                  {visibleOrders.length > 0 && (
-                    <input type="checkbox" checked={visibleOrders.every((o) => selectedOrderIds.includes(o.id))} onChange={toggleSelectAll} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: searchedOrders.length > 0 ? 'pointer' : 'default' }}>
+                  {searchedOrders.length > 0 && (
+                    <input type="checkbox" checked={searchedOrders.every((o) => selectedOrderIds.includes(o.id))} onChange={toggleSelectAll} />
                   )}
-                  {selectedOrderIds.length} selected · {visibleOrders.length} shown · Weight: {selectedWeightKg.toFixed(2)} kg
+                  {selectedOrderIds.length} selected · {searchedOrders.length} shown · Weight: {selectedWeightKg.toFixed(2)} kg
                 </label>
                 <button className="btn btn-primary btn-sm" disabled={selectedOrderIds.length === 0} onClick={() => setShowCreateModal(true)}>
                   Create Manifest
@@ -367,14 +371,15 @@ function BuildManifest() {
               {loadingOrders ? <LoadingLogo /> : (
                 <div className="table-wrap">
                   <table className="data-table">
-                    <thead><tr><th></th><th>Order #</th><th>From Address</th><th>To Address</th><th>Hub</th><th>Booked date</th><th>Qty</th><th>Weight</th><th>Status</th></tr></thead>
+                    <thead><tr><th></th><th>Order #</th><th>From Address</th><th>To Address</th><th>Service</th><th>Hub</th><th>Booked date</th><th>Qty</th><th>Weight</th><th>Status</th></tr></thead>
                     <tbody>
-                      {visibleOrders.map((o) => (
+                      {searchedOrders.map((o) => (
                         <tr key={o.id}>
                           <td><input type="checkbox" checked={selectedOrderIds.includes(o.id)} onChange={() => toggleOrder(o.id)} /></td>
                           <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
                           <td>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</td>
                           <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
+                          <td>{o.service?.name || '—'}</td>
                           <td>{o.hubName || '—'}</td>
                           <td>{formatDateShort(o.createdAt)}</td>
                           <td>{o.qty}</td>
@@ -382,7 +387,7 @@ function BuildManifest() {
                           <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{statusLabel(o.status)}</span></td>
                         </tr>
                       ))}
-                      {visibleOrders.length === 0 && <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders match these filters right now.</td></tr>}
+                      {searchedOrders.length === 0 && <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders match these filters right now.</td></tr>}
                     </tbody>
                   </table>
                 </div>
