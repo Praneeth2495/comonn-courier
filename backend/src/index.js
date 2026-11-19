@@ -51,6 +51,7 @@ const { startMerchantInvoiceGenerationJob } = require('./services/merchantInvoic
 const { startPartyInvoiceRecurrenceJob } = require('./services/partyInvoiceRecurrence');
 const { startBoxBookingExpiryJob } = require('./services/boxBookingExpiry');
 const { startDailyOrderSummaryJob } = require('./services/dailyOrderSummary');
+const { startPendingOrderReminderJob } = require('./services/pendingOrderReminder');
 
 const app = express();
 
