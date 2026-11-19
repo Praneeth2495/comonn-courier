@@ -800,6 +800,7 @@ const ORDER_TABS = [
   ['delivery', 'Delivery orders', ['ORIGIN_CUSTOMS_CLEARED', 'IN_TRANSIT', 'CLEARED_DESTINATION_CUSTOMS', 'OUT_FOR_DELIVERY']],
   ['unconfirmed', 'Unconfirmed orders', ['UNFINISHED', 'CANCELLED']],
   ['manifest', 'Manifest'],
+  ['loadsheet', 'Loadsheet'],
 ];
 
 // How many pickup orders to fetch in one request — effectively "all of
