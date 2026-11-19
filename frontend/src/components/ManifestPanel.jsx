@@ -261,12 +261,25 @@ function BuildManifest() {
 
   const visibleOrders = eligibleOrders.filter((o) => selectedOriginStates.includes(originState(o)));
 
+  // Client-side only — eligibleOrders is already fetched in full for this
+  // tab (see loadEligibleOrders), so there's no server round-trip to debounce,
+  // just a filter over what's already on screen. Matches order #, both
+  // addresses' city, and the receiver's name — the fields staff actually
+  // recognize an order by.
+  const searchedOrders = visibleOrders.filter((o) => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+    const haystack = [o.orderNumber, o.senderAddress?.city, o.receiverAddress?.city, o.receiverAddress?.contactName]
+      .filter(Boolean).join(' ').toLowerCase();
+    return haystack.includes(term);
+  });
+
   function toggleOrder(id) {
     setSelectedOrderIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
 
   function toggleSelectAll() {
-    const visibleIds = visibleOrders.map((o) => o.id);
+    const visibleIds = searchedOrders.map((o) => o.id);
     const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedOrderIds.includes(id));
     setSelectedOrderIds((prev) => (allVisibleSelected ? prev.filter((id) => !visibleIds.includes(id)) : [...new Set([...prev, ...visibleIds])]));
   }
