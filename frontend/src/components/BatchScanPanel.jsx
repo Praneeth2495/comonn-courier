@@ -385,6 +385,82 @@ export default function BatchScanPanel() {
       {subTab === 'scan' && canSeeTab('scan') && (
         <>
           {phase === 'SCANNING' && (
+            <div className="dash-tabs" style={{ marginBottom: 16, maxWidth: 360 }}>
+              <button className={`dash-tab ${scanMode === 'labels' ? 'active' : ''}`} onClick={() => { setScanMode('labels'); reset(); }}>Scan labels</button>
+              <button className={`dash-tab ${scanMode === 'loadsheet' ? 'active' : ''}`} onClick={() => { setScanMode('loadsheet'); reset(); setScanMode('loadsheet'); }}>Scan a Load Sheet</button>
+            </div>
+          )}
+
+          {phase === 'SCANNING' && scanMode === 'loadsheet' && (
+            <div className="card" style={{ padding: 24, marginBottom: 24 }}>
+              {!loadSheet ? (
+                <>
+                  <p className="lead" style={{ fontSize: 13, margin: 0 }}>Scan the Load Sheet's own barcode to load its order list.</p>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <input
+                      className="input"
+                      placeholder="Scan or type the Load Sheet barcode…"
+                      autoFocus
+                      style={{ flex: 1 }}
+                      value={lsInput}
+                      onChange={(e) => setLsInput(e.target.value)}
+                      onKeyDown={handleLsBarcodeKeyDown}
+                      disabled={lsLoading}
+                    />
+                    <button type="button" className="btn btn-outline" style={{ flex: 'none' }} onClick={() => setShowLsCamera(true)}>📷 Camera</button>
+                  </div>
+                  {lsLoading && <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>Loading…</p>}
+                  {lsError && <div className="error-text" style={{ marginTop: 12 }}>{lsError}</div>}
+                </>
+              ) : (
+                <>
+                  <p className="lead" style={{ fontSize: 13, margin: 0 }}>
+                    <b>{loadSheet.loadSheetNumber}</b> — {loadSheet.fromHub?.name} → {loadSheet.toHub?.name}
+                  </p>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <input
+                      className="input"
+                      placeholder="Scan or type each order's own label…"
+                      autoFocus
+                      style={{ flex: 1 }}
+                      value={lsOrderInput}
+                      onChange={(e) => setLsOrderInput(e.target.value)}
+                      onKeyDown={handleLsOrderKeyDown}
+                    />
+                    <button type="button" className="btn btn-outline" style={{ flex: 'none' }} onClick={() => setShowLsCamera(true)}>📷 Camera</button>
+                  </div>
+                  {lsError && <div className="error-text" style={{ marginTop: 10 }}>{lsError}</div>}
+                  <p style={{ fontSize: 12.5, color: 'var(--slate)', marginTop: 10 }}>{lsConfirmedIds.length} of {loadSheet.orders.length} confirmed</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8, maxHeight: 280, overflowY: 'auto' }}>
+                    {loadSheet.orders.map((o) => {
+                      const confirmed = lsConfirmedIds.includes(o.id);
+                      return (
+                        <div
+                          key={o.id}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8,
+                            background: confirmed ? 'var(--paper)' : 'transparent',
+                            color: confirmed ? 'var(--ink)' : 'var(--slate-light)',
+                            border: '1px solid var(--line-2)', fontSize: 13,
+                          }}
+                        >
+                          <span style={{ color: confirmed ? 'var(--success)' : 'transparent', fontWeight: 700 }}>✓</span>
+                          <span className="mono">{o.orderNumber}</span>
+                          <span style={{ fontSize: 12 }}>{o.receiver}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                    <button type="button" className="btn btn-outline" onClick={() => { setLoadSheet(null); setLsConfirmedIds([]); }}>← Scan a different Load Sheet</button>
+                    <button type="button" className="btn btn-primary" disabled={lsConfirmedIds.length === 0} onClick={finishLoadSheetScanning}>Next →</button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {phase === 'SCANNING' && scanMode === 'labels' && (
             <div className="card" style={{ padding: 24, marginBottom: 24 }}>
               <p className="lead" style={{ fontSize: 13, margin: 0 }}>Scan each label's barcode (physical scanner, camera, or type the code and press Enter).</p>
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
