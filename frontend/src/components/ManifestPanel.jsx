@@ -348,21 +348,22 @@ function BuildManifest() {
               {loadingOrders ? <LoadingLogo /> : (
                 <div className="table-wrap">
                   <table className="data-table">
-                    <thead><tr><th></th><th>Order #</th><th>Receiver</th><th>Destination</th><th>Airport</th><th>Qty</th><th>Weight</th><th>Status</th></tr></thead>
+                    <thead><tr><th></th><th>Order #</th><th>From Address</th><th>To Address</th><th>Hub</th><th>Booked date</th><th>Qty</th><th>Weight</th><th>Status</th></tr></thead>
                     <tbody>
                       {visibleOrders.map((o) => (
                         <tr key={o.id}>
                           <td><input type="checkbox" checked={selectedOrderIds.includes(o.id)} onChange={() => toggleOrder(o.id)} /></td>
                           <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
-                          <td>{o.receiverAddress?.contactName || '—'}</td>
+                          <td>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</td>
                           <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
-                          <td className="mono">{o.airportCode}</td>
+                          <td>{o.hubName || '—'}</td>
+                          <td>{formatDateShort(o.createdAt)}</td>
                           <td>{o.qty}</td>
                           <td>{Number(o.chargeableWeightKg).toFixed(2)} kg</td>
                           <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{statusLabel(o.status)}</span></td>
                         </tr>
                       ))}
-                      {visibleOrders.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders match these filters right now.</td></tr>}
+                      {visibleOrders.length === 0 && <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No eligible orders match these filters right now.</td></tr>}
                     </tbody>
                   </table>
                 </div>
