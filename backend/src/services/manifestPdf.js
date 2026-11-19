@@ -43,8 +43,11 @@ async function generateManifestPdf(manifest) {
 
     const metaTop = doc.y;
     doc.font('Helvetica-Bold').fontSize(10).text('From', 50, metaTop);
+    // Most Hub rows have address === name (the real street address was
+    // never filled in) — only print it as its own line when it actually
+    // adds information, otherwise this reads as the same text twice.
     const fromLine = manifest.hub
-      ? `${manifest.hub.name}\n${manifest.hub.address}`
+      ? (manifest.hub.address && manifest.hub.address !== manifest.hub.name ? `${manifest.hub.name}\n${manifest.hub.address}` : manifest.hub.name)
       : manifest.fromAirportName || manifest.fromAirportCode || '—';
     doc.font('Helvetica').fontSize(9).text(fromLine, 50, metaTop + 14, { width: 220 });
     doc.font('Helvetica-Bold').fontSize(10).text('To (Airport)', 320, metaTop);
