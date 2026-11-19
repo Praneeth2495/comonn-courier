@@ -1474,6 +1474,12 @@ function OrdersPanel() {
             // AdminDashboard.jsx task notes), takes priority over overdue/
             // picked-up coloring since it's the most actionable flag.
             const weightUnconfirmed = (tab === 'bookings' || tab === 'pickup') && o.items?.some((it) => it.weightUnconfirmed);
+            // Locks the checkbox only while a pickup is still pending —
+            // once it's actually PICKED_UP there's no "don't reassign a job
+            // in flight" risk left, and staff need to be able to select it
+            // for a Load Sheet (the rider assignment itself is untouched,
+            // just no longer blocks selection here).
+            const lockedToRider = (o.assignedDriver || o.customDriverName) && o.status !== 'PICKED_UP';
             return (
             <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''} ${weightUnconfirmed ? 'weight-unconfirmed' : o.__overdue ? 'overdue' : tab === 'pickup' && o.status === 'PICKED_UP' ? 'picked-up' : ''}`} key={o.id}>
               {tab === 'pickup' && (
