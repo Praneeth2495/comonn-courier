@@ -60,7 +60,7 @@ const PAGE_LABELS = {
 // none" — unlike allowedPages, there was never a blank-slate day-one
 // default to seed here, so admin opts a user INTO a restriction by
 // picking specific tabs rather than opting them out of a default set.
-const ORDER_TAB_KEYS = ['bookings', 'pickup', 'delivery', 'unconfirmed', 'manifest'];
+const ORDER_TAB_KEYS = ['bookings', 'pickup', 'delivery', 'unconfirmed', 'manifest', 'loadsheet'];
 
 // Sub-tabs inside the Accounts page — same "empty = no restriction" rule
 // as ORDER_TAB_KEYS. Does NOT include the Accounts page's "Assets" tab,
