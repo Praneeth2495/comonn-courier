@@ -15,6 +15,11 @@ const TEMPLATE_IDS = {
   // Templates for the current approval state.
   admin_order_alert: 'ec82e6c0-3c0f-472d-af02-4fdff67be196',
   admin_daily_summary: '49032cef-7087-44dc-a220-64ac5959811a',
+  // Not yet submitted/approved in Gupshup's console — pendingOrderReminder.js
+  // skips the WhatsApp send (logs instead of throwing) until this is filled
+  // in with a real template id. The email half of that reminder works today
+  // regardless, no approval needed for that.
+  pending_order_reminder: '',
 };
 
 // params must already be in the template's flat left-to-right order — body
