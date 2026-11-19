@@ -544,12 +544,20 @@ export default function BatchScanPanel() {
               </p>
               <div className="field">
                 <label>New status</label>
-                <select className="select" value={chosenStatus} onChange={(e) => setChosenStatus(e.target.value)}>
-                  <option value="">Select status…</option>
-                  {chosenStatus && !ORDER_STATUSES.includes(chosenStatus) && <option value={chosenStatus}>{chosenStatus} (from scanned location)</option>}
-                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
-                </select>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <select className="select" style={{ flex: 1 }} value={chosenStatus} onChange={(e) => setChosenStatus(e.target.value)}>
+                    <option value="">Select status…</option>
+                    {chosenStatus && !ORDER_STATUSES.includes(chosenStatus) && <option value={chosenStatus}>{chosenStatus} (from scanned location)</option>}
+                    {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
+                  </select>
+                  <button type="button" className="btn btn-outline" style={{ flex: 'none' }} title="Scan a barcode location to set the status" onClick={() => setShowFinishCamera(true)}>📷</button>
+                </div>
               </div>
+              {lastLocationScanned && (
+                <p style={{ fontSize: 12.5, color: 'var(--cobalt)', marginTop: 8 }}>
+                  📍 Location scanned: <b>{lastLocationScanned.name}</b> — status set to <b>{lastLocationScanned.label}</b>
+                </p>
+              )}
               {scanMode !== 'loadsheet' && (
                 <>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginTop: 14, cursor: 'pointer' }}>
