@@ -1327,7 +1327,7 @@ function OrdersPanel() {
         ))}
       </div>
 
-      {tab === 'manifest' ? <Suspense fallback={<LoadingLogo />}><ManifestPanel /></Suspense> : <>
+      {tab === 'manifest' ? <Suspense fallback={<LoadingLogo />}><ManifestPanel /></Suspense> : tab === 'loadsheet' ? <Suspense fallback={<LoadingLogo />}><LoadSheetPanel /></Suspense> : <>
       {tab === 'delivery' ? (
         <>
           <div className="chip-filter-row">
