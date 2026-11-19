@@ -611,18 +611,6 @@ function branchSenderWhere(branchKey, regionMap) {
   return { postcode: { in: postcodes } };
 }
 
-// The branch/hub an individual order's sender resolves to — same postcode
-// lookup as branchSenderWhere, evaluated against one address instead of
-// turned into a Prisma filter. This is what the per-order cost split
-// below (and Revenue-by-hub) uses — operating costs aren't tagged with a
-// hub directly (except manifest-less entries like salary, via
-// PartyInvoice.hubId); a manifest-linked cost's hub is computed live from
-// whichever orders are actually in that manifest.
-function branchOfAddress(addr, regionMap) {
-  if (!addr) return null;
-  return regionMap.get(addr.postcode) || null;
-}
-
 // Same postcode->region resolution as branchOfAddress, evaluated against a
 // STAFF member's own StaffRegionAssignment rows instead of an order's
 // sender address — for the Pickup orders "send to rider" dropdown, which
