@@ -1046,6 +1046,12 @@ model Order {
   otpExpiresAt   DateTime?
   otpVerifiedAt  DateTime?
 
+  // Set once the 12h "pending order" reminder (email + WhatsApp) has been
+  // sent for this order — guards against re-sending it every time the
+  // cron runs. Only ever set for signed-up customers (userId != null);
+  // guest orders never get one — see pendingOrderReminder.js.
+  pendingOrderReminderSentAt DateTime?
+
   status         String  @default("DRAFT")
   trackingNumber String? @unique
   invoiceNumber  String? @unique // "IN1", "IN2"... assigned at booking time, resets only on calendar year change
