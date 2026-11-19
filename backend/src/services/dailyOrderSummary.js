@@ -19,8 +19,12 @@ const ACTIVE_PICKUP_STATUSES = ['PENDING_PAYMENT', 'PICKUP_CONFIRMED', 'PAID', '
 
 /**
  * Three end-of-day ops numbers for the admin WhatsApp summary:
- *  - totalToday: orders placed today (any status) — same "Total orders"
- *    definition the Overview stat card already uses (computeOrderTotals).
+ *  - totalToday: orders placed today, excluding UNFINISHED (never even
+ *    reached payment) and CANCELLED — same "Total orders" definition the
+ *    Overview stat card uses (buildDashboardWhere/computeOrderTotals in
+ *    admin.controller.js). Previously had no status filter at all (every
+ *    abandoned quote counted), which silently disagreed with that
+ *    definition despite this comment already claiming to match it.
  *  - collectedToday: orders physically picked up by the courier TODAY
  *    (pickedUpAt within today's IST window) — matches the WhatsApp
  *    template's own "collected by courier today" wording, which is a
