@@ -322,7 +322,11 @@ function DetailsForm() {
     setLoading(true);
     try {
       const nextOrder = await saveOrder();
-      setBooking({ order: nextOrder });
+      // bookedAt starts (or restarts, if this is a re-save after going
+      // back and changing something) the browser's own auto-resume clock
+      // — see BookingContext.jsx. Purely a "how long do we keep offering
+      // this back automatically" timer; the order itself is unaffected.
+      setBooking({ order: nextOrder, bookedAt: Date.now() });
       navigate('/payment');
     } catch (err) {
       setError(err.response?.data?.error || 'Could not save the order. Please check the details and try again.');
