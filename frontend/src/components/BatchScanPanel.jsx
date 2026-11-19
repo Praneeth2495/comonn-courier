@@ -170,6 +170,69 @@ export default function BatchScanPanel() {
     setLastLocationScanned(null);
     setLocationNotes([]);
     setPreview({});
+    setLoadSheet(null);
+    setLsConfirmedIds([]);
+    setLsInput('');
+    setLsOrderInput('');
+    setLsError('');
+  }
+
+  async function loadLoadSheetByBarcode(code) {
+    if (!code) return;
+    setLsLoading(true);
+    setLsError('');
+    try {
+      const { data } = await client.get(`/admin/loadsheets/by-barcode/${encodeURIComponent(code)}`);
+      setLoadSheet(data.loadSheet);
+      setLsConfirmedIds([]);
+    } catch (err) {
+      setLsError(err.response?.data?.error || "That barcode doesn't match any load sheet.");
+    } finally {
+      setLsLoading(false);
+    }
+  }
+
+  function handleLsBarcodeKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const code = lsInput.trim();
+      setLsInput('');
+      loadLoadSheetByBarcode(code);
+    }
+  }
+
+  // Confirms one of the loaded load sheet's orders — flips it from
+  // grey/pending to black + a green tick. Matches against each order's own
+  // label barcode, tracking number, or order number (matchCodes, from the
+  // by-barcode response), not the load sheet's own barcode again.
+  function handleLsOrderScan(code) {
+    if (!loadSheet || !code) return;
+    const order = loadSheet.orders.find((o) => o.matchCodes.includes(code));
+    if (!order) {
+      setLsError(`"${code}" doesn't match any order on this load sheet.`);
+      return;
+    }
+    setLsError('');
+    setLsConfirmedIds((prev) => (prev.includes(order.id) ? prev : [...prev, order.id]));
+  }
+
+  function handleLsOrderKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const code = lsOrderInput.trim();
+      setLsOrderInput('');
+      handleLsOrderScan(code);
+    }
+  }
+
+  function finishLoadSheetScanning() {
+    if (lsConfirmedIds.length === 0) {
+      setLsError('Scan at least one order first.');
+      return;
+    }
+    setLsError('');
+    setError('');
+    setPhase('FINISH');
   }
 
   // Shared by both the keyboard/physical-scanner input and the camera
