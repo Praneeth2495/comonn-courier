@@ -84,6 +84,7 @@ export function BookingProvider({ children }) {
         quoteInput: null,
         selectedQuote: null,
         order: null,
+        bookedAt: null,
         savedBookings: [...(prev.savedBookings || []), order],
       };
       sessionStorage.setItem('comonn_booking', JSON.stringify(next));
