@@ -290,9 +290,14 @@ function BuildManifest() {
         <p className="lead" style={{ fontSize: 13.5 }}>No orders with a resolved destination airport are waiting to be manifested right now.</p>
       ) : (
         <>
+          {/* .loc — same compact/navy-active chip treatment already used for
+              every other country/airport/state filter in the admin panel
+              (Pickup orders' delivery-country/airport/state/hub chips).
+              These three rows were still on the older, larger, green-active
+              base .chip-filter style. */}
           <div className="chip-filter-row">
             {countryCodes.map((code) => (
-              <div key={code} className={`chip-filter ${selectedCountries.includes(code) ? 'active' : ''}`} onClick={() => pickCountry(code)}>
+              <div key={code} className={`chip-filter loc ${selectedCountries.includes(code) ? 'active' : ''}`} onClick={() => pickCountry(code)}>
                 {countryLabel(code, countries)}
               </div>
             ))}
@@ -303,7 +308,7 @@ function BuildManifest() {
 
           <div className="chip-filter-row">
             {airportsForCountries.map((a) => (
-              <div key={a.airportCode} className={`chip-filter ${selectedAirportCodes.includes(a.airportCode) ? 'active' : ''}`} onClick={() => toggleAirport(a.airportCode)}>
+              <div key={a.airportCode} className={`chip-filter loc ${selectedAirportCodes.includes(a.airportCode) ? 'active' : ''}`} onClick={() => toggleAirport(a.airportCode)}>
                 {a.name === a.airportCode ? a.airportCode : `${a.name} (${a.airportCode})`} · {a.count}
               </div>
             ))}
@@ -313,9 +318,9 @@ function BuildManifest() {
           {originStates.length > 0 && (
             <>
               <div className="chip-filter-row">
-                <div className="chip-filter active">🇮🇳 India</div>
+                <div className="chip-filter loc active">🇮🇳 India</div>
                 {originStates.map((s) => (
-                  <div key={s} className={`chip-filter ${selectedOriginStates.includes(s) ? 'active' : ''}`} onClick={() => toggleOriginState(s)}>
+                  <div key={s} className={`chip-filter loc ${selectedOriginStates.includes(s) ? 'active' : ''}`} onClick={() => toggleOriginState(s)}>
                     {s === UNSPECIFIED_STATE ? 'Unspecified' : abbreviateInState(s)}
                   </div>
                 ))}
