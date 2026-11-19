@@ -42,7 +42,7 @@ export default function AdminDashboard() {
   // link) lands back on whichever section was open, not the first one.
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState(searchParams.get('tab') || 'overview');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   // ADMIN always sees every page. STAFF/ACCOUNTS see exactly the pages an
