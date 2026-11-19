@@ -232,6 +232,13 @@ input,select,textarea{font-family:inherit;}
   .app-sidebar .brand{padding-right:40px;}
   .app-sidebar-backdrop{display:block;position:fixed;inset:0;background:rgba(14,27,61,.55);z-index:60;}
   .app-main{padding:20px 16px;}
+  /* Orders/Accounts tab bars (Bookings/Pickup/Delivery/Unconfirmed/
+     Manifest etc) can run wider than a phone screen — .dash-tabs/
+     .acct-tabs already scroll horizontally, but tighter sizing here gets
+     more tabs on-screen before scrolling is needed, and the mask fade
+     signals there's more to the right instead of just cutting off. */
+  .dash-tabs,.acct-tabs{padding:0 6px;mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent 100%);-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent 100%);}
+  .dash-tab{padding:12px 10px;font-size:12.5px;}
 }
 
 .stat-grid{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;}
