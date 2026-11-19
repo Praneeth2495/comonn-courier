@@ -81,11 +81,12 @@ async function sendPendingOrderReminders() {
           await sendTemplateMessage({
             to: phone,
             templateName: 'pending_order_reminder',
-            // Placeholder param order — verify against the template's
-            // actual "Use Template" preview in the Gupshup console once
-            // pending_order_reminder has a real id, same as every other
-            // template in whatsappService.js.
-            params: [order.user?.fullName || 'there', order.orderNumber, continueOrderUrl(order.id)],
+            // Body {{1}}, {{2}}, then the button's own restarted {{1}} —
+            // the button URL itself (https://comonn.in/pay/{{1}}) is baked
+            // into the approved template, so this is just the bare order
+            // id, not a full URL. See whatsappService.js's TEMPLATE_IDS
+            // comment for the same convention on other button templates.
+            params: [order.user?.fullName || 'there', order.orderNumber, order.id],
           });
         } catch (waErr) {
           // Not configured yet (empty template id) is expected until the
