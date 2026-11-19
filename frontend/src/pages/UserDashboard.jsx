@@ -73,7 +73,10 @@ export default function UserDashboard() {
 
   async function continueBooking(id) {
     const { data } = await client.get(`/orders/${id}`);
-    setBooking({ order: data.order });
+    // Resuming counts as fresh activity — restart the auto-resume clock
+    // (see BookingContext.jsx) rather than leaving whatever stale bookedAt
+    // this order happened to carry, if any.
+    setBooking({ order: data.order, bookedAt: Date.now() });
     navigate('/payment');
   }
 
