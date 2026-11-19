@@ -44,11 +44,19 @@ async function generateHubLoadSheetPdf(loadSheet) {
     doc.y = doc.y + 48 + 16;
     doc.moveDown(0.5);
 
+    // Most Hub rows have address === name (the real street address was never
+    // filled in, just the branch/city name typed into both fields) — only
+    // print the address as its own line when it actually adds information,
+    // otherwise the block reads as the same text printed twice.
+    function hubBlock(hub) {
+      if (!hub) return '—';
+      return hub.address && hub.address !== hub.name ? `${hub.name}\n${hub.address}` : hub.name;
+    }
     const metaTop = doc.y;
     doc.font('Helvetica-Bold').fontSize(10).text('From Hub', 50, metaTop);
-    doc.font('Helvetica').fontSize(9).text(`${sanitizePdfText(loadSheet.fromHub?.name)}\n${sanitizePdfText(loadSheet.fromHub?.address)}`, 50, metaTop + 14, { width: 220 });
+    doc.font('Helvetica').fontSize(9).text(sanitizePdfText(hubBlock(loadSheet.fromHub)), 50, metaTop + 14, { width: 220 });
     doc.font('Helvetica-Bold').fontSize(10).text('To Hub', 320, metaTop);
-    doc.font('Helvetica').fontSize(9).text(`${sanitizePdfText(loadSheet.toHub?.name)}\n${sanitizePdfText(loadSheet.toHub?.address)}`, 320, metaTop + 14, { width: 220 });
+    doc.font('Helvetica').fontSize(9).text(sanitizePdfText(hubBlock(loadSheet.toHub)), 320, metaTop + 14, { width: 220 });
     doc.y = Math.max(doc.y, metaTop + 56);
     doc.moveDown(0.5);
 
