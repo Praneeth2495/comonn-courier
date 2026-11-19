@@ -160,6 +160,7 @@ function BuildManifest() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [justCreated, setJustCreated] = useState(null);
   const [detailOrder, setDetailOrder] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   async function openDetail(id) {
     const { data } = await client.get(`/orders/${id}`);
