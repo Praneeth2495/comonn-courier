@@ -15,7 +15,7 @@ export default function DriverDashboard() {
   // back on whichever tab was open, not always "Jobs".
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState(searchParams.get('tab') || 'jobs');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   function selectTab(key) {
     setTab(key);
