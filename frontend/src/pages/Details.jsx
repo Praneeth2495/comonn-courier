@@ -513,7 +513,7 @@ function DetailsForm() {
             <AddressFields
               value={sender}
               onChange={updateSender}
-              instructionsLabel="Instructions"
+              instructionsLabel="Pickup Instructions"
               autoFillNote={senderLocked ? "Locked to your quote's pickup postcode — go back to the Book page to change it" : "Country auto-filled from your quote's origin"}
               savedAddresses={senderSavedAddresses}
               onSelectSaved={(id) => {
