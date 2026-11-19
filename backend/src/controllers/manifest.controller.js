@@ -29,7 +29,7 @@ function todayIsoIST() {
   return ist.toISOString().slice(0, 10);
 }
 
-const ORDER_INCLUDE = { senderAddress: true, receiverAddress: true, items: true };
+const ORDER_INCLUDE = { senderAddress: true, receiverAddress: true, items: true, service: true };
 
 function withQty(order) {
   const qty = (order.items || []).reduce((sum, it) => sum + it.quantity, 0);
