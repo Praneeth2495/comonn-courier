@@ -80,6 +80,17 @@ async function resolveBarcodes(barcodeValues) {
       }
       continue;
     }
+    const loadSheet = byLoadSheetCode.get(barcodeValue);
+    if (loadSheet) {
+      if (loadSheet.orders.length === 0) {
+        results.push({ barcodeValue, matched: false, orderId: null, orderNumber: null });
+      } else {
+        for (const order of loadSheet.orders) {
+          results.push({ barcodeValue, matched: true, orderId: order.id, orderNumber: order.orderNumber, viaLoadSheet: loadSheet.loadSheetNumber });
+        }
+      }
+      continue;
+    }
     const order = byOrderCode.get(barcodeValue);
     if (order) {
       results.push({ barcodeValue, matched: true, orderId: order.id, orderNumber: order.orderNumber });
