@@ -69,8 +69,6 @@ export default function LoadSheetPanel() {
   );
 }
 
-const HUB_FIELD_KEYS = ['fromHubId', 'toHubId', 'transferBy', 'reference', 'contactName', 'contactMobile'];
-
 function LoadSheetDetailModal({ loadSheetId, onClose, onChanged }) {
   const [loadSheet, setLoadSheet] = useState(null);
   const [hubs, setHubs] = useState([]);
