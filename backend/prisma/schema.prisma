@@ -134,6 +134,8 @@ model User {
   boxBookings              BoxBooking[]
   boxBookingComments       BoxBookingComment[]
   manifestsCreated         Manifest[]
+  loadSheetsCreated        LoadSheet[]
+  loadSheetComments        LoadSheetComment[]
   employeeProfile          EmployeeProfile?
   onboardingTokens         EmployeeOnboardingToken[]
   approvedEmployeeProfiles EmployeeProfile[]         @relation("EmployeeProfileApprovedBy")
