@@ -1486,10 +1486,10 @@ function OrdersPanel() {
                 <div>
                   <input
                     type="checkbox"
-                    className={o.assignedDriver || o.customDriverName ? 'checkbox-assigned' : ''}
-                    checked={o.assignedDriver || o.customDriverName ? true : selectedIds.includes(o.id)}
-                    disabled={!!(o.assignedDriver || o.customDriverName)}
-                    title={o.assignedDriver || o.customDriverName ? 'Already assigned — remove the current rider before reassigning' : undefined}
+                    className={lockedToRider ? 'checkbox-assigned' : ''}
+                    checked={lockedToRider ? true : selectedIds.includes(o.id)}
+                    disabled={lockedToRider}
+                    title={lockedToRider ? 'Already assigned — remove the current rider before reassigning' : undefined}
                     onChange={() => toggleSelect(o.id)}
                   />
                 </div>
