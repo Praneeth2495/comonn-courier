@@ -598,17 +598,6 @@ function classifyChannel(o) {
 // BRANCH_HUB_NAMES indirection existed only because the 3 original hubs
 // weren't named after their region).
 
-// Fetched once per request (not per branch) — the revenue sender filter,
-// the per-order cost-allocation split, and the Revenue-by-hub breakdown
-// all read off this same postcode -> region map.
-async function loadRegionPostcodeMap() {
-  const rows = await prisma.postcodeSuggestion.findMany({
-    where: { countryCode: 'IN', region: { not: null } },
-    select: { postcode: true, region: true },
-  });
-  return new Map(rows.map((r) => [r.postcode, r.region]));
-}
-
 // Every region actually in use, as the valid ?branch= values for the
 // Accounts Overview filter — read from the live Hub table rather than a
 // hardcoded list, since a Hub now exists per region.
