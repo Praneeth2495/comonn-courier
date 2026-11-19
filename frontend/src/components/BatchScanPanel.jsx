@@ -719,6 +719,12 @@ export default function BatchScanPanel() {
         {scanningBatchId && (
           <BarcodeCameraScanner onScan={handleBatchStatusScan} onClose={() => setScanningBatchId(null)} />
         )}
+        {showLsCamera && (
+          <BarcodeCameraScanner
+            onScan={(code) => (loadSheet ? handleLsOrderScan(code) : loadLoadSheetByBarcode(code))}
+            onClose={() => setShowLsCamera(false)}
+          />
+        )}
       </Suspense>
     </div>
   );
