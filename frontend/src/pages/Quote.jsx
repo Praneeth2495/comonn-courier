@@ -478,7 +478,7 @@ export default function Quote() {
   // here, just a direct switch straight to editing that order's details.
   function editSavedBooking(booking) {
     removeSavedBooking(booking.id);
-    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking) });
+    setBooking({ order: booking, quoteInput: quoteInputFromOrder(booking), selectedQuote: selectedQuoteFromOrder(booking), bookedAt: Date.now() });
     navigate('/details');
   }
 
