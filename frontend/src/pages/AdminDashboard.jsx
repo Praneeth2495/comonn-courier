@@ -1076,7 +1076,7 @@ function OrdersPanel() {
   }
 
   function load(silent) {
-    if (tab === 'manifest') { setLoading(false); return; }
+    if (tab === 'manifest' || tab === 'loadsheet') { setLoading(false); return; }
     if (!silent) setLoading(true);
     const seq = ++seqRef.current;
     const tabDef = ORDER_TABS.find(([key]) => key === tab);
