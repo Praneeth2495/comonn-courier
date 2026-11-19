@@ -33,4 +33,10 @@ async function generateManifestNumber() {
   return `MAN${seq}`;
 }
 
-module.exports = { generateInvoiceNumber, generatePartyInvoiceNumber, generateBoxInvoiceNumber, generateManifestNumber, nextYearlySequence };
+/** Generates LS<seq> for hub-to-hub load sheets, same yearly-resetting idiom. */
+async function generateLoadSheetNumber() {
+  const seq = await nextYearlySequence('loadsheet', new Date().getFullYear());
+  return `LS${seq}`;
+}
+
+module.exports = { generateInvoiceNumber, generatePartyInvoiceNumber, generateBoxInvoiceNumber, generateManifestNumber, generateLoadSheetNumber, nextYearlySequence };
