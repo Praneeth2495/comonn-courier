@@ -139,7 +139,7 @@ async function generateLabelsForBatch(batch) {
     const barcodeValue = totalQuantity > 1 ? `${batch.referenceNumber}-${packageIndex}` : batch.referenceNumber;
     const pageArgs = {
       packageIndex, totalPackages: totalQuantity, item: packages[i], barcodeValue,
-      hideShipmentTracking: true, hideBarcodeText: true,
+      hideBarcodeText: true,
       numberLabel: batch.orderId, referenceLabel: batch.refNumber,
     };
     pages.push(pageArgs);
