@@ -568,9 +568,7 @@ async function getOrder(req, res, next) {
     // detail (the same postcode -> region resolution Accounts Overview and
     // Build Manifest use, see hubResolution.js), not something a customer
     // needs to see.
-    if (req.user.role === 'CUSTOMER') {
-      order.hubName = undefined;
-    } else {
+    if (req.user.role !== 'CUSTOMER') {
       const regionMap = await loadRegionPostcodeMap();
       order.hubName = branchOfAddress(order.senderAddress, regionMap);
     }
