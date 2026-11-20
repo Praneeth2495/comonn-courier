@@ -3,7 +3,7 @@ import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
 import { OrderDetailModal, OrderCommentsModal } from './OrderDetailModal';
 import { downloadBlob } from '../utils/downloadBlob';
-import { formatDateShort, formatDateTime } from '../utils/dateFormat';
+import { formatDateTime } from '../utils/dateFormat';
 import { parsePickupDateStr } from '../utils/pickupDate';
 import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
 
