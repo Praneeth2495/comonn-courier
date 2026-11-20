@@ -176,6 +176,17 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
+        {/* Internal routing detail — order.hubName is only ever present on
+            the response for ADMIN/STAFF/ACCOUNTS (see getOrder in
+            order.controller.js, which omits it entirely for CUSTOMER), so
+            this never renders on the customer-facing dashboard. */}
+        {order.hubName && (
+          <div className="oda-box" style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '.05em', color: 'var(--slate-light)', fontWeight: 700 }}>Hub</span>
+            <span style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--navy)' }}>{order.hubName}</span>
+          </div>
+        )}
+
         <div className="oda-summary">
           {canViewPricing && (
             <>
@@ -202,7 +213,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         </div>
 
         <div className="detail-section">
-          <div className="oda-section-head"><span className="icon">📍</span><h4>Route</h4></div>
+          <div className="oda-section-head"><h4>Route</h4></div>
           <div className="oda-route">
             <div className="oda-route-block"><div className="lbl">Origin</div><p>{order.senderAddress?.city}, {order.senderAddress?.countryCode}</p></div>
             <div className="oda-route-arrow">→</div>
@@ -211,7 +222,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         </div>
 
         <div className="detail-section oda-box">
-          <div className="oda-section-head"><span className="icon">📤</span><h4>Sender details</h4></div>
+          <div className="oda-section-head"><h4>Sender details</h4></div>
           <div className="detail-grid">
             <div className="detail-row"><span className="k">Name</span><span className="v">{order.senderAddress?.contactName}</span></div>
             <div className="detail-row"><span className="k">Phone</span><span className="v">{order.senderAddress?.phone}</span></div>
@@ -224,7 +235,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         </div>
 
         <div className="detail-section oda-box">
-          <div className="oda-section-head"><span className="icon">📥</span><h4>Receiver details</h4></div>
+          <div className="oda-section-head"><h4>Receiver details</h4></div>
           <div className="detail-grid">
             <div className="detail-row"><span className="k">Name</span><span className="v">{order.receiverAddress?.contactName}</span></div>
             <div className="detail-row"><span className="k">Phone</span><span className="v">{order.receiverAddress?.phone}</span></div>
@@ -238,7 +249,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
         </div>
 
         <div className="detail-section oda-box">
-          <div className="oda-section-head"><span className="icon">📦</span><h4>Shipment</h4></div>
+          <div className="oda-section-head"><h4>Shipment</h4></div>
           <div className="detail-grid">
             <div className="detail-row" style={{ gridColumn: '1/-1' }}><span className="k">Items</span><span className="v">{itemsSummary || '—'}</span></div>
             <div className="detail-row"><span className="k">Service</span><span className="v">{order.service?.name}</span></div>
@@ -253,7 +264,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
 
         {canViewPricing && order.addons?.length > 0 && (
           <div className="detail-section oda-box">
-            <div className="oda-section-head"><span className="icon">🎁</span><h4>Add-on services</h4></div>
+            <div className="oda-section-head"><h4>Add-on services</h4></div>
             <div className="detail-grid">
               {order.addons.map((a) => (
                 <div className="detail-row" key={a.id}>
@@ -268,7 +279,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
 
         {canViewPaymentRefs && (order.payment || order.balancePayments?.length > 0) && (
           <div className="detail-section oda-box">
-            <div className="oda-section-head"><span className="icon">🧾</span><h4>Payment reference</h4></div>
+            <div className="oda-section-head"><h4>Payment reference</h4></div>
             <div className="detail-grid">
               {order.payment && <PaymentRefRow label="Original payment" payment={order.payment} />}
               {order.balancePayments?.map((bp, i) => (
@@ -280,7 +291,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
 
         {hasDocuments && (
           <div className="detail-section oda-box">
-            <div className="oda-section-head"><span className="icon">🏷️</span><h4>Documents</h4></div>
+            <div className="oda-section-head"><h4>Documents</h4></div>
             {labels.length > 0 && (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {labels.map((l) => (
@@ -306,7 +317,7 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
 
         {canViewWhatsapp && whatsappPhone && (
           <div className="detail-section oda-box">
-            <div className="oda-section-head"><span className="icon">📲</span><h4>WhatsApp</h4></div>
+            <div className="oda-section-head"><h4>WhatsApp</h4></div>
             {order.whatsappMessages?.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid var(--line-2)' }}>
                 {order.whatsappMessages.map((m) => (
@@ -331,14 +342,14 @@ export function OrderDetailModal({ order, onClose, canManageLabels = true, canVi
 
         {canViewComments && (
           <div className="detail-section oda-box">
-            <div className="oda-section-head"><span className="icon">💬</span><h4>Internal notes</h4></div>
+            <div className="oda-section-head"><h4>Internal notes</h4></div>
             <button className="btn btn-outline btn-sm" onClick={() => setShowComments(true)}>View comments</button>
           </div>
         )}
 
         {canViewTracking && (
         <div className="detail-section oda-box" style={{ marginBottom: 0 }}>
-          <div className="oda-section-head"><span className="icon">🚚</span><h4>Tracking</h4></div>
+          <div className="oda-section-head"><h4>Tracking</h4></div>
 
           {(carrierName || carrierTrackingNumber || canManageTracking) && (
             <div style={{ marginBottom: 14 }}>
