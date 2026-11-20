@@ -116,7 +116,7 @@ function BuildLoadSheet() {
             <thead>
               <tr>
                 <th><input type="checkbox" checked={visible.length > 0 && visible.every((o) => selectedIds.includes(o.id))} onChange={toggleSelectAll} /></th>
-                <th>Order #</th><th>From Address</th><th>To Address</th><th>Pickup Date</th><th>Status</th><th>Comment</th>
+                <th>Order #</th><th>From Address</th><th>To Address</th><th>Pickup Date</th><th>Status</th><th></th>
               </tr>
             </thead>
             <tbody>
