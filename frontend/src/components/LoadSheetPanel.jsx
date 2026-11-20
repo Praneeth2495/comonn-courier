@@ -1,18 +1,256 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
-import { OrderDetailModal } from './OrderDetailModal';
+import { OrderDetailModal, OrderCommentsModal } from './OrderDetailModal';
 import { downloadBlob } from '../utils/downloadBlob';
 import { formatDateShort, formatDateTime } from '../utils/dateFormat';
+import { parsePickupDateStr } from '../utils/pickupDate';
+import { STATUS_PILL, statusLabel } from '../utils/orderStatus';
+
+// Same status set the Pickup orders tab fetches with scope=pickup — a load
+// sheet is built from exactly that pool (not already on another load
+// sheet), same "what still needs moving" definition as Pickup orders.
+const PICKUP_STATUSES = 'PENDING_PAYMENT,PICKUP_CONFIRMED,PAID,LABEL_GENERATED,PICKED_UP';
 
 /**
- * Stored hub-to-hub load sheets — created from the Pickup orders tab's
- * checklist (see CreateLoadSheetModal in AdminDashboard.jsx). STAFF only
- * ever see load sheets touching their own assigned hub; the backend
- * (staffHubScope in loadSheet.controller.js) enforces that, this panel just
- * renders whatever it's given.
+ * Loadsheet tab — mirrors Manifest's own "Build manifest" / "Manifests"
+ * split: Build loadsheet is where staff pick orders and create one,
+ * Loadsheets is the stored history (edit/delete/comments/add-remove
+ * orders). Creation used to live in the Pickup orders tab's checklist
+ * (next to "Send to rider") — moved here so it has its own dedicated space
+ * instead of competing with rider assignment for the same checkboxes.
  */
 export default function LoadSheetPanel() {
+  const [subTab, setSubTab] = useState('build');
+
+  return (
+    <div>
+      <h1 className="h-lg" style={{ marginBottom: 16 }}>Load Sheet</h1>
+      <div className="acct-tabs" style={{ marginBottom: 20 }}>
+        {[['build', 'Build loadsheet'], ['loadsheets', 'Loadsheets']].map(([key, label]) => (
+          <button key={key} className={`acct-tab ${subTab === key ? 'active' : ''}`} onClick={() => setSubTab(key)}>{label}</button>
+        ))}
+      </div>
+      {subTab === 'build' && <BuildLoadSheet />}
+      {subTab === 'loadsheets' && <LoadSheetHistory />}
+    </div>
+  );
+}
+
+// Today in local time, used to bucket Order.pickupDate ("e.g. 02 Nov", no
+// year) into "active" (overdue + today — needs attention now) vs "future"
+// (scheduled later, nothing to do yet). An order with no parseable date at
+// all defaults into "active" too, same reasoning the old 3-chip Pickup
+// orders filter used — better surfaced than silently lost.
+function dueBucketOf(pickupDate, now, todayEnd) {
+  const parsed = parsePickupDateStr(pickupDate, now);
+  if (!parsed) return 'active';
+  return parsed < todayEnd ? 'active' : 'future';
+}
+
+function BuildLoadSheet() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [bucket, setBucket] = useState('active');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [hubs, setHubs] = useState([]);
+  const [showCreate, setShowCreate] = useState(false);
+  const [detailOrder, setDetailOrder] = useState(null);
+  const [commentOrder, setCommentOrder] = useState(null);
+
+  function load() {
+    setLoading(true);
+    client.get('/orders', { params: { scope: 'pickup', status: PICKUP_STATUSES, page: 1, pageSize: 2000 } })
+      .then(({ data }) => { setOrders(data.orders); setLoading(false); })
+      .catch(() => setLoading(false));
+  }
+  useEffect(load, []);
+  useEffect(() => {
+    client.get('/admin/hubs').then(({ data }) => setHubs(data.hubs)).catch(() => {});
+  }, []);
+
+  async function openDetail(id) {
+    const { data } = await client.get(`/orders/${id}`);
+    setDetailOrder(data.order);
+  }
+
+  const now = new Date();
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+  // Already-load-sheeted orders are excluded outright (same as Manifest's
+  // eligible-orders, which excludes anything with manifestId already set)
+  // rather than shown disabled — there's nothing left to do with them here.
+  const eligible = orders
+    .filter((o) => !o.loadSheetId)
+    .map((o) => ({ ...o, __dueBucket: dueBucketOf(o.pickupDate, now, todayEnd) }));
+  const activeCount = eligible.filter((o) => o.__dueBucket === 'active').length;
+  const futureCount = eligible.filter((o) => o.__dueBucket === 'future').length;
+  const visible = eligible.filter((o) => o.__dueBucket === bucket);
+
+  function toggle(id) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  function toggleSelectAll() {
+    const ids = visible.map((o) => o.id);
+    const allSelected = ids.length > 0 && ids.every((id) => selectedIds.includes(id));
+    setSelectedIds((prev) => (allSelected ? prev.filter((id) => !ids.includes(id)) : [...new Set([...prev, ...ids])]));
+  }
+
+  return (
+    <div>
+      <div className="chip-filter-row">
+        <div className={`chip-filter ${bucket === 'active' ? 'active' : ''}`} onClick={() => setBucket('active')}>Active orders: {activeCount}</div>
+        <div className={`chip-filter ${bucket === 'future' ? 'active' : ''}`} onClick={() => setBucket('future')}>Future orders: {futureCount}</div>
+      </div>
+
+      {selectedIds.length > 0 && (
+        <div className="card" style={{ padding: 14, marginBottom: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{selectedIds.length} selected</span>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>Create Load Sheet</button>
+        </div>
+      )}
+
+      {loading ? <LoadingLogo /> : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" checked={visible.length > 0 && visible.every((o) => selectedIds.includes(o.id))} onChange={toggleSelectAll} /></th>
+                <th>Order #</th><th>From Address</th><th>To Address</th><th>Pickup Date</th><th>Status</th><th>Comment</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((o) => (
+                <tr key={o.id}>
+                  <td><input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggle(o.id)} /></td>
+                  <td className="mono"><button className="t-oid" onClick={() => openDetail(o.id)}>{o.orderNumber}</button></td>
+                  <td>{o.senderAddress?.city}, {o.senderAddress?.countryCode}</td>
+                  <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
+                  <td>{o.pickupDate || '—'}</td>
+                  <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{statusLabel(o.status)}</span></td>
+                  <td><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>💬</button></td>
+                </tr>
+              ))}
+              {visible.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No {bucket} orders right now.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showCreate && (
+        <CreateLoadSheetModal
+          orderIds={selectedIds}
+          hubs={hubs}
+          onClose={() => setShowCreate(false)}
+          onCreated={(loadSheet) => {
+            setShowCreate(false);
+            setSelectedIds([]);
+            load();
+            alert(`Load sheet ${loadSheet.loadSheetNumber} created with ${loadSheet.orderCount} order(s).`);
+          }}
+        />
+      )}
+      {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
+      {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
+    </div>
+  );
+}
+
+// Same create form as before, just relocated from the Pickup orders tab —
+// From Hub, To Hub, and Transfer by are required; Reference/Name/Mobile
+// stay optional.
+function CreateLoadSheetModal({ orderIds, hubs, onClose, onCreated }) {
+  const [fromHubId, setFromHubId] = useState('');
+  const [toHubId, setToHubId] = useState('');
+  const [transferBy, setTransferBy] = useState('');
+  const [reference, setReference] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactMobile, setContactMobile] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!fromHubId || !toHubId || !transferBy.trim()) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      const { data } = await client.post('/admin/loadsheets', {
+        orderIds,
+        fromHubId,
+        toHubId,
+        transferBy: transferBy.trim(),
+        reference: reference.trim() || undefined,
+        contactName: contactName.trim() || undefined,
+        contactMobile: contactMobile.trim() || undefined,
+      });
+      onCreated(data.loadSheet);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not create this load sheet.');
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay open" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ fontSize: 17 }}>Create Load Sheet</h3>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+        </div>
+        <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected.</p>
+        <form onSubmit={submit} className="form-stack">
+          <div className="field">
+            <label>From Hub <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <select className="select" required value={fromHubId} onChange={(e) => setFromHubId(e.target.value)}>
+              <option value="">Choose from hub…</option>
+              {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>To Hub <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <select className="select" required value={toHubId} onChange={(e) => setToHubId(e.target.value)}>
+              <option value="">Choose to hub…</option>
+              {hubs.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>Transfer by <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
+            <input className="input" required placeholder="Rider name, vehicle, or transport mode" value={transferBy} onChange={(e) => setTransferBy(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Reference</label>
+            <input className="input" placeholder="Optional" value={reference} onChange={(e) => setReference(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Name</label>
+            <input className="input" placeholder="Optional" value={contactName} onChange={(e) => setContactName(e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Mobile</label>
+            <input className="input" placeholder="Optional" value={contactMobile} onChange={(e) => setContactMobile(e.target.value)} />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} disabled={!fromHubId || !toHubId || !transferBy.trim() || submitting}>
+              {submitting ? 'Creating…' : 'Submit'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Stored hub-to-hub load sheets. STAFF only ever see load sheets touching
+ * their own assigned hub; the backend (staffHubScope in
+ * loadSheet.controller.js) enforces that, this panel just renders whatever
+ * it's given.
+ */
+function LoadSheetHistory() {
   const [loadSheets, setLoadSheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewingId, setViewingId] = useState(null);
