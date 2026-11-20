@@ -1460,22 +1460,16 @@ function OrdersPanel() {
             // AdminDashboard.jsx task notes), takes priority over overdue/
             // picked-up coloring since it's the most actionable flag.
             const weightUnconfirmed = (tab === 'bookings' || tab === 'pickup') && o.items?.some((it) => it.weightUnconfirmed);
-            // Locks the checkbox only while a pickup is still pending —
-            // once it's actually PICKED_UP there's no "don't reassign a job
-            // in flight" risk left, and staff need to be able to select it
-            // for a Load Sheet (the rider assignment itself is untouched,
-            // just no longer blocks selection here).
-            const lockedToRider = (o.assignedDriver || o.customDriverName) && o.status !== 'PICKED_UP';
             return (
             <div className={`t-row orders-detailed ${tab === 'bookings' ? 'with-actions' : ''} ${tab === 'pickup' ? 'with-driver' : ''} ${weightUnconfirmed ? 'weight-unconfirmed' : o.__overdue ? 'overdue' : tab === 'pickup' && o.status === 'PICKED_UP' ? 'picked-up' : ''}`} key={o.id}>
               {tab === 'pickup' && (
                 <div>
                   <input
                     type="checkbox"
-                    className={lockedToRider ? 'checkbox-assigned' : ''}
-                    checked={lockedToRider ? true : selectedIds.includes(o.id)}
-                    disabled={lockedToRider}
-                    title={lockedToRider ? 'Already assigned — remove the current rider before reassigning' : undefined}
+                    className={o.assignedDriver || o.customDriverName ? 'checkbox-assigned' : ''}
+                    checked={o.assignedDriver || o.customDriverName ? true : selectedIds.includes(o.id)}
+                    disabled={!!(o.assignedDriver || o.customDriverName)}
+                    title={o.assignedDriver || o.customDriverName ? 'Already assigned — remove the current rider before reassigning' : undefined}
                     onChange={() => toggleSelect(o.id)}
                   />
                 </div>
