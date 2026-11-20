@@ -1276,8 +1276,13 @@ function OrdersPanel() {
         const overdue = !!parsed && parsed < todayStart && o.status !== 'PICKED_UP';
         // Bucket is independent of the overdue/PICKED_UP distinction — this
         // just describes when the pickup is/was scheduled, for the summary
-        // chips below (an order without a parseable date falls in none).
-        const dueBucketValue = !parsed ? null : parsed < todayStart ? 'overdue' : parsed < todayEnd ? 'today' : 'future';
+        // chips below. An order with no parseable date (e.g. booked via the
+        // Merchant API, which never collects a pickup date the way the
+        // consumer Payment page's pickup-date selector always does) defaults
+        // into 'today' rather than being silently dropped from every count —
+        // same "surface it, don't lose it" reasoning Build Loadsheet's own
+        // Active/Future split uses (see LoadSheetPanel.jsx's dueBucketOf).
+        const dueBucketValue = !parsed ? 'today' : parsed < todayStart ? 'overdue' : parsed < todayEnd ? 'today' : 'future';
         return { ...o, __parsedPickupDate: parsed, __overdue: overdue, __dueBucket: dueBucketValue };
       })
       .sort((a, b) => {
