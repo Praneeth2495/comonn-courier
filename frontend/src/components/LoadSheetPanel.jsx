@@ -151,7 +151,6 @@ function BuildLoadSheet() {
         />
       )}
       {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />}
-      {commentOrder && <OrderCommentsModal order={commentOrder} onClose={() => setCommentOrder(null)} />}
     </div>
   );
 }
