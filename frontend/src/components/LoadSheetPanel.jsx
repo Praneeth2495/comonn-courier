@@ -99,8 +99,8 @@ function BuildLoadSheet() {
   return (
     <div>
       <div className="chip-filter-row">
-        <div className={`chip-filter ${bucket === 'active' ? 'active' : ''}`} onClick={() => setBucket('active')}>Active orders: {activeCount}</div>
-        <div className={`chip-filter ${bucket === 'future' ? 'active' : ''}`} onClick={() => setBucket('future')}>Future orders: {futureCount}</div>
+        <div className={`chip-filter loc ${bucket === 'active' ? 'active' : ''}`} onClick={() => setBucket('active')}>Active orders: {activeCount}</div>
+        <div className={`chip-filter loc ${bucket === 'future' ? 'active' : ''}`} onClick={() => setBucket('future')}>Future orders: {futureCount}</div>
       </div>
 
       {selectedIds.length > 0 && (
