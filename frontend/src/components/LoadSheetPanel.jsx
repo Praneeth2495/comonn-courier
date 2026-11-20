@@ -128,7 +128,7 @@ function BuildLoadSheet() {
                   <td>{o.receiverAddress?.city}, {o.receiverAddress?.countryCode}</td>
                   <td>{o.pickupDate || '—'}</td>
                   <td><span className={`pill ${STATUS_PILL[o.status] || 'pill-navy'}`}>{statusLabel(o.status)}</span></td>
-                  <td><button className="btn btn-outline btn-sm" onClick={() => setCommentOrder(o)}>💬</button></td>
+                  <td><button className="btn btn-outline btn-sm" onClick={() => openDetail(o.id)}>View</button></td>
                 </tr>
               ))}
               {visible.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--slate-light)', padding: '24px 0' }}>No {bucket} orders right now.</td></tr>}
