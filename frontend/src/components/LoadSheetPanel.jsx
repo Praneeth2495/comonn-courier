@@ -56,7 +56,6 @@ function BuildLoadSheet() {
   const [hubs, setHubs] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [detailOrder, setDetailOrder] = useState(null);
-  const [commentOrder, setCommentOrder] = useState(null);
 
   function load() {
     setLoading(true);
