@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import client from '../api/client';
 import LoadingLogo from './LoadingLogo';
-import { OrderDetailModal, OrderCommentsModal } from './OrderDetailModal';
+import { OrderDetailModal } from './OrderDetailModal';
 import { downloadBlob } from '../utils/downloadBlob';
 import { formatDateTime } from '../utils/dateFormat';
 import { parsePickupDateStr } from '../utils/pickupDate';
