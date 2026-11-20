@@ -564,6 +564,16 @@ async function getOrder(req, res, next) {
     // staff-only route, never included here at all).
     if (req.user.role === 'CUSTOMER') delete order.whatsappMessages;
     if (req.user.role === 'CUSTOMER') delete order.whatsappReplies;
+    // Which Hub this order's pickup resolves to — internal ops routing
+    // detail (the same postcode -> region resolution Accounts Overview and
+    // Build Manifest use, see hubResolution.js), not something a customer
+    // needs to see.
+    if (req.user.role === 'CUSTOMER') {
+      order.hubName = undefined;
+    } else {
+      const regionMap = await loadRegionPostcodeMap();
+      order.hubName = branchOfAddress(order.senderAddress, regionMap);
+    }
     res.json({ order });
   } catch (err) {
     next(err);
