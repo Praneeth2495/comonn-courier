@@ -1391,13 +1391,13 @@ function OrdersPanel() {
 
       {tab === 'pickup' && (
         <div className="chip-filter-row">
-          <div className={`chip-filter ${dueBucket === 'overdue' ? 'active' : ''}`} onClick={() => toggleDueBucket('overdue')}>
+          <div className={`chip-filter loc ${dueBucket === 'overdue' ? 'active' : ''}`} onClick={() => toggleDueBucket('overdue')}>
             Overdue Orders: {dueBucketCounts.overdue}
           </div>
-          <div className={`chip-filter ${dueBucket === 'today' ? 'active' : ''}`} onClick={() => toggleDueBucket('today')}>
+          <div className={`chip-filter loc ${dueBucket === 'today' ? 'active' : ''}`} onClick={() => toggleDueBucket('today')}>
             Today's Orders: {dueBucketCounts.today}
           </div>
-          <div className={`chip-filter ${dueBucket === 'future' ? 'active' : ''}`} onClick={() => toggleDueBucket('future')}>
+          <div className={`chip-filter loc ${dueBucket === 'future' ? 'active' : ''}`} onClick={() => toggleDueBucket('future')}>
             Future Orders: {dueBucketCounts.future}
           </div>
         </div>
