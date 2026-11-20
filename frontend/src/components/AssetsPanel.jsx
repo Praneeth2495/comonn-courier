@@ -161,7 +161,7 @@ function AssetFormModal({ title, asset, onClose, onSaved }) {
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <h3>{title}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <form onSubmit={submit} className="form-stack">
           <div className="field">

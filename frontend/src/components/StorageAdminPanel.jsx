@@ -393,7 +393,7 @@ function NewBookingModal({ onClose, onCreated }) {
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ fontSize: 17 }}>New storage booking</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
         {step === 'customer' && (
@@ -487,7 +487,7 @@ function BookingDetailModal({ booking, onClose }) {
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <h3 style={{ fontSize: 17 }}>{booking.customer.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <div className="form-stack">
           <Row label="Email" value={booking.customer.email} />
@@ -556,7 +556,7 @@ function BookingCommentsModal({ booking, onClose }) {
             <h3 style={{ fontSize: 17 }}>Comments — {booking.customer.fullName}</h3>
             <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>Internal notes, visible only to admin &amp; staff. Status changes are logged here automatically.</p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
         {loading ? (
@@ -619,7 +619,7 @@ function EditBookingDatesModal({ booking, onClose, onSaved }) {
       <div className="modal-box" style={{ maxWidth: 380 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
           <h3>Edit end date</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{booking.customer.fullName} — {booking.boxSize.name}, Box {booking.box?.number ?? '—'}</p>
         <form onSubmit={save} className="form-stack">

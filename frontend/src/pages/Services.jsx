@@ -120,7 +120,7 @@ export default function Services() {
             {sent ? (
               <>
                 <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setShowTalkModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+                  <button onClick={() => setShowTalkModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
                 </div>
                 <h3 style={{ marginBottom: 8 }}>✓ Message sent</h3>
                 <p style={{ fontSize: 13.5, color: 'var(--slate)', marginBottom: 20 }}>
@@ -132,7 +132,7 @@ export default function Services() {
               <>
                 <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                   <h3>Talk to us</h3>
-                  <button onClick={() => setShowTalkModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+                  <button onClick={() => setShowTalkModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
                 </div>
                 <p style={{ fontSize: 13.5, color: 'var(--slate)', marginBottom: 18 }}>
                   Tell us what you need — we'll reply by email.

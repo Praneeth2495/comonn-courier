@@ -228,7 +228,7 @@ function CreateInvoiceModal({ direction, onClose, onCreated }) {
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <h3>Create {direction === 'PAYABLE' ? 'payable' : 'receivable'} invoice</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
@@ -390,7 +390,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
                 <h3 style={{ fontSize: 17 }}>{invoice.invoiceNumber}</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{invoice.partyName}{invoice.businessName ? ` · ${invoice.businessName}` : ''}</p>
               </div>
-              <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+              <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0', flexWrap: 'wrap' }}>
@@ -537,7 +537,7 @@ function EditInvoiceModal({ invoiceId, onClose, onSaved }) {
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <h3>Edit {invoice.invoiceNumber}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
@@ -661,7 +661,7 @@ function SalaryPaymentModal({ invoice, prefill, onClose, onCreated }) {
       <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <h3>{invoice ? `Edit salary — ${invoice.partyName}` : 'Record payment'}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         {loadingOptions ? <LoadingLogo size={40} /> : (
           <form onSubmit={submit} className="form-stack">

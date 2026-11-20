@@ -362,7 +362,7 @@ export default function Home() {
         {showComingSoon && (
           <div className="modal-box" style={{ maxWidth: 420, textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowComingSoon(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+              <button onClick={() => setShowComingSoon(false)} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
             <div style={{ fontSize: 40, marginBottom: 8 }}>🚧</div>
             <h3 style={{ marginBottom: 8 }}>Coming soon</h3>

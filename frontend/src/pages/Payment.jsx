@@ -1032,7 +1032,7 @@ export default function Payment() {
         <div className="modal-box" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ fontSize: 17 }}>Restricted goods — examples</h3>
-            <button onClick={() => setShowDgModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+            <button onClick={() => setShowDgModal(false)} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
           </div>
           <p style={{ fontSize: 13, color: 'var(--slate)', marginBottom: 16 }}>These items cannot be shipped through our network:</p>
           <div className="dg-chip-row">

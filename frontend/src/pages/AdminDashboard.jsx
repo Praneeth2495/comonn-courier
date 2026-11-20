@@ -695,7 +695,7 @@ function KpiTileGrid({ kpis, dayWiseRange, setDayWiseRange, expandedKpi, setExpa
           <div className="modal-box" style={{ maxWidth: 720, maxHeight: '86vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <h3>{titleByKey[expandedKpi]}</h3>
-              <button onClick={() => setExpandedKpi(null)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+              <button onClick={() => setExpandedKpi(null)} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
 
             {expandedKpi === 'dayOfWeek' && (
@@ -2057,7 +2057,7 @@ function ManifestCostModal({ manifestId, onClose, onSaved }) {
               {manifest.hub?.name} → {manifest.countryCode} · {new Date(manifest.manifestDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
         <div style={{ display: 'flex', gap: 20, margin: '12px 0 16px', flexWrap: 'wrap' }}>
@@ -3123,7 +3123,7 @@ function AccessEditorModal({ title, description, optionKeys, optionLabels, curre
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <h3 style={{ fontSize: 17 }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>{description}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 320, overflowY: 'auto' }}>
@@ -3161,7 +3161,7 @@ function StaffZoneModal({ staff, zones, currentZoneIds, onSave, onClose }) {
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <h3 style={{ fontSize: 17 }}>Delivery zones for {staff.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
           This staff account will only see and filter Delivery orders in the zones checked below.
@@ -3223,7 +3223,7 @@ function StaffRegionModal({ staff, states, regionsByState, currentAssignments, o
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <h3 style={{ fontSize: 17 }}>Pickup states/hubs for {staff.fullName}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 16 }}>
           This staff account will only see and filter Pickup orders from the origin states/hubs checked below. Check a state for every pickup in it, or expand it (▸) to pick specific hubs instead.

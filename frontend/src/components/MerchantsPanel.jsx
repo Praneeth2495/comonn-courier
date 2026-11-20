@@ -100,7 +100,7 @@ function CreateMerchantModal({ onClose, onCreated }) {
       <div className="modal-box" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <h3>Add merchant</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <form onSubmit={submit} className="form-stack">
           <div className="field">
@@ -140,7 +140,7 @@ function ApiKeyRevealModal({ merchant, apiKey, onClose }) {
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
           <h3>✓ {merchant.name} created</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <p style={{ fontSize: 13, color: 'var(--danger)', marginBottom: 14 }}>
           This API key won't be shown again — copy it now and store it securely. You can always reissue a new one later.
@@ -186,7 +186,7 @@ function MerchantDetailModal({ merchantId, onClose, onOpenInvoice, onChanged }) 
                 <h3 style={{ fontSize: 17 }}>{merchant.name}</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{merchant.contactEmail}{merchant.contactPhone ? ` · ${merchant.contactPhone}` : ''}</p>
               </div>
-              <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+              <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
 
             <button type="button" className="btn btn-outline btn-sm" style={{ marginBottom: 16 }} onClick={toggleActive}>
@@ -282,7 +282,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onChanged }) {
                 <h3 style={{ fontSize: 17 }}>Invoice — {formatDateShort(invoice.invoiceDate)}</h3>
                 <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{invoice.merchant?.name}</p>
               </div>
-              <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+              <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0' }}>

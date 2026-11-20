@@ -500,7 +500,7 @@ function CreateManifestModal({ airports, orderIds, onClose, onCreated }) {
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ fontSize: 17 }}>Create manifest</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected{codes.length ? `, routing via ${codes.join(', ')}` : ''}.</p>
         <form onSubmit={submit} className="form-stack">
@@ -636,7 +636,7 @@ function ManifestDetailModal({ manifestId, onClose, onChanged }) {
             <h3 style={{ fontSize: 17 }}>{manifest ? manifest.manifestNumber : 'Manifest'}</h3>
             {manifest && <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{manifest.hub?.name} → {manifest.region?.name || manifest.toAddress}</p>}
           </div>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
         {loading || !manifest ? <LoadingLogo size={40} /> : (
@@ -797,7 +797,7 @@ function AddOrdersModal({ manifest, onClose, onAdded }) {
       <div className="modal-box" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h3 style={{ fontSize: 17 }}>Add orders to {manifest.manifestNumber}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         {loading ? <LoadingLogo size={40} /> : (
           <div style={{ maxHeight: 340, overflowY: 'auto', marginBottom: 14 }}>

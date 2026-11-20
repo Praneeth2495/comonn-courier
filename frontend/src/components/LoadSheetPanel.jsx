@@ -195,7 +195,7 @@ function CreateLoadSheetModal({ orderIds, hubs, onClose, onCreated }) {
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ fontSize: 17 }}>Create Load Sheet</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>{orderIds.length} order{orderIds.length === 1 ? '' : 's'} selected.</p>
         <form onSubmit={submit} className="form-stack">
@@ -388,7 +388,7 @@ function LoadSheetDetailModal({ loadSheetId, onClose, onChanged }) {
             <h3 style={{ fontSize: 17 }}>{loadSheet ? loadSheet.loadSheetNumber : 'Load sheet'}</h3>
             {loadSheet && <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{loadSheet.fromHub?.name} → {loadSheet.toHub?.name}</p>}
           </div>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
         {loading || !loadSheet ? <LoadingLogo size={40} /> : (
@@ -588,7 +588,7 @@ function AddOrdersToLoadSheetModal({ loadSheet, onClose, onAdded }) {
       <div className="modal-box" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h3 style={{ fontSize: 17 }}>Add orders to {loadSheet.loadSheetNumber}</h3>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <form className="search-box" style={{ marginBottom: 12 }} onSubmit={(e) => { e.preventDefault(); search(); }}>
           🔍<input placeholder="Search order #, city…" value={q} onChange={(e) => setQ(e.target.value)} />

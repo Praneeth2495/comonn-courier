@@ -672,7 +672,7 @@ export default function BatchScanPanel() {
                   {viewingBatch.items.length} label{viewingBatch.items.length === 1 ? '' : 's'} scanned · status applied: {statusLabel(viewingBatch.status)}
                 </p>
               </div>
-              <button onClick={() => setViewingBatch(null)} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+              <button onClick={() => setViewingBatch(null)} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
             </div>
             <div style={{ maxHeight: 420, overflowY: 'auto' }}>
               <table className="data-table">

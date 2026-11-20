@@ -213,7 +213,7 @@ function StaffDetailModal({ employeeId, onClose }) {
             <h3>{employee ? employee.fullName : 'Staff'}</h3>
             {employee && <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginTop: 4 }}>{ROLE_LABEL[employee.role] || employee.role}{p.designation ? ` · ${p.designation}` : ''}</p>}
           </div>
-          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 44, height: 44, borderRadius: '50%', fontSize: 15, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
 
         {!employee ? <LoadingLogo size={40} /> : (
