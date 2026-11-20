@@ -15,6 +15,7 @@ const { makeCommentHandlers } = require('../utils/commentHandlers');
 const { findMissingAddressField } = require('../utils/addressValidation');
 const { getCountryName } = require('../utils/countryNames');
 const { generateOrdersPdf } = require('../services/orderExportPdf');
+const { loadRegionPostcodeMap, branchOfAddress } = require('../services/hubResolution');
 
 // UNFINISHED: a customer created a quote + entered details but hasn't
 // completed payment yet — the resting status for every newly-created order.
