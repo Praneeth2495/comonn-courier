@@ -137,7 +137,7 @@ input,select,textarea{font-family:inherit;}
 .field label{font-size:12.5px;font-weight:600;color:var(--navy);}
 .field .hint{font-size:11.5px;color:var(--slate-light);}
 .input,.select{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:11px 13px;font-size:14px;color:var(--ink);width:100%;outline:none;transition:border-color .12s,box-shadow .12s;}
-.input:focus,.select:focus{border-color:var(--coral);box-shadow:0 0 0 4px rgba(255,90,54,.1);}
+.input:focus,.select:focus{border-color:var(--cobalt);box-shadow:0 0 0 4px rgba(36,81,255,.1);}
 /* Details.jsx's booking form suppresses native HTML5 validation UI
    (noValidate) so a "Book now" click with empty required fields doesn't
    show the browser's own invalid-field bubble and default blue focus
