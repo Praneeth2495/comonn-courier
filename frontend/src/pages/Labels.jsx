@@ -95,7 +95,7 @@ export default function Labels() {
         {labels && (
           <>
             <div className="table-wrap" style={{ marginTop: 30 }}>
-              <div className="label-row" style={{ background: 'var(--paper)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--slate-light)', fontWeight: 700 }}>
+              <div className="label-row" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--slate-light)', fontWeight: 700 }}>
                 <div>Order ID</div><div>Origin</div><div>Destination</div><div>Label</div>
               </div>
               {labels.map((l) => (
