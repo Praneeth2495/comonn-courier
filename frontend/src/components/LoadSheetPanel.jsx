@@ -52,20 +52,52 @@ function BuildLoadSheet() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [bucket, setBucket] = useState('active');
+  // Selection is deliberately independent of both the origin state/hub
+  // filter below and the fetched `orders` list itself — narrowing the view
+  // to one hub, ticking some boxes, then switching to a different hub and
+  // ticking more must NOT lose the first hub's picks. selectedIds only
+  // ever holds order ids, so it survives orders being re-fetched or
+  // filtered out of view, letting one load sheet span several origin hubs.
   const [selectedIds, setSelectedIds] = useState([]);
   const [hubs, setHubs] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [detailOrder, setDetailOrder] = useState(null);
 
+  // Same origin state/hub narrowing the Pickup orders tab offers — pulled
+  // from the same /admin/pickup-origins endpoint (already scoped to a
+  // STAFF account's own assigned pickup regions server-side).
+  const [pickupStates, setPickupStates] = useState([]);
+  const [pickupRegionsByState, setPickupRegionsByState] = useState({});
+  const [originState, setOriginState] = useState('');
+  const [originRegion, setOriginRegion] = useState('');
+
+  function selectOriginState(state) {
+    setOriginState(state);
+    setOriginRegion('');
+  }
+
   function load() {
     setLoading(true);
-    client.get('/orders', { params: { scope: 'pickup', status: PICKUP_STATUSES, page: 1, pageSize: 2000 } })
+    client.get('/orders', {
+      params: {
+        scope: 'pickup',
+        status: PICKUP_STATUSES,
+        page: 1,
+        pageSize: 2000,
+        originState: originState || undefined,
+        originRegion: originRegion || undefined,
+      },
+    })
       .then(({ data }) => { setOrders(data.orders); setLoading(false); })
       .catch(() => setLoading(false));
   }
-  useEffect(load, []);
+  useEffect(load, [originState, originRegion]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     client.get('/admin/hubs').then(({ data }) => setHubs(data.hubs)).catch(() => {});
+    client.get('/admin/pickup-origins').then(({ data }) => {
+      setPickupStates(data.states);
+      setPickupRegionsByState(data.regionsByState);
+    }).catch(() => {});
   }, []);
 
   async function openDetail(id) {
