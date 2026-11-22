@@ -1264,13 +1264,13 @@ function OrdersPanel() {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     let allPickup = orders
-      // Once a pickup is completed, keep it visible here until it's been
-      // put on a hub-to-hub Load Sheet (built from the Loadsheet tab's own
-      // "Build loadsheet" sub-tab — see LoadSheetPanel.jsx) — that's the
-      // actual handoff out of "needs collecting", not a fixed time window.
-      // The order itself isn't touched; it simply stops appearing in this
-      // list once loadSheetId is set.
-      .filter((o) => o.status !== 'PICKED_UP' || !o.loadSheetId)
+      // Once an order is on a hub-to-hub Load Sheet (built from the
+      // Loadsheet tab's own "Build loadsheet" sub-tab — see
+      // LoadSheetPanel.jsx), it's handed off out of "needs collecting" and
+      // drops out of this list too — regardless of its own status, same as
+      // Build Loadsheet's own eligible-orders exclusion. The order itself
+      // isn't touched; it simply stops appearing here once loadSheetId is set.
+      .filter((o) => !o.loadSheetId)
       .map((o) => {
         const parsed = parsePickupDateStr(o.pickupDate, now);
         const overdue = !!parsed && parsed < todayStart && o.status !== 'PICKED_UP';
