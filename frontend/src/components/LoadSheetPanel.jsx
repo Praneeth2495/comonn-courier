@@ -130,6 +130,27 @@ function BuildLoadSheet() {
 
   return (
     <div>
+      {pickupStates.length > 0 && (
+        <div className="chip-filter-row">
+          <div className={`chip-filter loc ${!originState ? 'active' : ''}`} onClick={() => selectOriginState('')}>All States</div>
+          {pickupStates.map((s) => (
+            <div key={s} className={`chip-filter loc ${originState === s ? 'active' : ''}`} onClick={() => selectOriginState(s)}>
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+      {originState && (pickupRegionsByState[originState] || []).length > 0 && (
+        <div className="chip-filter-row">
+          <div className={`chip-filter loc ${!originRegion ? 'active' : ''}`} onClick={() => setOriginRegion('')}>All Hubs</div>
+          {pickupRegionsByState[originState].map((r) => (
+            <div key={r} className={`chip-filter loc ${originRegion === r ? 'active' : ''}`} onClick={() => setOriginRegion(r)}>
+              {r}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="chip-filter-row">
         <div className={`chip-filter loc ${bucket === 'active' ? 'active' : ''}`} onClick={() => setBucket('active')}>Active orders: {activeCount}</div>
         <div className={`chip-filter loc ${bucket === 'future' ? 'active' : ''}`} onClick={() => setBucket('future')}>Future orders: {futureCount}</div>
