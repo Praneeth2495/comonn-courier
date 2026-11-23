@@ -594,7 +594,7 @@ export default function Payment() {
         const destination = o.receiverAddress ? `${o.receiverAddress.city}, ${getCountryName(o.receiverAddress.countryCode)}` : '—';
         try {
           const { data } = await client.post(`/labels/${o.id}/generate`);
-          return { orderId: o.id, orderNumber: o.orderNumber, destination, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending };
+          return { orderId: o.id, orderNumber: o.orderNumber, destination, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending, cashPending: data.cashPending, grandTotal: o.grandTotal };
         } catch (err) {
           return { orderId: o.id, orderNumber: o.orderNumber, destination, error: err.response?.data?.error || 'Could not generate this label.' };
         }
