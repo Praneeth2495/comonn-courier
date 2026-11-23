@@ -6,6 +6,7 @@ const {
   confirmPayment,
   getPaymentStatus,
   confirmCashBooking,
+  confirmCombinedCashBooking,
   createBalanceOrder,
   confirmBalancePayment,
   markBalancePaymentManual,
