@@ -19,6 +19,7 @@ const {
 // Must come before /:orderId/order — otherwise "combined" would match as
 // the :orderId param.
 router.post('/combined/order', optionalAuth, createCombinedOrder);
+router.post('/combined/cash', optionalAuth, confirmCombinedCashBooking);
 router.post('/:orderId/order', optionalAuth, createOrder);
 router.post('/:orderId/confirm', optionalAuth, confirmPayment);
 router.post('/:orderId/cash', optionalAuth, confirmCashBooking);
