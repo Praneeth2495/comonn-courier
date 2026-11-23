@@ -537,7 +537,7 @@ export default function Home() {
               </div>
 
               <div className="ib-add-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-                <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }} onClick={goToBook}>+ Add another item</a>
+                <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--cobalt)' }} onClick={goToBook}>+ Add another item</a>
               </div>
 
               {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
