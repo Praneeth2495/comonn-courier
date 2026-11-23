@@ -117,6 +117,16 @@ async function createOrder(req, res, next) {
 
     const remainingAmount = round2(Number(order.grandTotal) - walletAmountUsed);
 
+    // "Split" payment-method tab: customer pays only part of the remaining
+    // amount online now, the rest in cash at pickup. Any value strictly
+    // between 0 and remainingAmount is accepted — not a fixed percentage —
+    // clamped rather than rejected if it's somehow out of range (a stale
+    // page reload after the total changed, say), so the customer always
+    // gets a sane charge instead of a confusing error.
+    const payAmount = splitAmount != null
+      ? round2(Math.min(Math.max(Number(splitAmount), 0.01), remainingAmount))
+      : remainingAmount;
+
     // Wallet balance covered the whole order — no Razorpay charge needed at
     // all, mark it paid the same way the webhook/confirm path would.
     if (remainingAmount <= 0) {
