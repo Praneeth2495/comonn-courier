@@ -72,7 +72,6 @@ export default function Labels() {
             <div className="card" style={{ padding: 26, marginTop: 24, textAlign: 'center' }}>
               <div className="addr-grid" style={{ margin: '0 0 18px' }}>
                 <div className="addr-block"><div className="lbl">Order</div><p>{order.orderNumber}</p></div>
-                <div className="addr-block"><div className="lbl">Tracking</div><p>{order.trackingNumber}</p></div>
               </div>
               <p style={{ fontSize: 13.5, color: 'var(--slate)', lineHeight: 1.6 }}>
                 Our courier will collect your shipment, weigh and measure it in person, confirm the final price, and collect payment in cash. Shipping labels will be printed and attached by the courier at pickup.
