@@ -399,6 +399,31 @@ export default function Payment() {
     });
   }
 
+  // "Cash" payment-method tab, single order — same confirm-for-pickup
+  // endpoint handleConfirmCashBooking below uses for a pricingPending
+  // order, just for a normally-priced one: no Razorpay at all, the known
+  // grandTotal is simply collected at pickup instead.
+  async function handleCashPay() {
+    setError('');
+    if (!dgAcknowledged) {
+      setError('Please acknowledge the dangerous goods declaration.');
+      return;
+    }
+    if (!otpVerified) {
+      setError('Please verify your email before paying.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data } = await client.post(`/payments/${order.id}/cash`);
+      setBooking({ order: { ...order, ...data.order } });
+      navigate('/labels');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not confirm the booking.');
+      setSubmitting(false);
+    }
+  }
+
   async function pollForBalanceSuccess(providerOrderId) {
     for (let i = 0; i < 8; i++) {
       const { data } = await client.get(`/payments/${order.id}/balance`, { params: { providerOrderId } });
