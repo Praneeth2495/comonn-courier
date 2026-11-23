@@ -982,9 +982,12 @@ export default function Payment() {
                     <div className="pay-method-row">
                       <div className={`pay-method ${payMethodTab === 'card' ? 'active' : ''}`} onClick={() => setPayMethodTab('card')}>💳 Credit Card</div>
                       <div className={`pay-method ${payMethodTab === 'upi' ? 'active' : ''}`} onClick={() => setPayMethodTab('upi')}>📱 UPI</div>
+                      <div className={`pay-method ${payMethodTab === 'cash' ? 'active' : ''}`} onClick={() => setPayMethodTab('cash')}>💵 Cash</div>
                     </div>
                     <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
-                      You'll enter your {payMethodTab === 'card' ? 'card' : 'UPI'} details securely in Razorpay's checkout window — Comonn never stores your payment details.
+                      {payMethodTab === 'cash'
+                        ? "No payment happens now — the order is confirmed for pickup and the total is collected in cash when our courier arrives."
+                        : `You'll enter your ${payMethodTab === 'card' ? 'card' : 'UPI'} details securely in Razorpay's checkout window — Comonn never stores your payment details.`}
                     </p>
                   </>
                 ) : (
