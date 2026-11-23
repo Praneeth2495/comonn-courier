@@ -403,53 +403,102 @@ async function getBalancePaymentStatus(req, res, next) {
 }
 
 /**
+ * Confirms one order for pickup with cash instead of an online payment —
+ * no Razorpay involved. Used both for the original "not sure, book pickup"
+ * flow (price unknown, amount collected is whatever the courier assesses
+ * in person — Payment.amount stays 0 since there's nothing to quote yet)
+ * and, now, for a normally-priced order where the customer simply chose to
+ * pay cash at pickup instead of online (Payment.amount is the real,
+ * already-known grandTotal — the rider knows exactly what to collect).
+ * Same DG/OTP gates as the online flow either way.
+ */
+async function confirmOrderCash(order) {
+  if (!PAYABLE_STATUSES.includes(order.status)) {
+    const err = new Error(`Order ${order.orderNumber} is not awaiting payment (status: ${order.status})`);
+    err.status = 409;
+    throw err;
+  }
+  if (!order.dgAcknowledged) {
+    const err = new Error(`Please acknowledge the dangerous goods declaration for order ${order.orderNumber} first`);
+    err.status = 409;
+    throw err;
+  }
+  if (!order.otpVerifiedAt) {
+    const err = new Error('Please verify your email before proceeding to payment');
+    err.status = 409;
+    throw err;
+  }
+
+  const amount = order.pricingPending ? 0 : order.grandTotal;
+  await prisma.payment.upsert({
+    where: { orderId: order.id },
+    update: { provider: 'cash', method: 'cash', amount, currency: order.currency, status: 'CASH_PENDING' },
+    create: { orderId: order.id, provider: 'cash', method: 'cash', amount, currency: order.currency, status: 'CASH_PENDING' },
+  });
+
+  // Distinct from PAID: no money has actually changed hands yet — cash is
+  // only collected at pickup (either the courier's in-person weight/price
+  // assessment, for a pricingPending order, or simply handing over the
+  // already-known grandTotal). Tracking number is just the order number —
+  // one identifier for the customer to remember instead of two
+  // unrelated-looking ones.
+  const { count } = await prisma.order.updateMany({
+    where: { id: order.id, status: { in: PAYABLE_STATUSES } },
+    data: { status: 'PICKUP_CONFIRMED', trackingNumber: order.orderNumber },
+  });
+  if (count > 0) {
+    const note = order.pricingPending
+      ? 'Cash pickup booking confirmed — amount to be collected at pickup'
+      : `Cash pickup booking confirmed — ₹${Number(order.grandTotal).toFixed(2)} to be collected at pickup`;
+    await prisma.trackingEvent.create({ data: { orderId: order.id, status: 'PICKUP_CONFIRMED', note } });
+    notifyOrderStatusChange(order.id, 'PICKUP_CONFIRMED');
+  }
+
+  return prisma.order.findUnique({ where: { id: order.id }, include: { payment: true } });
+}
+
+/**
  * POST /api/payments/:orderId/cash
- * "Not sure, book pickup" flow only: no online payment happens — the order
- * is confirmed for pickup immediately and cash is collected once the
- * courier assesses the actual weight/price in person. Same DG/OTP gates as
- * the online flow, just no Razorpay involved.
  */
 async function confirmCashBooking(req, res, next) {
   try {
     const order = await prisma.order.findUnique({ where: { id: req.params.orderId } });
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    if (!order.pricingPending) {
-      return res.status(409).json({ error: 'Cash booking is only available for pickup orders' });
-    }
-    if (!PAYABLE_STATUSES.includes(order.status)) {
-      return res.status(409).json({ error: `Order is not awaiting payment (status: ${order.status})` });
-    }
-    if (!order.dgAcknowledged) {
-      return res.status(409).json({ error: 'Please acknowledge the dangerous goods declaration first' });
-    }
-    if (!order.otpVerifiedAt) {
-      return res.status(409).json({ error: 'Please verify your email before proceeding to payment' });
-    }
-
-    await prisma.payment.upsert({
-      where: { orderId: order.id },
-      update: { provider: 'cash', method: 'cash', amount: 0, currency: order.currency, status: 'CASH_PENDING' },
-      create: { orderId: order.id, provider: 'cash', method: 'cash', amount: 0, currency: order.currency, status: 'CASH_PENDING' },
-    });
-
-    // Distinct from PAID: no money has actually changed hands yet — cash is
-    // only collected once the courier weighs the parcel at pickup. Tracking
-    // number is just the order number — one identifier for the customer to
-    // remember instead of two unrelated-looking ones.
-    const { count } = await prisma.order.updateMany({
-      where: { id: order.id, status: { in: PAYABLE_STATUSES } },
-      data: { status: 'PICKUP_CONFIRMED', trackingNumber: order.orderNumber },
-    });
-    if (count > 0) {
-      await prisma.trackingEvent.create({
-        data: { orderId: order.id, status: 'PICKUP_CONFIRMED', note: 'Cash pickup booking confirmed — amount to be collected at pickup' },
-      });
-      notifyOrderStatusChange(order.id, 'PICKUP_CONFIRMED');
-    }
-
-    const updated = await prisma.order.findUnique({ where: { id: order.id }, include: { payment: true } });
+    const updated = await confirmOrderCash(order);
     res.json({ order: updated });
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    next(err);
+  }
+}
+
+/**
+ * POST /api/payments/combined/cash
+ * Same "several saved bookings paid together" grouping as
+ * createCombinedOrder, except there's no Razorpay order to share — cash is
+ * collected per-order at pickup, so this just confirms every order in the
+ * list via confirmOrderCash in turn. Picking Cash for a multi-booking
+ * session applies to the whole session (every saved booking goes to cash),
+ * not a per-order choice — keeps the pickup visit a single consistent
+ * "cash due" collection for the rider instead of a mix of paid/unpaid.
+ */
+async function confirmCombinedCashBooking(req, res, next) {
+  try {
+    const { orderIds } = req.body;
+    if (!Array.isArray(orderIds) || orderIds.length < 2) {
+      return res.status(400).json({ error: 'At least two orderIds are required for a combined cash booking' });
+    }
+    const orders = await prisma.order.findMany({ where: { id: { in: orderIds } } });
+    if (orders.length !== orderIds.length) {
+      return res.status(404).json({ error: 'One or more orders were not found' });
+    }
+    const updated = [];
+    for (const order of orders) {
+      updated.push(await confirmOrderCash(order));
+    }
+    res.json({ orders: updated });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
     next(err);
   }
 }
