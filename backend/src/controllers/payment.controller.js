@@ -72,11 +72,15 @@ async function markOrdersPaidForProviderOrder(providerOrderId, extra = {}) {
 /**
  * POST /api/payments/:orderId/order
  * Step 3 ("Payment"): creates (or reuses) a Razorpay Order for the order's
- * grand total and returns it for the frontend to open with Razorpay Checkout.
+ * grand total (or a customer-chosen partial `splitAmount`, for the "Split"
+ * payment-method tab — the rest is collected in cash at pickup, same as
+ * the pure Cash tab, see confirmPayment/markOrdersPaidForProviderOrder's
+ * fully-vs-partially-paid branch) and returns it for the frontend to open
+ * with Razorpay Checkout.
  */
 async function createOrder(req, res, next) {
   try {
-    const { useWallet } = req.body;
+    const { useWallet, splitAmount } = req.body;
     const order = await prisma.order.findUnique({
       where: { id: req.params.orderId },
       include: { payment: true },
