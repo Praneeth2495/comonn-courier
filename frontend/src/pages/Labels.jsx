@@ -94,6 +94,17 @@ export default function Labels() {
           </>
         )}
 
+        {cashPending && !loading && (
+          <div className="card" style={{ padding: 26, marginTop: 24, textAlign: 'center' }}>
+            <div className="addr-grid" style={{ margin: '0 0 18px' }}>
+              <div className="addr-block"><div className="lbl">Order</div><p>{order.orderNumber}</p></div>
+            </div>
+            <p style={{ fontSize: 13.5, color: 'var(--slate)', lineHeight: 1.6 }}>
+              Your order is confirmed for pickup — ₹{Number(order.grandTotal).toFixed(2)} will be collected in cash when our courier arrives. Shipping labels and your invoice will be available here once that payment is confirmed.
+            </p>
+          </div>
+        )}
+
         {labels && (
           <>
             <div className="table-wrap" style={{ marginTop: 30 }}>
