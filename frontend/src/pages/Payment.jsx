@@ -681,6 +681,8 @@ export default function Payment() {
               <p className="error-text">{r.error}</p>
             ) : r.pricingPending ? (
               <p style={{ fontSize: 13.5, color: 'var(--slate)' }}>We'll weigh and price this at pickup, then collect payment in cash — no label to print yet.</p>
+            ) : r.cashPending ? (
+              <p style={{ fontSize: 13.5, color: 'var(--slate)' }}>₹{Number(r.grandTotal).toFixed(2)} will be collected in cash at pickup — labels and invoice will be available once that's confirmed.</p>
             ) : (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {r.labels?.map((l) => (
