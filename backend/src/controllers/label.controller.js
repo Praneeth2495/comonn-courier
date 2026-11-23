@@ -344,6 +344,16 @@ async function generateLabel(req, res, next) {
       return res.json({ pricingPending: true, emailedTo, hasPassword: Boolean(accountUser?.passwordSetAt) });
     }
 
+    // Customer chose Cash as the payment method (a normally-priced order,
+    // not pricingPending — see confirmOrderCash in payment.controller.js):
+    // no label/invoice until the order is actually marked PAID (staff
+    // confirming cash was collected at pickup via the status dropdown).
+    // Printing a label for a shipment nobody's paid for yet defeats the
+    // point of offering cash as an option.
+    if (order.payment?.method === 'cash' && order.status !== 'PAID') {
+      return res.json({ cashPending: true, hasPassword: false });
+    }
+
     if (order.labels.length > 0) {
       const invoice = await ensureInvoice(order);
       // Same disk-doesn't-persist-across-redeploys issue as ensureInvoice —
