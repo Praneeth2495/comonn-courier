@@ -147,18 +147,18 @@ async function createOrder(req, res, next) {
     }
 
     // Reuse an existing unpaid Razorpay order rather than creating duplicates
-    // — but only if the amount still matches (add-ons/promo/wallet can
-    // change the remaining total after one was first created).
+    // — but only if the amount still matches (add-ons/promo/wallet/a changed
+    // split choice can all change the amount after one was first created).
     if (
       order.payment?.providerOrderId &&
       order.payment.status === 'REQUIRES_PAYMENT' &&
-      Number(order.payment.amount) === remainingAmount
+      Number(order.payment.amount) === payAmount
     ) {
       return res.json({ payment: order.payment, keyId: process.env.RAZORPAY_KEY_ID, walletAmountUsed });
     }
 
     const rzpOrder = await createRazorpayOrder({
-      amount: remainingAmount,
+      amount: payAmount,
       currency: order.currency,
       orderId: order.id,
       orderNumber: order.orderNumber,
@@ -168,14 +168,14 @@ async function createOrder(req, res, next) {
       where: { orderId: order.id },
       update: {
         providerOrderId: rzpOrder.id,
-        amount: remainingAmount,
+        amount: payAmount,
         currency: order.currency,
         status: 'REQUIRES_PAYMENT',
       },
       create: {
         orderId: order.id,
         providerOrderId: rzpOrder.id,
-        amount: remainingAmount,
+        amount: payAmount,
         currency: order.currency,
         status: 'REQUIRES_PAYMENT',
       },
