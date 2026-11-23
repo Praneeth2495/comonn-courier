@@ -30,6 +30,8 @@ export default function Labels() {
         if (data.pricingPending) {
           setPricingPending(true);
           setEmailedTo(data.emailedTo);
+        } else if (data.cashPending) {
+          setCashPending(true);
         } else {
           setLabels(data.labels);
           setInvoice(data.invoice);
