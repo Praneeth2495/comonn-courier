@@ -14,6 +14,7 @@ export default function Labels() {
   const [invoice, setInvoice] = useState(null);
   const [emailedTo, setEmailedTo] = useState(null);
   const [pricingPending, setPricingPending] = useState(false);
+  const [cashPending, setCashPending] = useState(false);
   const [hasPassword, setHasPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
