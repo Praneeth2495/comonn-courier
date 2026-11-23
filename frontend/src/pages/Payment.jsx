@@ -568,6 +568,45 @@ export default function Payment() {
     });
   }
 
+  // "Cash" payment-method tab, combined session — applies to every saved
+  // booking in the session, not just the current order (a consistent
+  // single choice for the one pickup visit, rather than mixing paid and
+  // cash-due parcels). Includes pricingPending siblings too — the backend
+  // handles each order's own amount (0 if still unpriced, real grandTotal
+  // otherwise) via the same confirmOrderCash path /payments/:orderId/cash
+  // uses.
+  async function handleCombinedCashConfirm() {
+    setError('');
+    if (!dgAcknowledged) {
+      setError('Please acknowledge the dangerous goods declaration.');
+      return;
+    }
+    if (!otpVerified) {
+      setError('Please verify your email before paying.');
+      return;
+    }
+
+    const allOrders = [order, ...savedBookings];
+    setCombinedSubmitting(true);
+    try {
+      await client.post('/payments/combined/cash', { orderIds: allOrders.map((o) => o.id) });
+      const results = await Promise.all(allOrders.map(async (o) => {
+        const destination = o.receiverAddress ? `${o.receiverAddress.city}, ${getCountryName(o.receiverAddress.countryCode)}` : '—';
+        try {
+          const { data } = await client.post(`/labels/${o.id}/generate`);
+          return { orderId: o.id, orderNumber: o.orderNumber, destination, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending };
+        } catch (err) {
+          return { orderId: o.id, orderNumber: o.orderNumber, destination, error: err.response?.data?.error || 'Could not generate this label.' };
+        }
+      }));
+      setCombinedResults(results);
+      setBooking({ quoteInput: null, selectedQuote: null, order: null, savedBookings: [] });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not confirm these bookings.');
+      setCombinedSubmitting(false);
+    }
+  }
+
   async function handleConfirmCashBooking() {
     setError('');
     if (!dgAcknowledged) {
