@@ -643,6 +643,7 @@ module.exports = {
   handleWebhook,
   getPaymentStatus,
   confirmCashBooking,
+  confirmCombinedCashBooking,
   createBalanceOrder,
   confirmBalancePayment,
   markBalancePaymentManual,
