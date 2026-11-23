@@ -1015,17 +1015,31 @@ export default function Payment() {
                   <span className="v">₹{combinedTotal.toFixed(2)}</span>
                 </div>
 
-                {pendingCashBookings.length > 0 && (
-                  <p style={{ fontSize: 12, color: 'var(--slate-light)', marginTop: 10 }}>
-                    {pendingCashBookings.length} pickup booking{pendingCashBookings.length > 1 ? 's' : ''} ({pendingCashBookings.map((b) => b.orderNumber).join(', ')}) will need separate confirmation — priced in cash at pickup, not part of this payment.
-                  </p>
+                {payMethodTab === 'cash' ? (
+                  pendingCashBookings.length > 0 && (
+                    <p style={{ fontSize: 12, color: 'var(--slate-light)', marginTop: 10 }}>
+                      {pendingCashBookings.length} pickup booking{pendingCashBookings.length > 1 ? 's' : ''} ({pendingCashBookings.map((b) => b.orderNumber).join(', ')}) already priced in cash at pickup — included here too.
+                    </p>
+                  )
+                ) : (
+                  pendingCashBookings.length > 0 && (
+                    <p style={{ fontSize: 12, color: 'var(--slate-light)', marginTop: 10 }}>
+                      {pendingCashBookings.length} pickup booking{pendingCashBookings.length > 1 ? 's' : ''} ({pendingCashBookings.map((b) => b.orderNumber).join(', ')}) will need separate confirmation — priced in cash at pickup, not part of this payment.
+                    </p>
+                  )
                 )}
 
                 {error && <div className="error-text" style={{ marginTop: 12 }}>{error}</div>}
 
-                <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || combinedSubmitting} onClick={handleCombinedPay}>
-                  {combinedSubmitting ? 'Processing…' : `Pay ₹${combinedTotal.toFixed(2)} now`}
-                </button>
+                {payMethodTab === 'cash' ? (
+                  <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || combinedSubmitting} onClick={handleCombinedCashConfirm}>
+                    {combinedSubmitting ? 'Confirming…' : 'Confirm — pay cash at pickup'}
+                  </button>
+                ) : (
+                  <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || combinedSubmitting} onClick={handleCombinedPay}>
+                    {combinedSubmitting ? 'Processing…' : `Pay ₹${combinedTotal.toFixed(2)} now`}
+                  </button>
+                )}
                 {!canPay && <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 8 }}>Acknowledge the declaration and verify your email to pay.</p>}
                 <p style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--slate-light)', marginTop: 12 }}>🔒 Secured by 256-bit SSL encryption</p>
               </>
