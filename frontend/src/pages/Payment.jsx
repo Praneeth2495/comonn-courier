@@ -619,6 +619,23 @@ export default function Payment() {
     }
     setSubmitting(true);
     try {
+      // When other bookings were saved this session (book pickup, more
+      // than once, without confirming weights), confirm all of them
+      // together — previously only `order` itself got confirmed here,
+      // silently leaving every other saved booking stuck in UNFINISHED
+      // forever (nothing else in the app ever revisits them). Reuses the
+      // same /payments/combined/cash path the Cash payment-method tab
+      // uses, which already handles a mix of pricingPending and priced
+      // siblings correctly.
+      if (savedBookings && savedBookings.length > 0) {
+        const allOrders = [order, ...savedBookings];
+        await client.post('/payments/combined/cash', { orderIds: allOrders.map((o) => o.id) });
+        const { data } = await client.get(`/orders/${order.id}`).catch(() => ({ data: { order: { ...order, status: 'PICKUP_CONFIRMED', trackingNumber: order.orderNumber } } }));
+        setBooking({ order: { ...order, ...data.order }, savedBookings: [] });
+        navigate('/labels');
+        return;
+      }
+
       // Merge in the now-PICKUP_CONFIRMED status (and trackingNumber, etc.)
       // rather than discarding it — `setBooking({})` here used to be a
       // no-op (spreading {} onto existing state changes nothing), silently
