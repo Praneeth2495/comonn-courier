@@ -1003,12 +1003,38 @@ export default function Payment() {
                       <div className={`pay-method ${payMethodTab === 'card' ? 'active' : ''}`} onClick={() => setPayMethodTab('card')}>💳 Credit Card</div>
                       <div className={`pay-method ${payMethodTab === 'upi' ? 'active' : ''}`} onClick={() => setPayMethodTab('upi')}>📱 UPI</div>
                       <div className={`pay-method ${payMethodTab === 'cash' ? 'active' : ''}`} onClick={() => setPayMethodTab('cash')}>💵 Cash</div>
+                      {/* Split only makes sense against one order's own total — not offered on the combined (multiple saved bookings) screen. */}
+                      {payableSavedBookings.length === 0 && (
+                        <div className={`pay-method ${payMethodTab === 'split' ? 'active' : ''}`} onClick={() => setPayMethodTab('split')}>➗ Split</div>
+                      )}
                     </div>
                     <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
                       {payMethodTab === 'cash'
                         ? "No payment happens now — the order is confirmed for pickup and the total is collected in cash when our courier arrives."
+                        : payMethodTab === 'split'
+                        ? 'Pay part of the total now, the rest in cash when our courier arrives at pickup.'
                         : `You'll enter your ${payMethodTab === 'card' ? 'card' : 'UPI'} details securely in Razorpay's checkout window — Comonn never stores your payment details.`}
                     </p>
+                    {payMethodTab === 'split' && (
+                      <div className="field" style={{ marginTop: 12, maxWidth: 240 }}>
+                        <label>Pay now (₹)</label>
+                        <input
+                          className="input"
+                          type="number"
+                          min="1"
+                          max={payableTotal}
+                          step="1"
+                          placeholder={`e.g. ${Math.floor(payableTotal / 2)}`}
+                          value={splitAmount}
+                          onChange={(e) => setSplitAmount(e.target.value)}
+                        />
+                        <p className="hint">
+                          {splitValid
+                            ? `₹${(payableTotal - Number(splitAmount)).toFixed(2)} due in cash at pickup.`
+                            : `Enter an amount between ₹1 and ₹${payableTotal.toFixed(2)}.`}
+                        </p>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>
