@@ -2692,7 +2692,7 @@ function RatesPanel() {
 // than wherever it happened to land historically — was previously ordered
 // by whenever each page was added to the codebase, which read as mixed/
 // arbitrary to an admin scanning the checkbox list top to bottom.
-const PAGE_KEYS = ['orders', 'accounts', 'assets', 'inventory', 'batchscan', 'printlabel', 'rates', 'customsclients', 'storage', 'customers', 'whatsapp', 'onboarding', 'staff'];
+const PAGE_KEYS = ['orders', 'accounts', 'assets', 'inventory', 'batchscan', 'printlabel', 'rates', 'customsclients', 'subcontractors', 'storage', 'customers', 'whatsapp', 'onboarding', 'staff'];
 const PAGE_LABELS = {
   orders: 'Orders (manage)',
   accounts: 'Accounts',
@@ -2702,6 +2702,7 @@ const PAGE_LABELS = {
   printlabel: 'Print Label',
   rates: 'Pricing',
   customsclients: 'Customs Client',
+  subcontractors: 'Sub Contractor',
   storage: 'Storage',
   customers: 'Customers',
   whatsapp: 'WhatsApp',
