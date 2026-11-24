@@ -103,6 +103,7 @@ export default function Payment() {
 
   const [payMethodTab, setPayMethodTab] = useState('card');
   const [useWallet, setUseWallet] = useState(false);
+  const [splitAmount, setSplitAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
