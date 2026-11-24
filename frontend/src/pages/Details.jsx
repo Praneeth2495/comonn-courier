@@ -643,9 +643,7 @@ function AddressFields({ value, onChange, instructionsLabel, autoFillNote, saved
         <div className="field">
           <label>Phone <span style={{ color: 'var(--danger)', fontSize: 12 }}>*</span></label>
           <div className="input-group">
-            <select className="flag" disabled={isLocked('phoneNumber')} value={value.dialCode} onChange={(e) => onChange('dialCode', e.target.value)}>
-              {PHONE_OPTIONS.map((p) => <option key={p.code} value={p.code}>{p.flag} {p.dial}</option>)}
-            </select>
+            <PhoneDialSelect value={value.dialCode} options={PHONE_OPTIONS} disabled={isLocked('phoneNumber')} onChange={(code) => onChange('dialCode', code)} />
             <input
               placeholder={`${phoneMeta.digits} digit number`}
               required
