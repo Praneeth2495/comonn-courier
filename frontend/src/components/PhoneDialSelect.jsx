@@ -52,7 +52,7 @@ export default function PhoneDialSelect({ value, options, onChange, disabled }) 
   }
 
   return (
-    <div ref={ref} className="flag" style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer' }}>
+    <div ref={ref} className="flag flag-phone" style={{ position: 'relative', cursor: disabled ? 'default' : 'pointer' }}>
       <button
         type="button"
         disabled={disabled}
