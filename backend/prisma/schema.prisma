@@ -542,6 +542,32 @@ model CustomsClient {
   @@index([countryCode])
 }
 
+// A standalone contact directory for hub-to-hub/last-mile sub-contractors
+// — same "no linkage to Order/shipments, just a searchable list" scope as
+// CustomsClient above. Every field is mandatory except reference/notes,
+// per the explicit request this came from.
+model SubContractor {
+  id           String   @id @default(uuid())
+  name         String
+  businessName String
+  mobile1      String
+  mobile2      String
+  email        String
+  address      String
+  cityTown     String
+  district     String
+  state        String
+  countryCode  String
+  gst          String
+  reference    String?
+  notes        String?
+  createdById  String
+  createdBy    User     @relation(fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([countryCode])
+}
+
 // Company-owned assets (equipment, furniture, etc.) purchased over time —
 // tracked so the Overview page can show a running total of what the
 // company has spent on assets. `value` is the total price paid for that
