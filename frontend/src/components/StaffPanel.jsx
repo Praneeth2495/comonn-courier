@@ -131,7 +131,7 @@ function StaffDirectory() {
                     widths than the next one down the page. table-layout:
                     fixed + a shared colgroup keeps every hub's columns
                     identical regardless of its own content. */}
-                <table className="data-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+                <table className="data-table" style={{ tableLayout: 'fixed', width: '100%', minWidth: 560 }}>
                   <colgroup>
                     <col style={{ width: '26%' }} />
                     <col style={{ width: '12%' }} />
