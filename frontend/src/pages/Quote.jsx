@@ -539,9 +539,9 @@ export default function Quote() {
 
         <form className="card instant-booking-form" style={{ marginBottom: 28, overflow: 'hidden' }} onSubmit={submitQuote}>
           <div className="ib-body" style={{ padding: 28 }}>
-          <div className="ib-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-            <h3 style={{ fontSize: 17 }}>Instant Booking</h3>
-            <span className="pill pill-cobalt">Get a quote in 5 clicks</span>
+          <div className="ib-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+            <h3 style={{ fontSize: 17, whiteSpace: 'nowrap' }}>Instant Booking</h3>
+            <span className="pill pill-cobalt" style={{ whiteSpace: 'nowrap', flex: 'none' }}>Get a quote in 5 clicks</span>
           </div>
 
           <div className="grid-2">
