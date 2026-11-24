@@ -516,10 +516,38 @@ async function confirmCombinedCashBooking(req, res, next) {
     if (!Array.isArray(orderIds) || orderIds.length < 2) {
       return res.status(400).json({ error: 'At least two orderIds are required for a combined cash booking' });
     }
-    const orders = await prisma.order.findMany({ where: { id: { in: orderIds } } });
+    let orders = await prisma.order.findMany({ where: { id: { in: orderIds } } });
     if (orders.length !== orderIds.length) {
       return res.status(404).json({ error: 'One or more orders were not found' });
     }
+
+    // DG acknowledgment + OTP verification only ever happen once per
+    // session, on whichever order the customer actually completed them on
+    // (Details/Payment only ask once, not per saved booking) — propagate
+    // to the rest of the group exactly like createCombinedOrder's Razorpay
+    // path already does, so confirmOrderCash below doesn't reject every
+    // sibling order for a declaration the customer already made. Same for
+    // pickupDate: the other orders in the group never individually visit
+    // a pickup-date step, so inherit the verified order's.
+    const verified = orders.find((o) => o.dgAcknowledged && o.otpVerifiedAt);
+    if (!verified) {
+      return res.status(409).json({ error: 'Please acknowledge the dangerous goods declaration and verify your email first' });
+    }
+    const needsCatchUpIds = orders.filter((o) => o.id !== verified.id && (!o.dgAcknowledged || !o.otpVerifiedAt)).map((o) => o.id);
+    if (needsCatchUpIds.length) {
+      await prisma.order.updateMany({
+        where: { id: { in: needsCatchUpIds } },
+        data: { dgAcknowledged: true, otpVerifiedAt: verified.otpVerifiedAt, otpEmail: verified.otpEmail },
+      });
+    }
+    const noPickupDateIds = orders.filter((o) => o.id !== verified.id && !o.pickupDate).map((o) => o.id);
+    if (verified.pickupDate && noPickupDateIds.length) {
+      await prisma.order.updateMany({ where: { id: { in: noPickupDateIds } }, data: { pickupDate: verified.pickupDate } });
+    }
+    if (needsCatchUpIds.length || (verified.pickupDate && noPickupDateIds.length)) {
+      orders = await prisma.order.findMany({ where: { id: { in: orderIds } } });
+    }
+
     const updated = [];
     for (const order of orders) {
       updated.push(await confirmOrderCash(order));
