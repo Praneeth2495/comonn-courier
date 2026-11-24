@@ -333,6 +333,14 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
    there. Only drops the background-image; width/padding stay exactly as
    .input-group .flag defines them so the flag+"IN" text doesn't shift. */
 .input-group .flag.flag-no-arrow{background-image:none;}
+/* Phone dial-code select (PhoneDialSelect) shows "+971"/"+353"-length
+   codes, not just a 2-letter country code — a touch wider than the shared
+   base width so longer dial codes never crowd the chevron. Scoped to its
+   own modifier rather than widening .input-group .flag itself, which would
+   also push into the postcode input's own room on the plain country
+   selects (see the mobile breakpoint's own comment on this same tradeoff). */
+.input-group .flag.flag-phone{width:92px;}
+@media(max-width:900px){.input-group .flag.flag-phone{width:96px;}}
 .input-group input{border:none;flex:1;min-width:0;padding:11px 13px;outline:none;font-size:14px;}
 
 .item-row{display:grid;grid-template-columns:1.4fr .9fr .7fr;gap:10px;}
