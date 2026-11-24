@@ -40,6 +40,7 @@ const PAGE_LABELS = {
   rates: 'Pricing',
   onboarding: 'Onboarding',
   customsclients: 'Customs Client',
+  subcontractors: 'Sub Contractor',
   storage: 'Storage',
   assets: 'Assets',
   // Separate from the ADMIN-only "Users" tab (role/permission management)
