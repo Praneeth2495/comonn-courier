@@ -717,7 +717,7 @@ export default function Quote() {
 
           {!isPickupOnly && (
             <div className="ib-add-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18 }}>
-              <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--cobalt)' }} onClick={(e) => { e.preventDefault(); addItem(); }}>+ Add another item</a>
+              <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--cobalt)' }} onClick={(e) => { e.preventDefault(); addItem(); }}>+ Add Item</a>
             </div>
           )}
 
