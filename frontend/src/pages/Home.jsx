@@ -255,7 +255,7 @@ export default function Home() {
   // whatever's been entered here (origin pincode, destination, item
   // weight/dims/qty) carries over as quoteInput so Book page opens
   // pre-filled instead of making the customer start over. Used by both
-  // "Get Instant Quote" and "+ Add another item", since both just hand off
+  // "Get Instant Quote" and "+ Add Item", since both just hand off
   // to the real form. If all three (origin, destination, weight) are
   // already filled in, autoFetch tells the Book page to fetch and show
   // services immediately rather than making the customer click again.
@@ -348,7 +348,12 @@ export default function Home() {
     const patch = { selectedQuote: null, order: null };
     if (hasData) patch.quoteInput = quoteInput;
     setBooking(patch);
-    navigate('/quote');
+    // "Book pickup" (weight not known yet) has nothing to quote — Details.jsx
+    // already renders straight off quoteInput.pricingPending with no
+    // selectedQuote needed (see its own early-return check), so skip the
+    // Book page entirely instead of landing there with the same "Book
+    // pickup" button still waiting to be clicked a second time.
+    navigate(weightPreset === 'Not sure' ? '/details' : '/quote');
   }
 
   function handleTrack(e) {
@@ -537,7 +542,7 @@ export default function Home() {
               </div>
 
               <div className="ib-add-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-                <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--cobalt)' }} onClick={goToBook}>+ Add another item</a>
+                <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--cobalt)' }} onClick={goToBook}>+ Add Item</a>
               </div>
 
               {error && <div className="error-text" style={{ marginTop: 14 }}>{error}</div>}
