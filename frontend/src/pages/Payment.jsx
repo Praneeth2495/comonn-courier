@@ -1152,6 +1152,10 @@ export default function Payment() {
                   <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || submitting} onClick={handleCashPay}>
                     {submitting ? 'Confirming…' : 'Confirm — pay cash at pickup'}
                   </button>
+                ) : payMethodTab === 'split' ? (
+                  <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || !splitValid || submitting} onClick={handlePay}>
+                    {submitting ? 'Processing…' : splitValid ? `Pay ₹${Number(splitAmount).toFixed(2)} now` : 'Enter an amount to pay now'}
+                  </button>
                 ) : (
                   <button className="btn btn-primary block" style={{ padding: 14, marginTop: 16 }} disabled={!canPay || submitting} onClick={handlePay}>
                     {submitting ? 'Processing…' : payableTotal <= 0 ? 'Pay with wallet balance' : `Pay ₹${payableTotal.toFixed(2)} now`}
