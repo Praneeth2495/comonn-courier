@@ -114,6 +114,7 @@ app.use('/api/v1', v1Routes);
 app.use('/api/admin/merchants', merchantAdminRoutes);
 app.use('/api/admin/party-invoices', partyInvoiceRoutes);
 app.use('/api/admin/customs-clients', customsClientRoutes);
+app.use('/api/admin/sub-contractors', subContractorRoutes);
 app.use('/api/admin/assets', assetRoutes);
 app.use('/api/public/booking-feed', bookingFeedRoutes);
 app.use('/api/attendance', attendanceRoutes);
