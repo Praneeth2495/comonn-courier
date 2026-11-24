@@ -88,6 +88,7 @@ export default function AdminDashboard() {
     ...(isAdmin ? [['merchants', 'Merchants']] : []),
     ...(isAdmin ? [['fees', 'Service Fees']] : []),
     ...(hasPage('customsclients') ? [['customsclients', 'Customs Client']] : []),
+    ...(hasPage('subcontractors') ? [['subcontractors', 'Sub Contractor']] : []),
     ...(hasPage('storage') ? [['storage', 'Storage']] : []),
     ...(hasPage('orders') ? [['riders', 'Riders']] : []),
     ...(hasPage('customers') ? [['customers', 'Customers']] : []),
