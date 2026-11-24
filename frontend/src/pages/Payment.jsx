@@ -384,9 +384,13 @@ export default function Payment() {
               // GET /orders/:id requires a logged-in session — guest
               // checkout has no token, so this refetch 401s. Fall back to
               // a local merge; pollForSuccess() above already confirmed
-              // (via the guest-accessible /payments/:id endpoint) that the
-              // order is PAID server-side, so this isn't guessing.
-              setBooking({ order: { ...order, status: 'PAID', trackingNumber: order.orderNumber } });
+              // (via the guest-accessible /payments/:id endpoint) that this
+              // payment succeeded server-side. A Split payment covering less
+              // than the full total only moves the order to PICKUP_CONFIRMED
+              // (balance due in cash at pickup), not PAID — same status the
+              // server-side markOrdersPaidForProviderOrder would have set.
+              const wasFullPayment = payMethodTab !== 'split' || !splitValid || Number(splitAmount) >= payableTotal;
+              setBooking({ order: { ...order, status: wasFullPayment ? 'PAID' : 'PICKUP_CONFIRMED', trackingNumber: order.orderNumber } });
             }
             navigate('/labels');
           } else {
