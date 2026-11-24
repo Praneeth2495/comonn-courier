@@ -836,6 +836,7 @@ export default function Payment() {
   // matches what the backend will actually do.
   const walletApplied = useWallet ? Math.min(Number(user?.walletBalance || 0), Number(order.grandTotal)) : 0;
   const payableTotal = Math.max(0, Number(order.grandTotal) - walletApplied);
+  const splitValid = splitAmount !== '' && Number(splitAmount) > 0 && Number(splitAmount) <= payableTotal;
 
   // Pricing-pending ("Not sure, book pickup") saved bookings have no real
   // amount to charge — they're confirmed separately (cash at pickup), so
