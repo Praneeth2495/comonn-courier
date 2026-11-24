@@ -145,6 +145,7 @@ export default function AdminDashboard() {
           {tab === 'printlabel' && hasPage('printlabel') && <PrintLabelPanel />}
           {tab === 'merchants' && isAdmin && <MerchantsPanel />}
           {tab === 'customsclients' && hasPage('customsclients') && <CustomsClientsPanel />}
+          {tab === 'subcontractors' && hasPage('subcontractors') && <SubContractorsPanel />}
           {tab === 'storage' && hasPage('storage') && <StorageAdminPanel />}
           {tab === 'riders' && hasPage('orders') && <RidersPanel />}
           {tab === 'customers' && hasPage('customers') && <CustomersPanel />}
