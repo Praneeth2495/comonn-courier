@@ -49,22 +49,36 @@ async function markOrdersPaidForProviderOrder(providerOrderId, extra = {}) {
     const order = orderById.get(payment.orderId);
     if (!order) continue;
 
+    // "Split" payment-method tab: this payment may only be part of
+    // grandTotal (the rest due in cash at pickup) — same rule as the pure
+    // Cash tab for whether pickup can proceed, just arrived at via a real
+    // online payment instead of none at all. Fully covered -> PAID exactly
+    // as before; partial -> PICKUP_CONFIRMED, same status the Cash tab
+    // already uses for "booked, balance still owed".
+    const isFullyPaid = Number(payment.amount) >= Number(order.grandTotal) - 0.01;
+    const newStatus = isFullyPaid ? 'PAID' : 'PICKUP_CONFIRMED';
+
     const { count } = await prisma.order.updateMany({
       where: { id: order.id, status: { in: PAYABLE_STATUSES } },
-      data: { status: 'PAID', trackingNumber: order.orderNumber },
+      data: { status: newStatus, trackingNumber: order.orderNumber },
     });
 
     if (count > 0) {
+      const due = round2(Number(order.grandTotal) - Number(payment.amount));
       await prisma.trackingEvent.create({
-        data: { orderId: order.id, status: 'PAID', note: 'Payment confirmed' },
+        data: {
+          orderId: order.id,
+          status: newStatus,
+          note: isFullyPaid ? 'Payment confirmed' : `Partial payment confirmed — ₹${due.toFixed(2)} to be collected in cash at pickup`,
+        },
       });
       // Pickup-booking orders ("Not sure, book pickup") never got a receiver
       // alert at booking time — only once payment is actually confirmed.
       if (order.pricingPending) {
         await sendReceiverBookingNotification({ ...order, trackingNumber: order.orderNumber });
       }
-      notifyOrderStatusChange(order.id, 'PAID');
-      await awardReferralRewardIfEligible(order);
+      notifyOrderStatusChange(order.id, newStatus);
+      if (isFullyPaid) await awardReferralRewardIfEligible(order);
     }
   }
 }
