@@ -35,6 +35,7 @@ const v1Routes = require('./routes/v1.routes');
 const merchantAdminRoutes = require('./routes/merchant.routes');
 const partyInvoiceRoutes = require('./routes/partyInvoice.routes');
 const customsClientRoutes = require('./routes/customsClient.routes');
+const subContractorRoutes = require('./routes/subContractor.routes');
 const assetRoutes = require('./routes/asset.routes');
 const bookingFeedRoutes = require('./routes/bookingFeed.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
