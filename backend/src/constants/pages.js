@@ -24,6 +24,7 @@ const PAGE_KEYS = [
   'printlabel',
   'rates',
   'customsclients',
+  'subcontractors',
   'storage',
   'customers',
   'whatsapp',
