@@ -333,7 +333,10 @@ export default function Payment() {
     setSubmitting(true);
     let checkoutData;
     try {
-      const { data } = await client.post(`/payments/${order.id}/order`, { useWallet });
+      const { data } = await client.post(`/payments/${order.id}/order`, {
+        useWallet,
+        splitAmount: payMethodTab === 'split' ? Number(splitAmount) : undefined,
+      });
       checkoutData = data;
     } catch (err) {
       setError(err.response?.data?.error || 'Could not start payment.');
