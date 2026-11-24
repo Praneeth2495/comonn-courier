@@ -23,6 +23,7 @@ const MerchantsPanel = lazy(() => import('../components/MerchantsPanel'));
 const PartyInvoicesPanel = lazy(() => import('../components/PartyInvoicesPanel'));
 const SalaryPanel = lazy(() => import('../components/PartyInvoicesPanel').then((m) => ({ default: m.SalaryPanel })));
 const CustomsClientsPanel = lazy(() => import('../components/CustomsClientsPanel'));
+const SubContractorsPanel = lazy(() => import('../components/SubContractorsPanel'));
 const AssetsPanel = lazy(() => import('../components/AssetsPanel'));
 const StorageAdminPanel = lazy(() => import('../components/StorageAdminPanel'));
 const RidersPanel = lazy(() => import('../components/RidersPanel'));
