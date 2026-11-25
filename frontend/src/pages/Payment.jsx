@@ -634,13 +634,24 @@ export default function Payment() {
       // forever (nothing else in the app ever revisits them). Reuses the
       // same /payments/combined/cash path the Cash payment-method tab
       // uses, which already handles a mix of pricingPending and priced
-      // siblings correctly.
+      // siblings correctly. Shows the same multi-order combinedResults
+      // confirmation screen as the Cash tab (below), instead of navigating
+      // to /labels with only the current order — otherwise the other
+      // confirmed orders' numbers never surface to the customer.
       if (savedBookings && savedBookings.length > 0) {
         const allOrders = [order, ...savedBookings];
         await client.post('/payments/combined/cash', { orderIds: allOrders.map((o) => o.id) });
-        const { data } = await client.get(`/orders/${order.id}`).catch(() => ({ data: { order: { ...order, status: 'PICKUP_CONFIRMED', trackingNumber: order.orderNumber } } }));
-        setBooking({ order: { ...order, ...data.order }, savedBookings: [] });
-        navigate('/labels');
+        const results = await Promise.all(allOrders.map(async (o) => {
+          const destination = o.receiverAddress ? `${o.receiverAddress.city}, ${getCountryName(o.receiverAddress.countryCode)}` : '—';
+          try {
+            const { data } = await client.post(`/labels/${o.id}/generate`);
+            return { orderId: o.id, orderNumber: o.orderNumber, destination, labels: data.labels, invoice: data.invoice, pricingPending: data.pricingPending, cashPending: data.cashPending, grandTotal: o.grandTotal };
+          } catch (err) {
+            return { orderId: o.id, orderNumber: o.orderNumber, destination, error: err.response?.data?.error || 'Could not generate this label.' };
+          }
+        }));
+        setCombinedResults(results);
+        setBooking({ quoteInput: null, selectedQuote: null, order: null, savedBookings: [] });
         return;
       }
 
