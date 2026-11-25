@@ -541,7 +541,7 @@ export default function Home() {
                 )}
               </div>
 
-              <div className="ib-add-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+              <div className="ib-add-row" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16 }}>
                 <a href="#" style={{ fontSize: 13, fontWeight: 700, color: 'var(--cobalt)' }} onClick={goToBook}>+ Add Item</a>
               </div>
 
