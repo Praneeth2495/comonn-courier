@@ -94,25 +94,12 @@ function DetailsForm() {
   // the previous customer's name/address auto-filled in these fields.
   const isEditingExisting = Boolean(bookingOrder && (['UNFINISHED', 'PENDING_PAYMENT'].includes(bookingOrder.status) || ['ADMIN', 'STAFF', 'ACCOUNTS'].includes(user?.role)));
   const norm = (s) => (s || '').trim().toLowerCase();
-  // Same pickup pincode as a booking already saved this session ("New
-  // booking") almost always means the same sender is shipping again — see
-  // the sender useState below for what gets carried over, and the email
-  // field's lockedFields entry further down for why email specifically
-  // also gets locked once this matches (request: a second+ order's sender
-  // email shouldn't need re-typing or be editable, unlike the other
-  // contact fields which stay editable in case a different person is
-  // dropping this particular parcel off).
-  const matchedSenderBooking = !isEditingExisting && quoteInput?.originPostcode
-    ? savedBookings?.find((b) => norm(b.senderAddress?.postcode) === norm(quoteInput.originPostcode))
-    : null;
-  // Sender email specifically locks to the FIRST saved booking's email for
-  // every order after it in the session, regardless of whether this
-  // particular order's pickup postcode happens to match (unlike
-  // matchedSenderBooking's full prefill above, which only reuses the rest
-  // of the sender's details when the pickup location is literally the
-  // same) — same sender account placing several orders from different
-  // pickup points should still never need to retype or be able to change
-  // the email after the first one.
+  // Sender email locks to the FIRST saved booking's email for every order
+  // after it in the session — same sender account placing several orders
+  // should never need to retype or be able to change the email after the
+  // first one. Every other sender field (name, mobile, address) is left
+  // fully editable and blank on each new order; only postcode/city/state/
+  // country stay driven by this order's own quoted origin (below).
   const firstSenderEmail = !isEditingExisting
     ? savedBookings?.find((b) => b.senderAddress?.email)?.senderAddress?.email || null
     : null;
