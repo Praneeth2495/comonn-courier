@@ -495,20 +495,13 @@ function DetailsForm() {
                 if (!a) return;
                 setSender((prev) => ({ ...fromSavedAddress(a), postcode: prev.postcode, city: prev.city, state: prev.state, countryCode: prev.countryCode }));
               }}
-              // Same postcode as a booking already saved this session
-              // (matchedSenderBooking): everything about that sender locks
-              // in except Address Line 1, which stays open since the exact
-              // unit/building can still legitimately differ parcel to
-              // parcel even from the same pickup postcode. A DIFFERENT
-              // origin postcode only locks the email (firstSenderEmail) —
-              // line1 stays blank and editable in that case, same as
-              // before.
+              // Postcode/city/state/country always lock to this order's own
+              // quoted origin. Email additionally locks once a prior order
+              // this session has set one (firstSenderEmail) — every other
+              // sender field (name, mobile, address) stays fully editable.
               lockedFields={
                 senderLocked
-                  ? [
-                      'postcode', 'city', 'state', 'countryCode',
-                      ...(matchedSenderBooking ? ['contactName', 'phoneNumber', 'email', 'instructions', 'line2'] : firstSenderEmail ? ['email'] : []),
-                    ]
+                  ? ['postcode', 'city', 'state', 'countryCode', ...(firstSenderEmail ? ['email'] : [])]
                   : []
               }
             />
