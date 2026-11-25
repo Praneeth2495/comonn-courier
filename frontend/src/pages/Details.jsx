@@ -112,24 +112,6 @@ function DetailsForm() {
     if (quoteInput?.originSuburb) base.city = quoteInput.originSuburb;
     if (quoteInput?.originState) base.state = normalizeRegionValue('IN', quoteInput.originState);
 
-    // Carry over just the contact details (name, phone, email, address,
-    // instructions) so they don't have to retype them. Postcode/city/
-    // state/country stay driven by this booking's own quoted origin above
-    // (not the matched booking's) since that's what pricing was actually
-    // calculated against.
-    if (matchedSenderBooking?.senderAddress) {
-      const matchedSender = fromSavedAddress(matchedSenderBooking.senderAddress);
-      return {
-        ...base,
-        contactName: matchedSender.contactName,
-        dialCode: matchedSender.dialCode,
-        phoneNumber: matchedSender.phoneNumber,
-        email: matchedSender.email,
-        instructions: matchedSender.instructions,
-        line1: matchedSender.line1,
-        line2: matchedSender.line2,
-      };
-    }
     if (firstSenderEmail) return { ...base, email: firstSenderEmail };
     return base;
   });
