@@ -141,6 +141,21 @@ input,select,textarea{font-family:inherit;}
 /* Quote page only — coral instead of the app-wide cobalt focus ring, to
    match the rate cards' own coral hover/selected border below. */
 .instant-booking-form .input:focus,.instant-booking-form .select:focus{border-color:var(--coral);box-shadow:0 0 0 4px rgba(255,90,54,.1);}
+/* Quote/Details/Payment — the full booking flow — read a little large on
+   a laptop screen at the base 14px/12.5px. Trimmed a notch here, scoped to
+   just these three forms rather than the app-wide .input/.field label
+   (which Admin's dense tables etc. still use at their original size).
+   min-width-gated so this never touches the <640px rule a few hundred
+   lines down that force-bumps inputs to 16px to stop iOS Safari's
+   auto-zoom-on-focus — shrinking that one back down isn't safe to do. */
+@media(min-width:641px){
+  .instant-booking-form .input,.instant-booking-form .select,
+  .details-form .input,.details-form .select,
+  .payment-layout .input,.payment-layout .select{font-size:13px;}
+  .instant-booking-form .field label,
+  .details-form .field label,
+  .payment-layout .field label{font-size:12px;}
+}
 /* Details.jsx's booking form suppresses native HTML5 validation UI
    (noValidate) so a "Book now" click with empty required fields doesn't
    show the browser's own invalid-field bubble and default blue focus
