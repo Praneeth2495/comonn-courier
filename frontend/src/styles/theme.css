@@ -678,7 +678,7 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
 .form-section-title{display:flex;align-items:center;gap:10px;margin:34px 0 16px;}
 .form-section-title.inline{margin-top:28px;padding-top:24px;border-top:1px solid var(--line-2);}
 .form-section-title .badge{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
-.form-section-title h4{font-size:16px;color:var(--navy);}
+.form-section-title h4{font-size:15px;color:var(--navy);}
 
 @media(max-width:640px){
   .addr-grid{grid-template-columns:1fr;flex-direction:column;gap:10px;margin:6px 0;}
