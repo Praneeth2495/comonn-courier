@@ -95,6 +95,12 @@ async function sendDailySummaryWhatsApp() {
 }
 
 function startDailyOrderSummaryJob() {
+  // Both Railway environments run this exact process, each with its own
+  // database — without this guard, staging's cron also fires every night
+  // and WhatsApps the admin a second summary off its near-empty DB (all
+  // zeros), alongside production's real one. Railway injects
+  // RAILWAY_ENVIRONMENT_NAME, confirmed literally "staging"/"production".
+  if (process.env.RAILWAY_ENVIRONMENT_NAME === 'staging') return;
   cron.schedule('0 21 * * *', () => {
     sendDailySummaryWhatsApp().catch((err) => console.error('dailyOrderSummary job failed:', err));
   }, { timezone: 'Asia/Kolkata' });
