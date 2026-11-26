@@ -498,6 +498,11 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
   .instant-booking-form .ib-add-row{margin-top:10px!important;}
   .instant-booking-form .ib-submit{margin-top:12px!important;padding:11px!important;}
   .instant-booking-form .ib-enquiries{margin-top:8px!important;}
+  /* Input/select text itself stays at the 16px forced further down (iOS
+     zoom-on-focus guard) — but the box around it and the label above it
+     can still shrink, which is most of what reads as "oversized" here. */
+  .instant-booking-form .input,.instant-booking-form .select{padding:9px 12px;}
+  .instant-booking-form .field label{font-size:12px;}
   .banner-grid{grid-template-columns:1fr;padding:28px 16px;}
   .grid-3,.grid-5,.why-row,.values-grid,.stat-row,.steps-row{grid-template-columns:1fr!important;}
   /* Flexbox's justify-content:center re-centers each wrapped row on its own
