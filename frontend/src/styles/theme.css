@@ -756,6 +756,8 @@ table.data-table tr:hover td.sticky-col{background:#FAFAF7;}
   .summary-sidebar{position:static;}
 }
 @media(max-width:640px){
+  .payment-layout .input,.payment-layout .select{padding:9px 12px;}
+  .payment-layout .field label{font-size:12px;}
   .pay-method-row{flex-direction:column;}
   /* .section's own 32px side padding plus the nested .wrap's own 32px side
      padding were stacking to 64px total inset on each edge — on a narrow
