@@ -309,7 +309,7 @@ export default function BatchScanPanel() {
 
   async function applyBatch() {
     if (!chosenStatus) return;
-    if (scanMode === 'loadsheet') {
+    if (loadSheet) {
       setSubmitting(true);
       setError('');
       try {
@@ -526,7 +526,7 @@ export default function BatchScanPanel() {
             <div className="card" style={{ padding: 24, maxWidth: 440, marginBottom: 24 }}>
               <h4 style={{ marginBottom: 4 }}>Apply status</h4>
               <p className="lead" style={{ fontSize: 13, marginBottom: 12 }}>
-                {scanMode === 'loadsheet'
+                {loadSheet
                   ? <>{lsConfirmedIds.length} order{lsConfirmedIds.length === 1 ? '' : 's'} confirmed off {loadSheet?.loadSheetNumber}.</>
                   : <>{codes.length} label{codes.length === 1 ? '' : 's'} scanned.</>}
               </p>
@@ -546,7 +546,7 @@ export default function BatchScanPanel() {
                   📍 Location scanned: <b>{lastLocationScanned.name}</b> — status set to <b>{lastLocationScanned.label}</b>
                 </p>
               )}
-              {scanMode !== 'loadsheet' && (
+              {!loadSheet && (
                 <>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginTop: 14, cursor: 'pointer' }}>
                     <input type="checkbox" checked={saveAsBatch} onChange={(e) => setSaveAsBatch(e.target.checked)} />
@@ -563,7 +563,7 @@ export default function BatchScanPanel() {
                   )}
                 </>
               )}
-              {scanMode === 'loadsheet' && (
+              {loadSheet && (
                 <p style={{ fontSize: 11.5, color: 'var(--slate-light)', marginTop: 10 }}>
                   {loadSheet?.loadSheetNumber} is already in Saved batches — its status can be changed again from there without re-scanning.
                 </p>
@@ -572,7 +572,7 @@ export default function BatchScanPanel() {
               <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
                 <button type="button" className="btn btn-outline" onClick={() => setPhase('SCANNING')}>← Back</button>
                 <button type="button" className="btn btn-primary" disabled={!chosenStatus || submitting} onClick={applyBatch}>
-                  {submitting ? 'Applying…' : saveAsBatch && scanMode !== 'loadsheet' ? 'Apply & save batch' : 'Apply status'}
+                  {submitting ? 'Applying…' : saveAsBatch && !loadSheet ? 'Apply & save batch' : 'Apply status'}
                 </button>
               </div>
             </div>
@@ -737,10 +737,7 @@ export default function BatchScanPanel() {
           <BarcodeCameraScanner onScan={handleBatchStatusScan} onClose={() => setScanningBatchId(null)} />
         )}
         {showLsCamera && (
-          <BarcodeCameraScanner
-            onScan={(code) => (loadSheet ? handleLsOrderScan(code) : loadLoadSheetByBarcode(code))}
-            onClose={() => setShowLsCamera(false)}
-          />
+          <BarcodeCameraScanner onScan={handleLsOrderScan} onClose={() => setShowLsCamera(false)} />
         )}
         {showFinishCamera && (
           <BarcodeCameraScanner onScan={handleFinishLocationScan} onClose={() => setShowFinishCamera(false)} />
