@@ -180,11 +180,15 @@ export default function BatchScanPanel() {
     setPreview({});
     setLoadSheet(null);
     setLsConfirmedIds([]);
-    setLsInput('');
     setLsOrderInput('');
     setLsError('');
   }
 
+  // Triggered from handleScannedCode once a scanned code matches the
+  // "LS<seq>" pattern — loads that Load Sheet's order checklist in place of
+  // the flat label list. A non-existent "LSxx" surfaces as lsError but
+  // otherwise leaves the normal label-scanning view untouched (the code is
+  // not added to `codes` either way — see handleScannedCode's early return).
   async function loadLoadSheetByBarcode(code) {
     if (!code) return;
     setLsLoading(true);
@@ -197,15 +201,6 @@ export default function BatchScanPanel() {
       setLsError(err.response?.data?.error || "That barcode doesn't match any load sheet.");
     } finally {
       setLsLoading(false);
-    }
-  }
-
-  function handleLsBarcodeKeyDown(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const code = lsInput.trim();
-      setLsInput('');
-      loadLoadSheetByBarcode(code);
     }
   }
 
