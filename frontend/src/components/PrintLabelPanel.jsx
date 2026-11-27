@@ -226,10 +226,22 @@ function ManualLabelTab() {
       )}
 
       {showCreate && (
-        <CreateLabelModal
+        <LabelFormModal
           onClose={() => setShowCreate(false)}
-          onCreated={(result) => {
+          onSaved={(result) => {
             setShowCreate(false);
+            load();
+            setViewing(toViewingState(result.batch, result.labels));
+          }}
+        />
+      )}
+
+      {editingDetails && (
+        <LabelFormModal
+          editBatch={editingDetails}
+          onClose={() => setEditingDetails(null)}
+          onSaved={(result) => {
+            setEditingDetails(null);
             load();
             setViewing(toViewingState(result.batch, result.labels));
           }}
