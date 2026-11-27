@@ -127,7 +127,7 @@ function addressSummary(addr) {
 
 // A batch's result modal (just created, or just edited) needs these same
 // five fields regardless of which action produced it — centralized so
-// CreateLabelModal's and EditGenerateModal's "done" handlers build an
+// LabelFormModal's and EditGenerateModal's "done" handlers build an
 // identical shape for `viewing`.
 function toViewingState(batch, labels) {
   return {
