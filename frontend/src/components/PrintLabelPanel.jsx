@@ -143,7 +143,8 @@ function toViewingState(batch, labels) {
 function ManualLabelTab() {
   const [batches, setBatches] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [editing, setEditing] = useState(null); // the batch row being edited
+  const [editing, setEditing] = useState(null); // the batch row being edited (add missing documents)
+  const [editingDetails, setEditingDetails] = useState(null); // the batch row being edited (full details, via the reference number)
   const [viewing, setViewing] = useState(null); // { referenceNumber, batchId, hasMaster, consignmentGenerated, loadSheetGenerated, labels }
 
   function load() {
