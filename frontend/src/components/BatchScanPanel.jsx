@@ -64,14 +64,17 @@ export default function BatchScanPanel() {
   const [showCamera, setShowCamera] = useState(false);
   const [preview, setPreview] = useState({}); // barcodeValue -> { matched, orderNumber, destination }
 
-  // 'labels' = default flow above (scan each shipment label, accumulate a
-  // flat list). 'loadsheet' = scan one Load Sheet's own barcode first (see
-  // loadSheetPanel's barcodeValue), which loads its full order list shown
-  // grey/pending, then individually scan each order's own label to confirm
-  // it — once done, the same FINISH/status-select step applies, just
-  // submitted against /admin/loadsheets/:id/apply-status instead of /batches.
-  const [scanMode, setScanMode] = useState('labels');
-  const [lsInput, setLsInput] = useState('');
+  // One unified scan box handles both: an ordinary shipment label just
+  // accumulates into the flat `codes` list below, while a Load Sheet's own
+  // barcode (always "LS<seq>" — see generateLoadSheetNumber, same string
+  // used as both loadSheetNumber and barcodeValue) is detected in
+  // handleScannedCode and switches into this checklist mode instead —
+  // `loadSheet` truthy is the one flag that drives which UI/submit path is
+  // active, rather than a separate mode the user has to pick via a tab.
+  // Loads the full order list shown grey/pending, then individually
+  // scanning each order's own label confirms it — once done, the same
+  // FINISH/status-select step applies, just submitted against
+  // /admin/loadsheets/:id/apply-status instead of /batches.
   const [lsLoading, setLsLoading] = useState(false);
   const [lsError, setLsError] = useState('');
   const [loadSheet, setLoadSheet] = useState(null); // { id, loadSheetNumber, fromHub, toHub, orders: [{ id, orderNumber, receiver, matchCodes, qty }] }
