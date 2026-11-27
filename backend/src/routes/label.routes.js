@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { optionalAuth, requireAuth, requireRole, requirePage } = require('../middleware/auth');
 const { generateLabel, downloadLabel, downloadLabelByBarcode, downloadInvoice } = require('../controllers/label.controller');
 const {
-  createManualLabels, generateForExistingBatch, listManualLabelBatches,
+  createManualLabels, generateForExistingBatch, updateManualLabelBatch, listManualLabelBatches,
   downloadMasterLabel, downloadConsignmentSheet, downloadLoadSheet,
 } = require('../controllers/manualLabel.controller');
 
