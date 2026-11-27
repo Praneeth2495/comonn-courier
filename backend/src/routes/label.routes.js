@@ -18,6 +18,11 @@ router.get('/manual/history', requireAuth, requireRole('ADMIN', 'STAFF'), requir
 // Label/Consignment/Load sheet staff skipped the first time, reusing the
 // batch's already-saved details.
 router.patch('/manual/:batchId/generate', requireAuth, requireRole('ADMIN', 'STAFF'), requirePage('printlabel'), generateForExistingBatch);
+// The history view's clickable reference number — edit a batch's full
+// details and refresh whatever was already generated (see
+// updateManualLabelBatch's own comment for why Consignment/Load sheet
+// need no separate regeneration step but Label does).
+router.put('/manual/:batchId', requireAuth, requireRole('ADMIN', 'STAFF'), requirePage('printlabel'), updateManualLabelBatch);
 // optionalAuth, not requireAuth — this is opened via a plain <a href target="_blank">
 // link (same as /download/:labelId above), which can't carry an Authorization
 // header at all; the batchId itself (an unguessable UUID) is the only gate,
