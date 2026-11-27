@@ -351,22 +351,47 @@ function emptyItem() {
   return { itemType: 'Box', quantity: '1', actualWeightKg: '', lengthCm: '', widthCm: '', heightCm: '' };
 }
 
-function CreateLabelModal({ onClose, onCreated }) {
-  const [orderId, setOrderId] = useState('');
-  const [refNumber, setRefNumber] = useState('');
-  const [service, setService] = useState('');
-  const [truckType, setTruckType] = useState('');
-  const [truckCustom, setTruckCustom] = useState(false);
-  const [fromAddress, setFromAddress] = useState(emptyAddress());
-  const [toAddress, setToAddress] = useState(emptyAddress());
-  const [items, setItems] = useState([emptyItem()]);
-  const [instructions, setInstructions] = useState('');
+// Rehydrates a saved batch's items/addresses back into this form's
+// (string-based, controlled-input) shape — the inverse of parseItems/
+// trimAddressFields on the backend. Used only when editing — a fresh
+// Create starts from emptyItem()/emptyAddress() instead.
+function itemFromBatch(it) {
+  return {
+    itemType: it.itemType || 'Box',
+    quantity: String(it.quantity ?? '1'),
+    actualWeightKg: it.actualWeightKg != null ? String(it.actualWeightKg) : '',
+    lengthCm: it.lengthCm ? String(it.lengthCm) : '',
+    widthCm: it.widthCm ? String(it.widthCm) : '',
+    heightCm: it.heightCm ? String(it.heightCm) : '',
+  };
+}
+function addressFromBatch(addr) {
+  const base = emptyAddress();
+  return addr ? { ...base, ...addr } : base;
+}
+
+// Shared by "+ Create Label" (fresh, POST) and the history view's
+// clickable reference number (pre-filled from `editBatch`, PUT) — same
+// fields either way, just a different submit target and no generate-
+// checkboxes when editing (saving an edit always refreshes whatever was
+// already generated, rather than letting staff pick pieces again).
+function LabelFormModal({ editBatch, onClose, onSaved }) {
+  const isEdit = Boolean(editBatch);
+  const [orderId, setOrderId] = useState(editBatch?.orderId || '');
+  const [refNumber, setRefNumber] = useState(editBatch?.refNumber || '');
+  const [service, setService] = useState(editBatch?.service || '');
+  const [truckType, setTruckType] = useState(editBatch?.truckType || '');
+  const [truckCustom, setTruckCustom] = useState(Boolean(editBatch?.truckType) && !['FTL', 'LCL'].includes(editBatch?.truckType));
+  const [fromAddress, setFromAddress] = useState(() => addressFromBatch(editBatch?.fromAddress));
+  const [toAddress, setToAddress] = useState(() => addressFromBatch(editBatch?.toAddress));
+  const [items, setItems] = useState(() => (editBatch?.items?.length ? editBatch.items.map(itemFromBatch) : [emptyItem()]));
+  const [instructions, setInstructions] = useState(editBatch?.instructions || '');
   // All four optional — shown (when filled) on the Consignment sheet and
   // Load sheet only; the sticker Label has no use for them.
-  const [pickupDate, setPickupDate] = useState('');
-  const [pickupTime, setPickupTime] = useState('');
-  const [deliveryDate, setDeliveryDate] = useState('');
-  const [deliveryTime, setDeliveryTime] = useState('');
+  const [pickupDate, setPickupDate] = useState(editBatch?.pickupDate || '');
+  const [pickupTime, setPickupTime] = useState(editBatch?.pickupTime || '');
+  const [deliveryDate, setDeliveryDate] = useState(editBatch?.deliveryDate || '');
+  const [deliveryTime, setDeliveryTime] = useState(editBatch?.deliveryTime || '');
   const [wantLabel, setWantLabel] = useState(true);
   const [wantConsignment, setWantConsignment] = useState(true);
   const [wantLoadSheet, setWantLoadSheet] = useState(true);
@@ -387,22 +412,24 @@ function CreateLabelModal({ onClose, onCreated }) {
 
   async function submit(e) {
     e.preventDefault();
-    if (!wantLabel && !wantConsignment && !wantLoadSheet) {
+    if (!isEdit && !wantLabel && !wantConsignment && !wantLoadSheet) {
       setError('Select at least one of Label, Consignment or Load sheet to generate.');
       return;
     }
     setSubmitting(true);
     setError('');
     try {
-      const { data } = await client.post('/labels/manual', {
+      const payload = {
         orderId, refNumber, service, truckType: truckType || undefined, fromAddress, toAddress, items, instructions,
         pickupDate: pickupDate || undefined, pickupTime: pickupTime || undefined,
         deliveryDate: deliveryDate || undefined, deliveryTime: deliveryTime || undefined,
-        generateLabel: wantLabel, generateConsignment: wantConsignment, generateLoadSheet: wantLoadSheet,
-      });
-      onCreated(data);
+      };
+      const { data } = isEdit
+        ? await client.put(`/labels/manual/${editBatch.id}`, payload)
+        : await client.post('/labels/manual', { ...payload, generateLabel: wantLabel, generateConsignment: wantConsignment, generateLoadSheet: wantLoadSheet });
+      onSaved(data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not create the label(s).');
+      setError(err.response?.data?.error || `Could not ${isEdit ? 'save these changes' : 'create the label(s)'}.`);
     } finally {
       setSubmitting(false);
     }
@@ -412,11 +439,13 @@ function CreateLabelModal({ onClose, onCreated }) {
     <div className="modal-overlay open" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 520, maxHeight: '86vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-          <h3>Create Label</h3>
+          <h3>{isEdit ? 'Edit Label Details' : 'Create Label'}</h3>
           <button onClick={onClose} style={{ background: 'var(--paper)', border: 'none', width: 36, height: 36, borderRadius: '50%', fontSize: 13, color: 'var(--slate)', cursor: 'pointer', flex: 'none' }}>✕</button>
         </div>
         <p style={{ fontSize: 12.5, color: 'var(--slate-light)', marginBottom: 16 }}>
-          {totalQty > 1 ? 'Generates one label per unit, plus a combined master label with every page.' : 'For a shipment with no order behind it — e.g. an internal transfer.'}
+          {isEdit
+            ? 'Saving refreshes the Load sheet and Consignment sheet automatically, and reprints the Label(s) if any were already generated.'
+            : totalQty > 1 ? 'Generates one label per unit, plus a combined master label with every page.' : 'For a shipment with no order behind it — e.g. an internal transfer.'}
         </p>
         <form onSubmit={submit} className="form-stack">
           <div style={{ display: 'flex', gap: 10 }}>
