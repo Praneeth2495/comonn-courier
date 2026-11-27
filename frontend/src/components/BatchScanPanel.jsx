@@ -241,14 +241,29 @@ export default function BatchScanPanel() {
   // Shared by both the keyboard/physical-scanner input and the camera
   // scanner — scanning a known location's barcode picks its label as the
   // status to apply (still overridable at the status step below) and
-  // queues the same text to be logged as a comment.
+  // queues the same text to be logged as a comment. Once a Load Sheet is
+  // loaded (see below), every further scan here confirms one of its orders
+  // instead — same single box throughout, no separate "Scan a Load Sheet"
+  // tab to switch to first.
   function handleScannedCode(code) {
     if (!code) return;
+    if (loadSheet) {
+      handleLsOrderScan(code);
+      return;
+    }
     const loc = locations.find((l) => l.barcodeValue === code);
     if (loc) {
       setChosenStatus(loc.label);
       setLocationNotes((prev) => [...prev, { name: loc.name, label: loc.label }]);
       setLastLocationScanned(loc);
+      return;
+    }
+    // A Load Sheet's own barcode is always "LS<seq>" (generateLoadSheetNumber
+    // — same string as both loadSheetNumber and barcodeValue), so this is a
+    // reliable client-side check, not a guess: load its order checklist
+    // instead of treating the scan as an ordinary (unmatched) label code.
+    if (/^LS\d+$/i.test(code)) {
+      loadLoadSheetByBarcode(code);
       return;
     }
     setCodes((prev) => [...prev, code]);
