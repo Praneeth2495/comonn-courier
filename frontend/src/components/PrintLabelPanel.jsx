@@ -583,25 +583,29 @@ function LabelFormModal({ editBatch, onClose, onSaved }) {
             </div>
           </div>
 
-          <div className="field">
-            <label>Generate</label>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
-                <input type="checkbox" checked={wantLabel} onChange={(e) => setWantLabel(e.target.checked)} /> Label
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
-                <input type="checkbox" checked={wantConsignment} onChange={(e) => setWantConsignment(e.target.checked)} /> Consignment
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
-                <input type="checkbox" checked={wantLoadSheet} onChange={(e) => setWantLoadSheet(e.target.checked)} /> Load sheet
-              </label>
+          {!isEdit && (
+            <div className="field">
+              <label>Generate</label>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
+                  <input type="checkbox" checked={wantLabel} onChange={(e) => setWantLabel(e.target.checked)} /> Label
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
+                  <input type="checkbox" checked={wantConsignment} onChange={(e) => setWantConsignment(e.target.checked)} /> Consignment
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 400 }}>
+                  <input type="checkbox" checked={wantLoadSheet} onChange={(e) => setWantLoadSheet(e.target.checked)} /> Load sheet
+                </label>
+              </div>
             </div>
-          </div>
+          )}
 
           {error && <div className="error-text">{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
             <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
-            <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? 'Generating…' : 'Generate'}</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} disabled={submitting}>
+              {submitting ? (isEdit ? 'Saving…' : 'Generating…') : (isEdit ? 'Save & Regenerate' : 'Generate')}
+            </button>
           </div>
         </form>
       </div>
