@@ -541,8 +541,8 @@ function DetailsForm() {
                   ✕ / backdrop click / "Continue to add details" button
                   below, not this one — renamed so the label matches what
                   it actually does. */}
-              <button type="button" className="btn btn-outline" style={{ flex: 1, color: 'var(--danger)', borderColor: 'var(--danger-bg)' }} onClick={discardAndStartNew}>{pendingEditTarget ? 'Discard & edit that one' : 'Discard & start new'}</button>
-              <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={() => { setShowNewBookingConfirm(false); setPendingEditTarget(null); }}>Continue to add details</button>
+              <button type="button" className="btn btn-outline btn-wrap" style={{ flex: 1, color: 'var(--danger)', borderColor: 'var(--danger-bg)' }} onClick={discardAndStartNew}>{pendingEditTarget ? 'Discard & edit that one' : 'Discard & start new'}</button>
+              <button type="button" className="btn btn-primary btn-wrap" style={{ flex: 1 }} onClick={() => { setShowNewBookingConfirm(false); setPendingEditTarget(null); }}>Continue to add details</button>
             </div>
           </div>
         </div>
