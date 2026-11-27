@@ -291,6 +291,91 @@ async function generateForExistingBatch(req, res, next) {
   }
 }
 
+/**
+ * PUT /api/labels/manual/:batchId — the history view's clickable reference
+ * number, for correcting a batch's details after the fact (typo'd address,
+ * wrong weight, etc.) rather than only being able to add missing documents
+ * (generateForExistingBatch above). Consignment/Load sheet always render
+ * fresh from this row on every download (see downloadConsignmentSheet/
+ * downloadLoadSheet) — saving the edit here is enough for those to pick up
+ * the correction with no extra step. Labels are pre-rendered PDFs though,
+ * so if the batch already has them, they're deleted and regenerated
+ * against the edited data — same referenceNumber/barcode scheme as before,
+ * so an already-printed barcode still matches this batch, just with
+ * corrected content next time it's reprinted.
+ */
+async function updateManualLabelBatch(req, res, next) {
+  try {
+    const batch = await prisma.manualLabelBatch.findUnique({
+      where: { id: req.params.batchId },
+      include: { labels: { select: { id: true } } },
+    });
+    if (!batch) return res.status(404).json({ error: 'Batch not found' });
+
+    const {
+      orderId, refNumber, service, truckType, fromAddress, toAddress, items: rawItems, instructions,
+      pickupDate, pickupTime, deliveryDate, deliveryTime,
+    } = req.body;
+
+    if (!orderId?.trim()) return res.status(400).json({ error: 'Order ID is required' });
+    if (!MANUAL_LABEL_SERVICES.includes(service)) {
+      return res.status(400).json({ error: 'Service must be Express or Economy' });
+    }
+    const fromError = validateAddress(fromAddress, 'From');
+    if (fromError) return res.status(400).json({ error: fromError });
+    const toError = validateAddress(toAddress, 'To');
+    if (toError) return res.status(400).json({ error: toError });
+
+    const { items, error: itemsError } = parseItems(rawItems);
+    if (itemsError) return res.status(400).json({ error: itemsError });
+
+    const totalQuantity = buildPackages(items).length;
+    const hasLabels = batch.labels.length > 0;
+
+    let updated = await prisma.manualLabelBatch.update({
+      where: { id: batch.id },
+      data: {
+        orderId: orderId.trim(),
+        refNumber: refNumber?.trim() || null,
+        service,
+        truckType: truckType?.trim() || null,
+        fromAddress: trimAddressFields(fromAddress),
+        toAddress: trimAddressFields(toAddress),
+        quantity: totalQuantity,
+        items,
+        instructions: instructions?.trim() || null,
+        pickupDate: pickupDate?.trim() || null,
+        pickupTime: pickupTime?.trim() || null,
+        deliveryDate: deliveryDate?.trim() || null,
+        deliveryTime: deliveryTime?.trim() || null,
+        // Cleared up front when labels will be regenerated below — the new
+        // item count may no longer need (or may newly need) a master page,
+        // so the stale one shouldn't linger if generateLabelsForBatch ends
+        // up not recreating it.
+        ...(hasLabels ? { masterFileUrl: null, masterPdfData: null } : {}),
+      },
+      include: { createdBy: { select: { fullName: true } } },
+    });
+
+    let labels;
+    if (hasLabels) {
+      await prisma.label.deleteMany({ where: { batchId: batch.id } });
+      const result = await generateLabelsForBatch(updated);
+      updated = { ...updated, ...result.batch };
+      labels = result.labels;
+    } else {
+      labels = [];
+    }
+
+    res.json({
+      batch: toBatchResponse(updated),
+      labels: labels.map(({ pdfData, ...rest }) => rest),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 /** GET /api/labels/manual/history — every batch, newest first, with its individual labels */
 async function listManualLabelBatches(req, res, next) {
   try {
