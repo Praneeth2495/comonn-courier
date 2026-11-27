@@ -271,7 +271,7 @@ function ManualLabelTab() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {viewing.consignmentGenerated && (
                 <a
-                  className="btn btn-outline btn-sm"
+                  className="btn btn-outline btn-sm btn-wrap"
                   href={`${API_BASE}/labels/manual/${viewing.batchId}/consignment?inline=1`}
                   target="_blank"
                   rel="noreferrer"
@@ -281,7 +281,7 @@ function ManualLabelTab() {
               )}
               {viewing.loadSheetGenerated && (
                 <a
-                  className="btn btn-outline btn-sm"
+                  className="btn btn-outline btn-sm btn-wrap"
                   href={`${API_BASE}/labels/manual/${viewing.batchId}/load-sheet?inline=1`}
                   target="_blank"
                   rel="noreferrer"
@@ -291,7 +291,7 @@ function ManualLabelTab() {
               )}
               {viewing.hasMaster && (
                 <a
-                  className="btn btn-primary btn-sm"
+                  className="btn btn-primary btn-sm btn-wrap"
                   href={`${API_BASE}/labels/manual/${viewing.batchId}/master?inline=1`}
                   target="_blank"
                   rel="noreferrer"
@@ -302,7 +302,7 @@ function ManualLabelTab() {
               {viewing.labels.map((l) => (
                 <a
                   key={l.id}
-                  className="btn btn-outline btn-sm"
+                  className="btn btn-outline btn-sm btn-wrap"
                   href={`${API_BASE}/labels/download/${l.id}?inline=1`}
                   target="_blank"
                   rel="noreferrer"
