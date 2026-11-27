@@ -167,7 +167,16 @@ function ManualLabelTab() {
             <tbody>
               {batches.map((b) => (
                 <tr key={b.id}>
-                  <td className="mono">{b.orderId || b.referenceNumber}</td>
+                  <td className="mono">
+                    <a
+                      href="#"
+                      style={{ color: 'var(--cobalt)', fontWeight: 600 }}
+                      onClick={(e) => { e.preventDefault(); setEditingDetails(b); }}
+                      title="View and edit this batch's saved details"
+                    >
+                      {b.orderId || b.referenceNumber}
+                    </a>
+                  </td>
                   <td>{addressSummary(b.fromAddress)}</td>
                   <td>{addressSummary(b.toAddress)}</td>
                   <td>{b.quantity}</td>
