@@ -441,6 +441,7 @@ async function downloadLoadSheet(req, res, next) {
 module.exports = {
   createManualLabels,
   generateForExistingBatch,
+  updateManualLabelBatch,
   listManualLabelBatches,
   downloadMasterLabel,
   downloadConsignmentSheet,
