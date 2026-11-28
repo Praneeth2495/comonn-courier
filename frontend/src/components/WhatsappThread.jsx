@@ -57,9 +57,31 @@ export default function WhatsappThread({ phone, orderId, messages, onSent }) {
         {(!messages || messages.length === 0) && (
           <p style={{ fontSize: 12.5, color: 'var(--slate-light)' }}>No messages yet.</p>
         )}
-        {messages?.map((m) => (
+        {messages?.map((m) => {
+          const attachmentUrl = m.messageType && m.messageType !== 'text'
+            ? `${import.meta.env.VITE_API_BASE_URL || '/api'}/admin/whatsapp/conversations/${phone}/replies/${m.id}/attachment`
+            : null;
+          return (
           <div key={m.id} className={`wa-bubble ${m.direction === 'OUT' ? 'out' : 'in'} ${m.status === 'failed' ? 'failed' : ''}`}>
-            <p>{m.body}</p>
+            {m.messageType === 'image' && (
+              <img
+                src={attachmentUrl}
+                alt={m.attachmentFileName || 'Image'}
+                style={{ maxWidth: 220, maxHeight: 220, borderRadius: 8, display: 'block', marginBottom: m.body ? 6 : 0 }}
+              />
+            )}
+            {attachmentUrl && m.messageType !== 'image' && (
+              <a
+                className="btn btn-outline btn-sm"
+                href={attachmentUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{ marginBottom: m.body ? 6 : 0 }}
+              >
+                View {m.messageType === 'file' ? 'document' : m.messageType}{m.attachmentFileName ? ` — ${m.attachmentFileName}` : ''}
+              </a>
+            )}
+            {m.body && <p>{m.body}</p>}
             <span className="wa-bubble-meta">
               {m.direction === 'OUT' && m.sentBy?.fullName ? `${m.sentBy.fullName} · ` : ''}
               {formatDateTime(m.createdAt)}
