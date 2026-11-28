@@ -40,8 +40,22 @@ function verifyBasicAuth(req) {
 // Payload shapes (per Gupshup's docs — confirm against a real delivered
 // event once this is live, since BSP payloads sometimes drift from their
 // own docs):
-//   inbound text:  { type: "message", payload: { id, type: "text", payload: { text }, sender: { phone, name } } }
-//   status event:  { type: "message-event", payload: { id, type: "enqueued"|"sent"|"delivered"|"read"|"failed", destination, ... } }
+//   inbound text:    { type: "message", payload: { id, type: "text", payload: { text }, sender: { phone, name } } }
+//   inbound media:   { type: "message", payload: { id, type: "image"|"file"|"video"|"audio", payload: { url, contentType, name?, caption? }, sender: { phone, name } } }
+//   status event:    { type: "message-event", payload: { id, type: "enqueued"|"sent"|"delivered"|"read"|"failed", destination, ... } }
+const MEDIA_TYPES = new Set(['image', 'file', 'video', 'audio']);
+
+// Gupshup forwards inbound media as a direct, already-authenticated URL
+// (unlike Meta's Graph API, which needs a separate media-id -> temp-url
+// lookup) — one GET with the same apikey header used for outbound sends is
+// enough to pull the bytes down.
+async function downloadMedia(url) {
+  const res = await fetch(url, { headers: { apikey: process.env.GUPSHUP_API_KEY } });
+  if (!res.ok) throw new Error(`Gupshup media download failed (${res.status})`);
+  const arrayBuffer = await res.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
 function normalizePhone(raw) {
   return String(raw || '').replace(/\D/g, '');
 }
