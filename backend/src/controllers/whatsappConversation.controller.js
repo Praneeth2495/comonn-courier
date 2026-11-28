@@ -192,4 +192,23 @@ async function sendReply(req, res, next) {
   }
 }
 
-module.exports = { listConversations, getConversation, sendReply, getUnreadCount };
+/**
+ * GET /api/admin/whatsapp/conversations/:phone/replies/:replyId/attachment
+ * — streams back the document/image/etc. a customer sent inbound, same
+ * blob-in-Postgres pattern as asset.controller.js's downloadAssetAttachment.
+ */
+async function downloadReplyAttachment(req, res, next) {
+  try {
+    const { phone, replyId } = req.params;
+    const reply = await prisma.whatsappReply.findUnique({ where: { id: replyId } });
+    if (!reply || reply.phone !== phone) return res.status(404).json({ error: 'Message not found' });
+    if (!reply.attachmentData) return res.status(404).json({ error: 'No attachment on this message' });
+    res.setHeader('Content-Type', reply.attachmentMime || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${reply.attachmentFileName || 'attachment'}"`);
+    res.send(reply.attachmentData);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { listConversations, getConversation, sendReply, getUnreadCount, downloadReplyAttachment };
