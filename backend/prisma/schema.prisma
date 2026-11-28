@@ -1499,6 +1499,10 @@ model WhatsappReply {
   phone             String // normalized digits — the customer's WhatsApp number
   direction         String // "IN" | "OUT"
   body              String
+  messageType       String   @default("text") // "text" | "image" | "file" | "video" | "audio"
+  attachmentData    Bytes?
+  attachmentMime    String?
+  attachmentFileName String?
   providerMessageId String?  @unique
   status            String   @default("received") // IN: "received" | OUT: accepted|sent|delivered|read|failed
   sentById          String?
