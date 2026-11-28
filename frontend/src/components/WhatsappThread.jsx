@@ -88,7 +88,8 @@ export default function WhatsappThread({ phone, orderId, messages, onSent }) {
               {m.status === 'failed' ? ' · failed to send' : ''}
             </span>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {!canReply && (
