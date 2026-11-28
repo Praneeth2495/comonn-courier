@@ -84,21 +84,57 @@ async function matchOrder(phone) {
 }
 
 async function handleInboundMessage(payload) {
-  const text = payload?.payload?.text;
   const senderPhone = normalizePhone(payload?.sender?.phone || payload?.source);
-  if (!senderPhone || !text) return;
+  if (!senderPhone) return;
 
+  const messageType = payload?.type;
   const orderId = await matchOrder(senderPhone);
-  await prisma.whatsappReply.create({
-    data: {
-      orderId,
-      phone: senderPhone,
-      direction: 'IN',
-      body: String(text).slice(0, 4000),
-      providerMessageId: payload?.id || null,
-      status: 'received',
-    },
-  });
+
+  if (messageType === 'text') {
+    const text = payload?.payload?.text;
+    if (!text) return;
+    await prisma.whatsappReply.create({
+      data: {
+        orderId,
+        phone: senderPhone,
+        direction: 'IN',
+        body: String(text).slice(0, 4000),
+        messageType: 'text',
+        providerMessageId: payload?.id || null,
+        status: 'received',
+      },
+    });
+    return;
+  }
+
+  if (MEDIA_TYPES.has(messageType)) {
+    const media = payload?.payload;
+    if (!media?.url) return;
+    let attachmentData;
+    try {
+      attachmentData = await downloadMedia(media.url);
+    } catch (err) {
+      console.error('Gupshup webhook: failed to download inbound media:', err.message);
+      return;
+    }
+    await prisma.whatsappReply.create({
+      data: {
+        orderId,
+        phone: senderPhone,
+        direction: 'IN',
+        body: String(media.caption || '').slice(0, 4000),
+        messageType,
+        attachmentData,
+        attachmentMime: media.contentType || null,
+        attachmentFileName: media.name || null,
+        providerMessageId: payload?.id || null,
+        status: 'received',
+      },
+    });
+    return;
+  }
+
+  console.log(`Gupshup webhook: unhandled inbound message type "${messageType}":`, JSON.stringify(payload));
 }
 
 async function handleStatusEvent(payload) {
