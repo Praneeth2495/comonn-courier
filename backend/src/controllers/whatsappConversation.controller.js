@@ -102,15 +102,24 @@ async function getUnreadCount(req, res, next) {
   }
 }
 
+// attachmentData is a raw Bytes blob — strip it from any JSON response (it's
+// fetched separately via downloadReplyAttachment) and expose a boolean flag
+// instead, same convention as asset.controller.js's toAssetResponse.
+function toReplyResponse(reply) {
+  const { attachmentData, ...rest } = reply;
+  return { ...rest, hasAttachment: Boolean(attachmentData) };
+}
+
 /** GET /api/admin/whatsapp/conversations/:phone — full thread, oldest first. */
 async function getConversation(req, res, next) {
   try {
     const { phone } = req.params;
-    const messages = await prisma.whatsappReply.findMany({
+    const rows = await prisma.whatsappReply.findMany({
       where: { phone },
       orderBy: { createdAt: 'asc' },
       include: { sentBy: { select: { id: true, fullName: true } } },
     });
+    const messages = rows.map(toReplyResponse);
     const latestOrder = await prisma.whatsappReply.findFirst({
       where: { phone, orderId: { not: null } },
       orderBy: { createdAt: 'desc' },
