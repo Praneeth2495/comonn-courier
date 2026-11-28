@@ -53,7 +53,15 @@ async function applyStatusUpdate(status) {
 // controller's phone-normalizing/order-matching so both paths produce
 // identical WhatsappReply rows.
 async function handleInboundTextMessage(message) {
-  if (message?.type !== 'text' || !message.text?.body) return;
+  if (message?.type !== 'text' || !message.text?.body) {
+    // No access token is configured for Meta's Graph API on this path (see
+    // whatsappService.js — Gupshup is the active BSP), so there's no way to
+    // download non-text media here; just log instead of vanishing silently.
+    if (message?.type && message.type !== 'text') {
+      console.log(`Meta webhook: unhandled inbound message type "${message.type}", id ${message.id}`);
+    }
+    return;
+  }
   const senderPhone = normalizePhone(message.from);
   if (!senderPhone) return;
 
