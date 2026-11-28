@@ -551,7 +551,28 @@ async function getOrder(req, res, next) {
         addons: true,
         trackingEvents: { orderBy: { occurredAt: 'asc' } },
         whatsappMessages: { orderBy: { createdAt: 'asc' } },
-        whatsappReplies: { orderBy: { createdAt: 'asc' } },
+        // attachmentData is a raw Bytes blob (fetched separately via
+        // whatsapp.routes.js's attachment download route) — excluded here
+        // so an order-detail fetch doesn't serialize every inbound photo
+        // into the response.
+        whatsappReplies: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            orderId: true,
+            phone: true,
+            direction: true,
+            body: true,
+            messageType: true,
+            attachmentMime: true,
+            attachmentFileName: true,
+            providerMessageId: true,
+            status: true,
+            sentById: true,
+            sentBy: { select: { id: true, fullName: true } },
+            createdAt: true,
+          },
+        },
       },
     });
     if (!order) return res.status(404).json({ error: 'Order not found' });
